@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 from datetime import datetime, timedelta
-import geocoder
 import requests
 import csv
 import pytz
@@ -29,30 +28,20 @@ from gym import spaces
 import traceback
 import warnings
 import logging
-from torch.distributions import Normal
-import torch.nn.functional as F
-from copy import deepcopy
-import requests
-from requests.exceptions import HTTPError, RequestException
 from urllib.parse import quote
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-import logging
+from requests.exceptions import HTTPError
 from dotenv import load_dotenv
 from dhanhq import dhanhq
 import argparse
 import sys
 import signal
-import streamlit as st
-import threading
+# threading removed - not used in current implementation
 import queue
 from langchain.llms.base import LLM
-from langchain.schema import BaseMessage, HumanMessage, AIMessage
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationChain
-from typing import Optional, List, Any
-import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
+from typing import Optional, List
 
 
 # Setup logging
@@ -91,7 +80,7 @@ class GrokLLM(LLM):
     def _llm_type(self) -> str:
         return "grok"
 
-    def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
+    def _call(self, prompt: str, _stop: Optional[List[str]] = None) -> str:
         """Call Grok API with the given prompt."""
         try:
             headers = {
@@ -151,7 +140,7 @@ class ChatLogger:
             "user_input": user_input,
             "bot_response": bot_response,
             "command_type": command_type,
-            "session_id": getattr(st.session_state, 'session_id', 'unknown')
+            "session_id": f"session_{datetime.now().strftime('%Y%m%d%H%M%S')}"
         }
 
         self.interactions.append(interaction)
@@ -2112,7 +2101,7 @@ class Stock:
             sentiment_score = sentiment["positive"] / total_sentiment if total_sentiment > 0 else 0.5
 
             price_to_sma200 = current_price / sma_200 if sma_200 > 0 else 1
-            price_to_sma50 = current_price / sma_50 if sma_50 > 0 else 1
+            # price_to_sma50 calculated but not used in current logic
             trend_direction = "UPTREND" if sma_50 > sma_200 else "DOWNTREND"
             volume_trend = "HIGH" if isinstance(volume, (int, float)) and volume > 1000000 else "MODERATE"
 
@@ -2883,7 +2872,7 @@ class StockTradingBot:
         # Kelly Criterion for position sizing
         win_prob = min(final_buy_score / 0.4, 1.0) if final_buy_score > 0 else 0.5
         expected_return = (ml_analysis.get("predicted_price", current_ticker_price) / current_ticker_price - 1) if current_ticker_price > 0 else 0
-        loss_prob = 1 - win_prob
+        # loss_prob = 1 - win_prob  # Calculated but not used
         kelly_fraction = (win_prob * (expected_return + 1) - 1) / expected_return if expected_return > 0 else 0.15
         kelly_fraction = max(min(kelly_fraction, 0.3), 0.1)
 
@@ -2898,7 +2887,7 @@ class StockTradingBot:
 
         # Trailing Stop-Loss
         if ticker in self.portfolio.holdings:
-            avg_price = self.portfolio.holdings[ticker]["avg_price"]
+            # avg_price = self.portfolio.holdings[ticker]["avg_price"]  # Not used in current logic
             trailing_stop_pct = 0.06
             highest_price = max(history["Close"].iloc[-30:]) if not history.empty else current_ticker_price
             trailing_stop = highest_price * (1 - trailing_stop_pct)
@@ -3214,10 +3203,11 @@ def main():
 
     bot = StockTradingBot(config)
     bot.run()
-def signal_handler(sig, frame):
+def signal_handler(_sig, _frame):
     """Handle Ctrl+C gracefully."""
     logger.info("Bot shutdown signal received. Shutting down gracefully...")
     print("\n🤖 Bot shut down successfully!")
+    sys.exit(0)
     sys.exit(0)
 
 def parse_arguments():
@@ -3292,226 +3282,10 @@ def main_with_mode():
         logger.error(f"Critical error in main function: {e}")
         print(f" Critical error: {e}")
 
-def run_streamlit_app():
-    """Run the Streamlit web interface for the trading bot."""
-    st.set_page_config(
-        page_title="Indian Stock Trading Bot",
-        page_icon="📈",
-        layout="wide",
-        initial_sidebar_state="expanded"
-    )
-
-    # Initialize session state
-    if 'bot' not in st.session_state:
-        # Parse command line arguments
-        args = parse_arguments()
-
-        # Load environment variables
-        load_dotenv()
-
-        # Generate a unique session ID
-        st.session_state.session_id = f"session_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-
-        # Enhanced configuration with risk management
-        config = {
-            "tickers": [
-                "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "INFY.NS", "HINDUNILVR.NS",
-                "ICICIBANK.NS", "KOTAKBANK.NS", "BHARTIARTL.NS", "ITC.NS", "SBIN.NS",
-                "BAJFINANCE.NS", "ASIANPAINT.NS", "MARUTI.NS", "AXISBANK.NS", "LT.NS",
-                "HCLTECH.NS", "WIPRO.NS", "ULTRACEMCO.NS", "TITAN.NS", "NESTLEIND.NS"
-            ],
-            "starting_balance": 1000000,  # ₹10 lakh
-            "current_portfolio_value": 1000000,
-            "current_pnl": 0,
-            "mode": "paper",  # Default to paper mode for web interface
-            "dhan_client_id": os.getenv("DHAN_CLIENT_ID"),
-            "dhan_access_token": os.getenv("DHAN_ACCESS_TOKEN"),
-            "period": "3y",
-            "prediction_days": 30,
-            "benchmark_tickers": ["^NSEI"],
-            "sleep_interval": 300,  # 5 minutes
-            # Risk management settings from .env
-            "stop_loss_pct": float(os.getenv("STOP_LOSS_PCT", "0.05")),
-            "max_capital_per_trade": float(os.getenv("MAX_CAPITAL_PER_TRADE", "0.25")),
-            "max_trade_limit": int(os.getenv("MAX_TRADE_LIMIT", "10"))
-        }
-
-        # Initialize bot
-        st.session_state.bot = StockTradingBot(config)
-
-        # Initialize chat messages
-        st.session_state.messages = []
-
-        # Start bot in a separate thread
-        if not hasattr(st.session_state, 'bot_thread_started'):
-            bot_thread = threading.Thread(target=st.session_state.bot.run)
-            bot_thread.daemon = True
-            bot_thread.start()
-            st.session_state.bot_thread_started = True
-
-    # Sidebar
-    with st.sidebar:
-        st.title("📈 Trading Dashboard")
-
-        # Mode indicator
-        mode = st.session_state.bot.config["mode"]
-        if mode == "live":
-            st.warning("🔴 LIVE TRADING MODE")
-        else:
-            st.success("📝 PAPER TRADING MODE")
-
-        # Portfolio metrics
-        st.subheader("Portfolio Metrics")
-        metrics = st.session_state.bot.portfolio.get_metrics()
-
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("Total Value", f"₹{metrics['total_value']:,.2f}")
-            st.metric("Cash", f"₹{metrics['cash']:,.2f}")
-        with col2:
-            starting_balance = st.session_state.bot.portfolio.starting_balance
-            total_return = metrics['total_value'] - starting_balance
-            return_pct = (total_return / starting_balance) * 100
-            st.metric("Total Return", f"₹{total_return:,.2f}", f"{return_pct:+.2f}%")
-            st.metric("Positions", len(st.session_state.bot.portfolio.holdings))
-
-    # Main content
-    st.title("🚀 Indian Stock Trading Bot")
-
-    # Create tabs
-    tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "💼 Portfolio", "🤖 Chat Assistant"])
-
-    # Dashboard tab
-    with tab1:
-        # Performance metrics
-        col1, col2, col3, col4 = st.columns(4)
-
-        with col1:
-            st.metric("Portfolio Value", f"₹{metrics['total_value']:,.2f}")
-        with col2:
-            st.metric("Unrealized P&L", f"₹{metrics['unrealized_pnl']:,.2f}")
-        with col3:
-            st.metric("Active Positions", len(st.session_state.bot.portfolio.holdings))
-        with col4:
-            trades_today = len([t for t in st.session_state.bot.portfolio.trade_log
-                              if t['timestamp'].startswith(datetime.now().strftime('%Y-%m-%d'))])
-            st.metric("Trades Today", trades_today)
-
-        # Recent activity
-        st.subheader("Recent Trading Activity")
-        trades = st.session_state.bot.portfolio.trade_log[-10:] if st.session_state.bot.portfolio.trade_log else []
-
-        if trades:
-            for trade in reversed(trades):
-                with st.expander(f"{trade['action'].upper()} {trade['asset']} - {trade['timestamp'][:19]}"):
-                    col1, col2, col3 = st.columns(3)
-                    with col1:
-                        st.write(f"**Quantity:** {trade['qty']} shares")
-                    with col2:
-                        st.write(f"**Price:** ₹{trade['price']:.2f}")
-                    with col3:
-                        st.write(f"**Value:** ₹{trade['qty'] * trade['price']:,.2f}")
-        else:
-            st.info("No recent trades")
-
-    # Portfolio tab
-    with tab2:
-        st.subheader("Current Holdings")
-
-        holdings = st.session_state.bot.portfolio.holdings
-
-        if holdings:
-            # Create holdings table
-            holdings_data = []
-            for ticker, data in holdings.items():
-                current_value = data['qty'] * data['avg_price']
-                holdings_data.append({
-                    "Ticker": ticker,
-                    "Quantity": data["qty"],
-                    "Avg Price": f"₹{data['avg_price']:.2f}",
-                    "Current Value": f"₹{current_value:,.2f}",
-                    "% of Portfolio": f"{(current_value / metrics['total_value'] * 100):.1f}%"
-                })
-
-            st.dataframe(pd.DataFrame(holdings_data), use_container_width=True)
-        else:
-            st.info("No current holdings")
-
-        # Watchlist management
-        st.subheader("Watchlist Management")
-
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            new_ticker = st.text_input("Add Ticker (e.g., INFY.NS)", key="new_ticker_input")
-        with col2:
-            if st.button("Add Ticker") and new_ticker:
-                response = st.session_state.bot.chatbot.set_ticker(new_ticker, "ADD")
-                st.success(response)
-                st.rerun()
-
-        # Display current watchlist
-        st.write("**Current Watchlist:**")
-        tickers = st.session_state.bot.config["tickers"]
-
-        # Display in columns
-        cols = st.columns(4)
-        for i, ticker in enumerate(tickers):
-            with cols[i % 4]:
-                st.write(f"• {ticker}")
-
-    # Chat tab
-    with tab3:
-        st.subheader("🤖 Trading Assistant")
-
-        # Command help
-        with st.expander("Available Commands"):
-            st.markdown("""
-            **Trading Commands:**
-            - `/start_bot` - Verify bot status
-            - `/set_risk HIGH` - Set risk level (LOW/MEDIUM/HIGH)
-            - `/get_pnl` - Get portfolio metrics
-            - `/why_trade SBIN.NS` - Get trade analysis
-            - `/list_positions` - List open positions
-            - `/set_ticker RELIANCE.NS ADD` - Add/remove tickers
-            - `/get_signals TCS.NS` - Get trading signals
-            - `/pause_trading 30` - Pause trading for 30 minutes
-            - `/resume_trading` - Resume trading
-            - `/get_performance 1w` - Get performance report
-            - `/set_allocation 20` - Set max allocation per trade
-
-            **General Chat:**
-            You can also ask general questions about trading, markets, or your portfolio!
-            """)
-
-        # Display chat messages
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
-
-        # Chat input
-        if prompt := st.chat_input("Ask a question or enter a command..."):
-            # Add user message to chat history
-            st.session_state.messages.append({"role": "user", "content": prompt})
-
-            # Display user message
-            with st.chat_message("user"):
-                st.markdown(prompt)
-
-            # Get bot response
-            with st.chat_message("assistant"):
-                with st.spinner("Processing..."):
-                    response = st.session_state.bot.chatbot.process_command(prompt)
-                st.markdown(response)
-
-            # Add assistant response to chat history
-            st.session_state.messages.append({"role": "assistant", "content": response})
+# Streamlit function removed - using FastAPI web interface instead
+# See web_backend.py and web_interface.html for the new implementation
 
 if __name__ == "__main__":
-    # Check if running in Streamlit
-    try:
-        # This will only work if running in Streamlit
-        st.title("Test")
-        run_streamlit_app()
-    except:
-        # Running normally
-        main_with_mode()
+    # Run the trading bot normally (command line mode)
+    # For web interface, use web_backend.py instead
+    main_with_mode()

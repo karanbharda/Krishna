@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Indian Stock Trading Bot</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>📈 Trading Dashboard</h2>
+            </div>
+            
+            <!-- Mode Indicator -->
+            <div class="mode-indicator" id="modeIndicator">
+                <div class="mode-badge paper-mode">📝 PAPER TRADING MODE</div>
+            </div>
+            
+            <!-- Portfolio Metrics -->
+            <div class="sidebar-section">
+                <h3>Portfolio Metrics</h3>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Total Value</div>
+                        <div class="metric-value" id="totalValue">₹10,00,000.00</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Cash</div>
+                        <div class="metric-value" id="cashValue">₹10,00,000.00</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total Return</div>
+                        <div class="metric-value" id="totalReturn">₹0.00</div>
+                        <div class="metric-change" id="returnPercentage">+0.00%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Positions</div>
+                        <div class="metric-value" id="positionsCount">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="sidebar-section">
+                <h3>Quick Actions</h3>
+                <div class="quick-actions">
+                    <button class="action-btn" onclick="startBot()">
+                        <i class="fas fa-play"></i> Start Bot
+                    </button>
+                    <button class="action-btn" onclick="pauseBot()">
+                        <i class="fas fa-pause"></i> Pause Bot
+                    </button>
+                    <button class="action-btn" onclick="refreshData()">
+                        <i class="fas fa-refresh"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="main-header">
+                <h1>🚀 Indian Stock Trading Bot</h1>
+                <div class="header-controls">
+                    <div class="status-indicator" id="statusIndicator">
+                        <span class="status-dot active"></span>
+                        <span>Active</span>
+                    </div>
+                    <button class="settings-btn" onclick="openSettings()">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" onclick="showTab('dashboard')">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </button>
+                <button class="tab-btn" onclick="showTab('portfolio')">
+                    <i class="fas fa-briefcase"></i> Portfolio
+                </button>
+                <button class="tab-btn" onclick="showTab('chat')">
+                    <i class="fas fa-robot"></i> Chat Assistant
+                </button>
+            </div>
+            
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Dashboard Tab -->
+                <div id="dashboard" class="tab-pane active">
+                    <!-- Performance Metrics -->
+                    <div class="metrics-row">
+                        <div class="metric-card large">
+                            <div class="metric-label">Portfolio Value</div>
+                            <div class="metric-value" id="dashboardPortfolioValue">₹10,00,000.00</div>
+                        </div>
+                        <div class="metric-card large">
+                            <div class="metric-label">Unrealized P&L</div>
+                            <div class="metric-value" id="unrealizedPnL">₹0.00</div>
+                        </div>
+                        <div class="metric-card large">
+                            <div class="metric-label">Active Positions</div>
+                            <div class="metric-value" id="activePositions">0</div>
+                        </div>
+                        <div class="metric-card large">
+                            <div class="metric-label">Trades Today</div>
+                            <div class="metric-value" id="tradesToday">0</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts Section -->
+                    <div class="charts-section">
+                        <div class="chart-container">
+                            <h3>Portfolio Performance</h3>
+                            <canvas id="portfolioChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h3>Asset Allocation</h3>
+                            <canvas id="allocationChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activity -->
+                    <div class="activity-section">
+                        <h3>Recent Trading Activity</h3>
+                        <div id="recentActivity" class="activity-list">
+                            <div class="no-activity">No recent trades</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Portfolio Tab -->
+                <div id="portfolio" class="tab-pane">
+                    <div class="portfolio-section">
+                        <h3>Current Holdings</h3>
+                        <div id="holdingsTable" class="holdings-table">
+                            <div class="no-holdings">No current holdings</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Watchlist Management -->
+                    <div class="watchlist-section">
+                        <h3>Watchlist Management</h3>
+                        <div class="watchlist-controls">
+                            <input type="text" id="newTickerInput" placeholder="Add Ticker (e.g., INFY.NS)" class="ticker-input">
+                            <button onclick="addTicker()" class="add-btn">Add Ticker</button>
+                        </div>
+                        <div class="current-watchlist">
+                            <h4>Current Watchlist:</h4>
+                            <div id="watchlistGrid" class="watchlist-grid">
+                                <!-- Watchlist items will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chat Tab -->
+                <div id="chat" class="tab-pane">
+                    <div class="chat-container">
+                        <div class="chat-header">
+                            <h3>🤖 Trading Assistant</h3>
+                            <button class="help-btn" onclick="toggleCommandHelp()">
+                                <i class="fas fa-question-circle"></i> Commands
+                            </button>
+                        </div>
+                        
+                        <!-- Command Help -->
+                        <div id="commandHelp" class="command-help hidden">
+                            <h4>Available Commands:</h4>
+                            <div class="commands-grid">
+                                <div class="command-group">
+                                    <h5>Trading Commands:</h5>
+                                    <ul>
+                                        <li><code>/start_bot</code> - Verify bot status</li>
+                                        <li><code>/set_risk HIGH</code> - Set risk level (LOW/MEDIUM/HIGH)</li>
+                                        <li><code>/get_pnl</code> - Get portfolio metrics</li>
+                                        <li><code>/why_trade SBIN.NS</code> - Get trade analysis</li>
+                                        <li><code>/list_positions</code> - List open positions</li>
+                                        <li><code>/set_ticker RELIANCE.NS ADD</code> - Add/remove tickers</li>
+                                        <li><code>/get_signals TCS.NS</code> - Get trading signals</li>
+                                        <li><code>/pause_trading 30</code> - Pause trading for 30 minutes</li>
+                                        <li><code>/resume_trading</code> - Resume trading</li>
+                                        <li><code>/get_performance 1w</code> - Get performance report</li>
+                                        <li><code>/set_allocation 20</code> - Set max allocation per trade</li>
+                                    </ul>
+                                </div>
+                                <div class="command-group">
+                                    <h5>General Chat:</h5>
+                                    <p>You can also ask general questions about trading, markets, or your portfolio!</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Messages -->
+                        <div id="chatMessages" class="chat-messages">
+                            <div class="welcome-message">
+                                <div class="message assistant">
+                                    <div class="message-content">
+                                        Welcome to the Indian Stock Trading Bot! 🚀<br>
+                                        Type a command or ask me anything about trading and markets.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Input -->
+                        <div class="chat-input-container">
+                            <input type="text" id="chatInput" placeholder="Ask a question or enter a command..." class="chat-input">
+                            <button onclick="sendMessage()" class="send-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Processing...</p>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Settings</h3>
+                <button class="close-btn" onclick="closeSettings()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label>Trading Mode:</label>
+                    <select id="tradingMode">
+                        <option value="paper">Paper Trading</option>
+                        <option value="live">Live Trading</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Risk Level:</label>
+                    <select id="riskLevel">
+                        <option value="LOW">Low (3% stop-loss)</option>
+                        <option value="MEDIUM" selected>Medium (5% stop-loss)</option>
+                        <option value="HIGH">High (8% stop-loss)</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label>Max Allocation per Trade (%):</label>
+                    <input type="number" id="maxAllocation" value="25" min="1" max="100">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="saveSettings()" class="save-btn">Save Settings</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
