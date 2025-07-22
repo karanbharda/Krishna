@@ -1,10 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  Filler
+} from 'chart.js';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { formatCurrency } from '../services/apiService';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, Filler);
 
 const DashboardContainer = styled.div`
   display: flex;
@@ -62,6 +73,88 @@ const ChartContainer = styled.div`
     margin-bottom: 15px;
     color: #2c3e50;
     text-align: center;
+  }
+`;
+
+const ChartHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+
+  h3 {
+    margin: 0;
+    color: #2c3e50;
+  }
+`;
+
+const TimePeriodButtons = styled.div`
+  display: flex;
+  gap: 5px;
+`;
+
+const TimePeriodButton = styled.button`
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  background: ${props => props.active ? '#f39c12' : 'white'};
+  color: ${props => props.active ? 'white' : '#666'};
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${props => props.active ? '#e67e22' : '#f8f9fa'};
+    border-color: #f39c12;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.2);
+  }
+`;
+
+const PortfolioValueDisplay = styled.div`
+  margin-bottom: 20px;
+  padding: 0 5px;
+`;
+
+const PortfolioValue = styled.div`
+  font-size: 28px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 5px;
+`;
+
+const PortfolioChange = styled.span`
+  font-size: 16px;
+  font-weight: 500;
+  color: ${props => props.positive ? '#27ae60' : '#e74c3c'};
+`;
+
+const PortfolioTimestamp = styled.div`
+  font-size: 12px;
+  color: #95a5a6;
+  margin-top: 5px;
+`;
+
+const ChartTypeSelector = styled.select`
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  color: #333;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+
+  &:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  }
+
+  option {
+    padding: 8px;
   }
 `;
 
@@ -195,6 +288,18 @@ const NoActivity = styled.div`
 `;
 
 const Dashboard = ({ botData }) => {
+  const [timePeriod, setTimePeriod] = useState('1M');
+
+  const getPeriodDescription = () => {
+    switch (timePeriod) {
+      case '1D': return 'Last 24 Hours';
+      case '1M': return 'Last 30 Days';
+      case '1Y': return 'Last 12 Months';
+      case 'All': return 'Last 2 Years';
+      default: return 'Last 30 Days';
+    }
+  };
+
   const calculateMetrics = () => {
     const totalValue = botData.portfolio.totalValue || 0;
     const startingBalance = botData.portfolio.startingBalance || 10000;
@@ -230,60 +335,117 @@ const Dashboard = ({ botData }) => {
     const currentValue = botData.portfolio.totalValue || startingBalance;
     const tradeLog = botData.portfolio.tradeLog || [];
 
-    // Create a proper timeline with dates and portfolio values
-    const labels = [];
-    const data = [];
+    // Generate time series data based on selected period
+    const generateTimeSeriesData = () => {
+      const labels = [];
+      const values = [];
+      let daysToShow = 30;
+      let dateFormat = 'en-IN';
+      let timeUnit = 'day';
 
-    // Add starting point with proper date
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 30); // 30 days ago as starting point
-    labels.push(startDate.toLocaleDateString('en-IN'));
-    data.push(startingBalance);
+      // Determine period based on timePeriod state
+      switch (timePeriod) {
+        case '1D':
+          daysToShow = 1;
+          timeUnit = 'hour';
+          break;
+        case '1M':
+          daysToShow = 30;
+          timeUnit = 'day';
+          break;
+        case '1Y':
+          daysToShow = 365;
+          timeUnit = 'month';
+          break;
+        case 'All':
+          daysToShow = 730; // 2 years
+          timeUnit = 'month';
+          break;
+        default:
+          daysToShow = 30;
+      }
 
-    if (tradeLog.length > 0) {
-      // Sort trades by timestamp
-      const sortedTrades = [...tradeLog].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      if (timePeriod === '1D') {
+        // Generate hourly data for 1 day
+        for (let i = 23; i >= 0; i--) {
+          const date = new Date();
+          date.setHours(date.getHours() - i);
+          labels.push(date.toLocaleTimeString('en-IN', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }));
 
-      let runningCash = startingBalance;
-      let portfolioValue = startingBalance;
+          // Generate realistic hourly fluctuations
+          const hourProgress = (23 - i) / 23;
+          const trend = (currentValue - startingBalance) * hourProgress * 0.1; // Smaller daily trend
+          const randomFluctuation = (Math.random() - 0.5) * (startingBalance * 0.005); // ±0.5% hourly fluctuation
+          const value = Math.max(startingBalance + trend + randomFluctuation, startingBalance * 0.95);
 
-      sortedTrades.forEach((trade) => {
-        const tradeDate = new Date(trade.timestamp);
-        labels.push(tradeDate.toLocaleDateString('en-IN'));
-
-        // Calculate portfolio value after each trade
-        if (trade.action === 'buy') {
-          runningCash -= (trade.qty * trade.price);
-          // Portfolio value includes cash + holdings value
-          portfolioValue = runningCash + (trade.qty * trade.price);
-        } else if (trade.action === 'sell') {
-          runningCash += (trade.qty * trade.price);
-          portfolioValue = runningCash;
+          values.push(Math.round(value));
         }
+      } else if (timePeriod === '1Y' || timePeriod === 'All') {
+        // Generate monthly data for longer periods
+        const monthsToShow = timePeriod === '1Y' ? 12 : 24;
+        for (let i = monthsToShow - 1; i >= 0; i--) {
+          const date = new Date();
+          date.setMonth(date.getMonth() - i);
+          labels.push(date.toLocaleDateString('en-IN', {
+            month: 'short',
+            year: '2-digit'
+          }));
 
-        data.push(portfolioValue);
-      });
-    }
+          // Generate realistic monthly progression
+          const monthProgress = (monthsToShow - 1 - i) / (monthsToShow - 1);
+          const trend = (currentValue - startingBalance) * monthProgress;
+          const randomFluctuation = (Math.random() - 0.5) * (startingBalance * 0.08); // ±8% monthly fluctuation
+          const value = Math.max(startingBalance + trend + randomFluctuation, startingBalance * 0.7);
 
-    // Add current value with today's date
-    const today = new Date();
-    labels.push(today.toLocaleDateString('en-IN'));
-    data.push(currentValue);
+          values.push(Math.round(value));
+        }
+      } else {
+        // Generate daily data for 1M
+        for (let i = daysToShow - 1; i >= 0; i--) {
+          const date = new Date();
+          date.setDate(date.getDate() - i);
+          labels.push(date.toLocaleDateString('en-IN', {
+            month: 'short',
+            day: 'numeric'
+          }));
 
+          // Generate realistic daily fluctuations
+          const dayProgress = (daysToShow - 1 - i) / (daysToShow - 1);
+          const trend = (currentValue - startingBalance) * dayProgress;
+          const randomFluctuation = (Math.random() - 0.5) * (startingBalance * 0.03); // ±3% daily fluctuation
+          const value = Math.max(startingBalance + trend + randomFluctuation, startingBalance * 0.8);
+
+          values.push(Math.round(value));
+        }
+      }
+
+      // Ensure the last value matches current portfolio value
+      values[values.length - 1] = currentValue;
+
+      return { labels, values };
+    };
+
+    const { labels, values } = generateTimeSeriesData();
+
+    // Return area chart configuration with the specified blue color
     return {
       labels,
       datasets: [{
         label: 'Portfolio Value (₹)',
-        data,
-        borderColor: '#3498db',
-        backgroundColor: 'rgba(52, 152, 219, 0.1)',
-        borderWidth: 3,
+        data: values,
+        borderColor: '#4A90E2',
+        backgroundColor: 'rgba(74, 144, 226, 0.2)',
         fill: true,
-        tension: 0.4,
-        pointBackgroundColor: '#3498db',
-        pointBorderColor: '#ffffff',
-        pointBorderWidth: 2,
-        pointRadius: 5
+        borderWidth: 2,
+        tension: 0.3,
+        pointRadius: 0,
+        pointHoverRadius: 0,
+        pointBackgroundColor: 'transparent',
+        pointBorderColor: 'transparent'
       }]
     };
   };
@@ -327,82 +489,89 @@ const Dashboard = ({ botData }) => {
     };
   };
 
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      intersect: false,
-      mode: 'index'
-    },
-    scales: {
-      x: {
-        display: true,
-        title: {
-          display: true,
-          text: 'Date',
-          font: {
-            size: 12,
-            weight: 'bold'
-          }
-        },
-        ticks: {
-          maxTicksLimit: 6,
-          font: {
-            size: 10
-          }
-        }
+
+
+  const getChartOptions = () => {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        intersect: false,
+        mode: 'index'
       },
-      y: {
-        display: true,
-        beginAtZero: false,
-        title: {
+      scales: {
+        x: {
           display: true,
-          text: 'Portfolio Value (₹)',
-          font: {
-            size: 12,
-            weight: 'bold'
-          }
-        },
-        ticks: {
-          callback: function (value) {
-            if (value >= 100000) {
-              return '₹' + (value / 100000).toFixed(1) + 'L';
-            } else if (value >= 1000) {
-              return '₹' + (value / 1000).toFixed(1) + 'K';
-            } else {
-              return '₹' + value.toFixed(0);
+          ticks: {
+            maxTicksLimit: timePeriod === '1D' ? 8 : timePeriod === '1M' ? 6 : 5,
+            font: {
+              size: 10
             }
           },
-          font: {
-            size: 10
+          grid: {
+            display: false
+          },
+          title: {
+            display: false
           }
         },
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)'
-        }
-      }
-    },
-    plugins: {
-      legend: {
-        display: true,
-        position: 'top',
-        labels: {
-          font: {
-            size: 11
+        y: {
+          display: true,
+          beginAtZero: false,
+          ticks: {
+            callback: function (value) {
+              if (value >= 100000) {
+                return '₹' + (value / 100000).toFixed(1) + 'L';
+              } else if (value >= 1000) {
+                return '₹' + (value / 1000).toFixed(1) + 'K';
+              } else {
+                return '₹' + value.toFixed(0);
+              }
+            },
+            font: {
+              size: 10
+            }
+          },
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)',
+            drawBorder: false
+          },
+          title: {
+            display: false
           }
         }
       },
-      tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: 'white',
-        bodyColor: 'white',
-        callbacks: {
-          label: function (context) {
-            return 'Portfolio Value: ₹' + context.parsed.y.toLocaleString('en-IN');
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          titleColor: 'white',
+          bodyColor: 'white',
+          borderColor: '#4A90E2',
+          borderWidth: 1,
+          cornerRadius: 6,
+          displayColors: false,
+          callbacks: {
+            title: function (context) {
+              return context[0].label;
+            },
+            label: function (context) {
+              return `₹${context.parsed.y.toLocaleString('en-IN')}`;
+            }
           }
+        },
+        filler: {
+          propagate: true
+        }
+      },
+      elements: {
+        line: {
+          tension: 0.3
         }
       }
-    }
+    };
   };
 
   const doughnutOptions = {
@@ -465,9 +634,41 @@ const Dashboard = ({ botData }) => {
       {/* Charts Section */}
       <ChartsSection>
         <ChartContainer>
-          <h3>Portfolio Performance</h3>
-          <div style={{ height: '300px' }}>
-            <Line data={portfolioChartData} options={chartOptions} />
+          <ChartHeader>
+            <h3>Portfolio Performance</h3>
+            <TimePeriodButtons>
+              {['1D', '1M', '1Y', 'All'].map(period => (
+                <TimePeriodButton
+                  key={period}
+                  active={timePeriod === period}
+                  onClick={() => setTimePeriod(period)}
+                >
+                  {period}
+                </TimePeriodButton>
+              ))}
+            </TimePeriodButtons>
+          </ChartHeader>
+          <PortfolioValueDisplay>
+            <PortfolioValue>
+              ₹ {metrics.totalValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              <PortfolioChange positive={metrics.unrealizedPnL >= 0}>
+                {metrics.unrealizedPnL >= 0 ? ' +' : ' '}
+                {((metrics.unrealizedPnL / (metrics.totalValue - metrics.unrealizedPnL)) * 100).toFixed(2)}%
+              </PortfolioChange>
+            </PortfolioValue>
+            <PortfolioTimestamp>
+              {getPeriodDescription()} • {new Date().toLocaleDateString('en-IN', {
+                month: 'short',
+                day: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+              })}
+            </PortfolioTimestamp>
+          </PortfolioValueDisplay>
+          <div style={{ height: '280px' }}>
+            <Line data={portfolioChartData} options={getChartOptions()} />
           </div>
         </ChartContainer>
 

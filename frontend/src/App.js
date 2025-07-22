@@ -19,10 +19,8 @@ import { apiService } from './services/apiService';
 const AppContainer = styled.div`
   display: flex;
   min-height: 100vh;
-  max-width: 1400px;
-  margin: 0 auto;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  background: #ffffff;
 `;
 
 const MainContent = styled.div`

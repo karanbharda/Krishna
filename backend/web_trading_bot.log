@@ -211,3 +211,85 @@
 2025-07-22 11:37:19,792 - INFO - Initializing Stock Trading Bot for Indian market...
 2025-07-22 11:37:19,793 - INFO - Trading bot initialized successfully
 2025-07-22 11:37:19,793 - INFO - Trading bot initialized on startup
+2025-07-22 12:17:14,249 - INFO - Loaded portfolio: Cash=Rs.10000.00, Holdings=0 positions
+2025-07-22 12:17:14,250 - INFO - Loaded 0 trades from trade log
+2025-07-22 12:17:14,305 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-22 12:17:14,307 - INFO - Trading bot initialized successfully
+2025-07-22 12:17:14,307 - INFO - Starting FastAPI web server on http://0.0.0.0:5000
+2025-07-22 12:17:14,307 - INFO - Web interface will be available at the above URL
+2025-07-22 12:17:14,307 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-22 12:17:14,373 - INFO - Loaded portfolio: Cash=Rs.10000.00, Holdings=0 positions
+2025-07-22 12:17:14,374 - INFO - Loaded 0 trades from trade log
+2025-07-22 12:17:14,394 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-22 12:17:14,395 - INFO - Trading bot initialized successfully
+2025-07-22 12:17:14,395 - INFO - Trading bot initialized on startup
+2025-07-22 12:17:38,665 - INFO - Loaded portfolio: Cash=Rs.10000.00, Holdings=0 positions
+2025-07-22 12:17:38,665 - INFO - Loaded 0 trades from trade log
+2025-07-22 12:17:38,685 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-22 12:17:38,687 - INFO - Trading bot initialized successfully
+2025-07-22 12:17:38,687 - INFO - Starting FastAPI web server on http://0.0.0.0:5000
+2025-07-22 12:17:38,687 - INFO - Web interface will be available at the above URL
+2025-07-22 12:17:38,687 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-22 12:17:38,748 - INFO - Loaded portfolio: Cash=Rs.10000.00, Holdings=0 positions
+2025-07-22 12:17:38,750 - INFO - Loaded 0 trades from trade log
+2025-07-22 12:17:38,770 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-22 12:17:38,772 - INFO - Trading bot initialized successfully
+2025-07-22 12:17:38,772 - INFO - Trading bot initialized on startup
+2025-07-22 12:20:22,325 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 12:20:32,338 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 12:20:42,349 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 12:20:52,357 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:24:53,331 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:25:03,351 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:25:23,738 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:25:23,742 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:25:23,750 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:25:23,754 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:25:42,362 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:25:42,367 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:26:24,393 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:26:24,397 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:26:43,316 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:26:43,318 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:27:13,633 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:27:13,635 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:27:13,881 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:27:13,883 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:28:24,374 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:28:24,376 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:29:13,632 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:29:13,637 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:29:13,895 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:29:13,899 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:33:23,614 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:33:43,816 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:34:24,384 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:34:24,386 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:35:24,701 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:35:35,771 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:36:13,307 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:36:13,344 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:37:13,656 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:37:13,666 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:38:13,307 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:38:13,311 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:39:13,616 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:39:13,620 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:40:13,320 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:40:13,328 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:41:13,613 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:41:13,618 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:42:13,333 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:42:13,367 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:43:13,628 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:43:13,631 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:44:13,311 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:44:13,315 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:45:13,650 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:45:13,671 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:46:13,314 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:46:13,318 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:47:13,632 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:47:13,635 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:48:13,320 - ERROR - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-22 14:48:13,325 - ERROR - $HINDUNILVR.NS: possibly delisted; no price data found  (period=1d)

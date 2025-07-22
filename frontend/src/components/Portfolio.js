@@ -215,11 +215,15 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
   };
 
   const calculatePortfolioPercentage = (currentValue, totalValue) => {
-    return totalValue > 0 ? ((currentValue / totalValue) * 100).toFixed(1) : '0.0';
+    if (!totalValue || totalValue <= 0 || !currentValue || currentValue <= 0) {
+      return '0.0';
+    }
+    const percentage = ((currentValue / totalValue) * 100);
+    return isNaN(percentage) ? '0.0' : percentage.toFixed(1);
   };
 
-  const holdings = botData.portfolio.holdings;
-  const totalValue = botData.portfolio.totalValue;
+  const holdings = botData.portfolio.holdings || {};
+  const totalValue = botData.portfolio.totalValue || 0;
 
   return (
     <PortfolioContainer>
@@ -237,14 +241,18 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
                 <div>% of Portfolio</div>
               </HoldingsHeader>
               {Object.entries(holdings).map(([ticker, data]) => {
-                const currentValue = data.qty * data.avgPrice;
+                // Use currentPrice if available, otherwise fall back to avgPrice
+                const currentPrice = data.currentPrice || data.avgPrice || 0;
+                const avgPrice = data.avgPrice || 0;
+                const qty = data.qty || 0;
+                const currentValue = qty * currentPrice;
                 const portfolioPercentage = calculatePortfolioPercentage(currentValue, totalValue);
 
                 return (
                   <HoldingsRow key={ticker}>
                     <TickerName>{ticker}</TickerName>
-                    <div>{data.qty}</div>
-                    <div>{formatCurrency(data.avgPrice)}</div>
+                    <div>{qty}</div>
+                    <div>{formatCurrency(avgPrice)}</div>
                     <div>{formatCurrency(currentValue)}</div>
                     <div>{portfolioPercentage}%</div>
                   </HoldingsRow>
