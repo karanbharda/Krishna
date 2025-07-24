@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 
 const pulse = keyframes`
@@ -44,18 +44,19 @@ const StatusDot = styled.div`
 `;
 
 const SettingsButton = styled.button`
-  background: #95a5a6;
+  background: ${props => props.disabled ? '#bdc3c7' : '#95a5a6'};
   color: white;
   border: none;
   padding: 10px;
   border-radius: 50%;
-  cursor: pointer;
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
   font-size: 1rem;
   transition: all 0.3s ease;
+  opacity: ${props => props.disabled ? 0.6 : 1};
 
   &:hover {
-    background: #7f8c8d;
-    transform: rotate(90deg);
+    background: ${props => props.disabled ? '#bdc3c7' : '#7f8c8d'};
+    transform: ${props => props.disabled ? 'none' : 'rotate(90deg)'};
   }
 `;
 
@@ -94,25 +95,79 @@ const TabButton = styled.button`
   }
 `;
 
+const ToastNotification = styled.div`
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #e74c3c;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-out;
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  i {
+    font-size: 1.2rem;
+  }
+`;
+
 const Header = ({ botData, activeTab, onTabChange, onOpenSettings }) => {
+  const [showToast, setShowToast] = useState(false);
+
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
     { id: 'portfolio', label: 'Portfolio', icon: 'fas fa-briefcase' },
     { id: 'chat', label: 'Chat Assistant', icon: 'fas fa-robot' }
   ];
 
+  const handleSettingsClick = () => {
+    if (botData.isRunning) {
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000); // Hide after 3 seconds
+      return;
+    }
+    onOpenSettings();
+  };
+
   return (
     <>
+      {showToast && (
+        <ToastNotification>
+          <i className="fas fa-exclamation-triangle"></i>
+          Cannot modify settings while bot is running! Stop the bot first.
+        </ToastNotification>
+      )}
+
       <HeaderContainer>
         <Title>💵BlackHole Trading Bot</Title>
-        
+
         <HeaderControls>
           <StatusIndicator>
             <StatusDot active={botData.isRunning} />
             <span>{botData.isRunning ? 'Active' : 'Inactive'}</span>
           </StatusIndicator>
-          
-          <SettingsButton onClick={onOpenSettings}>
+
+          <SettingsButton
+            onClick={handleSettingsClick}
+            disabled={botData.isRunning}
+            title={botData.isRunning ? 'Settings disabled while bot is running' : 'Open Settings'}
+          >
             <i className="fas fa-cog"></i>
           </SettingsButton>
         </HeaderControls>

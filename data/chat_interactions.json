@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "timestamp": "2025-07-24T10:45:49.888693",
+    "user_input": "hello",
+    "bot_response": "Sorry, I'm having trouble with the AI service right now.",
+    "command_type": "general",
+    "session_id": "session_20250724104549"
+  }
+]

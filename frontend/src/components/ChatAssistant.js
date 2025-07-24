@@ -89,38 +89,47 @@ const CommandGroup = styled.div`
 const ChatMessages = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 15px;
-  background: #f8f9fa;
+  padding: 20px;
+  background: #2c3e50;
   border-radius: 8px;
   margin-bottom: 15px;
-  border: 1px solid #e9ecef;
+  border: 1px solid #34495e;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
 `;
 
 const Message = styled.div`
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  width: 100%;
+`;
+
+const MessageHeader = styled.div`
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
-  flex-direction: ${props => props.isUser ? 'row-reverse' : 'row'};
+  margin-bottom: 8px;
+`;
+
+const MessageRole = styled.span`
+  color: ${props => props.isUser ? '#3498db' : '#27ae60'};
+  font-weight: bold;
+  font-size: 0.9rem;
+`;
+
+const MessageTime = styled.span`
+  color: #7f8c8d;
+  font-size: 0.8rem;
 `;
 
 const MessageContent = styled.div`
-  background: ${props => props.isUser ? '#3498db' : '#ecf0f1'};
-  color: ${props => props.isUser ? 'white' : '#2c3e50'};
-  padding: 12px 15px;
-  border-radius: 15px;
-  max-width: 70%;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  line-height: 1.4;
+  color: #ecf0f1;
+  font-size: 0.95rem;
+  line-height: 1.6;
   white-space: pre-wrap;
   word-wrap: break-word;
-`;
-
-const MessageTime = styled.div`
-  font-size: 0.8rem;
-  color: #7f8c8d;
-  margin-top: 5px;
-  text-align: ${props => props.isUser ? 'right' : 'left'};
+  padding: 10px 0;
+  border-left: 3px solid ${props => props.isUser ? '#3498db' : '#27ae60'};
+  padding-left: 15px;
+  margin-left: 5px;
 `;
 
 const ChatInputContainer = styled.div`
@@ -130,19 +139,28 @@ const ChatInputContainer = styled.div`
 
 const ChatInput = styled.input`
   flex: 1;
-  padding: 12px;
-  border: 2px solid #e9ecef;
-  border-radius: 25px;
+  padding: 12px 15px;
+  border: 2px solid #34495e;
+  border-radius: 6px;
   font-size: 1rem;
   outline: none;
+  background: #2c3e50;
+  color: #ecf0f1;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+
+  &::placeholder {
+    color: #7f8c8d;
+  }
 
   &:focus {
     border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
   }
 
   &:disabled {
-    background: #f8f9fa;
+    background: #34495e;
     cursor: not-allowed;
+    opacity: 0.6;
   }
 `;
 
@@ -173,9 +191,13 @@ const SendButton = styled.button`
 
 const WelcomeMessage = styled.div`
   text-align: center;
-  color: #7f8c8d;
+  color: #bdc3c7;
   font-style: italic;
   padding: 20px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  border: 1px dashed #7f8c8d;
+  border-radius: 8px;
+  background: rgba(52, 73, 94, 0.3);
 `;
 
 const ChatAssistant = ({ messages, onSendMessage }) => {
@@ -267,15 +289,18 @@ const ChatAssistant = ({ messages, onSendMessage }) => {
           </WelcomeMessage>
         ) : (
           messages.map((message, index) => (
-            <Message key={index} isUser={message.role === 'user'}>
-              <div>
-                <MessageContent isUser={message.role === 'user'}>
-                  {message.content}
-                </MessageContent>
-                <MessageTime isUser={message.role === 'user'}>
+            <Message key={index}>
+              <MessageHeader>
+                <MessageRole isUser={message.role === 'user'}>
+                  {message.role === 'user' ? '👤 You' : '🤖 Bot'}
+                </MessageRole>
+                <MessageTime>
                   {formatTimestamp(message.timestamp)}
                 </MessageTime>
-              </div>
+              </MessageHeader>
+              <MessageContent isUser={message.role === 'user'}>
+                {message.content}
+              </MessageContent>
             </Message>
           ))
         )}

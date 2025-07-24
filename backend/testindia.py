@@ -994,13 +994,20 @@ class VirtualPortfolio:
             logger.error(f"Error updating unrealized P&L: {e}")
 
     def get_current_prices(self):
-        """Fetch current prices from Dhan API."""
+        """Fetch current prices using Yahoo Finance only."""
+        import yfinance as yf
         prices = {}
         for asset in self.holdings:
             try:
-                quote = self.api.get_market_quote(security_id=self.get_security_id(asset))
-                if quote and "last_price" in quote:
-                    prices[asset] = {"price": quote["last_price"], "volume": quote.get("volume", 0)}
+                stock = yf.Ticker(asset)
+                hist = stock.history(period="1d")
+                if not hist.empty:
+                    current_price = hist['Close'].iloc[-1]
+                    volume = hist['Volume'].iloc[-1] if 'Volume' in hist.columns else 0
+                    prices[asset] = {"price": current_price, "volume": volume}
+                    logger.info(f"Fetched price for {asset}: Rs.{current_price:.2f}")
+                else:
+                    logger.warning(f"No price data available for {asset}")
             except Exception as e:
                 logger.error(f"Error fetching price for {asset}: {e}")
         return prices

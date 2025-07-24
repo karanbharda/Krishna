@@ -1,18 +1,26 @@
 [
-  {
-    "asset": "HDFCBANK.NS",
-    "action": "buy",
-    "qty": 1,
-    "price": 2000.5,
-    "mode": "paper",
-    "timestamp": "2025-07-21 16:32:58.584"
-  },
-  {
-    "asset": "HINDUNILVR.NS",
-    "action": "buy",
-    "qty": 1,
-    "price": 2464.9,
-    "mode": "paper",
-    "timestamp": "2025-07-21 16:37:45.946"
-  }
+    {
+        "asset": "HDFCBANK.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 2000.5,
+        "mode": "paper",
+        "timestamp": "2025-07-21 16:32:58.584"
+    },
+    {
+        "asset": "HINDUNILVR.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 2464.9,
+        "mode": "paper",
+        "timestamp": "2025-07-21 16:37:45.946"
+    },
+    {
+        "asset": "HINDUNILVR.NS",
+        "action": "sell",
+        "qty": 0,
+        "price": 2451.89990234375,
+        "mode": "paper",
+        "timestamp": "2025-07-24 11:22:50.678729"
+    }
 ]
