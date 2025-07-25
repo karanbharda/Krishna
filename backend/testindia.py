@@ -464,45 +464,46 @@ class DynamicTickerMapper:
         return None
 
 
-# Custom Grok LLM Integration
-class GrokLLM(LLM):
-    """Custom LLM wrapper for Grok API integration."""
+# Custom Llama LLM Integration via Ollama
+class LlamaLLM(LLM):
+    """Custom LLM wrapper for Ollama Llama integration."""
 
     # Define Pydantic fields properly
-    api_key: str
-    model_name: str = "grok-beta"
-    base_url: str = "https://api.x.ai/v1"
+    model_name: str = "llama3.2:latest"
+    base_url: str = "http://localhost:11434"
 
-    def __init__(self, api_key: str, model_name: str = "grok-beta", **kwargs):
+    def __init__(self, model_name: str = "llama3.2:latest", **kwargs):
         # Initialize with proper Pydantic field handling
         super().__init__(
-            api_key=api_key,
             model_name=model_name,
-            base_url="https://api.x.ai/v1",
+            base_url="http://localhost:11434",
             **kwargs
         )
 
     @property
     def _llm_type(self) -> str:
-        return "grok"
+        return "llama"
 
-    def _call(self, prompt: str, _stop: Optional[List[str]] = None) -> str:
-        """Call Grok API with the given prompt."""
+    def _call(self, prompt: str, stop: Optional[List[str]] = None, **kwargs) -> str:
+        """Call Ollama API with the given prompt."""
         try:
             headers = {
-                "Authorization": f"Bearer {self.api_key}",
                 "Content-Type": "application/json"
             }
 
             payload = {
                 "model": self.model_name,
-                "messages": [{"role": "user", "content": prompt}],
-                "max_tokens": 1000,
-                "temperature": 0.7
+                "prompt": prompt,
+                "stream": False,
+                "options": {
+                    "temperature": 0.7,
+                    "top_p": 0.9,
+                    "max_tokens": 1000
+                }
             }
 
             response = requests.post(
-                f"{self.base_url}/chat/completions",
+                f"{self.base_url}/api/generate",
                 headers=headers,
                 json=payload,
                 timeout=30
@@ -510,14 +511,20 @@ class GrokLLM(LLM):
 
             if response.status_code == 200:
                 result = response.json()
-                return result["choices"][0]["message"]["content"]
+                return result.get("response", "Sorry, I couldn't generate a response.")
             else:
-                logger.error(f"Grok API error: {response.status_code} - {response.text}")
-                return "Sorry, I'm having trouble connecting to the AI service right now."
+                logger.error(f"Ollama API error: {response.status_code} - {response.text}")
+                return "Sorry, I'm having trouble connecting to the local AI service."
 
+        except requests.exceptions.Timeout:
+            logger.error("Ollama API timeout")
+            return "Sorry, the local AI service is taking too long to respond."
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Ollama API request error: {e}")
+            return "Sorry, I'm having trouble connecting to the local AI service. Make sure Ollama is running."
         except Exception as e:
-            logger.error(f"Error calling Grok API: {e}")
-            return "Sorry, I encountered an error while processing your request."
+            logger.error(f"Unexpected error in Ollama API call: {e}")
+            return "Sorry, I encountered an unexpected error."
 
 # Chat Interaction Logger
 class ChatLogger:
@@ -567,20 +574,18 @@ class ChatbotCommandHandler:
     def __init__(self, trading_bot):
         self.trading_bot = trading_bot
         self.chat_logger = ChatLogger()
-        self.grok_llm = None
+        self.llama_llm = None
         self.conversation_memory = ConversationBufferMemory()
         self.trading_paused = False
         self.pause_until = None
 
-        # Initialize Grok LLM if API key is available
-        grok_api_key = os.getenv("GROK_API_KEY")
-        if grok_api_key:
-            self.grok_llm = GrokLLM(api_key=grok_api_key)
-            self.conversation_chain = ConversationChain(
-                llm=self.grok_llm,
-                memory=self.conversation_memory,
-                verbose=True
-            )
+        # Initialize Llama LLM (always available with Ollama)
+        try:
+            self.llama_llm = LlamaLLM(model_name="llama3.2:latest")
+            logger.info("Llama LLM initialized successfully with Ollama")
+        except Exception as e:
+            logger.error(f"Failed to initialize Llama LLM: {e}")
+            self.llama_llm = None
 
     def process_command(self, user_input: str) -> str:
         """Process user command and return response."""
@@ -592,7 +597,7 @@ class ChatbotCommandHandler:
                 response = self.handle_command(user_input)
                 command_type = user_input.split()[0]
             else:
-                # Use Grok LLM for general conversation
+                # Use Llama LLM for general conversation
                 response = self.handle_general_query(user_input)
                 command_type = "general"
 
@@ -648,28 +653,29 @@ class ChatbotCommandHandler:
             return f"Error executing command {cmd}: {str(e)}"
 
     def handle_general_query(self, query: str) -> str:
-        """Handle general queries using Grok LLM."""
-        if not self.grok_llm:
-            return "AI chat is not available. Please configure GROK_API_KEY in your .env file."
+        """Handle general queries using Llama LLM."""
+        if not self.llama_llm:
+            return "AI chat is not available. Please make sure Ollama is running locally."
 
         try:
             # Add context about the trading bot
-            context = f"""
-            You are an AI assistant for an Indian stock trading bot. Current context:
-            - Portfolio Value: ₹{self.trading_bot.portfolio.get_metrics()['total_value']:,.2f}
-            - Active Positions: {len(self.trading_bot.portfolio.holdings)}
-            - Trading Mode: {self.trading_bot.portfolio.mode}
-            - Available Commands: /start_bot, /set_risk, /get_pnl, /why_trade, /list_positions, /set_ticker, /get_signals, /pause_trading, /resume_trading, /get_performance, /set_allocation
+            context = f"""You are an AI assistant for an Indian stock trading bot. Current context:
+- Portfolio Value: ₹{self.trading_bot.portfolio.get_metrics()['total_value']:,.2f}
+- Active Positions: {len(self.trading_bot.portfolio.holdings)}
+- Trading Mode: {self.trading_bot.portfolio.mode}
+- Available Commands: /start_bot, /set_risk, /get_pnl, /why_trade, /list_positions, /set_ticker, /get_signals, /pause_trading, /resume_trading, /get_performance, /set_allocation
 
-            User Query: {query}
-            """
+User Query: {query}
 
-            response = self.conversation_chain.predict(input=context)
+Please provide a helpful response about trading, markets, or the user's portfolio. Keep responses concise and relevant."""
+
+            # Use direct LLM call instead of ConversationChain
+            response = self.llama_llm._call(context)
             return response
 
         except Exception as e:
-            logger.error(f"Error with Grok LLM: {e}")
-            return "Sorry, I'm having trouble with the AI service right now."
+            logger.error(f"Error with Llama LLM: {e}")
+            return "Sorry, I'm having trouble with the local AI service. Please make sure Ollama is running."
 
     # Command Implementation Methods
     def start_bot(self) -> str:
@@ -721,6 +727,85 @@ class ChatbotCommandHandler:
             return pnl_report.strip()
         except Exception as e:
             return f"❌ Error getting P&L: {str(e)}"
+
+    def why_trade(self, ticker: str) -> str:
+        """Explain why a particular ticker should be traded."""
+        try:
+            if not ticker:
+                return "❌ Please specify a ticker. Example: /why_trade RELIANCE.NS"
+
+            # Get analysis for the ticker
+            analysis = self.trading_bot.run_analysis(ticker)
+            if not analysis.get("success"):
+                return f"❌ Could not analyze {ticker}: {analysis.get('message', 'Unknown error')}"
+
+            # Extract key metrics
+            technical = analysis["technical_indicators"]
+            current_price = analysis["stock_data"]["current_price"]["INR"]
+
+            # Determine recommendation based on signals
+            buy_signals = 0
+            sell_signals = 0
+
+            # RSI analysis
+            rsi = technical.get("RSI", 50)
+            if rsi < 30:
+                buy_signals += 1
+                rsi_signal = "oversold (bullish)"
+            elif rsi > 70:
+                sell_signals += 1
+                rsi_signal = "overbought (bearish)"
+            else:
+                rsi_signal = "neutral"
+
+            # Moving average analysis
+            sma_20 = technical.get("SMA_20", current_price)
+            if current_price > sma_20:
+                buy_signals += 1
+                ma_signal = "above SMA (bullish)"
+            else:
+                sell_signals += 1
+                ma_signal = "below SMA (bearish)"
+
+            # MACD analysis
+            macd = technical.get("MACD", 0)
+            macd_signal_line = technical.get("MACD_Signal", 0)
+            if macd > macd_signal_line:
+                buy_signals += 1
+                macd_signal = "bullish crossover"
+            else:
+                sell_signals += 1
+                macd_signal = "bearish crossover"
+
+            # Overall recommendation
+            if buy_signals > sell_signals:
+                recommendation = "🟢 BUY"
+                reason = "Technical indicators suggest upward momentum"
+            elif sell_signals > buy_signals:
+                recommendation = "🔴 SELL"
+                reason = "Technical indicators suggest downward pressure"
+            else:
+                recommendation = "🟡 HOLD"
+                reason = "Mixed signals, wait for clearer direction"
+
+            analysis_text = f"""
+🎯 **Trade Analysis for {ticker}**
+💰 Current Price: ₹{current_price:.2f}
+📊 Recommendation: {recommendation}
+
+**Technical Signals:**
+• RSI ({rsi:.1f}): {rsi_signal}
+• Moving Average: {ma_signal}
+• MACD: {macd_signal}
+
+**Reasoning:** {reason}
+
+⚠️ This is for educational purposes only. Always do your own research before trading.
+"""
+            return analysis_text.strip()
+
+        except Exception as e:
+            return f"❌ Error analyzing trade: {str(e)}"
 
     def list_positions(self) -> str:
         """List all open positions."""
@@ -1698,6 +1783,117 @@ class Stock:
         query_parts = [f'"{name}"' for name in company_names[:3]]
         return " OR ".join(query_parts)
 
+    def build_multi_level_search_queries(self, ticker):
+        """Build multiple search query levels for fallback strategy"""
+        company_names = self.get_company_names(ticker)
+        clean_ticker = ticker.replace(".NS", "").replace(".BO", "")
+
+        search_levels = []
+
+        # Level 1: Full company names (highest priority)
+        if company_names:
+            primary_query = " OR ".join([f'"{name}"' for name in company_names[:3]])
+            search_levels.append({
+                "level": 1,
+                "query": primary_query,
+                "description": "Full company names",
+                "priority": "high"
+            })
+
+        # Level 2: Company names with financial context
+        if company_names:
+            contextual_queries = []
+            for name in company_names[:2]:
+                contextual_queries.extend([
+                    f'"{name}" stock',
+                    f'"{name}" shares',
+                    f'"{name}" earnings',
+                    f'"{name}" financial'
+                ])
+            contextual_query = " OR ".join(contextual_queries[:4])
+            search_levels.append({
+                "level": 2,
+                "query": contextual_query,
+                "description": "Company names with financial context",
+                "priority": "medium"
+            })
+
+        # Level 3: Clean ticker with market context
+        market_context_query = f'"{clean_ticker}" AND (NSE OR BSE OR "Indian stock" OR "India market")'
+        search_levels.append({
+            "level": 3,
+            "query": market_context_query,
+            "description": "Ticker with market context",
+            "priority": "medium"
+        })
+
+        # Level 4: Sector-based search
+        sector_keywords = self.get_sector_keywords(ticker, company_names)
+        if sector_keywords:
+            sector_query = " OR ".join([f'"{keyword}"' for keyword in sector_keywords[:3]])
+            search_levels.append({
+                "level": 4,
+                "query": sector_query,
+                "description": "Sector-based search",
+                "priority": "low"
+            })
+
+        # Level 5: Basic ticker (fallback)
+        search_levels.append({
+            "level": 5,
+            "query": clean_ticker,
+            "description": "Basic ticker fallback",
+            "priority": "low"
+        })
+
+        return search_levels
+
+    def get_sector_keywords(self, ticker, company_names):
+        """Dynamically determine sector keywords based on company names"""
+        if not company_names:
+            return []
+
+        sector_keywords = []
+        combined_text = " ".join(company_names).lower()
+
+        # Dynamic sector detection
+        sector_mappings = {
+            'banking': ['bank', 'financial', 'finance', 'credit'],
+            'technology': ['tech', 'software', 'it', 'consultancy', 'services'],
+            'energy': ['energy', 'power', 'electricity', 'renewable', 'solar', 'wind'],
+            'automotive': ['auto', 'motor', 'car', 'vehicle', 'suzuki', 'tata motors'],
+            'pharmaceuticals': ['pharma', 'drug', 'medicine', 'healthcare', 'bio'],
+            'telecommunications': ['telecom', 'airtel', 'communication', 'mobile'],
+            'steel': ['steel', 'iron', 'metal', 'mining'],
+            'oil_gas': ['oil', 'gas', 'petroleum', 'refinery'],
+            'cement': ['cement', 'construction', 'building'],
+            'textiles': ['textile', 'fabric', 'cotton', 'apparel'],
+            'chemicals': ['chemical', 'fertilizer', 'pesticide'],
+            'real_estate': ['real estate', 'property', 'housing', 'realty'],
+            'insurance': ['insurance', 'life', 'general insurance'],
+            'ports': ['port', 'shipping', 'logistics', 'cargo'],
+            'aviation': ['aviation', 'airline', 'airport', 'aircraft']
+        }
+
+        detected_sectors = []
+        for sector, keywords in sector_mappings.items():
+            if any(keyword in combined_text for keyword in keywords):
+                detected_sectors.append(sector)
+
+        # Generate sector-specific search terms
+        for sector in detected_sectors[:2]:  # Limit to top 2 sectors
+            if sector == 'banking':
+                sector_keywords.extend(['banking sector India', 'Indian banks', 'financial services India'])
+            elif sector == 'technology':
+                sector_keywords.extend(['IT sector India', 'Indian tech companies', 'software services India'])
+            elif sector == 'energy':
+                sector_keywords.extend(['energy sector India', 'power companies India', 'renewable energy India'])
+            elif sector == 'automotive':
+                sector_keywords.extend(['auto sector India', 'Indian automobile', 'car manufacturers India'])
+            # Add more sector-specific terms as needed
+
+        return sector_keywords[:5]  # Limit to top 5 keywords
+
     def update_ticker_mapping(self):
         """Manually trigger ticker mapping update"""
         self.ticker_mapper.get_ticker_mapping(force_update=True)
@@ -1779,40 +1975,165 @@ class Stock:
         else:
             return data
 
+    def get_indian_news_sources(self):
+        """Get dynamic list of Indian financial news sources"""
+        return {
+            'primary': [
+                'economictimes.indiatimes.com',
+                'moneycontrol.com',
+                'business-standard.com',
+                'livemint.com'
+            ],
+            'secondary': [
+                'financialexpress.com',
+                'zeebiz.com',
+                'cnbctv18.com',
+                'businesstoday.in'
+            ],
+            'regional': [
+                'thehindubusinessline.com',
+                'deccanherald.com',
+                'indianexpress.com',
+                'timesofindia.indiatimes.com'
+            ],
+            'specialized': [
+                'capitalmarket.com',
+                'equitymaster.com',
+                'investmentguruindia.com',
+                'stockguru.com'
+            ]
+        }
+
+    def build_source_specific_query(self, ticker, source_type='primary'):
+        """Build search queries optimized for specific Indian news sources"""
+        company_names = self.get_company_names(ticker)
+        clean_ticker = ticker.replace(".NS", "").replace(".BO", "")
+
+        if source_type == 'primary':
+            # For major financial news sources, use comprehensive queries
+            if company_names:
+                base_query = " OR ".join([f'"{name}"' for name in company_names[:2]])
+                enhanced_query = f"({base_query}) AND (stock OR shares OR earnings OR financial OR results)"
+                return enhanced_query
+
+        elif source_type == 'secondary':
+            # For secondary sources, use simpler but effective queries
+            if company_names:
+                return f'"{company_names[0]}" stock India'
+
+        elif source_type == 'regional':
+            # For regional sources, include location context
+            if company_names:
+                return f'"{company_names[0]}" AND (Mumbai OR Delhi OR Bangalore OR India)'
+
+        elif source_type == 'specialized':
+            # For specialized financial sources, use technical terms
+            if company_names:
+                return f'"{company_names[0]}" AND (NSE OR BSE OR trading OR investment)'
+
+        # Fallback to basic query
+        return clean_ticker
+
+    def multi_level_search(self, ticker, search_function, max_levels=3):
+        """Execute multi-level search strategy with fallback"""
+        search_levels = self.build_multi_level_search_queries(ticker)
+
+        for level_info in search_levels[:max_levels]:
+            try:
+                logger.info(f"Trying search level {level_info['level']}: {level_info['description']}")
+                logger.debug(f"Query: {level_info['query']}")
+
+                # Execute search with current level query
+                results = search_function(level_info['query'])
+
+                # Check if we got meaningful results
+                if self.has_meaningful_results(results):
+                    logger.info(f"Success at level {level_info['level']}: Found meaningful results")
+                    return results
+                else:
+                    logger.info(f"Level {level_info['level']} returned insufficient results, trying next level")
+
+            except Exception as e:
+                logger.warning(f"Level {level_info['level']} failed: {e}, trying next level")
+                continue
+
+        # If all levels fail, return empty results
+        logger.warning(f"All search levels failed for {ticker}")
+        return {"positive": 0, "negative": 0, "neutral": 0}
+
+    def has_meaningful_results(self, results):
+        """Check if search results are meaningful"""
+        if not isinstance(results, dict):
+            return False
+
+        total_articles = results.get("positive", 0) + results.get("negative", 0) + results.get("neutral", 0)
+        return total_articles >= 2  # Minimum threshold for meaningful results
+
     def newsapi_sentiment(self, ticker):
-        try:
-            # Use dynamic search query instead of raw ticker
-            search_query = self.build_search_query(ticker)
-            logger.info(f"NewsAPI search query for {ticker}: {search_query}")
+        """Enhanced NewsAPI sentiment with multi-level search and Indian sources"""
+        def search_with_query(query):
+            try:
+                # Get Indian news sources dynamically
+                indian_sources = self.get_indian_news_sources()
+                all_sources = indian_sources['primary'] + indian_sources['secondary']
+                sources_param = ",".join(all_sources[:10])  # Limit to avoid URL length issues
 
-            url = f"https://newsapi.org/v2/everything?q={quote(search_query)}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
-            response = requests.get(url)
-            response.raise_for_status()
-            data = response.json()
+                # Build URL with Indian sources preference
+                url = f"https://newsapi.org/v2/everything?q={quote(query)}&sources={sources_param}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
 
-            sentiments = {"positive": 0, "negative": 0, "neutral": 0}
-            total_articles = data.get("totalResults", 0)
+                # Fallback to general search if sources fail
+                try:
+                    response = requests.get(url, timeout=10)
+                    response.raise_for_status()
+                    data = response.json()
+                except:
+                    # Fallback without specific sources
+                    url = f"https://newsapi.org/v2/everything?q={quote(query)}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
+                    response = requests.get(url, timeout=10)
+                    response.raise_for_status()
+                    data = response.json()
 
-            if total_articles == 0:
-                logger.warning(f"No articles found for ticker {ticker}. Response: {data}")
+                sentiments = {"positive": 0, "negative": 0, "neutral": 0}
+                total_articles = data.get("totalResults", 0)
+
+                if total_articles == 0:
+                    return sentiments
+
+                logger.info(f"Found {total_articles} articles for query: {query[:50]}...")
+
+                if "articles" in data:
+                    for article in data["articles"][:10]:
+                        description = article.get("description", "") or article.get("content", "")[:200]
+                        if description:
+                            sentiment = self.sentiment_analyzer.polarity_scores(description)
+                            if sentiment["compound"] > 0.1:
+                                sentiments["positive"] += 1
+                            elif sentiment["compound"] < -0.1:
+                                sentiments["negative"] += 1
+                            else:
+                                sentiments["neutral"] += 1
+
                 return sentiments
 
-            logger.info(f"Found {total_articles} articles for {ticker}")
+            except Exception as e:
+                logger.warning(f"NewsAPI search failed for query '{query[:50]}...': {e}")
+                return {"positive": 0, "negative": 0, "neutral": 0}
 
-            if "articles" in data:
-                for article in data["articles"][:10]:
-                    description = article.get("description", "") or article.get("content", "")[:200]
-                    if description:
-                        sentiment = self.sentiment_analyzer.polarity_scores(description)
-                        if sentiment["compound"] > 0.1:
-                            sentiments["positive"] += 1
-                        elif sentiment["compound"] < -0.1:
-                            sentiments["negative"] += 1
-                        else:
-                            sentiments["neutral"] += 1
-            return sentiments
+        try:
+            # Use multi-level search strategy
+            logger.info(f"Starting multi-level NewsAPI search for {ticker}")
+            result = self.multi_level_search(ticker, search_with_query, max_levels=3)
+
+            # If multi-level search fails, try basic search as final fallback
+            if not self.has_meaningful_results(result):
+                logger.info(f"Multi-level search failed, trying basic search for {ticker}")
+                basic_query = self.build_search_query(ticker)
+                result = search_with_query(basic_query)
+
+            return result
+
         except Exception as e:
-            logger.error(f"Error fetching NewsAPI sentiment: {e}")
+            logger.error(f"Error in enhanced NewsAPI sentiment for {ticker}: {e}")
             return {"positive": 0, "negative": 0, "neutral": 0}
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10), retry=retry_if_exception_type(HTTPError))
@@ -1822,36 +2143,58 @@ class Stock:
         return response
 
     def gnews_sentiment(self, ticker):
-        try:
-            # Use dynamic search query instead of raw ticker
-            search_query = self.build_search_query(ticker)
-            query = quote(search_query)  # Encode query for URL
-            url = f"https://gnews.io/api/v4/search?q={query}&lang=en&country=in&token={self.GNEWS_API_KEY}"
-            logger.info(f"GNews search query for {ticker}: {search_query}")
-            logger.debug(f"Requesting GNews API: {url}")
+        """Enhanced GNews sentiment with multi-level search and Indian focus"""
+        def search_with_query(query):
+            try:
+                encoded_query = quote(query)
+                url = f"https://gnews.io/api/v4/search?q={encoded_query}&lang=en&country=in&token={self.GNEWS_API_KEY}"
+                logger.debug(f"Requesting GNews API: {url}")
 
-            response = self._make_request(url)
-            data = response.json()
-            logger.debug(f"Response status: {response.status_code}, content: {response.text[:200]}")
+                response = self._make_request(url)
+                data = response.json()
+                logger.debug(f"Response status: {response.status_code}, content: {response.text[:200]}")
 
-            sentiments = {"positive": 0, "negative": 0, "neutral": 0}
-            if not data or "articles" not in data or not data["articles"]:
-                logger.warning(f"No articles found for ticker {ticker}. Response: {response.text[:200]}")
+                sentiments = {"positive": 0, "negative": 0, "neutral": 0}
+                if not data or "articles" not in data or not data["articles"]:
+                    return sentiments
+
+                logger.info(f"Found {len(data['articles'])} articles for query: {query[:50]}...")
+
+                for article in data["articles"][:10]:
+                    title = article.get("title", "")
+                    description = article.get("description", "")
+                    content = f"{title} {description}"
+
+                    if content.strip():
+                        sentiment = self.sentiment_analyzer.polarity_scores(content)
+                        if sentiment["compound"] > 0.1:
+                            sentiments["positive"] += 1
+                        elif sentiment["compound"] < -0.1:
+                            sentiments["negative"] += 1
+                        else:
+                            sentiments["neutral"] += 1
+
                 return sentiments
 
-            for article in data["articles"][:10]:
-                description = article.get("description", "") or article.get("content", "")[:200]
-                sentiment = self.sentiment_analyzer.polarity_scores(description)
-                if sentiment["compound"] > 0.1:
-                    sentiments["positive"] += 1
-                elif sentiment["compound"] < -0.1:
-                    sentiments["negative"] += 1
-                else:
-                    sentiments["neutral"] += 1
-            return sentiments
+            except Exception as e:
+                logger.warning(f"GNews search failed for query '{query[:50]}...': {e}")
+                return {"positive": 0, "negative": 0, "neutral": 0}
+
+        try:
+            # Use multi-level search strategy
+            logger.info(f"Starting multi-level GNews search for {ticker}")
+            result = self.multi_level_search(ticker, search_with_query, max_levels=3)
+
+            # If multi-level search fails, try basic search as final fallback
+            if not self.has_meaningful_results(result):
+                logger.info(f"Multi-level search failed, trying basic search for {ticker}")
+                basic_query = self.build_search_query(ticker)
+                result = search_with_query(basic_query)
+
+            return result
 
         except Exception as e:
-            logger.error(f"Error fetching GNews sentiment: {e}")
+            logger.error(f"Error in enhanced GNews sentiment for {ticker}: {e}")
             return {"positive": 0, "negative": 0, "neutral": 0}
 
     def reddit_sentiment(self, ticker):
