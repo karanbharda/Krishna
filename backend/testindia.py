@@ -30,6 +30,9 @@ import warnings
 import logging
 from urllib.parse import quote
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+import pickle
+from bs4 import BeautifulSoup
+from collections import defaultdict
 from requests.exceptions import HTTPError
 from dotenv import load_dotenv
 from dhanhq import dhanhq
@@ -57,6 +60,409 @@ logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
+
+
+class DynamicTickerMapper:
+    """Dynamic ticker-to-company name mapping for Indian stock market"""
+
+    def __init__(self, cache_file="data/indian_ticker_mapping.pkl"):
+        self.cache_file = cache_file
+        self.ticker_mapping = {}
+        self.last_updated = None
+        self.update_frequency = timedelta(days=7)  # Update weekly
+
+        # Ensure data directory exists
+        os.makedirs(os.path.dirname(cache_file), exist_ok=True)
+
+        # Load cached data if available
+        self.load_cache()
+
+    def get_ticker_mapping(self, force_update=False):
+        """Get ticker mapping with automatic updates"""
+        if self.should_update() or force_update:
+            logger.info("Updating ticker mapping from NSE/BSE APIs...")
+            self.update_mapping()
+            self.save_cache()
+
+        return self.ticker_mapping
+
+    def should_update(self):
+        """Check if mapping needs update"""
+        if not self.last_updated:
+            return True
+        return datetime.now() - self.last_updated > self.update_frequency
+
+    def fetch_nse_stock_list(self):
+        """Fetch all NSE stocks with company names from official NSE API"""
+        try:
+            stock_mapping = {}
+
+            # NSE API endpoints for different indices
+            nse_endpoints = [
+                "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20500",
+                "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20SMALLCAP%20100",
+                "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20MIDCAP%20100",
+                "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20MICROCAP%20250"
+            ]
+
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'application/json, text/plain, */*',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+            }
+
+            session = requests.Session()
+
+            # First establish session by visiting main page
+            try:
+                session.get("https://www.nseindia.com", headers=headers, timeout=10)
+                time.sleep(1)
+            except:
+                pass
+
+            for endpoint in nse_endpoints:
+                try:
+                    logger.info(f"Fetching data from: {endpoint}")
+                    response = session.get(endpoint, headers=headers, timeout=15)
+
+                    if response.status_code == 200:
+                        data = response.json()
+
+                        for stock in data.get('data', []):
+                            symbol = stock.get('symbol')
+                            company_name = stock.get('companyName', '')
+
+                            if symbol and company_name:
+                                ticker = f"{symbol}.NS"
+                                variations = self.create_name_variations(company_name)
+                                stock_mapping[ticker] = variations
+
+                        logger.info(f"Fetched {len(data.get('data', []))} stocks from this endpoint")
+                    else:
+                        logger.warning(f"Failed to fetch from {endpoint}: Status {response.status_code}")
+
+                except Exception as e:
+                    logger.warning(f"Error fetching from {endpoint}: {e}")
+                    continue
+
+                time.sleep(2)  # Be respectful to NSE servers
+
+            logger.info(f"Total stocks fetched from NSE: {len(stock_mapping)}")
+            return stock_mapping
+
+        except Exception as e:
+            logger.error(f"Error in fetch_nse_stock_list: {e}")
+            return {}
+
+    def fetch_bse_stock_list(self):
+        """Fetch BSE stocks using alternative methods"""
+        try:
+            stock_mapping = {}
+
+            # Try to get BSE data from alternative sources
+            # Method 1: Use a known BSE stock list endpoint
+            try:
+                url = "https://api.bseindia.com/BseIndiaAPI/api/ListofScripData/w"
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                    'Accept': 'application/json'
+                }
+
+                response = requests.get(url, headers=headers, timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+
+                    for stock in data.get('Table', []):
+                        scrip_cd = stock.get('Scrip_cd')
+                        scrip_name = stock.get('Scrip_Name', '')
+
+                        if scrip_cd and scrip_name:
+                            ticker = f"{scrip_cd}.BO"
+                            variations = self.create_name_variations(scrip_name)
+                            stock_mapping[ticker] = variations
+
+                    logger.info(f"Fetched {len(stock_mapping)} stocks from BSE API")
+
+            except Exception as e:
+                logger.warning(f"BSE API method failed: {e}")
+
+            return stock_mapping
+
+        except Exception as e:
+            logger.error(f"Error in fetch_bse_stock_list: {e}")
+            return {}
+
+    def create_name_variations(self, company_name):
+        """Create multiple variations of company name for better search"""
+        if not company_name:
+            return []
+
+        variations = [company_name.strip()]
+
+        # Remove common suffixes
+        suffixes_to_remove = [
+            " Limited", " Ltd", " Ltd.", " Private Limited", " Pvt Ltd", " Pvt. Ltd.",
+            " Corporation", " Corp", " Company", " Co.", " Inc", " Incorporated",
+            " Private", " Pvt", " Public Limited", " Public Ltd"
+        ]
+
+        clean_name = company_name.strip()
+        for suffix in suffixes_to_remove:
+            if clean_name.endswith(suffix):
+                clean_name = clean_name[:-len(suffix)].strip()
+                if clean_name and clean_name not in variations:
+                    variations.append(clean_name)
+
+        # Generate dynamic abbreviations using intelligent pattern recognition
+        name_lower = company_name.lower()
+
+        # Dynamic abbreviation generation
+        dynamic_abbreviations = self.generate_dynamic_abbreviations(company_name)
+        variations.extend(dynamic_abbreviations)
+
+        
+
+        # Remove duplicates and empty strings
+        variations = [v.strip() for v in variations if v.strip()]
+        variations = list(dict.fromkeys(variations))  # Remove duplicates while preserving order
+
+        return variations[:5]  # Limit to top 5 variations to avoid overly long queries
+
+    def generate_dynamic_abbreviations(self, company_name):
+        """Generate abbreviations dynamically using pattern recognition"""
+        if not company_name:
+            return []
+
+        abbreviations = []
+        name_lower = company_name.lower()
+        words = company_name.split()
+
+        # Method 1: First letter of each significant word
+        significant_words = []
+        skip_words = {'limited', 'ltd', 'private', 'pvt', 'corporation', 'corp',
+                     'company', 'co', 'inc', 'incorporated', 'public', 'the', 'and', '&'}
+
+        for word in words:
+            if word.lower() not in skip_words and len(word) > 1:
+                significant_words.append(word)
+
+        if len(significant_words) >= 2:
+            # Create acronym from first letters
+            acronym = ''.join([word[0].upper() for word in significant_words])
+            if len(acronym) >= 2 and len(acronym) <= 6:
+                abbreviations.append(acronym)
+
+        # Method 2: Common business patterns
+        if 'bank' in name_lower:
+            # For banks, often use first word + "Bank"
+            first_word = words[0] if words else ""
+            if first_word and first_word.lower() != 'bank':
+                abbreviations.append(f"{first_word} Bank")
+
+        if 'technologies' in name_lower or 'technology' in name_lower:
+            # For tech companies, often use first word + "Tech"
+            first_word = words[0] if words else ""
+            if first_word and 'tech' not in first_word.lower():
+                abbreviations.append(f"{first_word} Tech")
+
+        if 'industries' in name_lower or 'industry' in name_lower:
+            # For industrial companies, often just use first word
+            first_word = words[0] if words else ""
+            if first_word and first_word.lower() != 'industries':
+                abbreviations.append(first_word)
+
+        # Method 3: Group/Parent company patterns
+        if 'group' in name_lower:
+            # Extract group name
+            group_word = None
+            for i, word in enumerate(words):
+                if word.lower() == 'group' and i > 0:
+                    group_word = words[i-1]
+                    break
+            if group_word:
+                abbreviations.append(f"{group_word} Group")
+
+        # Method 4: Sector-specific patterns
+        sector_patterns = {
+            'energy': ['Energy', 'Power'],
+            'power': ['Power', 'Energy'],
+            'finance': ['Finance', 'Financial'],
+            'consultancy': ['Consultancy', 'Consulting'],
+            'services': ['Services'],
+            'motors': ['Motors', 'Auto'],
+            'automotive': ['Auto', 'Motors'],
+            'cement': ['Cement'],
+            'steel': ['Steel'],
+            'pharma': ['Pharma', 'Pharmaceutical'],
+            'pharmaceutical': ['Pharma'],
+            'telecom': ['Telecom', 'Communications'],
+            'communications': ['Telecom'],
+            'oil': ['Oil', 'Petroleum'],
+            'gas': ['Gas'],
+            'ports': ['Ports', 'Port'],
+            'shipping': ['Shipping'],
+            'textiles': ['Textiles'],
+            'chemicals': ['Chemicals', 'Chem'],
+            'metals': ['Metals'],
+            'mining': ['Mining'],
+            'real estate': ['Realty', 'Real Estate'],
+            'realty': ['Real Estate'],
+            'insurance': ['Insurance'],
+            'mutual fund': ['MF', 'Mutual Fund'],
+            'asset management': ['AMC', 'Asset Management']
+        }
+
+        for sector, variations in sector_patterns.items():
+            if sector in name_lower:
+                # Add sector-specific variations
+                first_word = words[0] if words else ""
+                if first_word:
+                    for variation in variations:
+                        abbreviations.append(f"{first_word} {variation}")
+
+        # Method 5: Handle special characters and conjunctions
+        if '&' in company_name or ' and ' in name_lower:
+            # For companies with & or "and", create variations
+            parts = company_name.replace('&', 'and').split(' and ')
+            if len(parts) == 2:
+                # Create "FirstWord & SecondWord" format
+                first_part = parts[0].strip().split()[0] if parts[0].strip() else ""
+                second_part = parts[1].strip().split()[0] if parts[1].strip() else ""
+                if first_part and second_part:
+                    abbreviations.append(f"{first_part} & {second_part}")
+                    abbreviations.append(f"{first_part[0]}&{second_part[0]}")
+
+        # Method 6: Remove common words and create short forms
+        clean_words = []
+        for word in words:
+            if (word.lower() not in skip_words and
+                len(word) > 2 and
+                not word.lower().endswith('ing')):
+                clean_words.append(word)
+
+        if len(clean_words) >= 1:
+            # Just the main company name without suffixes
+            main_name = ' '.join(clean_words[:2])  # Take first 2 significant words
+            if main_name != company_name:
+                abbreviations.append(main_name)
+
+        return abbreviations
+
+    def update_mapping(self):
+        """Update mapping from multiple sources"""
+        all_mappings = {}
+
+        # Method 1: Try NSE API
+        try:
+            nse_data = self.fetch_nse_stock_list()
+            all_mappings.update(nse_data)
+            logger.info(f"Fetched {len(nse_data)} stocks from NSE API")
+        except Exception as e:
+            logger.warning(f"NSE API failed: {e}")
+
+        # Method 2: Try BSE API
+        try:
+            bse_data = self.fetch_bse_stock_list()
+            # Merge with existing data
+            for ticker, names in bse_data.items():
+                if ticker in all_mappings:
+                    # Combine name variations
+                    all_mappings[ticker].extend(names)
+                    all_mappings[ticker] = list(set(all_mappings[ticker]))
+                else:
+                    all_mappings[ticker] = names
+            logger.info(f"Added {len(bse_data)} stocks from BSE API")
+        except Exception as e:
+            logger.warning(f"BSE API failed: {e}")
+
+        # Method 3: Fallback to essential stocks if we don't have enough data
+        if len(all_mappings) < 50:
+            logger.warning("Using fallback hardcoded mapping for essential stocks")
+            fallback_mapping = self.get_fallback_mapping()
+            for ticker, names in fallback_mapping.items():
+                if ticker not in all_mappings:
+                    all_mappings[ticker] = names
+
+        self.ticker_mapping = all_mappings
+        self.last_updated = datetime.now()
+
+        logger.info(f"Final mapping contains {len(self.ticker_mapping)} stocks")
+
+    def get_fallback_mapping(self):
+        """Fallback hardcoded mapping for essential stocks"""
+        return {
+            "RELIANCE.NS": ["Reliance Industries", "RIL", "Reliance"],
+            "TCS.NS": ["Tata Consultancy Services", "TCS"],
+            "HDFCBANK.NS": ["HDFC Bank", "Housing Development Finance Corporation"],
+            "INFY.NS": ["Infosys", "Infosys Limited"],
+            "ICICIBANK.NS": ["ICICI Bank", "Industrial Credit and Investment Corporation"],
+            "KOTAKBANK.NS": ["Kotak Mahindra Bank", "Kotak Bank"],
+            "BHARTIARTL.NS": ["Bharti Airtel", "Airtel"],
+            "ITC.NS": ["ITC Limited", "Indian Tobacco Company"],
+            "SBIN.NS": ["State Bank of India", "SBI"],
+            "HINDUNILVR.NS": ["Hindustan Unilever", "HUL"],
+            "BAJFINANCE.NS": ["Bajaj Finance", "Bajaj Finserv"],
+            "ASIANPAINT.NS": ["Asian Paints", "Asian Paint"],
+            "MARUTI.NS": ["Maruti Suzuki", "Maruti", "Suzuki India"],
+            "AXISBANK.NS": ["Axis Bank"],
+            "LT.NS": ["Larsen & Toubro", "L&T", "Larsen Toubro"],
+            "HCLTECH.NS": ["HCL Technologies", "HCL Tech"],
+            "WIPRO.NS": ["Wipro Limited", "Wipro"],
+            "ULTRACEMCO.NS": ["UltraTech Cement", "Ultratech"],
+            "TITAN.NS": ["Titan Company", "Titan Industries"],
+            "NESTLEIND.NS": ["Nestle India", "Nestle"],
+            "ADANIENSOL.NS": ["Adani Energy Solutions", "Adani Green Energy", "Adani Power", "Adani Energy"],
+            "ADANIPORTS.NS": ["Adani Ports", "Adani Port"],
+            "ADANITRANS.NS": ["Adani Transmission"],
+            "ATGL.NS": ["Adani Total Gas"],
+        }
+
+    def save_cache(self):
+        """Save mapping to cache file"""
+        try:
+            cache_data = {
+                'mapping': self.ticker_mapping,
+                'last_updated': self.last_updated
+            }
+            with open(self.cache_file, 'wb') as f:
+                pickle.dump(cache_data, f)
+            logger.info(f"Saved ticker mapping cache to {self.cache_file}")
+        except Exception as e:
+            logger.error(f"Failed to save cache: {e}")
+
+    def load_cache(self):
+        """Load mapping from cache file"""
+        try:
+            if os.path.exists(self.cache_file):
+                with open(self.cache_file, 'rb') as f:
+                    cache_data = pickle.load(f)
+                self.ticker_mapping = cache_data.get('mapping', {})
+                self.last_updated = cache_data.get('last_updated')
+                logger.info(f"Loaded {len(self.ticker_mapping)} stocks from cache")
+        except Exception as e:
+            logger.warning(f"Failed to load cache: {e}")
+            self.ticker_mapping = {}
+            self.last_updated = None
+
+    def get_company_names(self, ticker):
+        """Get company names for a specific ticker"""
+        mapping = self.get_ticker_mapping()
+        return mapping.get(ticker, [ticker.replace(".NS", "").replace(".BO", "")])
+
+    def search_ticker_by_name(self, company_name):
+        """Reverse lookup: find ticker by company name"""
+        mapping = self.get_ticker_mapping()
+        company_name_lower = company_name.lower()
+
+        for ticker, names in mapping.items():
+            for name in names:
+                if company_name_lower in name.lower() or name.lower() in company_name_lower:
+                    return ticker
+        return None
+
 
 # Custom Grok LLM Integration
 class GrokLLM(LLM):
@@ -1257,6 +1663,11 @@ class Stock:
 
     def __init__(self, reddit_client_id=None, reddit_client_secret=None, reddit_user_agent=None):
         self.sentiment_analyzer = SentimentIntensityAnalyzer()
+
+        # Initialize dynamic ticker mapper
+        self.ticker_mapper = DynamicTickerMapper()
+        logger.info("Dynamic ticker mapper initialized")
+
         if reddit_client_id and reddit_client_secret and reddit_user_agent:
             self.reddit = praw.Reddit(
                 client_id=reddit_client_id,
@@ -1272,6 +1683,25 @@ class Stock:
         self.google_news = GNews()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         warnings.filterwarnings('ignore')
+
+    def get_company_names(self, ticker):
+        """Get company names for news search using dynamic mapping"""
+        return self.ticker_mapper.get_company_names(ticker)
+
+    def build_search_query(self, ticker):
+        """Build search query using dynamic ticker mapping"""
+        company_names = self.get_company_names(ticker)
+        if not company_names:
+            return ticker.replace(".NS", "").replace(".BO", "")
+
+        # Create OR query with quoted names (limit to top 3 to avoid overly long queries)
+        query_parts = [f'"{name}"' for name in company_names[:3]]
+        return " OR ".join(query_parts)
+
+    def update_ticker_mapping(self):
+        """Manually trigger ticker mapping update"""
+        self.ticker_mapper.get_ticker_mapping(force_update=True)
+        logger.info("Ticker mapping updated successfully")
 
     def fetch_exchange_rates(self):
         """Fetch real-time exchange rates for INR, EUR, BTC, ETH"""
@@ -1351,21 +1781,35 @@ class Stock:
 
     def newsapi_sentiment(self, ticker):
         try:
-            url = f"https://newsapi.org/v2/everything?q={ticker}&apiKey={self.NEWSAPI_KEY}"
+            # Use dynamic search query instead of raw ticker
+            search_query = self.build_search_query(ticker)
+            logger.info(f"NewsAPI search query for {ticker}: {search_query}")
+
+            url = f"https://newsapi.org/v2/everything?q={quote(search_query)}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
             response = requests.get(url)
             response.raise_for_status()
             data = response.json()
+
             sentiments = {"positive": 0, "negative": 0, "neutral": 0}
+            total_articles = data.get("totalResults", 0)
+
+            if total_articles == 0:
+                logger.warning(f"No articles found for ticker {ticker}. Response: {data}")
+                return sentiments
+
+            logger.info(f"Found {total_articles} articles for {ticker}")
+
             if "articles" in data:
                 for article in data["articles"][:10]:
                     description = article.get("description", "") or article.get("content", "")[:200]
-                    sentiment = self.sentiment_analyzer.polarity_scores(description)
-                    if sentiment["compound"] > 0.1:
-                        sentiments["positive"] += 1
-                    elif sentiment["compound"] < -0.1:
-                        sentiments["negative"] += 1
-                    else:
-                        sentiments["neutral"] += 1
+                    if description:
+                        sentiment = self.sentiment_analyzer.polarity_scores(description)
+                        if sentiment["compound"] > 0.1:
+                            sentiments["positive"] += 1
+                        elif sentiment["compound"] < -0.1:
+                            sentiments["negative"] += 1
+                        else:
+                            sentiments["neutral"] += 1
             return sentiments
         except Exception as e:
             logger.error(f"Error fetching NewsAPI sentiment: {e}")
@@ -1379,16 +1823,17 @@ class Stock:
 
     def gnews_sentiment(self, ticker):
         try:
-            # Remove .NS suffix from ticker
-            query = ticker.replace(".NS", "")
-            query = quote(query)  # Encode query for URL
+            # Use dynamic search query instead of raw ticker
+            search_query = self.build_search_query(ticker)
+            query = quote(search_query)  # Encode query for URL
             url = f"https://gnews.io/api/v4/search?q={query}&lang=en&country=in&token={self.GNEWS_API_KEY}"
+            logger.info(f"GNews search query for {ticker}: {search_query}")
             logger.debug(f"Requesting GNews API: {url}")
-            
+
             response = self._make_request(url)
             data = response.json()
             logger.debug(f"Response status: {response.status_code}, content: {response.text[:200]}")
-            
+
             sentiments = {"positive": 0, "negative": 0, "neutral": 0}
             if not data or "articles" not in data or not data["articles"]:
                 logger.warning(f"No articles found for ticker {ticker}. Response: {response.text[:200]}")
@@ -1433,17 +1878,29 @@ class Stock:
 
     def google_news_sentiment(self, ticker):
         try:
-            news = self.google_news.get_news(ticker)
+            # Use dynamic search query instead of raw ticker
+            search_query = self.build_search_query(ticker)
+            logger.info(f"Google News search query for {ticker}: {search_query}")
+
+            news = self.google_news.get_news(search_query)
             sentiments = {"positive": 0, "negative": 0, "neutral": 0}
+
+            if not news:
+                logger.warning(f"No Google News articles found for ticker {ticker}")
+                return sentiments
+
+            logger.info(f"Found {len(news)} Google News articles for {ticker}")
+
             for article in news[:10]:
                 description = article.get("description", "")
-                sentiment = self.sentiment_analyzer.polarity_scores(description)
-                if sentiment["compound"] > 0.1:
-                    sentiments["positive"] += 1
-                elif sentiment["compound"] < -0.1:
-                    sentiments["negative"] += 1
-                else:
-                    sentiments["neutral"] += 1
+                if description:
+                    sentiment = self.sentiment_analyzer.polarity_scores(description)
+                    if sentiment["compound"] > 0.1:
+                        sentiments["positive"] += 1
+                    elif sentiment["compound"] < -0.1:
+                        sentiments["negative"] += 1
+                    else:
+                        sentiments["neutral"] += 1
             return sentiments
         except Exception as e:
             logger.error(f"Error fetching Google News sentiment: {e}")
