@@ -822,3 +822,413 @@ AssertionError
 2025-07-26 11:46:29,292 - INFO - Trading bot initialized on startup
 2025-07-26 11:46:29,293 - INFO - Trading bot is already stopped
 2025-07-26 11:46:29,293 - INFO - Trading bot stopped on shutdown
+2025-07-26 12:55:46,205 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 12:55:46,206 - INFO - Loaded 2 trades from trade log
+2025-07-26 12:55:46,252 - INFO - Loaded 24 stocks from cache
+2025-07-26 12:55:46,252 - INFO - Dynamic ticker mapper initialized
+2025-07-26 12:55:46,264 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 12:55:46,394 - INFO - Fyers API initialized successfully
+2025-07-26 12:55:46,394 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 12:55:46,395 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 12:55:46,395 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 12:55:46,395 - INFO - Trading bot initialized successfully
+2025-07-26 12:55:46,395 - INFO - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-26 12:55:46,395 - INFO - Web interface will be available at the above URL
+2025-07-26 12:55:46,395 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-26 12:55:46,499 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 12:55:46,500 - INFO - Loaded 2 trades from trade log
+2025-07-26 12:55:46,514 - INFO - Loaded 24 stocks from cache
+2025-07-26 12:55:46,515 - INFO - Dynamic ticker mapper initialized
+2025-07-26 12:55:46,516 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 12:55:46,517 - INFO - Fyers API initialized successfully
+2025-07-26 12:55:46,517 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 12:55:46,517 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 12:55:46,517 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 12:55:46,517 - INFO - Trading bot initialized successfully
+2025-07-26 12:55:46,517 - INFO - Trading bot initialized on startup
+2025-07-26 12:56:56,951 - ERROR - Ollama API timeout
+2025-07-26 13:08:42,555 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 13:08:42,556 - INFO - Loaded 2 trades from trade log
+2025-07-26 13:08:42,597 - INFO - Loaded 24 stocks from cache
+2025-07-26 13:08:42,597 - INFO - Dynamic ticker mapper initialized
+2025-07-26 13:08:42,613 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 13:08:42,619 - ERROR - Fyers API library not available. Install with: pip install fyers-apiv3
+2025-07-26 13:08:42,620 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 13:08:42,620 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 13:08:42,620 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 13:08:42,620 - INFO - Trading bot initialized successfully
+2025-07-26 13:08:42,620 - INFO - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-26 13:08:42,620 - INFO - Web interface will be available at the above URL
+2025-07-26 13:08:42,621 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-26 13:08:42,780 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 13:08:42,780 - INFO - Loaded 2 trades from trade log
+2025-07-26 13:08:42,792 - INFO - Loaded 24 stocks from cache
+2025-07-26 13:08:42,792 - INFO - Dynamic ticker mapper initialized
+2025-07-26 13:08:42,793 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 13:08:42,793 - ERROR - Fyers API library not available. Install with: pip install fyers-apiv3
+2025-07-26 13:08:42,793 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 13:08:42,793 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 13:08:42,794 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 13:08:42,794 - INFO - Trading bot initialized successfully
+2025-07-26 13:08:42,794 - INFO - Trading bot initialized on startup
+2025-07-26 13:12:52,677 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 13:12:52,678 - INFO - Loaded 2 trades from trade log
+2025-07-26 13:12:52,692 - INFO - Loaded 24 stocks from cache
+2025-07-26 13:12:52,692 - INFO - Dynamic ticker mapper initialized
+2025-07-26 13:12:52,695 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 13:12:52,697 - ERROR - Fyers API library not available. Install with: pip install fyers-apiv3
+2025-07-26 13:12:52,697 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 13:12:52,697 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 13:12:52,697 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 13:12:52,697 - INFO - Trading bot initialized successfully
+2025-07-26 13:12:52,697 - INFO - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-26 13:12:52,697 - INFO - Web interface will be available at the above URL
+2025-07-26 13:12:52,698 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-26 13:12:52,746 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 13:12:52,747 - INFO - Loaded 2 trades from trade log
+2025-07-26 13:12:52,759 - INFO - Loaded 24 stocks from cache
+2025-07-26 13:12:52,759 - INFO - Dynamic ticker mapper initialized
+2025-07-26 13:12:52,760 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 13:12:52,760 - ERROR - Fyers API library not available. Install with: pip install fyers-apiv3
+2025-07-26 13:12:52,760 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 13:12:52,760 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 13:12:52,761 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 13:12:52,761 - INFO - Trading bot initialized successfully
+2025-07-26 13:12:52,761 - INFO - Trading bot initialized on startup
+2025-07-26 16:08:21,375 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:08:21,376 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:08:21,391 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:08:21,391 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:08:21,393 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:08:21,500 - INFO - Fyers API initialized successfully
+2025-07-26 16:08:21,500 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:08:21,500 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:08:21,500 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:08:21,500 - INFO - Trading bot initialized successfully
+2025-07-26 16:08:21,501 - INFO - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-26 16:08:21,501 - INFO - Web interface will be available at the above URL
+2025-07-26 16:08:21,501 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-26 16:08:21,536 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:08:21,537 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:08:21,551 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:08:21,551 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:08:21,552 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:08:21,553 - INFO - Fyers API initialized successfully
+2025-07-26 16:08:21,553 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:08:21,553 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:08:21,554 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:08:21,554 - INFO - Trading bot initialized successfully
+2025-07-26 16:08:21,554 - INFO - Trading bot initialized on startup
+2025-07-26 16:09:41,099 - ERROR - Ollama API timeout
+2025-07-26 16:16:30,205 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:16:30,205 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:16:30,221 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:16:30,221 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:16:30,238 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:16:30,241 - ERROR - Fyers API library not available. Install with: pip install fyers-apiv3
+2025-07-26 16:16:30,241 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:16:30,241 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:16:30,241 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:16:30,241 - INFO - Trading bot initialized successfully
+2025-07-26 16:16:30,241 - INFO - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-26 16:16:30,242 - INFO - Web interface will be available at the above URL
+2025-07-26 16:16:30,242 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-26 16:16:30,295 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:16:30,296 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:16:30,308 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:16:30,308 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:16:30,309 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:16:30,310 - ERROR - Fyers API library not available. Install with: pip install fyers-apiv3
+2025-07-26 16:16:30,310 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:16:30,310 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:16:30,310 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:16:30,310 - INFO - Trading bot initialized successfully
+2025-07-26 16:16:30,310 - INFO - Trading bot initialized on startup
+2025-07-26 16:16:30,311 - INFO - Trading bot is already stopped
+2025-07-26 16:16:30,311 - INFO - Trading bot stopped on shutdown
+2025-07-26 16:17:37,244 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:17:37,244 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:17:37,260 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:17:37,260 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:17:37,263 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:17:37,265 - ERROR - Fyers API library not available. Install with: pip install fyers-apiv3
+2025-07-26 16:17:37,265 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:17:37,265 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:17:37,266 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:17:37,266 - INFO - Trading bot initialized successfully
+2025-07-26 16:17:37,266 - INFO - Starting FastAPI web server on http://127.0.0.1:5001
+2025-07-26 16:17:37,266 - INFO - Web interface will be available at the above URL
+2025-07-26 16:17:37,266 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-26 16:17:37,321 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:17:37,322 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:17:37,339 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:17:37,339 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:17:37,340 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:17:37,340 - ERROR - Fyers API library not available. Install with: pip install fyers-apiv3
+2025-07-26 16:17:37,340 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:17:37,341 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:17:37,341 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:17:37,341 - INFO - Trading bot initialized successfully
+2025-07-26 16:17:37,341 - INFO - Trading bot initialized on startup
+2025-07-26 16:19:53,557 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:19:53,557 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:19:53,573 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:19:53,573 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:19:53,574 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:19:53,575 - ERROR - Fyers API library not available. Install with: pip install fyers-apiv3
+2025-07-26 16:19:53,575 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:19:53,575 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:19:53,575 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:19:53,575 - INFO - Trading bot initialized successfully
+2025-07-26 16:20:27,582 - ERROR - Fyers API library not available. Install with: pip install fyers-apiv3
+2025-07-26 16:21:16,253 - ERROR - Ollama API timeout
+2025-07-26 16:21:16,256 - ERROR - Fyers API library not available. Install with: pip install fyers-apiv3
+2025-07-26 16:22:01,641 - ERROR - Ollama API timeout
+2025-07-26 16:22:01,645 - ERROR - Fyers API library not available. Install with: pip install fyers-apiv3
+2025-07-26 16:22:46,732 - ERROR - Ollama API timeout
+2025-07-26 16:22:46,735 - ERROR - Fyers API library not available. Install with: pip install fyers-apiv3
+2025-07-26 16:23:57,412 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:23:57,413 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:23:57,428 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:23:57,429 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:23:57,457 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:23:57,579 - INFO - Fyers API initialized successfully
+2025-07-26 16:23:57,579 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:23:57,580 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:23:57,580 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:23:57,580 - INFO - Trading bot initialized successfully
+2025-07-26 16:23:57,580 - INFO - Starting FastAPI web server on http://127.0.0.1:5001
+2025-07-26 16:23:57,580 - INFO - Web interface will be available at the above URL
+2025-07-26 16:23:57,581 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-26 16:23:57,615 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:23:57,616 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:23:57,631 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:23:57,632 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:23:57,634 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:23:57,635 - INFO - Fyers API initialized successfully
+2025-07-26 16:23:57,635 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:23:57,635 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:23:57,635 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:23:57,636 - INFO - Trading bot initialized successfully
+2025-07-26 16:23:57,636 - INFO - Trading bot initialized on startup
+2025-07-26 16:26:36,178 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:26:36,178 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:26:36,191 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:26:36,192 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:26:36,194 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:26:36,309 - INFO - Fyers API initialized successfully
+2025-07-26 16:26:36,310 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:26:36,310 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:26:36,310 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:26:36,310 - INFO - Trading bot initialized successfully
+2025-07-26 16:26:36,310 - INFO - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-26 16:26:36,310 - INFO - Web interface will be available at the above URL
+2025-07-26 16:26:36,311 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-26 16:26:36,344 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:26:36,344 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:26:36,359 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:26:36,359 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:26:36,360 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:26:36,361 - INFO - Fyers API initialized successfully
+2025-07-26 16:26:36,362 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:26:36,362 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:26:36,362 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:26:36,362 - INFO - Trading bot initialized successfully
+2025-07-26 16:26:36,362 - INFO - Trading bot initialized on startup
+2025-07-26 16:27:26,031 - WARNING - Trading bot response timed out
+2025-07-26 16:27:34,870 - ERROR - Error analyzing query: Expecting ',' delimiter: line 3 column 22 (char 40)
+2025-07-26 16:28:05,508 - ERROR - Ollama API timeout
+2025-07-26 16:28:07,167 - WARNING - Trading bot response timed out
+2025-07-26 16:28:53,164 - ERROR - Ollama API timeout
+2025-07-26 16:30:09,890 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:30:09,890 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:30:09,904 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:30:09,904 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:30:09,918 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:30:09,920 - ERROR - Fyers API library not available. Install with: pip install fyers-apiv3
+2025-07-26 16:30:09,920 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:30:09,920 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:30:09,920 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:30:09,920 - INFO - Trading bot initialized successfully
+2025-07-26 16:30:09,921 - INFO - Starting FastAPI web server on http://127.0.0.1:5001
+2025-07-26 16:30:09,921 - INFO - Web interface will be available at the above URL
+2025-07-26 16:30:09,921 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-26 16:30:09,968 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:30:09,969 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:30:09,977 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:30:09,977 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:30:09,978 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:30:09,978 - ERROR - Fyers API library not available. Install with: pip install fyers-apiv3
+2025-07-26 16:30:09,979 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:30:09,979 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:30:09,979 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:30:09,979 - INFO - Trading bot initialized successfully
+2025-07-26 16:30:09,979 - INFO - Trading bot initialized on startup
+2025-07-26 16:42:37,774 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:42:37,774 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:42:37,787 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:42:37,788 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:42:37,789 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:42:37,904 - INFO - Fyers API initialized successfully
+2025-07-26 16:42:37,904 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:42:37,905 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:42:37,905 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:42:37,905 - INFO - Trading bot initialized successfully
+2025-07-26 16:42:37,905 - INFO - Starting FastAPI web server on http://127.0.0.1:5001
+2025-07-26 16:42:37,905 - INFO - Web interface will be available at the above URL
+2025-07-26 16:42:37,905 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-26 16:42:37,950 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:42:37,951 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:42:37,963 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:42:37,963 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:42:37,964 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:42:37,965 - INFO - Fyers API initialized successfully
+2025-07-26 16:42:37,965 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:42:37,965 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:42:37,965 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:42:37,965 - INFO - Trading bot initialized successfully
+2025-07-26 16:42:37,965 - INFO - Trading bot initialized on startup
+2025-07-26 16:43:57,201 - INFO - Fyers API initialized successfully
+2025-07-26 16:43:57,208 - INFO - Advanced Market Agent initialized successfully
+2025-07-26 16:43:57,208 - INFO - Advanced Market Agent initialized for web chat
+2025-07-26 16:45:56,083 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:45:56,083 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:45:56,096 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:45:56,096 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:45:56,098 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:45:56,533 - INFO - Fyers API initialized successfully
+2025-07-26 16:45:56,534 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:45:56,534 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:45:56,534 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:45:56,534 - INFO - Trading bot initialized successfully
+2025-07-26 16:45:56,534 - INFO - Starting FastAPI web server on http://127.0.0.1:5001
+2025-07-26 16:45:56,534 - INFO - Web interface will be available at the above URL
+2025-07-26 16:45:56,534 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-26 16:45:56,588 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:45:56,589 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:45:56,602 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:45:56,602 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:45:56,603 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:45:56,604 - INFO - Fyers API initialized successfully
+2025-07-26 16:45:56,604 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:45:56,604 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:45:56,604 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:45:56,605 - INFO - Trading bot initialized successfully
+2025-07-26 16:45:56,605 - INFO - Trading bot initialized on startup
+2025-07-26 16:47:12,496 - INFO - Fyers API initialized successfully
+2025-07-26 16:47:12,496 - INFO - Dynamic Market Expert initialized successfully
+2025-07-26 16:47:12,496 - INFO - Dynamic Market Expert initialized for web chat
+2025-07-26 16:47:27,499 - WARNING - Dynamic Market Expert response timed out
+2025-07-26 16:47:27,500 - INFO - Fyers API initialized successfully
+2025-07-26 16:47:42,988 - ERROR - Ollama API timeout
+2025-07-26 16:47:58,068 - ERROR - Ollama API timeout
+2025-07-26 16:48:13,083 - WARNING - Dynamic Market Expert response timed out
+2025-07-26 16:48:13,084 - INFO - Fyers API initialized successfully
+2025-07-26 16:48:28,479 - ERROR - Ollama API timeout
+2025-07-26 16:48:43,501 - ERROR - Ollama API timeout
+2025-07-26 16:48:58,517 - WARNING - Dynamic Market Expert response timed out
+2025-07-26 16:48:58,518 - INFO - Fyers API initialized successfully
+2025-07-26 16:49:13,930 - ERROR - Ollama API timeout
+2025-07-26 16:49:29,096 - ERROR - Ollama API timeout
+2025-07-26 16:49:44,104 - WARNING - Dynamic Market Expert response timed out
+2025-07-26 16:49:44,105 - INFO - Fyers API initialized successfully
+2025-07-26 16:49:59,718 - ERROR - Ollama API timeout
+2025-07-26 16:50:14,703 - ERROR - Ollama API timeout
+2025-07-26 16:50:29,714 - WARNING - Dynamic Market Expert response timed out
+2025-07-26 16:50:29,715 - INFO - Fyers API initialized successfully
+2025-07-26 16:50:49,485 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:50:49,485 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:50:49,501 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:50:49,516 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:50:49,519 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:50:49,638 - INFO - Fyers API initialized successfully
+2025-07-26 16:50:49,638 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:50:49,638 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:50:49,638 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:50:49,639 - INFO - Trading bot initialized successfully
+2025-07-26 16:50:49,639 - INFO - Starting FastAPI web server on http://127.0.0.1:5001
+2025-07-26 16:50:49,639 - INFO - Web interface will be available at the above URL
+2025-07-26 16:50:49,639 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-26 16:50:49,670 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:50:49,671 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:50:49,678 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:50:49,678 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:50:49,679 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:50:49,680 - INFO - Fyers API initialized successfully
+2025-07-26 16:50:49,680 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:50:49,680 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:50:49,680 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:50:49,680 - INFO - Trading bot initialized successfully
+2025-07-26 16:50:49,680 - INFO - Trading bot initialized on startup
+2025-07-26 16:52:01,495 - INFO - Fyers API initialized successfully
+2025-07-26 16:52:01,495 - INFO - Dynamic Market Expert initialized successfully
+2025-07-26 16:52:01,495 - INFO - Dynamic Market Expert initialized for web chat
+2025-07-26 16:56:18,802 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:56:18,802 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:56:18,816 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:56:18,816 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:56:18,819 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:56:18,964 - INFO - Fyers API initialized successfully
+2025-07-26 16:56:18,965 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:56:18,965 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:56:18,965 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:56:18,965 - INFO - Trading bot initialized successfully
+2025-07-26 16:56:18,965 - INFO - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-26 16:56:18,965 - INFO - Web interface will be available at the above URL
+2025-07-26 16:56:18,965 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-26 16:56:19,014 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 16:56:19,015 - INFO - Loaded 2 trades from trade log
+2025-07-26 16:56:19,028 - INFO - Loaded 24 stocks from cache
+2025-07-26 16:56:19,028 - INFO - Dynamic ticker mapper initialized
+2025-07-26 16:56:19,029 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 16:56:19,030 - INFO - Fyers API initialized successfully
+2025-07-26 16:56:19,030 - INFO - Advanced AI Assistant initialized successfully
+2025-07-26 16:56:19,030 - INFO - Advanced AI Assistant with Fyers integration initialized successfully
+2025-07-26 16:56:19,030 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 16:56:19,031 - INFO - Trading bot initialized successfully
+2025-07-26 16:56:19,031 - INFO - Trading bot initialized on startup
+2025-07-26 16:57:57,844 - INFO - Fyers API initialized successfully
+2025-07-26 16:57:57,844 - INFO - Dynamic Market Expert initialized successfully
+2025-07-26 16:57:57,844 - INFO - Dynamic Market Expert initialized for web chat
+2025-07-26 17:13:40,913 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 17:13:40,914 - INFO - Loaded 2 trades from trade log
+2025-07-26 17:13:40,930 - INFO - Loaded 24 stocks from cache
+2025-07-26 17:13:40,930 - INFO - Dynamic ticker mapper initialized
+2025-07-26 17:13:40,933 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 17:13:40,933 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 17:13:40,934 - INFO - Trading bot initialized successfully
+2025-07-26 17:13:40,934 - INFO - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-26 17:13:40,934 - INFO - Web interface will be available at the above URL
+2025-07-26 17:13:40,934 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-26 17:13:40,971 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 17:13:40,972 - INFO - Loaded 2 trades from trade log
+2025-07-26 17:13:40,986 - INFO - Loaded 24 stocks from cache
+2025-07-26 17:13:40,986 - INFO - Dynamic ticker mapper initialized
+2025-07-26 17:13:40,987 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 17:13:40,987 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 17:13:40,987 - INFO - Trading bot initialized successfully
+2025-07-26 17:13:40,987 - INFO - Trading bot initialized on startup
+2025-07-26 17:14:41,555 - INFO - Fyers API initialized successfully
+2025-07-26 17:14:41,556 - INFO - Dynamic Market Expert initialized successfully
+2025-07-26 17:14:41,556 - INFO - Dynamic Market Expert initialized for web chat
+2025-07-26 17:37:12,817 - INFO - Trading bot is already stopped
+2025-07-26 17:37:12,817 - INFO - Trading bot stopped on shutdown
+2025-07-26 17:37:12,818 - INFO - Web server stopped by user
+2025-07-26 17:40:41,516 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 17:40:41,517 - INFO - Loaded 2 trades from trade log
+2025-07-26 17:40:41,532 - INFO - Loaded 24 stocks from cache
+2025-07-26 17:40:41,533 - INFO - Dynamic ticker mapper initialized
+2025-07-26 17:40:41,535 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 17:40:41,535 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 17:40:41,535 - INFO - Trading bot initialized successfully
+2025-07-26 17:40:41,536 - INFO - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-26 17:40:41,536 - INFO - Web interface will be available at the above URL
+2025-07-26 17:40:41,536 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-26 17:40:41,568 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-26 17:40:41,569 - INFO - Loaded 2 trades from trade log
+2025-07-26 17:40:41,583 - INFO - Loaded 24 stocks from cache
+2025-07-26 17:40:41,583 - INFO - Dynamic ticker mapper initialized
+2025-07-26 17:40:41,584 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-26 17:40:41,585 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-26 17:40:41,585 - INFO - Trading bot initialized successfully
+2025-07-26 17:40:41,585 - INFO - Trading bot initialized on startup

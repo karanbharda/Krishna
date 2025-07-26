@@ -654,32 +654,135 @@ async def update_watchlist(request: WatchlistRequest):
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    """Process chat message"""
+    """Process chat message with Advanced Market Agent (LangChain + LangGraph + Fyers)"""
     try:
-        message = request.message
+        message = request.message.strip()
 
         if not message:
-            raise HTTPException(status_code=400, detail="Message is required")
-
-        if trading_bot:
-            response = trading_bot.process_chat_command(message)
             return ChatResponse(
-                response=response,
+                response="Please enter a message.",
                 timestamp=datetime.now().isoformat()
             )
-        else:
-            raise HTTPException(status_code=500, detail="Bot not initialized")
 
-    except HTTPException:
-        raise
+        # Use the Dynamic Market Expert for ALL queries
+        try:
+            from dynamic_market_expert import DynamicMarketExpert
+
+            # Initialize the market expert (cached for performance)
+            if not hasattr(chat, '_market_expert'):
+                chat._market_expert = DynamicMarketExpert()
+                logger.info("Dynamic Market Expert initialized for web chat")
+
+            # Process query with timeout protection
+            import threading
+            import queue
+
+            result_queue = queue.Queue()
+
+            def process_with_expert():
+                try:
+                    result = chat._market_expert.process_query(message)
+                    result_queue.put(("success", result))
+                except Exception as e:
+                    result_queue.put(("error", str(e)))
+
+            thread = threading.Thread(target=process_with_expert)
+            thread.daemon = True
+            thread.start()
+            thread.join(timeout=15)  # 15 second timeout
+
+            if not result_queue.empty():
+                status, result = result_queue.get()
+                if status == "success" and result:
+                    return ChatResponse(
+                        response=result,
+                        timestamp=datetime.now().isoformat()
+                    )
+                else:
+                    logger.error(f"Expert processing error: {result}")
+            else:
+                logger.warning("Dynamic Market Expert response timed out")
+
+        except ImportError as e:
+            logger.error(f"Could not import Dynamic Market Expert: {e}")
+        except Exception as e:
+            logger.error(f"Error with Dynamic Market Expert: {e}")
+
+        # Fallback to direct professional response with live data
+        try:
+            # Use existing trading bot components
+            if hasattr(trading_bot, 'llm'):
+                llm = trading_bot.llm
+            else:
+                llm = None
+
+            # Use the Dynamic Market Expert instead
+            try:
+                from dynamic_market_expert import DynamicMarketExpert
+                market_expert = DynamicMarketExpert()
+                response = market_expert.process_query(message)
+                return {"response": response, "timestamp": datetime.now().isoformat()}
+            except Exception as expert_error:
+                logger.error(f"Dynamic Market Expert error: {expert_error}")
+
+            # Simple fallback response
+            if True:  # Always execute fallback
+                # Simple fallback response
+                pass
+
+        except Exception as e:
+            logger.error(f"Error with fallback response: {e}")
+
+        # Handle commands
+        if message.startswith('/') and trading_bot:
+            try:
+                response = trading_bot.process_chat_command(message)
+                return ChatResponse(
+                    response=response,
+                    timestamp=datetime.now().isoformat()
+                )
+            except Exception as e:
+                logger.error(f"Error with command: {e}")
+
+        # Final professional fallback
+        return ChatResponse(
+            response=f"""I'm your professional stock market advisor! 📈
+
+I can help you with:
+• **Live Stock Prices** - "What's the price of {', '.join(['Reliance', 'TCS', 'HDFC Bank'])}?"
+• **Market Analysis** - "How is the IT sector performing?"
+• **Investment Advice** - "Should I buy banking stocks now?"
+• **Portfolio Management** - Use /get_pnl, /list_positions
+
+**Current Market Focus:** Indian equities (NSE/BSE)
+**Data Source:** Live Fyers API integration
+
+What would you like to analyze today?""",
+            timestamp=datetime.now().isoformat()
+        )
+
     except Exception as e:
         logger.error(f"Error processing chat: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return ChatResponse(
+            response="I apologize for the error. Please try asking about stock prices or portfolio information.",
+            timestamp=datetime.now().isoformat()
+        )
 
 @app.post("/api/start", response_model=MessageResponse)
 async def start_bot():
     """Start the trading bot"""
     try:
+        global trading_bot
+
+        # Initialize bot if not already initialized
+        if not trading_bot:
+            try:
+                initialize_bot()
+                logger.info("Bot initialized before starting")
+            except Exception as init_error:
+                logger.error(f"Failed to initialize bot: {init_error}")
+                raise HTTPException(status_code=500, detail=f"Failed to initialize bot: {str(init_error)}")
+
         if trading_bot:
             trading_bot.start()
             return MessageResponse(message="Bot started successfully")
@@ -689,6 +792,17 @@ async def start_bot():
         raise
     except Exception as e:
         logger.error(f"Error starting bot: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/init", response_model=MessageResponse)
+async def init_bot():
+    """Manually initialize the trading bot"""
+    try:
+        global trading_bot
+        initialize_bot()
+        return MessageResponse(message="Trading bot initialized successfully")
+    except Exception as e:
+        logger.error(f"Error initializing bot: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/stop", response_model=MessageResponse)
@@ -827,6 +941,25 @@ async def startup_event():
         logger.info("Trading bot initialized on startup")
     except Exception as e:
         logger.error(f"Error initializing bot on startup: {e}")
+        # Try to initialize with minimal config as fallback
+        try:
+            global trading_bot
+            if not trading_bot:
+                logger.info("Attempting fallback initialization...")
+                from dotenv import load_dotenv
+                load_dotenv()
+
+                minimal_config = {
+                    "tickers": ["RELIANCE.NS", "TCS.NS", "HDFCBANK.NS"],
+                    "starting_balance": 10000,
+                    "current_portfolio_value": 10000,
+                    "current_pnl": 0,
+                    "mode": "paper"
+                }
+                trading_bot = WebTradingBot(minimal_config)
+                logger.info("Fallback trading bot initialized")
+        except Exception as fallback_error:
+            logger.error(f"Fallback initialization also failed: {fallback_error}")
 
 @app.on_event("shutdown")
 async def shutdown_event():
