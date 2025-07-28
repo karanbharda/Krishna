@@ -119,6 +119,19 @@ export const apiService = {
     }
   },
 
+  async bulkUpdateWatchlist(tickers, action = 'ADD') {
+    try {
+      const response = await api.post('/watchlist/bulk', {
+        tickers: tickers,
+        action: action
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error bulk updating watchlist:', error);
+      throw error;
+    }
+  },
+
   // Chat/Commands
   async sendChatMessage(message) {
     try {

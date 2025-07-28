@@ -71,8 +71,19 @@ class WatchlistResponse(BaseModel):
     message: str
     tickers: List[str]
 
+class BulkWatchlistRequest(BaseModel):
+    tickers: List[str]
+    action: str = "ADD"  # ADD or REMOVE
+
+class BulkWatchlistResponse(BaseModel):
+    message: str
+    successful_tickers: List[str]
+    failed_tickers: List[str]
+    total_processed: int
+
 class SettingsRequest(BaseModel):
     mode: Optional[str] = None
+    riskLevel: Optional[str] = None
     stop_loss_pct: Optional[float] = None
     max_capital_per_trade: Optional[float] = None
     max_trade_limit: Optional[int] = None
@@ -652,6 +663,93 @@ async def update_watchlist(request: WatchlistRequest):
         logger.error(f"Error updating watchlist: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/watchlist/bulk", response_model=BulkWatchlistResponse)
+async def bulk_update_watchlist(request: BulkWatchlistRequest):
+    """Add or remove multiple tickers from watchlist"""
+    try:
+        if not trading_bot:
+            raise HTTPException(status_code=503, detail="Trading bot not initialized")
+
+        action = request.action.upper()
+        if action not in ["ADD", "REMOVE"]:
+            raise HTTPException(status_code=400, detail="Action must be ADD or REMOVE")
+
+        successful_tickers = []
+        failed_tickers = []
+
+        for ticker in request.tickers:
+            try:
+                ticker = ticker.strip().upper()
+
+                # Validate ticker format
+                if not ticker:
+                    failed_tickers.append(f"{ticker}: Empty ticker")
+                    continue
+
+                # Add .NS suffix if not present for Indian stocks
+                if not ticker.endswith(('.NS', '.BO')):
+                    ticker += '.NS'
+
+                # Validate ticker format
+                if not ticker.replace('.', '').replace('-', '').replace('&', '').isalnum():
+                    failed_tickers.append(f"{ticker}: Invalid format")
+                    continue
+
+                if action == "ADD":
+                    if ticker in trading_bot.config["tickers"]:
+                        failed_tickers.append(f"{ticker}: Already in watchlist")
+                        continue
+
+                    # Add ticker to config
+                    trading_bot.config["tickers"].append(ticker)
+                    successful_tickers.append(ticker)
+                    logger.info(f"Added ticker {ticker} to watchlist via bulk upload")
+
+                elif action == "REMOVE":
+                    if ticker not in trading_bot.config["tickers"]:
+                        failed_tickers.append(f"{ticker}: Not in watchlist")
+                        continue
+
+                    # Remove ticker from config
+                    trading_bot.config["tickers"].remove(ticker)
+                    successful_tickers.append(ticker)
+                    logger.info(f"Removed ticker {ticker} from watchlist via bulk upload")
+
+            except Exception as e:
+                failed_tickers.append(f"{ticker}: {str(e)}")
+                logger.error(f"Error processing ticker {ticker}: {e}")
+
+        # Update data feed with new tickers
+        if successful_tickers and action == "ADD":
+            try:
+                trading_bot.data_feed = DataFeed(trading_bot.config["tickers"])
+                logger.info(f"Updated data feed with {len(successful_tickers)} new tickers")
+            except Exception as e:
+                logger.error(f"Error updating data feed: {e}")
+
+        # Prepare response message
+        if successful_tickers and not failed_tickers:
+            message = f"Successfully {action.lower()}ed {len(successful_tickers)} ticker(s)"
+        elif successful_tickers and failed_tickers:
+            message = f"Processed {len(successful_tickers)} ticker(s) successfully, {len(failed_tickers)} failed"
+        elif failed_tickers and not successful_tickers:
+            message = f"Failed to process all {len(failed_tickers)} ticker(s)"
+        else:
+            message = "No tickers processed"
+
+        return BulkWatchlistResponse(
+            message=message,
+            successful_tickers=successful_tickers,
+            failed_tickers=failed_tickers,
+            total_processed=len(request.tickers)
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in bulk watchlist update: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """Process chat message with Advanced Market Agent (LangChain + LangGraph + Fyers)"""
@@ -827,6 +925,7 @@ async def get_settings():
         if trading_bot:
             return {
                 "mode": trading_bot.config.get("mode", "paper"),
+                "riskLevel": trading_bot.config.get("riskLevel", "MEDIUM"),
                 "stop_loss_pct": trading_bot.config.get("stop_loss_pct", 0.05),
                 "max_capital_per_trade": trading_bot.config.get("max_capital_per_trade", 0.25),
                 "max_trade_limit": trading_bot.config.get("max_trade_limit", 10)
@@ -847,6 +946,8 @@ async def update_settings(request: SettingsRequest):
             # Update configuration
             if request.mode is not None:
                 trading_bot.config['mode'] = request.mode
+            if request.riskLevel is not None:
+                trading_bot.config['riskLevel'] = request.riskLevel
             if request.stop_loss_pct is not None:
                 trading_bot.config['stop_loss_pct'] = request.stop_loss_pct
             if request.max_capital_per_trade is not None:

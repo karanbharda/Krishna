@@ -105,33 +105,68 @@ class DynamicTickerMapper:
                 "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20MICROCAP%20250"
             ]
 
+            # Enhanced headers to mimic real browser behavior
             headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'application/json, text/plain, */*',
                 'Accept-Language': 'en-US,en;q=0.9',
                 'Accept-Encoding': 'gzip, deflate, br',
                 'Connection': 'keep-alive',
-                'Upgrade-Insecure-Requests': '1',
+                'Referer': 'https://www.nseindia.com/',
+                'Sec-Fetch-Dest': 'empty',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Site': 'same-origin',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
             }
 
             session = requests.Session()
+            session.headers.update(headers)
 
-            # First establish session by visiting main page
+            # Enhanced session establishment with proper cookie handling
             try:
-                session.get("https://www.nseindia.com", headers=headers, timeout=10)
-                time.sleep(1)
-            except:
-                pass
+                logger.info("Establishing NSE session...")
+                # Visit main page to get cookies
+                main_response = session.get("https://www.nseindia.com", timeout=15)
+                logger.info(f"Main page response: {main_response.status_code}")
+
+                # Visit market data page to establish proper session
+                market_response = session.get("https://www.nseindia.com/market-data", timeout=15)
+                logger.info(f"Market data page response: {market_response.status_code}")
+
+                time.sleep(2)  # Allow session to stabilize
+            except Exception as e:
+                logger.warning(f"Session establishment failed: {e}")
 
             for endpoint in nse_endpoints:
                 try:
                     logger.info(f"Fetching data from: {endpoint}")
-                    response = session.get(endpoint, headers=headers, timeout=15)
+                    response = session.get(endpoint, timeout=20)
+
+                    logger.info(f"Response status: {response.status_code}")
+                    logger.info(f"Response headers: {dict(response.headers)}")
 
                     if response.status_code == 200:
-                        data = response.json()
+                        # Check if response is actually JSON
+                        content_type = response.headers.get('content-type', '')
+                        if 'application/json' not in content_type:
+                            logger.warning(f"Unexpected content type: {content_type}")
+                            logger.warning(f"Response text preview: {response.text[:200]}")
+                            continue
 
-                        for stock in data.get('data', []):
+                        try:
+                            data = response.json()
+                        except ValueError as e:
+                            logger.warning(f"JSON parsing failed: {e}")
+                            logger.warning(f"Response text preview: {response.text[:200]}")
+                            continue
+
+                        stocks_data = data.get('data', [])
+                        if not stocks_data:
+                            logger.warning(f"No data found in response for {endpoint}")
+                            continue
+
+                        for stock in stocks_data:
                             symbol = stock.get('symbol')
                             company_name = stock.get('companyName', '')
 
@@ -140,15 +175,42 @@ class DynamicTickerMapper:
                                 variations = self.create_name_variations(company_name)
                                 stock_mapping[ticker] = variations
 
-                        logger.info(f"Fetched {len(data.get('data', []))} stocks from this endpoint")
+                        logger.info(f"Fetched {len(stocks_data)} stocks from this endpoint")
+                    elif response.status_code == 401:
+                        logger.warning(f"Authentication required for {endpoint}. Trying alternative approach...")
+                        # Try with additional headers for authentication
+                        auth_headers = headers.copy()
+                        auth_headers.update({
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Origin': 'https://www.nseindia.com'
+                        })
+
+                        auth_response = session.get(endpoint, headers=auth_headers, timeout=20)
+                        if auth_response.status_code == 200:
+                            try:
+                                data = auth_response.json()
+                                stocks_data = data.get('data', [])
+                                for stock in stocks_data:
+                                    symbol = stock.get('symbol')
+                                    company_name = stock.get('companyName', '')
+                                    if symbol and company_name:
+                                        ticker = f"{symbol}.NS"
+                                        variations = self.create_name_variations(company_name)
+                                        stock_mapping[ticker] = variations
+                                logger.info(f"Successfully fetched {len(stocks_data)} stocks with auth headers")
+                            except ValueError:
+                                logger.warning(f"Auth attempt also failed for {endpoint}")
+                        else:
+                            logger.warning(f"Auth attempt failed with status: {auth_response.status_code}")
                     else:
                         logger.warning(f"Failed to fetch from {endpoint}: Status {response.status_code}")
+                        logger.warning(f"Response text preview: {response.text[:200]}")
 
                 except Exception as e:
                     logger.warning(f"Error fetching from {endpoint}: {e}")
                     continue
 
-                time.sleep(2)  # Be respectful to NSE servers
+                time.sleep(3)  # Increased delay to be more respectful
 
             logger.info(f"Total stocks fetched from NSE: {len(stock_mapping)}")
             return stock_mapping
@@ -158,36 +220,111 @@ class DynamicTickerMapper:
             return {}
 
     def fetch_bse_stock_list(self):
-        """Fetch BSE stocks using alternative methods"""
+        """Fetch BSE stocks using multiple alternative methods"""
         try:
             stock_mapping = {}
 
-            # Try to get BSE data from alternative sources
-            # Method 1: Use a known BSE stock list endpoint
+            # Method 1: Try BSE official API with enhanced headers
             try:
                 url = "https://api.bseindia.com/BseIndiaAPI/api/ListofScripData/w"
                 headers = {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                    'Accept': 'application/json'
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'application/json, text/plain, */*',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Connection': 'keep-alive',
+                    'Referer': 'https://www.bseindia.com/',
+                    'Origin': 'https://www.bseindia.com',
+                    'Sec-Fetch-Dest': 'empty',
+                    'Sec-Fetch-Mode': 'cors',
+                    'Sec-Fetch-Site': 'same-site'
                 }
 
-                response = requests.get(url, headers=headers, timeout=10)
+                logger.info(f"Trying BSE API: {url}")
+                response = requests.get(url, headers=headers, timeout=15)
+                logger.info(f"BSE API response status: {response.status_code}")
+                logger.info(f"BSE API response headers: {dict(response.headers)}")
+
                 if response.status_code == 200:
-                    data = response.json()
+                    content_type = response.headers.get('content-type', '')
+                    logger.info(f"BSE API content type: {content_type}")
 
-                    for stock in data.get('Table', []):
-                        scrip_cd = stock.get('Scrip_cd')
-                        scrip_name = stock.get('Scrip_Name', '')
+                    # Check if response is JSON
+                    if 'application/json' in content_type or response.text.strip().startswith('{'):
+                        try:
+                            data = response.json()
+                            logger.info(f"BSE API JSON parsed successfully. Keys: {list(data.keys()) if isinstance(data, dict) else 'Not a dict'}")
 
-                        if scrip_cd and scrip_name:
-                            ticker = f"{scrip_cd}.BO"
-                            variations = self.create_name_variations(scrip_name)
-                            stock_mapping[ticker] = variations
+                            # Try different possible data structures
+                            stocks_data = []
+                            if isinstance(data, dict):
+                                stocks_data = data.get('Table', data.get('data', data.get('stocks', [])))
+                            elif isinstance(data, list):
+                                stocks_data = data
 
-                    logger.info(f"Fetched {len(stock_mapping)} stocks from BSE API")
+                            logger.info(f"Found {len(stocks_data)} stocks in BSE response")
+
+                            for stock in stocks_data:
+                                if isinstance(stock, dict):
+                                    # Try different field names
+                                    scrip_cd = stock.get('Scrip_cd') or stock.get('scrip_cd') or stock.get('code') or stock.get('symbol')
+                                    scrip_name = (stock.get('Scrip_Name') or stock.get('scrip_name') or
+                                                stock.get('name') or stock.get('company_name') or '')
+
+                                    if scrip_cd and scrip_name:
+                                        ticker = f"{scrip_cd}.BO"
+                                        variations = self.create_name_variations(scrip_name)
+                                        stock_mapping[ticker] = variations
+
+                            logger.info(f"Successfully processed {len(stock_mapping)} stocks from BSE API")
+
+                        except ValueError as e:
+                            logger.warning(f"BSE API JSON parsing failed: {e}")
+                            logger.warning(f"Response text preview: {response.text[:300]}")
+                    else:
+                        logger.warning(f"BSE API returned non-JSON content: {response.text[:200]}")
+                else:
+                    logger.warning(f"BSE API failed with status {response.status_code}: {response.text[:200]}")
 
             except Exception as e:
-                logger.warning(f"BSE API method failed: {e}")
+                logger.warning(f"BSE API method 1 failed: {e}")
+
+            # Method 2: Try alternative BSE endpoint if first method failed
+            if len(stock_mapping) == 0:
+                try:
+                    alt_url = "https://www.bseindia.com/corporates/List_Scrips.html"
+                    logger.info(f"Trying alternative BSE approach: {alt_url}")
+
+                    headers = {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                    }
+
+                    response = requests.get(alt_url, headers=headers, timeout=15)
+                    if response.status_code == 200:
+                        logger.info("Alternative BSE endpoint accessible, but HTML parsing not implemented")
+                        # Note: HTML parsing would require BeautifulSoup, keeping simple for now
+
+                except Exception as e:
+                    logger.warning(f"BSE alternative method failed: {e}")
+
+            # Method 3: Use hardcoded BSE stocks if APIs fail
+            if len(stock_mapping) == 0:
+                logger.info("Using fallback BSE stocks")
+                fallback_bse_stocks = {
+                    "500325.BO": ["Reliance Industries", "Reliance", "RIL"],
+                    "500209.BO": ["Infosys", "Infosys Technologies", "INFY"],
+                    "500180.BO": ["HDFC Bank", "HDFC", "Housing Development Finance Corporation"],
+                    "500034.BO": ["State Bank of India", "SBI", "State Bank"],
+                    "500696.BO": ["Hindustan Unilever", "HUL", "Unilever"],
+                    "500875.BO": ["ITC", "Indian Tobacco Company"],
+                    "532540.BO": ["Tata Consultancy Services", "TCS", "Tata Consultancy"],
+                    "500010.BO": ["HDFC", "Housing Development Finance Corporation"],
+                    "500112.BO": ["State Bank of India", "SBI"],
+                    "500820.BO": ["Asian Paints", "Asian Paint"]
+                }
+                stock_mapping.update(fallback_bse_stocks)
+                logger.info(f"Added {len(fallback_bse_stocks)} fallback BSE stocks")
 
             return stock_mapping
 
@@ -351,17 +488,61 @@ class DynamicTickerMapper:
 
         return abbreviations
 
+    def test_api_connectivity(self):
+        """Test connectivity to NSE and BSE APIs"""
+        results = {
+            'nse_main': False,
+            'nse_market_data': False,
+            'bse_api': False,
+            'errors': []
+        }
+
+        # Test NSE main page
+        try:
+            response = requests.get("https://www.nseindia.com", timeout=10)
+            results['nse_main'] = response.status_code == 200
+            if not results['nse_main']:
+                results['errors'].append(f"NSE main page returned {response.status_code}")
+        except Exception as e:
+            results['errors'].append(f"NSE main page error: {e}")
+
+        # Test NSE market data page
+        try:
+            response = requests.get("https://www.nseindia.com/market-data", timeout=10)
+            results['nse_market_data'] = response.status_code == 200
+            if not results['nse_market_data']:
+                results['errors'].append(f"NSE market data page returned {response.status_code}")
+        except Exception as e:
+            results['errors'].append(f"NSE market data error: {e}")
+
+        # Test BSE API
+        try:
+            response = requests.get("https://api.bseindia.com/BseIndiaAPI/api/ListofScripData/w", timeout=10)
+            results['bse_api'] = response.status_code == 200
+            if not results['bse_api']:
+                results['errors'].append(f"BSE API returned {response.status_code}")
+        except Exception as e:
+            results['errors'].append(f"BSE API error: {e}")
+
+        logger.info(f"API Connectivity Test Results: {results}")
+        return results
+
     def update_mapping(self):
-        """Update mapping from multiple sources"""
+        """Update mapping from multiple sources with enhanced error reporting"""
         all_mappings = {}
+
+        # Test API connectivity first
+        connectivity = self.test_api_connectivity()
+        logger.info(f"API connectivity status: NSE Main={connectivity['nse_main']}, "
+                   f"NSE Market={connectivity['nse_market_data']}, BSE={connectivity['bse_api']}")
 
         # Method 1: Try NSE API
         try:
             nse_data = self.fetch_nse_stock_list()
             all_mappings.update(nse_data)
-            logger.info(f"Fetched {len(nse_data)} stocks from NSE API")
+            logger.info(f"✅ Successfully fetched {len(nse_data)} stocks from NSE API")
         except Exception as e:
-            logger.warning(f"NSE API failed: {e}")
+            logger.warning(f"❌ NSE API failed: {e}")
 
         # Method 2: Try BSE API
         try:
@@ -374,26 +555,34 @@ class DynamicTickerMapper:
                     all_mappings[ticker] = list(set(all_mappings[ticker]))
                 else:
                     all_mappings[ticker] = names
-            logger.info(f"Added {len(bse_data)} stocks from BSE API")
+            logger.info(f"✅ Successfully added {len(bse_data)} stocks from BSE API")
         except Exception as e:
-            logger.warning(f"BSE API failed: {e}")
+            logger.warning(f"❌ BSE API failed: {e}")
 
         # Method 3: Fallback to essential stocks if we don't have enough data
         if len(all_mappings) < 50:
-            logger.warning("Using fallback hardcoded mapping for essential stocks")
+            logger.warning(f"⚠️  Only {len(all_mappings)} stocks fetched from APIs. Using fallback hardcoded mapping.")
             fallback_mapping = self.get_fallback_mapping()
             for ticker, names in fallback_mapping.items():
                 if ticker not in all_mappings:
                     all_mappings[ticker] = names
+            logger.info(f"✅ Added {len(fallback_mapping)} fallback stocks")
+        else:
+            logger.info(f"✅ Sufficient stocks ({len(all_mappings)}) fetched from APIs")
 
         self.ticker_mapping = all_mappings
         self.last_updated = datetime.now()
 
-        logger.info(f"Final mapping contains {len(self.ticker_mapping)} stocks")
+        logger.info(f"🎯 Final mapping contains {len(self.ticker_mapping)} stocks")
+
+        # Log sample of stocks for verification
+        sample_stocks = list(self.ticker_mapping.keys())[:5]
+        logger.info(f"📊 Sample stocks: {sample_stocks}")
 
     def get_fallback_mapping(self):
-        """Fallback hardcoded mapping for essential stocks"""
+        """Fallback hardcoded mapping for essential stocks - expanded to 50+ stocks"""
         return {
+            # Top 10 by market cap
             "RELIANCE.NS": ["Reliance Industries", "RIL", "Reliance"],
             "TCS.NS": ["Tata Consultancy Services", "TCS"],
             "HDFCBANK.NS": ["HDFC Bank", "Housing Development Finance Corporation"],
@@ -404,20 +593,86 @@ class DynamicTickerMapper:
             "ITC.NS": ["ITC Limited", "Indian Tobacco Company"],
             "SBIN.NS": ["State Bank of India", "SBI"],
             "HINDUNILVR.NS": ["Hindustan Unilever", "HUL"],
+
+            # Banking & Financial Services
             "BAJFINANCE.NS": ["Bajaj Finance", "Bajaj Finserv"],
-            "ASIANPAINT.NS": ["Asian Paints", "Asian Paint"],
-            "MARUTI.NS": ["Maruti Suzuki", "Maruti", "Suzuki India"],
             "AXISBANK.NS": ["Axis Bank"],
-            "LT.NS": ["Larsen & Toubro", "L&T", "Larsen Toubro"],
+            "HDFCLIFE.NS": ["HDFC Life Insurance", "HDFC Life"],
+            "SBILIFE.NS": ["SBI Life Insurance", "SBI Life"],
+            "BAJAJFINSV.NS": ["Bajaj Finserv"],
+            "INDUSINDBK.NS": ["IndusInd Bank"],
+            "BANDHANBNK.NS": ["Bandhan Bank"],
+            "IDFCFIRSTB.NS": ["IDFC First Bank"],
+
+            # IT & Technology
             "HCLTECH.NS": ["HCL Technologies", "HCL Tech"],
             "WIPRO.NS": ["Wipro Limited", "Wipro"],
-            "ULTRACEMCO.NS": ["UltraTech Cement", "Ultratech"],
+            "TECHM.NS": ["Tech Mahindra"],
+            "LTIM.NS": ["LTIMindtree", "L&T Infotech"],
+            "MPHASIS.NS": ["Mphasis"],
+
+            # Consumer Goods
+            "ASIANPAINT.NS": ["Asian Paints", "Asian Paint"],
+            "MARUTI.NS": ["Maruti Suzuki", "Maruti", "Suzuki India"],
             "TITAN.NS": ["Titan Company", "Titan Industries"],
             "NESTLEIND.NS": ["Nestle India", "Nestle"],
+            "BRITANNIA.NS": ["Britannia Industries", "Britannia"],
+            "DABUR.NS": ["Dabur India", "Dabur"],
+            "MARICO.NS": ["Marico"],
+            "GODREJCP.NS": ["Godrej Consumer Products", "Godrej"],
+
+            # Infrastructure & Construction
+            "LT.NS": ["Larsen & Toubro", "L&T", "Larsen Toubro"],
+            "ULTRACEMCO.NS": ["UltraTech Cement", "Ultratech"],
+            "GRASIM.NS": ["Grasim Industries", "Grasim"],
+            "SHREECEM.NS": ["Shree Cement"],
+            "RAMCOCEM.NS": ["Ramco Cements", "Ramco"],
+
+            # Energy & Oil
+            "ONGC.NS": ["Oil and Natural Gas Corporation", "ONGC"],
+            "BPCL.NS": ["Bharat Petroleum", "BPCL"],
+            "IOC.NS": ["Indian Oil Corporation", "IOC"],
+            "COALINDIA.NS": ["Coal India", "CIL"],
+            "NTPC.NS": ["NTPC"],
+            "POWERGRID.NS": ["Power Grid Corporation", "PowerGrid"],
+
+            # Adani Group
             "ADANIENSOL.NS": ["Adani Energy Solutions", "Adani Green Energy", "Adani Power", "Adani Energy"],
             "ADANIPORTS.NS": ["Adani Ports", "Adani Port"],
             "ADANITRANS.NS": ["Adani Transmission"],
             "ATGL.NS": ["Adani Total Gas"],
+            "ADANIENT.NS": ["Adani Enterprises"],
+
+            # Pharmaceuticals
+            "SUNPHARMA.NS": ["Sun Pharmaceutical", "Sun Pharma"],
+            "DRREDDY.NS": ["Dr. Reddy's Laboratories", "Dr Reddy"],
+            "CIPLA.NS": ["Cipla"],
+            "DIVISLAB.NS": ["Divi's Laboratories", "Divis Lab"],
+            "BIOCON.NS": ["Biocon"],
+            "LUPIN.NS": ["Lupin"],
+
+            # Metals & Mining
+            "TATASTEEL.NS": ["Tata Steel"],
+            "HINDALCO.NS": ["Hindalco Industries", "Hindalco"],
+            "JSWSTEEL.NS": ["JSW Steel"],
+            "SAIL.NS": ["Steel Authority of India", "SAIL"],
+            "VEDL.NS": ["Vedanta"],
+
+            # Auto & Auto Components
+            "BAJAJ-AUTO.NS": ["Bajaj Auto"],
+            "M&M.NS": ["Mahindra & Mahindra", "Mahindra"],
+            "TATAMOTORS.NS": ["Tata Motors"],
+            "EICHERMOT.NS": ["Eicher Motors"],
+            "HEROMOTOCO.NS": ["Hero MotoCorp", "Hero"],
+
+            # Telecom
+            "JIOFINANCE.NS": ["Jio Financial Services", "Jio Finance"],
+
+            # Others
+            "APOLLOHOSP.NS": ["Apollo Hospitals", "Apollo"],
+            "PIDILITIND.NS": ["Pidilite Industries", "Pidilite"],
+            "BERGEPAINT.NS": ["Berger Paints", "Berger"],
+            "HAVELLS.NS": ["Havells India", "Havells"],
         }
 
     def save_cache(self):

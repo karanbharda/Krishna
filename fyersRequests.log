@@ -2,3 +2,6 @@
 {"level":"DEBUG","location":"[get_call:140] fyersModel","message":{"Status Code":200,"API":"/quotes"},"timestamp":"2025-07-26 17:15:02,712+0530","service":"FyersAPIRequest"}
 {"level":"DEBUG","location":"[get_call:140] fyersModel","message":{"Status Code":200,"API":"/quotes"},"timestamp":"2025-07-26 17:15:03,039+0530","service":"FyersAPIRequest"}
 {"level":"DEBUG","location":"[get_call:140] fyersModel","message":{"Status Code":200,"API":"/quotes"},"timestamp":"2025-07-26 17:15:03,326+0530","service":"FyersAPIRequest"}
+{"level":"DEBUG","location":"[get_call:140] fyersModel","message":{"Status Code":200,"API":"/quotes"},"timestamp":"2025-07-28 12:28:47,097+0530","service":"FyersAPIRequest"}
+{"level":"DEBUG","location":"[get_call:140] fyersModel","message":{"Status Code":200,"API":"/quotes"},"timestamp":"2025-07-28 12:29:49,906+0530","service":"FyersAPIRequest"}
+{"level":"DEBUG","location":"[get_call:140] fyersModel","message":{"Status Code":200,"API":"/quotes"},"timestamp":"2025-07-28 12:32:43,497+0530","service":"FyersAPIRequest"}

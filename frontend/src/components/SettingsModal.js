@@ -151,29 +151,92 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
       setFormData({
         mode: settings.mode || 'paper',
         riskLevel: settings.riskLevel || 'MEDIUM',
-        maxAllocation: settings.maxAllocation || 25,
-        stopLossPct: settings.stopLossPct || 5
+        // Convert decimal to percentage - backend sends max_capital_per_trade and stop_loss_pct
+        maxAllocation: settings.max_capital_per_trade
+          ? (settings.max_capital_per_trade * 100)
+          : 25,
+        stopLossPct: settings.stop_loss_pct
+          ? (settings.stop_loss_pct * 100)
+          : 5
       });
     }
   }, [settings]);
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+
+      // Auto-update stop loss and allocation based on risk level
+      if (field === 'riskLevel') {
+        if (value === 'CUSTOM') {
+          // When Custom is selected, clear the fields so user can input their own values
+          newData.stopLossPct = '';
+          newData.maxAllocation = '';
+        } else {
+          // For predefined risk levels, set the values
+          const riskSettings = {
+            'LOW': { stopLoss: 3, allocation: 15 },
+            'MEDIUM': { stopLoss: 5, allocation: 25 },
+            'HIGH': { stopLoss: 8, allocation: 35 }
+          };
+
+          if (riskSettings[value]) {
+            newData.stopLossPct = riskSettings[value].stopLoss;
+            newData.maxAllocation = riskSettings[value].allocation;
+          }
+        }
+      }
+
+      console.log('Risk Level:', newData.riskLevel, 'Is Custom:', newData.riskLevel === 'CUSTOM');
+      return newData;
+    });
   };
 
   const handleSave = async () => {
     setLoading(true);
     try {
+      // Convert string values to numbers
+      const maxAllocationNum = parseFloat(formData.maxAllocation) || 0;
+      const stopLossPctNum = parseFloat(formData.stopLossPct) || 0;
+
+      // Validate that we have values for custom mode
+      if (formData.riskLevel === 'CUSTOM') {
+        if (!formData.maxAllocation || !formData.stopLossPct || maxAllocationNum <= 0 || stopLossPctNum <= 0) {
+          alert('Please enter valid values for both Max Allocation (1-100) and Stop Loss Percentage (1-20) when using Custom risk level.');
+          setLoading(false);
+          return;
+        }
+
+        // Validate ranges
+        if (maxAllocationNum < 1 || maxAllocationNum > 100) {
+          alert('Max Allocation must be between 1 and 100.');
+          setLoading(false);
+          return;
+        }
+
+        if (stopLossPctNum < 1 || stopLossPctNum > 20) {
+          alert('Stop Loss Percentage must be between 1 and 20.');
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Use the converted numbers or defaults
+      const maxAllocation = maxAllocationNum || 25;
+      const stopLossPct = stopLossPctNum || 5;
+
       const settingsToSave = {
         mode: formData.mode,
-        stop_loss_pct: formData.stopLossPct / 100, // Convert percentage to decimal
-        max_capital_per_trade: formData.maxAllocation / 100, // Convert percentage to decimal
+        riskLevel: formData.riskLevel,
+        stop_loss_pct: stopLossPct / 100, // Convert percentage to decimal
+        max_capital_per_trade: maxAllocation / 100, // Convert percentage to decimal
         max_trade_limit: 10 // Default value
       };
-      
+
+      console.log('Saving settings:', settingsToSave);
       await onSave(settingsToSave);
     } catch (error) {
       console.error('Error saving settings:', error);
@@ -218,9 +281,10 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
               onChange={(e) => handleInputChange('riskLevel', e.target.value)}
               disabled={loading}
             >
-              <option value="LOW">Low (3% stop-loss)</option>
-              <option value="MEDIUM">Medium (5% stop-loss)</option>
-              <option value="HIGH">High (8% stop-loss)</option>
+              <option value="LOW">Low (3% stop-loss, 15% allocation)</option>
+              <option value="MEDIUM">Medium (5% stop-loss, 25% allocation)</option>
+              <option value="HIGH">High (8% stop-loss, 35% allocation)</option>
+              <option value="CUSTOM">Custom (Set your own values)</option>
             </select>
           </SettingGroup>
 
@@ -231,9 +295,30 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
               min="1"
               max="100"
               value={formData.maxAllocation}
-              onChange={(e) => handleInputChange('maxAllocation', parseInt(e.target.value) || 25)}
-              disabled={loading}
+              placeholder={formData.riskLevel === 'CUSTOM' ? 'Enter percentage (1-100)' : ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                console.log('Max Allocation input changed:', value, 'Risk Level:', formData.riskLevel);
+                // Always allow the change, let the input handle validation
+                handleInputChange('maxAllocation', value);
+              }}
+              disabled={loading || formData.riskLevel !== 'CUSTOM'}
+              style={{
+                backgroundColor: formData.riskLevel !== 'CUSTOM' ? '#f8f9fa' : 'white',
+                cursor: formData.riskLevel !== 'CUSTOM' ? 'not-allowed' : 'text',
+                border: formData.riskLevel === 'CUSTOM' ? '2px solid #3498db' : '2px solid #e9ecef'
+              }}
             />
+            {formData.riskLevel !== 'CUSTOM' && (
+              <small style={{ color: '#6c757d', fontSize: '0.85rem', marginTop: '5px', display: 'block' }}>
+                Select "Custom" risk level to modify this value
+              </small>
+            )}
+            {formData.riskLevel === 'CUSTOM' && (
+              <small style={{ color: '#27ae60', fontSize: '0.85rem', marginTop: '5px', display: 'block' }}>
+                ✓ Custom mode: You can edit this value
+              </small>
+            )}
           </SettingGroup>
 
           <SettingGroup>
@@ -244,9 +329,30 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
               max="20"
               step="0.1"
               value={formData.stopLossPct}
-              onChange={(e) => handleInputChange('stopLossPct', parseFloat(e.target.value) || 5)}
-              disabled={loading}
+              placeholder={formData.riskLevel === 'CUSTOM' ? 'Enter percentage (1-20)' : ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                console.log('Stop Loss input changed:', value, 'Risk Level:', formData.riskLevel);
+                // Always allow the change, let the input handle validation
+                handleInputChange('stopLossPct', value);
+              }}
+              disabled={loading || formData.riskLevel !== 'CUSTOM'}
+              style={{
+                backgroundColor: formData.riskLevel !== 'CUSTOM' ? '#f8f9fa' : 'white',
+                cursor: formData.riskLevel !== 'CUSTOM' ? 'not-allowed' : 'text',
+                border: formData.riskLevel === 'CUSTOM' ? '2px solid #3498db' : '2px solid #e9ecef'
+              }}
             />
+            {formData.riskLevel !== 'CUSTOM' && (
+              <small style={{ color: '#6c757d', fontSize: '0.85rem', marginTop: '5px', display: 'block' }}>
+                Select "Custom" risk level to modify this value
+              </small>
+            )}
+            {formData.riskLevel === 'CUSTOM' && (
+              <small style={{ color: '#27ae60', fontSize: '0.85rem', marginTop: '5px', display: 'block' }}>
+                ✓ Custom mode: You can edit this value
+              </small>
+            )}
           </SettingGroup>
         </ModalBody>
 

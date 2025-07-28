@@ -154,40 +154,91 @@ class DynamicMarketExpert:
         return symbols
     
     def get_live_market_data(self, symbols: List[str]) -> Dict[str, Any]:
-        """Get live market data for symbols"""
+        """Get live market data for symbols with Fyers primary and yfinance fallback"""
 
-        if not symbols or not self.fyers_data or not self.fyers_data.fyers:
+        if not symbols:
             return {}
 
+        market_data = {}
+
+        # Try Fyers first if available
+        if self.fyers_data and self.fyers_data.fyers:
+            try:
+                # Convert to Fyers format
+                fyers_symbols = [f"{symbol}.NS" for symbol in symbols]
+
+                # Fetch live data
+                quotes_response = self.fyers_data.get_live_quotes(fyers_symbols)
+
+                if quotes_response.get('code') == 200:
+                    for quote in quotes_response.get('d', []):
+                        symbol_name = quote.get('n', '').replace('NSE:', '').replace('-EQ', '')
+                        price_data = quote.get('v', {})
+
+                        market_data[symbol_name] = {
+                            'price': price_data.get('lp', 0),
+                            'change': price_data.get('ch', 0),
+                            'change_pct': price_data.get('chp', 0),
+                            'volume': price_data.get('volume', 0),
+                            'high': price_data.get('h', 0),
+                            'low': price_data.get('l', 0),
+                            'open': price_data.get('o', 0)
+                        }
+
+                    if market_data:
+                        logger.info(f"✅ Fetched live data from Fyers for {len(market_data)} symbols")
+                        return market_data
+                else:
+                    logger.warning(f"Fyers API error: {quotes_response}")
+
+            except Exception as e:
+                logger.warning(f"Fyers API failed: {e}")
+
+        # Fallback to yfinance if Fyers fails or unavailable
+        logger.info("🔄 Falling back to yfinance for live market data")
         try:
-            # Convert to Fyers format
-            fyers_symbols = [f"{symbol}.NS" for symbol in symbols]
+            import yfinance as yf
 
-            # Fetch live data
-            quotes_response = self.fyers_data.get_live_quotes(fyers_symbols)
+            for symbol in symbols:
+                try:
+                    # Convert symbol to yfinance format
+                    yf_symbol = f"{symbol}.NS" if not symbol.endswith('.NS') else symbol
 
-            if quotes_response.get('code') == 200:
-                market_data = {}
-                for quote in quotes_response.get('d', []):
-                    symbol_name = quote.get('n', '').replace('NSE:', '').replace('-EQ', '')
-                    price_data = quote.get('v', {})
+                    ticker = yf.Ticker(yf_symbol)
 
-                    market_data[symbol_name] = {
-                        'price': price_data.get('lp', 0),
-                        'change': price_data.get('ch', 0),
-                        'change_pct': price_data.get('chp', 0),
-                        'volume': price_data.get('volume', 0),
-                        'high': price_data.get('h', 0),
-                        'low': price_data.get('l', 0),
-                        'open': price_data.get('o', 0)
-                    }
+                    # Get current data
+                    info = ticker.info
+                    hist = ticker.history(period="2d", interval="1d")
 
-                return market_data
+                    if not hist.empty and info:
+                        current_price = hist['Close'].iloc[-1]
+                        prev_close = hist['Close'].iloc[-2] if len(hist) > 1 else current_price
+                        change = current_price - prev_close
+                        change_pct = (change / prev_close * 100) if prev_close != 0 else 0
+
+                        market_data[symbol] = {
+                            'price': float(current_price),
+                            'change': float(change),
+                            'change_pct': float(change_pct),
+                            'volume': int(hist['Volume'].iloc[-1]) if 'Volume' in hist.columns else 0,
+                            'high': float(hist['High'].iloc[-1]),
+                            'low': float(hist['Low'].iloc[-1]),
+                            'open': float(hist['Open'].iloc[-1])
+                        }
+
+                except Exception as e:
+                    logger.warning(f"Failed to fetch data for {symbol}: {e}")
+                    continue
+
+            if market_data:
+                logger.info(f"✅ Fetched live data from yfinance for {len(market_data)} symbols")
+            else:
+                logger.warning("❌ No market data available from any source")
 
         except Exception as e:
-            logger.error(f"Error fetching market data: {e}")
+            logger.error(f"yfinance fallback failed: {e}")
 
-        return {}
+        return market_data
     
     def create_market_summary(self, market_data: Dict[str, Any]) -> str:
         """Create a formatted market data summary"""
@@ -320,9 +371,19 @@ class DynamicMarketExpert:
 
     def create_fallback_analysis(self, query: str, market_data: Dict[str, Any]) -> str:
         """Create intelligent fallback analysis"""
-        
+
         if not market_data:
-            return "I'm your professional stock market advisor! Ask me about specific Indian stocks like Reliance, TCS, HDFC Bank, Infosys, etc. for live prices and expert analysis."
+            return """I'm your professional stock market expert! 📊
+
+**Available Services:**
+🔍 **Live Stock Analysis** - Ask about specific Indian stocks like Reliance, TCS, HDFC Bank, Infosys
+💹 **Market Insights** - Get professional analysis on market trends and movements
+📈 **Technical Analysis** - Price patterns, support/resistance levels, indicators
+💼 **Investment Advice** - Portfolio strategy and risk management
+
+**Try asking:** "What's the current price of Reliance?" or "How is TCS performing today?"
+
+*Note: Using yfinance data as Fyers token needs refresh*"""
         
         # Analyze the data
         total_stocks = len(market_data)

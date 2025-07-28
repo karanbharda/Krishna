@@ -3617,3 +3617,534 @@ Reinforcement Learning Results:
     Episode 80: Reward = 8291398.09, Avg Reward = 3182854.25, Events = 151
     Episode 90: Reward = 5637060.40, Avg Reward = 14511828.61, Events = 153
     Episode 100: Reward = -11779325.70, Avg Reward = 5104814.43, Events = 151
+
+[20250728_120650] Analysis for BEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT ELECTRONICS LTD (BEL.NS): STRONG SELL
+Current Price: ₹387.75
+
+Buy Score: -0.184, Sell Score: 0.284
+
+Bearish Factors:
+- Price is above the 200-day SMA, suggesting potential overvaluation.
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0146 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Aerospace & Defense
+
+Prediction Days: 30
+Current Price (USD): 4.48
+Predicted Price (USD): 197.94044034438718
+Predicted Change (%): 4318.31
+Confidence Score: -1.0599285656474229
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+  mse:
+    Score: 4963.9445197574205
+  mae:
+    Score: 57.74829423184401
+  r2:
+    Score: -1.0599285656474229
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 15.837274140627471
+  Average Reward: 4498540.3383753495
+  Average Events/Episode: 147.69
+  Actions Distribution:
+    hold: 0.9363
+    buy: 0.0271
+    sell: 0.0366
+  RL Epoch Logs:
+    Episode 10: Reward = 1645001.12, Avg Reward = 3559008.05, Events = 147
+    Episode 20: Reward = 6780732.95, Avg Reward = 4884450.76, Events = 132
+    Episode 30: Reward = 3455535.42, Avg Reward = 4799413.95, Events = 148
+    Episode 40: Reward = 2152081.93, Avg Reward = 5745199.86, Events = 135
+    Episode 50: Reward = 2134786.70, Avg Reward = 4935630.97, Events = 168
+    Episode 60: Reward = 6378930.48, Avg Reward = 4384183.10, Events = 156
+    Episode 70: Reward = 1637629.32, Avg Reward = 4152341.70, Events = 160
+    Episode 80: Reward = 3770332.06, Avg Reward = 4102829.76, Events = 170
+    Episode 90: Reward = 1965836.81, Avg Reward = 4208966.62, Events = 149
+    Episode 100: Reward = 5721114.80, Avg Reward = 4213378.61, Events = 145
+
+[20250728_121028] Analysis for TATASTEEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for TATA STEEL LIMITED (TATASTEEL.NS): STRONG SELL
+Current Price: ₹160.72
+
+Buy Score: -0.320, Sell Score: 0.420
+
+Bearish Factors:
+- Price is above the 200-day SMA, suggesting potential overvaluation.
+- Negative market sentiment from news and social media.
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0123 (higher values indicate higher risk)
+- Sector: Basic Materials
+- Industry: Steel
+
+Prediction Days: 30
+Current Price (USD): 1.86
+Predicted Price (USD): 135.2796595018711
+Predicted Change (%): 7173.10
+Confidence Score: 0.35618690900762395
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+  mse:
+    Score: 125.82165610450872
+  mae:
+    Score: 8.708862944242313
+  r2:
+    Score: 0.35618690900762395
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 6.360696575874594
+  Average Reward: 970205.2969755788
+  Average Events/Episode: 148.31
+  Actions Distribution:
+    hold: 0.9404
+    buy: 0.0325
+    sell: 0.0271
+  RL Epoch Logs:
+    Episode 10: Reward = 1354183.20, Avg Reward = 1677662.12, Events = 145
+    Episode 20: Reward = -597102.37, Avg Reward = 767244.35, Events = 138
+    Episode 30: Reward = 3890072.37, Avg Reward = 955932.18, Events = 145
+    Episode 40: Reward = 1220935.68, Avg Reward = 1232505.22, Events = 123
+    Episode 50: Reward = 2272089.06, Avg Reward = 959304.60, Events = 155
+    Episode 60: Reward = -85201.10, Avg Reward = 969459.14, Events = 151
+    Episode 70: Reward = 2200466.94, Avg Reward = 445789.90, Events = 136
+    Episode 80: Reward = 1780375.45, Avg Reward = 1056655.02, Events = 151
+    Episode 90: Reward = 641713.52, Avg Reward = 979701.14, Events = 142
+    Episode 100: Reward = 1460740.99, Avg Reward = 657799.29, Events = 126
+
+[20250728_121332] Analysis for COALINDIA.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for COAL INDIA LTD (COALINDIA.NS): STRONG SELL
+Current Price: ₹381.40
+
+Buy Score: -0.461, Sell Score: 0.561
+
+Bearish Factors:
+- Stock is in a downtrend (50-day SMA < 200-day SMA).
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0073 (higher values indicate higher risk)
+- Sector: Energy
+- Industry: Thermal Coal
+
+Prediction Days: 30
+Current Price (USD): 4.41
+Predicted Price (USD): 397.7148848752936
+Predicted Change (%): 8918.48
+Confidence Score: 0.7235810567062504
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+  mse:
+    Score: 624.0087436590767
+  mae:
+    Score: 19.464352421775338
+  r2:
+    Score: 0.7235810567062504
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 32.11397615038161
+  Average Reward: 5830414.400878353
+  Average Events/Episode: 147.26
+  Actions Distribution:
+    hold: 0.9146
+    buy: 0.0461
+    sell: 0.0393
+  RL Epoch Logs:
+    Episode 10: Reward = 253940.97, Avg Reward = 3917158.85, Events = 146
+    Episode 20: Reward = 8094123.21, Avg Reward = 7342203.66, Events = 150
+    Episode 30: Reward = 7476148.81, Avg Reward = 5233982.49, Events = 133
+    Episode 40: Reward = 9259440.77, Avg Reward = 6524351.78, Events = 142
+    Episode 50: Reward = 899451.96, Avg Reward = 4962643.16, Events = 143
+    Episode 60: Reward = 5435944.51, Avg Reward = 5558377.46, Events = 166
+    Episode 70: Reward = 4504413.65, Avg Reward = 6292999.03, Events = 147
+    Episode 80: Reward = 7710789.51, Avg Reward = 7092826.97, Events = 135
+    Episode 90: Reward = 9888736.63, Avg Reward = 6793390.14, Events = 141
+    Episode 100: Reward = 7273810.96, Avg Reward = 4586210.46, Events = 129
+
+[20250728_121725] Analysis for BEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT ELECTRONICS LTD (BEL.NS): STRONG SELL
+Current Price: ₹387.10
+
+Buy Score: -0.183, Sell Score: 0.283
+
+Bearish Factors:
+- Price is above the 200-day SMA, suggesting potential overvaluation.
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0147 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Aerospace & Defense
+
+Prediction Days: 30
+Current Price (USD): 4.47
+Predicted Price (USD): 179.57277022637152
+Predicted Change (%): 3917.29
+Confidence Score: -0.14559054984014685
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+  mse:
+    Score: 2769.9199451635127
+  mae:
+    Score: 37.933518683220356
+  r2:
+    Score: -0.14559054984014685
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 23.154408783251174
+  Average Reward: 4396962.720052439
+  Average Events/Episode: 146.26
+  Actions Distribution:
+    hold: 0.9309
+    buy: 0.0339
+    sell: 0.0352
+  RL Epoch Logs:
+    Episode 10: Reward = 3404354.33, Avg Reward = 4842468.17, Events = 148
+    Episode 20: Reward = 5581247.47, Avg Reward = 4071337.84, Events = 140
+    Episode 30: Reward = 3671266.16, Avg Reward = 5103369.31, Events = 133
+    Episode 40: Reward = 4703330.64, Avg Reward = 3911140.56, Events = 153
+    Episode 50: Reward = 5180305.38, Avg Reward = 4339304.85, Events = 151
+    Episode 60: Reward = 3548450.14, Avg Reward = 4168661.85, Events = 167
+    Episode 70: Reward = 3075520.11, Avg Reward = 4830670.67, Events = 179
+    Episode 80: Reward = 4567654.27, Avg Reward = 4647377.82, Events = 143
+    Episode 90: Reward = 3694937.78, Avg Reward = 4598183.63, Events = 167
+    Episode 100: Reward = 5493555.99, Avg Reward = 3457112.51, Events = 143
+
+[20250728_122053] Analysis for TATASTEEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for TATA STEEL LIMITED (TATASTEEL.NS): STRONG SELL
+Current Price: ₹160.56
+
+Buy Score: -0.320, Sell Score: 0.420
+
+Bearish Factors:
+- Price is above the 200-day SMA, suggesting potential overvaluation.
+- Negative market sentiment from news and social media.
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0123 (higher values indicate higher risk)
+- Sector: Basic Materials
+- Industry: Steel
+
+Prediction Days: 30
+Current Price (USD): 1.86
+Predicted Price (USD): 131.9253444396458
+Predicted Change (%): 6992.76
+Confidence Score: 0.19469260690707002
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+  mse:
+    Score: 151.69154519154478
+  mae:
+    Score: 8.902459586865662
+  r2:
+    Score: 0.19469260690707002
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 2.5994011929911647
+  Average Reward: 1188423.176507815
+  Average Events/Episode: 147.6
+  Actions Distribution:
+    hold: 0.9336
+    buy: 0.0339
+    sell: 0.0325
+  RL Epoch Logs:
+    Episode 10: Reward = 763606.42, Avg Reward = 675552.77, Events = 158
+    Episode 20: Reward = -680179.73, Avg Reward = 913371.72, Events = 151
+    Episode 30: Reward = 2634252.10, Avg Reward = 1388419.94, Events = 164
+    Episode 40: Reward = 2181534.10, Avg Reward = 1451527.08, Events = 150
+    Episode 50: Reward = 1933673.01, Avg Reward = 1295416.61, Events = 144
+    Episode 60: Reward = -432777.72, Avg Reward = 872161.88, Events = 128
+    Episode 70: Reward = 2070500.71, Avg Reward = 1139582.93, Events = 141
+    Episode 80: Reward = -915645.48, Avg Reward = 888544.26, Events = 172
+    Episode 90: Reward = 1339428.98, Avg Reward = 1865638.74, Events = 140
+    Episode 100: Reward = 776625.51, Avg Reward = 1394015.83, Events = 157
+
+[20250728_122345] Analysis for COALINDIA.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for COAL INDIA LTD (COALINDIA.NS): STRONG SELL
+Current Price: ₹380.90
+
+Buy Score: -0.460, Sell Score: 0.560
+
+Bearish Factors:
+- Stock is in a downtrend (50-day SMA < 200-day SMA).
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0073 (higher values indicate higher risk)
+- Sector: Energy
+- Industry: Thermal Coal
+
+Prediction Days: 30
+Current Price (USD): 4.4
+Predicted Price (USD): 405.43473822191737
+Predicted Change (%): 9114.43
+Confidence Score: 0.5879358118323594
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+  mse:
+    Score: 832.6041017093039
+  mae:
+    Score: 21.31605222302881
+  r2:
+    Score: 0.5879358118323594
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 10.599519421763544
+  Average Reward: 6172604.227932667
+  Average Events/Episode: 147.0
+  Actions Distribution:
+    hold: 0.9295
+    buy: 0.0298
+    sell: 0.0407
+  RL Epoch Logs:
+    Episode 10: Reward = -208414.71, Avg Reward = 4264294.31, Events = 155
+    Episode 20: Reward = 4498663.34, Avg Reward = 6049691.75, Events = 160
+    Episode 30: Reward = 5119762.54, Avg Reward = 5133700.92, Events = 153
+    Episode 40: Reward = 8361649.83, Avg Reward = 6415754.31, Events = 144
+    Episode 50: Reward = 10487666.28, Avg Reward = 6313201.94, Events = 156
+    Episode 60: Reward = 4202147.84, Avg Reward = 5458242.85, Events = 162
+    Episode 70: Reward = 6118564.78, Avg Reward = 7966062.72, Events = 140
+    Episode 80: Reward = 9544749.68, Avg Reward = 6015351.21, Events = 148
+    Episode 90: Reward = 7848731.65, Avg Reward = 6858007.31, Events = 130
+    Episode 100: Reward = 9880564.05, Avg Reward = 7251734.95, Events = 155
+
+[20250728_130611] Analysis for BHEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHEL (BHEL.NS): SELL
+Current Price: ₹237.40
+
+Buy Score: -0.011, Sell Score: 0.111
+
+Bearish Factors:
+- Price is above the 200-day SMA, suggesting potential overvaluation.
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0137 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Specialty Industrial Machinery
+
+Prediction Days: 30
+Current Price (USD): 2.74
+Predicted Price (USD): 226.65274667788765
+Predicted Change (%): 8172.00
+Confidence Score: 0.07153119431758437
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+  mse:
+    Score: 1401.6054799718615
+  mae:
+    Score: 31.25611289674581
+  r2:
+    Score: 0.07153119431758437
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 10.139895916127644
+  Average Reward: 4305121.466292579
+  Average Events/Episode: 148.5
+  Actions Distribution:
+    hold: 0.9215
+    buy: 0.0501
+    sell: 0.0284
+  RL Epoch Logs:
+    Episode 10: Reward = 6210069.09, Avg Reward = 4129384.07, Events = 157
+    Episode 20: Reward = 7178666.63, Avg Reward = 5457984.36, Events = 148
+    Episode 30: Reward = 4702252.16, Avg Reward = 3469157.13, Events = 130
+    Episode 40: Reward = 1372758.75, Avg Reward = 4614797.82, Events = 157
+    Episode 50: Reward = 809156.48, Avg Reward = 4602540.77, Events = 161
+    Episode 60: Reward = 894745.83, Avg Reward = 4941402.26, Events = 148
+    Episode 70: Reward = 4422519.78, Avg Reward = 5112997.15, Events = 153
+    Episode 80: Reward = 3341207.81, Avg Reward = 3444850.27, Events = 149
+    Episode 90: Reward = 5820011.92, Avg Reward = 2657082.69, Events = 160
+    Episode 100: Reward = 6418654.52, Avg Reward = 4621018.16, Events = 142
+
+[20250728_130928] Analysis for COALINDIA.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for COAL INDIA LTD (COALINDIA.NS): STRONG SELL
+Current Price: ₹379.40
+
+Buy Score: -0.460, Sell Score: 0.560
+
+Bearish Factors:
+- Stock is in a downtrend (50-day SMA < 200-day SMA).
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0073 (higher values indicate higher risk)
+- Sector: Energy
+- Industry: Thermal Coal
+
+Prediction Days: 30
+Current Price (USD): 4.39
+Predicted Price (USD): 376.38339811115003
+Predicted Change (%): 8473.65
+Confidence Score: -0.03606065749509413
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+  mse:
+    Score: 2091.686008848075
+  mae:
+    Score: 36.23441278939049
+  r2:
+    Score: -0.03606065749509413
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 24.762087545207816
+  Average Reward: 6023423.895966787
+  Average Events/Episode: 150.18
+  Actions Distribution:
+    hold: 0.9214
+    buy: 0.0393
+    sell: 0.0393
+  RL Epoch Logs:
+    Episode 10: Reward = 3445339.50, Avg Reward = 5652223.53, Events = 159
+    Episode 20: Reward = 925746.19, Avg Reward = 4933605.52, Events = 143
+    Episode 30: Reward = 2162145.92, Avg Reward = 5299672.72, Events = 156
+    Episode 40: Reward = 5673666.31, Avg Reward = 7986843.36, Events = 142
+    Episode 50: Reward = 7123659.99, Avg Reward = 7326660.96, Events = 137
+    Episode 60: Reward = 2021317.08, Avg Reward = 4699205.89, Events = 167
+    Episode 70: Reward = 4930423.14, Avg Reward = 6235294.69, Events = 149
+    Episode 80: Reward = 6555336.81, Avg Reward = 6543793.39, Events = 148
+    Episode 90: Reward = 5042233.56, Avg Reward = 5652095.67, Events = 160
+    Episode 100: Reward = 7205380.85, Avg Reward = 5904843.24, Events = 159
+
+[20250728_131252] Analysis for TECHM.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for TECH MAHINDRA LIMITED (TECHM.NS): STRONG SELL
+Current Price: ₹1453.70
+
+Buy Score: -0.254, Sell Score: 0.354
+
+Bearish Factors:
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0123 (higher values indicate higher risk)
+- Sector: Technology
+- Industry: Information Technology Services
+
+Prediction Days: 30
+Current Price (USD): 16.8
+Predicted Price (USD): 1394.7696742747946
+Predicted Change (%): 8202.20
+Confidence Score: -8.12584863324261
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+  mse:
+    Score: 181983.80659257216
+  mae:
+    Score: 389.2103841716182
+  r2:
+    Score: -8.12584863324261
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 45.51263026087678
+  Average Reward: 10189004.478314895
+  Average Events/Episode: 149.35
+  Actions Distribution:
+    hold: 0.9255
+    buy: 0.0312
+    sell: 0.0434
+  RL Epoch Logs:
+    Episode 10: Reward = 13131930.44, Avg Reward = 4712233.07, Events = 147
+    Episode 20: Reward = 31367895.35, Avg Reward = 20233024.12, Events = 131
+    Episode 30: Reward = 8877486.52, Avg Reward = 12661646.59, Events = 140
+    Episode 40: Reward = 5778509.23, Avg Reward = 9894392.90, Events = 146
+    Episode 50: Reward = 13262721.32, Avg Reward = 10331068.09, Events = 147
+    Episode 60: Reward = 7401536.63, Avg Reward = 9120066.50, Events = 149
+    Episode 70: Reward = -5034235.81, Avg Reward = 9205164.75, Events = 145
+    Episode 80: Reward = 5859322.15, Avg Reward = 8755160.82, Events = 162
+    Episode 90: Reward = 6067689.21, Avg Reward = 10759777.25, Events = 160
+    Episode 100: Reward = 967258.43, Avg Reward = 6217510.70, Events = 161
+
+[20250728_131536] Analysis for JIOFIN.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for JIO FIN SERVICES LTD (JIOFIN.NS): STRONG SELL
+Current Price: ₹312.10
+
+Buy Score: -0.113, Sell Score: 0.213
+
+Bearish Factors:
+- Price is above the 200-day SMA, suggesting potential overvaluation.
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0151 (higher values indicate higher risk)
+- Sector: Financial Services
+- Industry: Asset Management
+
+Prediction Days: 30
+Current Price (USD): 3.61
+Predicted Price (USD): 303.96461186797245
+Predicted Change (%): 8320.07
+Confidence Score: 0.7533839336900766
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+  mse:
+    Score: 413.00607892568047
+  mae:
+    Score: 15.925824255890472
+  r2:
+    Score: 0.7533839336900766
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 7.464868743903789
+  Average Reward: 1573926.9902993562
+  Average Events/Episode: 92.71
+  Actions Distribution:
+    hold: 0.9174
+    buy: 0.0487
+    sell: 0.0339
+  RL Epoch Logs:
+    Episode 10: Reward = 1993766.00, Avg Reward = 1091732.88, Events = 94
+    Episode 20: Reward = 2498919.22, Avg Reward = 1353234.34, Events = 95
+    Episode 30: Reward = -254469.34, Avg Reward = 780482.53, Events = 98
+    Episode 40: Reward = 2857898.82, Avg Reward = 2016359.45, Events = 93
+    Episode 50: Reward = -860248.62, Avg Reward = 1364960.93, Events = 94
+    Episode 60: Reward = 2740880.56, Avg Reward = 2645250.49, Events = 85
+    Episode 70: Reward = 2357462.25, Avg Reward = 558383.56, Events = 104
+    Episode 80: Reward = 3819602.58, Avg Reward = 2106794.60, Events = 97
+    Episode 90: Reward = 2217529.86, Avg Reward = 2333519.56, Events = 87
+    Episode 100: Reward = 2815270.51, Avg Reward = 1488551.56, Events = 74

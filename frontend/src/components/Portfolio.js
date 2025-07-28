@@ -360,11 +360,73 @@ const CurrentWatchlist = styled.div`
   }
 `;
 
+const UploadSection = styled.div`
+  margin: 20px 0;
+  padding: 15px;
+  border: 2px dashed #3498db;
+  border-radius: 8px;
+  background: #f8f9fa;
+  text-align: center;
+`;
+
+const UploadButton = styled.label`
+  display: inline-block;
+  background: #3498db;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  margin: 10px 0;
+
+  &:hover {
+    background: #2980b9;
+  }
+
+  &:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+  }
+`;
+
+const HiddenFileInput = styled.input`
+  display: none;
+`;
+
+const UploadStatus = styled.div`
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background: ${props =>
+    props.status.includes('✅') ? '#d4edda' :
+      props.status.includes('❌') ? '#f8d7da' :
+        '#e2e3e5'};
+  color: ${props =>
+    props.status.includes('✅') ? '#155724' :
+      props.status.includes('❌') ? '#721c24' :
+        '#6c757d'};
+  border: 1px solid ${props =>
+    props.status.includes('✅') ? '#c3e6cb' :
+      props.status.includes('❌') ? '#f5c6cb' :
+        '#d1ecf1'};
+`;
+
+const UploadInstructions = styled.div`
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-top: 8px;
+  line-height: 1.4;
+`;
+
 const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
   const [newTicker, setNewTicker] = useState('');
   const [loading, setLoading] = useState(false);
   const [tradeHistory, setTradeHistory] = useState([]);
   const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('');
 
   // Fetch trade history on component mount
   useEffect(() => {
@@ -442,6 +504,107 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleAddTicker();
+    }
+  };
+
+  const handleCSVUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      setUploadStatus('❌ Please upload a CSV file');
+      return;
+    }
+
+    setUploadLoading(true);
+    setUploadStatus('📤 Processing CSV file...');
+
+    try {
+      const text = await file.text();
+      const lines = text.split('\n').filter(line => line.trim());
+
+      if (lines.length === 0) {
+        setUploadStatus('❌ CSV file is empty');
+        setUploadLoading(false);
+        return;
+      }
+
+      // Parse CSV - expect either single column of tickers or ticker,name format
+      const tickers = [];
+      const errors = [];
+
+      lines.forEach((line, index) => {
+        const trimmedLine = line.trim();
+        if (!trimmedLine) return;
+
+        // Split by comma and take first column as ticker
+        const columns = trimmedLine.split(',');
+        let ticker = columns[0].trim().toUpperCase();
+
+        // Add .NS suffix if not present for Indian stocks
+        if (!ticker.includes('.')) {
+          ticker += '.NS';
+        }
+
+        // Validate ticker format
+        if (ticker.match(/^[A-Z0-9&-]+\.(NS|BO)$/)) {
+          if (!tickers.includes(ticker) && !botData.config.tickers.includes(ticker)) {
+            tickers.push(ticker);
+          }
+        } else {
+          errors.push(`Line ${index + 1}: Invalid ticker format "${ticker}"`);
+        }
+      });
+
+      if (errors.length > 0 && tickers.length === 0) {
+        setUploadStatus(`❌ No valid tickers found. Errors: ${errors.slice(0, 3).join(', ')}`);
+        setUploadLoading(false);
+        return;
+      }
+
+      if (tickers.length === 0) {
+        setUploadStatus('❌ No new tickers to add (all already in watchlist)');
+        setUploadLoading(false);
+        return;
+      }
+
+      // Use bulk API for better performance
+      setUploadStatus(`📤 Adding ${tickers.length} tickers...`);
+
+      try {
+        const result = await apiService.bulkUpdateWatchlist(tickers, 'ADD');
+
+        // Update the status based on API response
+        setUploadStatus(`✅ ${result.message}`);
+
+        // Log details for debugging
+        if (result.failed_tickers.length > 0) {
+          console.log('Failed tickers:', result.failed_tickers);
+        }
+
+        // Trigger a refresh of the bot data to show updated watchlist
+        // This will be handled by the parent component
+        if (result.successful_tickers.length > 0) {
+          // Force a page refresh to update the watchlist display
+          window.location.reload();
+        }
+
+      } catch (error) {
+        console.error('Bulk upload failed:', error);
+        setUploadStatus('❌ Failed to upload tickers. Please try again.');
+      }
+
+      // Clear status after 5 seconds
+      setTimeout(() => setUploadStatus(''), 5000);
+
+    } catch (error) {
+      console.error('Error processing CSV:', error);
+      setUploadStatus('❌ Error processing CSV file');
+    } finally {
+      setUploadLoading(false);
+      // Clear the file input
+      event.target.value = '';
     }
   };
 
@@ -639,6 +802,31 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
             {loading ? 'Adding...' : 'Add Ticker'}
           </AddButton>
         </WatchlistControls>
+
+        {/* CSV Upload Section */}
+        <UploadSection>
+          <h4 style={{ margin: '0 0 10px 0', color: '#2c3e50' }}>📁 Bulk Upload Tickers</h4>
+          <UploadButton htmlFor="csv-upload" disabled={uploadLoading}>
+            {uploadLoading ? '📤 Processing...' : '📤 Upload CSV File'}
+          </UploadButton>
+          <HiddenFileInput
+            id="csv-upload"
+            type="file"
+            accept=".csv"
+            onChange={handleCSVUpload}
+            disabled={uploadLoading}
+          />
+          <UploadInstructions>
+            <strong>CSV Format:</strong> One ticker per line or ticker,name format<br />
+            <strong>Example:</strong> RELIANCE, TCS, HDFCBANK or RELIANCE.NS,Reliance Industries<br />
+            <strong>Note:</strong> .NS suffix will be added automatically for Indian stocks
+          </UploadInstructions>
+          {uploadStatus && (
+            <UploadStatus status={uploadStatus}>
+              {uploadStatus}
+            </UploadStatus>
+          )}
+        </UploadSection>
 
         <CurrentWatchlist>
           <h4>Current Watchlist:</h4>
