@@ -28,6 +28,32 @@ const HeaderControls = styled.div`
   gap: 15px;
 `;
 
+const ModeIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: ${props => props.mode === 'live' ? '#e8f5e8' : '#f0f8ff'};
+  color: ${props => props.mode === 'live' ? '#2e7d32' : '#1976d2'};
+  border: 1px solid ${props => props.mode === 'live' ? '#4caf50' : '#2196f3'};
+`;
+
+const StatusDot = styled.div`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: ${props => {
+    if (props.mode === 'live') {
+      return props.connected ? '#4caf50' : '#f44336';
+    }
+    return '#2196f3';
+  }};
+  animation: ${props => props.mode === 'live' && props.connected ? pulse : 'none'} 2s infinite;
+`;
+
 const StatusIndicator = styled.div`
   display: flex;
   align-items: center;
@@ -35,7 +61,7 @@ const StatusIndicator = styled.div`
   font-weight: 500;
 `;
 
-const StatusDot = styled.div`
+const BotStatusDot = styled.div`
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -127,7 +153,7 @@ const ToastNotification = styled.div`
   }
 `;
 
-const Header = ({ botData, activeTab, onTabChange, onOpenSettings }) => {
+const Header = ({ botData, activeTab, onTabChange, onOpenSettings, liveStatus }) => {
   const [showToast, setShowToast] = useState(false);
 
   const tabs = [
@@ -158,8 +184,26 @@ const Header = ({ botData, activeTab, onTabChange, onOpenSettings }) => {
         <Title>💵BlackHole Trading Bot</Title>
 
         <HeaderControls>
+          {/* Trading Mode Indicator */}
+          {liveStatus && (
+            <ModeIndicator mode={liveStatus.mode}>
+              <StatusDot
+                mode={liveStatus.mode}
+                connected={liveStatus.dhan_connected || liveStatus.mode === 'paper'}
+              />
+              <span>
+                {liveStatus.mode === 'live' ? 'Live Trading' : 'Paper Trading'}
+                {liveStatus.mode === 'live' && liveStatus.market_status && (
+                  <small style={{ marginLeft: '4px', opacity: 0.8 }}>
+                    ({liveStatus.market_status})
+                  </small>
+                )}
+              </span>
+            </ModeIndicator>
+          )}
+
           <StatusIndicator>
-            <StatusDot active={botData.isRunning} />
+            <BotStatusDot active={botData.isRunning} />
             <span>{botData.isRunning ? 'Active' : 'Inactive'}</span>
           </StatusIndicator>
 

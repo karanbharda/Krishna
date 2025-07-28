@@ -187,6 +187,17 @@ export const apiService = {
     }
   },
 
+  // Live Trading Status
+  async getLiveStatus() {
+    try {
+      const response = await api.get('/live-status');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting live status:', error);
+      throw error;
+    }
+  },
+
   // Health Check
   async healthCheck() {
     try {

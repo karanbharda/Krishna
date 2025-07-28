@@ -1,0 +1,18 @@
+[
+  {
+    "asset": "HDFCBANK.NS",
+    "action": "buy",
+    "qty": 1,
+    "price": 2015.7,
+    "mode": "paper",
+    "timestamp": "2025-07-24 15:08:07.644970"
+  },
+  {
+    "asset": "SUZLON.NS",
+    "action": "buy",
+    "qty": 31,
+    "price": 63.91,
+    "mode": "paper",
+    "timestamp": "2025-07-25 11:11:12.910563"
+  }
+]

@@ -28,6 +28,16 @@ except ImportError as e:
     print("pip install fastapi uvicorn pydantic")
     sys.exit(1)
 
+# Import new components for live trading
+try:
+    from portfolio_manager import DualPortfolioManager
+    from dhan_client import DhanAPIClient
+    from live_executor import LiveTradingExecutor
+    LIVE_TRADING_AVAILABLE = True
+except ImportError as e:
+    print(f"Live trading components not available: {e}")
+    LIVE_TRADING_AVAILABLE = False
+
 # Configure logging for detailed output
 logging.basicConfig(
     level=logging.INFO,
@@ -179,14 +189,120 @@ class WebTradingBot:
 
     def __init__(self, config):
         self.config = config
+
+        # Initialize dual portfolio manager
+        if LIVE_TRADING_AVAILABLE:
+            self.portfolio_manager = DualPortfolioManager()
+            self.portfolio_manager.switch_mode(config.get("mode", "paper"))
+        else:
+            self.portfolio_manager = None
+
         # Initialize the actual StockTradingBot from testindia.py
         self.trading_bot = StockTradingBot(config)
         self.is_running = False
         self.last_update = datetime.now()
         self.trading_thread = None
 
+        # Initialize live trading components if available
+        self.live_executor = None
+        self.dhan_client = None
+
+        if LIVE_TRADING_AVAILABLE and config.get("mode") == "live":
+            self._initialize_live_trading()
+
         # Register WebSocket callback for real-time updates
         self.trading_bot.portfolio.add_trade_callback(self._on_trade_executed)
+
+    def _initialize_live_trading(self):
+        """Initialize live trading components"""
+        try:
+            if not self.config.get("dhan_client_id") or not self.config.get("dhan_access_token"):
+                logger.error("Dhan credentials not found in config")
+                return False
+
+            # Initialize Dhan client
+            self.dhan_client = DhanAPIClient(
+                client_id=self.config["dhan_client_id"],
+                access_token=self.config["dhan_access_token"]
+            )
+
+            # Validate connection
+            if not self.dhan_client.validate_connection():
+                logger.error("Failed to validate Dhan API connection")
+                return False
+
+            # Initialize live executor
+            self.live_executor = LiveTradingExecutor(
+                portfolio=self.trading_bot.portfolio,
+                config=self.config
+            )
+
+            # Sync portfolio with Dhan account
+            if self.live_executor.sync_portfolio_with_dhan():
+                logger.info("Live trading initialized successfully")
+                return True
+            else:
+                logger.error("Failed to sync portfolio with Dhan")
+                return False
+
+        except Exception as e:
+            logger.error(f"Failed to initialize live trading: {e}")
+            return False
+
+    def switch_trading_mode(self, new_mode: str) -> bool:
+        """Switch between paper and live trading modes"""
+        try:
+            if new_mode not in ["paper", "live"]:
+                logger.error(f"Invalid trading mode: {new_mode}")
+                return False
+
+            if new_mode == self.config.get("mode"):
+                logger.info(f"Already in {new_mode} mode")
+                return True
+
+            # Stop bot if running
+            was_running = self.is_running
+            if was_running:
+                self.stop()
+                time.sleep(1)  # Give time to stop
+
+            # Switch portfolio manager mode
+            if self.portfolio_manager:
+                self.portfolio_manager.switch_mode(new_mode)
+
+            # Update config
+            old_mode = self.config.get("mode", "paper")
+            self.config["mode"] = new_mode
+
+            # Initialize/deinitialize live trading components
+            if new_mode == "live" and LIVE_TRADING_AVAILABLE:
+                if not self._initialize_live_trading():
+                    logger.error("Failed to initialize live trading, reverting to paper mode")
+                    self.config["mode"] = "paper"
+                    if self.portfolio_manager:
+                        self.portfolio_manager.switch_mode("paper")
+                    # Return True because we successfully handled the failure by reverting
+                    logger.info("Successfully reverted to paper mode after live trading failure")
+                    return True
+            else:
+                # Clear live trading components for paper mode
+                self.live_executor = None
+                self.dhan_client = None
+
+            # Update trading bot config
+            self.trading_bot.config.update(self.config)
+
+            # Restart bot if it was running
+            if was_running:
+                time.sleep(1)
+                self.start()
+
+            logger.info(f"Successfully switched from {old_mode} to {new_mode} mode")
+            return True
+
+        except Exception as e:
+            logger.error(f"Failed to switch trading mode: {e}")
+            return False
 
     def start(self):
         """Start the trading bot"""
@@ -242,10 +358,11 @@ class WebTradingBot:
 
         try:
             # Try to read from the actual portfolio file created by the trading bot
-            # Use absolute path to data folder
+            # Use absolute path to data folder and current mode
             current_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(current_dir)
-            portfolio_file = os.path.join(project_root, "data", "portfolio_india_paper.json")
+            current_mode = self.config.get("mode", "paper")
+            portfolio_file = os.path.join(project_root, "data", f"{current_mode}_portfolio.json")
             if os.path.exists(portfolio_file):
                 with open(portfolio_file, 'r') as f:
                     portfolio_data = json.load(f)
@@ -365,10 +482,11 @@ class WebTradingBot:
 
         try:
             # Try to read from the actual trade log file created by the trading bot
-            # Use absolute path to data folder
+            # Use absolute path to data folder and current mode
             current_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(current_dir)
-            trade_log_file = os.path.join(project_root, "data", "trade_log_india_paper.json")
+            current_mode = self.config.get("mode", "paper")
+            trade_log_file = os.path.join(project_root, "data", f"{current_mode}_trades.json")
             if os.path.exists(trade_log_file):
                 with open(trade_log_file, 'r') as f:
                     trades = json.load(f)
@@ -547,7 +665,7 @@ def initialize_bot():
         # Default configuration
         config = {
             "tickers": [],  # Empty by default - users can add tickers manually
-            "starting_balance": 10000,  # ₹10 thousand
+            "starting_balance": 10000,  # Rs.10 thousand
             "current_portfolio_value": 10000,
             "current_pnl": 0,
             "mode": "paper",  # Default to paper mode for web interface
@@ -995,7 +1113,20 @@ async def update_settings(request: SettingsRequest):
         if trading_bot:
             # Update configuration
             if request.mode is not None:
-                trading_bot.config['mode'] = request.mode
+                # Handle mode switching
+                old_mode = trading_bot.config.get('mode', 'paper')
+                if request.mode != old_mode:
+                    if trading_bot.switch_trading_mode(request.mode):
+                        # Check if the mode actually changed (could have reverted)
+                        actual_mode = trading_bot.config.get('mode', 'paper')
+                        if actual_mode != request.mode:
+                            logger.warning(f"Requested {request.mode} mode but reverted to {actual_mode} mode")
+                        else:
+                            logger.info(f"Successfully switched from {old_mode} to {request.mode} mode")
+                    else:
+                        raise HTTPException(status_code=400, detail=f"Failed to switch to {request.mode} mode")
+                else:
+                    trading_bot.config['mode'] = request.mode
             if request.riskLevel is not None:
                 trading_bot.config['riskLevel'] = request.riskLevel
                 # Apply risk level settings dynamically
@@ -1018,7 +1149,8 @@ async def update_settings(request: SettingsRequest):
             if request.max_trade_limit is not None:
                 trading_bot.config['max_trade_limit'] = request.max_trade_limit
 
-            logger.info(f"Settings updated: Risk Level={trading_bot.config.get('riskLevel')}, "
+            logger.info(f"Settings updated: Mode={trading_bot.config.get('mode')}, "
+                       f"Risk Level={trading_bot.config.get('riskLevel')}, "
                        f"Stop Loss={trading_bot.config.get('stop_loss_pct')*100}%, "
                        f"Max Allocation={trading_bot.config.get('max_capital_per_trade')*100}%")
 
@@ -1030,6 +1162,60 @@ async def update_settings(request: SettingsRequest):
         raise
     except Exception as e:
         logger.error(f"Error updating settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/live-status")
+async def get_live_trading_status():
+    """Get live trading status and connection info"""
+    try:
+        if not LIVE_TRADING_AVAILABLE:
+            return {
+                "available": False,
+                "message": "Live trading components not installed"
+            }
+
+        if trading_bot and trading_bot.config.get("mode") == "live":
+            # Check Dhan connection
+            dhan_connected = False
+            market_status = "UNKNOWN"
+            account_info = {}
+
+            if trading_bot.dhan_client:
+                try:
+                    dhan_connected = trading_bot.dhan_client.validate_connection()
+                    if dhan_connected:
+                        market_status_data = trading_bot.dhan_client.get_market_status()
+                        market_status = market_status_data.get("marketStatus", "UNKNOWN")
+
+                        # Get account info
+                        profile = trading_bot.dhan_client.get_profile()
+                        funds = trading_bot.dhan_client.get_funds()
+
+                        account_info = {
+                            "client_id": profile.get("clientId", ""),
+                            "available_cash": funds.get("availablecash", 0),
+                            "used_margin": funds.get("sodlimit", 0) - funds.get("availablecash", 0)
+                        }
+                except Exception as e:
+                    logger.error(f"Error getting live trading status: {e}")
+
+            return {
+                "available": True,
+                "mode": "live",
+                "dhan_connected": dhan_connected,
+                "market_status": market_status,
+                "account_info": account_info,
+                "portfolio_synced": trading_bot.live_executor is not None
+            }
+        else:
+            return {
+                "available": True,
+                "mode": "paper",
+                "message": "Currently in paper trading mode"
+            }
+
+    except Exception as e:
+        logger.error(f"Error getting live trading status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.websocket("/ws")

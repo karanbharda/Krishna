@@ -459,7 +459,7 @@ class VirtualPortfolio:
                 summary += f"\nCurrent Holdings:\n"
                 for asset, data in self.holdings.items():
                     current_value = data['qty'] * data['avg_price']  # Simplified - would need current price
-                    summary += f"  • {asset}: {data['qty']} shares @ ₹{data['avg_price']:.2f} (₹{current_value:,.2f})\n"
+                    summary += f"  • {asset}: {data['qty']} shares @ Rs.{data['avg_price']:.2f} (Rs.{current_value:,.2f})\n"
 
             summary += "="*70 + "\n"
 
@@ -566,16 +566,16 @@ class TradingExecutor:
                     price=0,  # Market order
                     validity="DAY"
                 )
-                logger.info(f"Live trade executed: {action} {qty} units of {ticker} at ₹{price}")
+                logger.info(f"Live trade executed: {action} {qty} units of {ticker} at Rs.{price}")
             else:
                 # Enhanced paper trading logging
                 signal_type = "ENTRY" if action.upper() == "BUY" else "EXIT"
-                logger.info(f"📊 PAPER TRADE - {signal_type} SIGNAL: {action.upper()} {qty} units of {ticker} at ₹{price:.2f}")
-                logger.info(f"   💰 Trade Value: ₹{qty * price:,.2f}")
-                logger.info(f"   🛡️  Stop Loss: ₹{stop_loss:.2f} ({((stop_loss/price - 1) * 100):+.1f}%)")
+                logger.info(f"PAPER TRADE - {signal_type} SIGNAL: {action.upper()} {qty} units of {ticker} at Rs.{price:.2f}")
+                logger.info(f"   Trade Value: Rs.{qty * price:,.2f}")
+                logger.info(f"   Stop Loss: Rs.{stop_loss:.2f} ({((stop_loss/price - 1) * 100):+.1f}%)")
                 if take_profit:
-                    logger.info(f"   🎯 Take Profit: ₹{take_profit:.2f} ({((take_profit/price - 1) * 100):+.1f}%)")
-                logger.info(f"   📈 Risk/Reward Ratio: {((take_profit - price) / (price - stop_loss)):.2f}" if take_profit and stop_loss < price else "N/A")
+                    logger.info(f"   Take Profit: Rs.{take_profit:.2f} ({((take_profit/price - 1) * 100):+.1f}%)")
+                logger.info(f"   Risk/Reward Ratio: {((take_profit - price) / (price - stop_loss)):.2f}" if take_profit and stop_loss < price else "N/A")
                 order = {"order_id": f"PAPER_{datetime.now().strftime('%Y%m%d_%H%M%S')}"}
 
             return {
@@ -2817,7 +2817,7 @@ def main_with_mode():
         # Enhanced configuration with risk management
         config = {
             "tickers": [],  # Empty by default - users can add tickers manually
-            "starting_balance": 1000000,  # ₹10 lakh
+            "starting_balance": 1000000,  # Rs.10 lakh
             "current_portfolio_value": 1000000,
             "current_pnl": 0,
             "mode": args.mode,

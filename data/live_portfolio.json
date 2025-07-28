@@ -1,0 +1,12 @@
+{
+  "cash": 0.0,
+  "total_value": 0.0,
+  "starting_balance": 0.0,
+  "holdings": {},
+  "unrealized_pnl": 0.0,
+  "realized_pnl": 0.0,
+  "total_trades": 0,
+  "winning_trades": 0,
+  "losing_trades": 0,
+  "last_updated": "2025-07-28T15:57:54.064980"
+}

@@ -4519,7 +4519,7 @@ def main_with_mode():
         # Enhanced configuration with risk management
         config = {
             "tickers": [],  # Empty by default - users can add tickers manually
-            "starting_balance": 10000,  # ₹10 thousand
+            "starting_balance": 10000,  # Rs.10 thousand
             "current_portfolio_value": 10000,
             "current_pnl": 0,
             "mode": args.mode,

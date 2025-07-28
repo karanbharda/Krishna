@@ -212,3 +212,75 @@ Current Holdings:
   • HDFCBANK.NS: 1 shares @ ₹2015.70 (₹2,015.70)
   • SUZLON.NS: 31 shares @ ₹63.91 (₹1,981.21)
 ======================================================================
+
+[2025-07-28 15:30:08] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 96.4 hours
+
+Portfolio Performance:
+  • Starting Balance: ₹10,000.00
+  • Current Cash: ₹6,003.09
+  • Holdings Value: ₹3,899.04
+  • Total Portfolio Value: ₹9,902.13
+  • Total Return: ₹-97.87 (-0.98%)
+  • Realized P&L: ₹0.00
+  • Unrealized P&L: ₹-97.87
+
+Trading Statistics:
+  • Total Trades: 2
+  • Buy Orders: 2
+  • Sell Orders: 0
+  • Win Rate: 0.0%
+  • Active Positions: 2
+
+Current Holdings:
+  • HDFCBANK.NS: 1 shares @ ₹2015.70 (₹2,015.70)
+  • SUZLON.NS: 31 shares @ ₹63.91 (₹1,981.21)
+======================================================================
+
+[2025-07-28 15:30:19] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 96.4 hours
+
+Portfolio Performance:
+  • Starting Balance: ₹10,000.00
+  • Current Cash: ₹6,003.09
+  • Holdings Value: ₹3,899.04
+  • Total Portfolio Value: ₹9,902.13
+  • Total Return: ₹-97.87 (-0.98%)
+  • Realized P&L: ₹0.00
+  • Unrealized P&L: ₹-97.87
+
+Trading Statistics:
+  • Total Trades: 2
+  • Buy Orders: 2
+  • Sell Orders: 0
+  • Win Rate: 0.0%
+  • Active Positions: 2
+
+Current Holdings:
+  • HDFCBANK.NS: 1 shares @ ₹2015.70 (₹2,015.70)
+  • SUZLON.NS: 31 shares @ ₹63.91 (₹1,981.21)
+======================================================================
+
+[2025-07-28 15:30:32] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 96.4 hours
+
+Portfolio Performance:
+  • Starting Balance: ₹10,000.00
+  • Current Cash: ₹6,003.09
+  • Holdings Value: ₹3,899.04
+  • Total Portfolio Value: ₹9,902.13
+  • Total Return: ₹-97.87 (-0.98%)
+  • Realized P&L: ₹0.00
+  • Unrealized P&L: ₹-97.87
+
+Trading Statistics:
+  • Total Trades: 2
+  • Buy Orders: 2
+  • Sell Orders: 0
+  • Win Rate: 0.0%
+  • Active Positions: 2
+
+Current Holdings:
+  • HDFCBANK.NS: 1 shares @ ₹2015.70 (₹2,015.70)
+  • SUZLON.NS: 31 shares @ ₹63.91 (₹1,981.21)
+======================================================================

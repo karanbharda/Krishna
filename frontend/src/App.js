@@ -91,6 +91,7 @@ function App() {
 
   const [loading, setLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [liveStatus, setLiveStatus] = useState(null);
 
   // Initialize app and load data
   useEffect(() => {
@@ -104,6 +105,7 @@ function App() {
     try {
       setLoading(true);
       await loadDataFromBackend();
+      await loadLiveStatus();
 
       // Add welcome message if no messages exist
       if (botData.chatMessages.length === 0) {
@@ -153,8 +155,19 @@ function App() {
   const refreshData = async () => {
     try {
       await loadDataFromBackend();
+      await loadLiveStatus();
     } catch (error) {
       console.error('Error refreshing data:', error);
+    }
+  };
+
+  const loadLiveStatus = async () => {
+    try {
+      const status = await apiService.getLiveStatus();
+      setLiveStatus(status);
+    } catch (error) {
+      console.error('Error loading live status:', error);
+      setLiveStatus(null);
     }
   };
 
@@ -270,15 +283,22 @@ function App() {
     try {
       setLoading(true);
       await apiService.updateSettings(settings);
-      setBotData(prev => ({
-        ...prev,
-        config: { ...prev.config, ...settings }
-      }));
+
+      // Refresh data to get the actual current state (in case mode switch failed)
+      await refreshData();
+
       toast.success('Settings saved successfully!');
       setShowSettings(false);
     } catch (error) {
       console.error('Error saving settings:', error);
       toast.error('Failed to save settings');
+
+      // Still refresh data to get current state even if save failed
+      try {
+        await refreshData();
+      } catch (refreshError) {
+        console.error('Error refreshing data after failed save:', refreshError);
+      }
     } finally {
       setLoading(false);
     }
@@ -329,6 +349,7 @@ function App() {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             onOpenSettings={() => setShowSettings(true)}
+            liveStatus={liveStatus}
           />
 
           <TabContent>

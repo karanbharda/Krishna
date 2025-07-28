@@ -138,18 +138,18 @@ class RiskLevelTester:
             if risk_level == "CUSTOM":
                 settings_data["stop_loss_pct"] = 0.07  # 7%
                 settings_data["max_capital_per_trade"] = 0.30  # 30%
-            
+
             self.session.post(f"{BASE_URL}/settings", json=settings_data)
             time.sleep(0.5)
-            
+
             # Start the bot
             response = self.session.post(f"{BASE_URL}/start")
-            
+
             if response.status_code == 200:
                 result = response.json()
                 if risk_level in result.get("message", ""):
                     self.log_test(f"Bot Start {risk_level}", True, result["message"])
-                    
+
                     # Stop the bot
                     time.sleep(1)
                     stop_response = self.session.post(f"{BASE_URL}/stop")
@@ -160,9 +160,74 @@ class RiskLevelTester:
             else:
                 self.log_test(f"Bot Start {risk_level}", False, f"HTTP {response.status_code}: {response.text}")
                 return False
-                
+
         except Exception as e:
             self.log_test(f"Bot Start {risk_level}", False, f"Error: {e}")
+            return False
+
+    def test_live_trading_mode_switch(self):
+        """Test switching between paper and live trading modes"""
+        try:
+            # Test switching to live mode
+            settings_data = {"mode": "live", "riskLevel": "MEDIUM"}
+            response = self.session.post(f"{BASE_URL}/settings", json=settings_data)
+
+            if response.status_code == 200:
+                # Verify the mode was switched
+                time.sleep(0.5)
+                verify_response = self.session.get(f"{BASE_URL}/settings")
+
+                if verify_response.status_code == 200:
+                    settings = verify_response.json()
+                    if settings.get("mode") == "live":
+                        self.log_test("Live Mode Switch", True, "Successfully switched to live mode")
+
+                        # Switch back to paper mode
+                        settings_data = {"mode": "paper", "riskLevel": "MEDIUM"}
+                        response = self.session.post(f"{BASE_URL}/settings", json=settings_data)
+
+                        if response.status_code == 200:
+                            self.log_test("Paper Mode Switch", True, "Successfully switched back to paper mode")
+                            return True
+                        else:
+                            self.log_test("Paper Mode Switch", False, f"Failed to switch back: {response.status_code}")
+                            return False
+                    else:
+                        self.log_test("Live Mode Switch", False, f"Mode not switched: {settings.get('mode')}")
+                        return False
+                else:
+                    self.log_test("Live Mode Switch", False, "Failed to verify mode switch")
+                    return False
+            else:
+                self.log_test("Live Mode Switch", False, f"HTTP {response.status_code}: {response.text}")
+                return False
+
+        except Exception as e:
+            self.log_test("Live Mode Switch", False, f"Error: {e}")
+            return False
+
+    def test_live_status_endpoint(self):
+        """Test live trading status endpoint"""
+        try:
+            response = self.session.get(f"{BASE_URL}/live-status")
+
+            if response.status_code == 200:
+                status = response.json()
+                expected_keys = ["available", "mode"]
+
+                missing_keys = [key for key in expected_keys if key not in status]
+                if missing_keys:
+                    self.log_test("Live Status Endpoint", False, f"Missing keys: {missing_keys}")
+                    return False
+
+                self.log_test("Live Status Endpoint", True, f"Status: {status}")
+                return True
+            else:
+                self.log_test("Live Status Endpoint", False, f"HTTP {response.status_code}")
+                return False
+
+        except Exception as e:
+            self.log_test("Live Status Endpoint", False, f"Error: {e}")
             return False
     
     def run_all_tests(self):
@@ -197,6 +262,14 @@ class RiskLevelTester:
         print("\n🤖 Testing Bot Start with Risk Levels...")
         for risk_level in ["LOW", "MEDIUM", "HIGH", "CUSTOM"]:
             self.test_bot_start_with_risk_level(risk_level)
+
+        # Test 5: Live trading mode switching
+        print("\n🔄 Testing Live Trading Mode Switching...")
+        self.test_live_trading_mode_switch()
+
+        # Test 6: Live status endpoint
+        print("\n📊 Testing Live Status Endpoint...")
+        self.test_live_status_endpoint()
         
         # Summary
         print("\n" + "=" * 60)

@@ -1058,3 +1058,509 @@
 2025-07-28 14:56:30,825 - INFO - Trading bot is already stopped
 2025-07-28 14:56:30,826 - INFO - Trading bot stopped on shutdown
 2025-07-28 14:56:30,827 - INFO - Web server stopped by user
+2025-07-28 15:29:21,408 - INFO - Dual Portfolio Manager initialized with data directory: data
+2025-07-28 15:29:21,409 - INFO - Already in paper mode
+2025-07-28 15:29:21,410 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-28 15:29:21,410 - INFO - Loaded 2 trades from trade log
+2025-07-28 15:29:21,447 - INFO - Loaded 78 stocks from cache
+2025-07-28 15:29:21,447 - INFO - Dynamic ticker mapper initialized
+2025-07-28 15:29:21,450 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-28 15:29:21,450 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-28 15:29:21,450 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 15:29:21,450 - INFO - Trading bot initialized successfully
+2025-07-28 15:29:21,450 - INFO - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-28 15:29:21,450 - INFO - Web interface will be available at the above URL
+2025-07-28 15:29:21,451 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-28 15:29:21,547 - INFO - Dual Portfolio Manager initialized with data directory: data
+2025-07-28 15:29:21,548 - INFO - Already in paper mode
+2025-07-28 15:29:21,549 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-28 15:29:21,549 - INFO - Loaded 2 trades from trade log
+2025-07-28 15:29:21,562 - INFO - Loaded 78 stocks from cache
+2025-07-28 15:29:21,562 - INFO - Dynamic ticker mapper initialized
+2025-07-28 15:29:21,563 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-28 15:29:21,563 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-28 15:29:21,563 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 15:29:21,563 - INFO - Trading bot initialized successfully
+2025-07-28 15:29:21,564 - INFO - Trading bot initialized on startup
+2025-07-28 15:30:04,648 - INFO - Applied LOW risk settings: Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-28 15:30:04,648 - INFO - Settings updated: Mode=paper, Risk Level=LOW, Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-28 15:30:05,153 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 15:30:05,153 - INFO - Settings updated: Mode=paper, Risk Level=MEDIUM, Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 15:30:05,658 - INFO - Applied HIGH risk settings: Stop Loss=8.0%, Max Allocation=35.0%
+2025-07-28 15:30:05,658 - INFO - Settings updated: Mode=paper, Risk Level=HIGH, Stop Loss=8.0%, Max Allocation=35.0%
+2025-07-28 15:30:06,162 - INFO - Applied CUSTOM risk settings: Stop Loss=12.0%, Max Allocation=40.0%
+2025-07-28 15:30:06,162 - INFO - Settings updated: Mode=paper, Risk Level=CUSTOM, Stop Loss=12.0%, Max Allocation=40.0%
+2025-07-28 15:30:06,667 - INFO - Applied LOW risk settings: Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-28 15:30:06,668 - INFO - Settings updated: Mode=paper, Risk Level=LOW, Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-28 15:30:07,170 - INFO - Applied LOW risk settings: Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-28 15:30:07,170 - INFO - Starting Indian Stock Trading Bot...
+2025-07-28 15:30:07,171 - INFO - Trading Mode: PAPER
+2025-07-28 15:30:07,171 - INFO - Starting Balance: Rs.10,000.00
+2025-07-28 15:30:07,171 - INFO - Watchlist: 
+2025-07-28 15:30:07,171 - INFO - ============================================================
+2025-07-28 15:30:07,172 - INFO - Starting Stock Trading Bot for Indian market...
+2025-07-28 15:30:07,172 - INFO - Web Trading Bot started successfully
+2025-07-28 15:30:07,172 - INFO - Logging portfolio metrics at start of trading cycle...
+2025-07-28 15:30:07,172 - INFO - Trading bot started with LOW risk level
+2025-07-28 15:30:07,829 - INFO - Fetched price for HDFCBANK.NS: Rs.2009.90
+2025-07-28 15:30:07,932 - INFO - Fetched price for SUZLON.NS: Rs.60.94
+2025-07-28 15:30:07,932 - INFO - Portfolio Metrics:
+2025-07-28 15:30:07,933 - INFO - Cash: Rs.6003.09
+2025-07-28 15:30:07,933 - INFO - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-28 15:30:07,933 - INFO - Total Value: Rs.9902.13
+2025-07-28 15:30:07,933 - INFO - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-28 15:30:07,933 - INFO - Current PnL (Dhan): Rs.0.00
+2025-07-28 15:30:07,933 - INFO - Realized PnL: Rs.0.00
+2025-07-28 15:30:07,933 - INFO - Unrealized PnL: Rs.-97.87
+2025-07-28 15:30:07,934 - INFO - Total Exposure: Rs.3899.04
+2025-07-28 15:30:07,972 - INFO - Fetched price for HDFCBANK.NS: Rs.2009.90
+2025-07-28 15:30:08,010 - INFO - Fetched price for SUZLON.NS: Rs.60.94
+2025-07-28 15:30:08,012 - INFO - Saved report to reports\report_20250728.json
+2025-07-28 15:30:08,012 - INFO - Daily Report: {'date': '2025-07-28', 'roi_today': np.float64(-0.9787001815795837), 'cumulative_roi': np.float64(-0.9787001815795837), 'sharpe': 0, 'drawdown': np.float64(0.9787001815795884), 'trades_executed': 2}
+2025-07-28 15:30:08,012 - INFO - Logging portfolio metrics at end of trading cycle...
+2025-07-28 15:30:08,050 - INFO - Fetched price for HDFCBANK.NS: Rs.2009.90
+2025-07-28 15:30:08,088 - INFO - Fetched price for SUZLON.NS: Rs.60.94
+2025-07-28 15:30:08,089 - INFO - Portfolio Metrics:
+2025-07-28 15:30:08,089 - INFO - Cash: Rs.6003.09
+2025-07-28 15:30:08,089 - INFO - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-28 15:30:08,089 - INFO - Total Value: Rs.9902.13
+2025-07-28 15:30:08,090 - INFO - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-28 15:30:08,090 - INFO - Current PnL (Dhan): Rs.0.00
+2025-07-28 15:30:08,090 - INFO - Realized PnL: Rs.0.00
+2025-07-28 15:30:08,090 - INFO - Unrealized PnL: Rs.-97.87
+2025-07-28 15:30:08,090 - INFO - Total Exposure: Rs.3899.04
+2025-07-28 15:30:08,128 - INFO - Fetched price for HDFCBANK.NS: Rs.2009.90
+2025-07-28 15:30:08,167 - INFO - Fetched price for SUZLON.NS: Rs.60.94
+2025-07-28 15:30:08,169 - INFO - Paper trading P&L summary generated
+2025-07-28 15:30:08,176 - INFO - Stopping Trading Bot...
+2025-07-28 15:30:08,176 - INFO - Waiting for trading thread to finish...
+2025-07-28 15:30:18,178 - WARNING - Trading thread did not stop within timeout, forcing stop...
+2025-07-28 15:30:18,179 - INFO - Web Trading Bot stopped successfully
+2025-07-28 15:30:18,181 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 15:30:18,181 - INFO - Settings updated: Mode=paper, Risk Level=MEDIUM, Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 15:30:18,684 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 15:30:18,684 - INFO - Starting Indian Stock Trading Bot...
+2025-07-28 15:30:18,685 - INFO - Trading Mode: PAPER
+2025-07-28 15:30:18,685 - INFO - Starting Balance: Rs.10,000.00
+2025-07-28 15:30:18,685 - INFO - Watchlist: 
+2025-07-28 15:30:18,685 - INFO - ============================================================
+2025-07-28 15:30:18,686 - INFO - Starting Stock Trading Bot for Indian market...
+2025-07-28 15:30:18,686 - INFO - Web Trading Bot started successfully
+2025-07-28 15:30:18,686 - INFO - Logging portfolio metrics at start of trading cycle...
+2025-07-28 15:30:18,686 - INFO - Trading bot started with MEDIUM risk level
+2025-07-28 15:30:18,847 - INFO - Fetched price for HDFCBANK.NS: Rs.2009.90
+2025-07-28 15:30:18,951 - INFO - Fetched price for SUZLON.NS: Rs.60.94
+2025-07-28 15:30:18,951 - INFO - Portfolio Metrics:
+2025-07-28 15:30:18,952 - INFO - Cash: Rs.6003.09
+2025-07-28 15:30:18,952 - INFO - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-28 15:30:18,952 - INFO - Total Value: Rs.9902.13
+2025-07-28 15:30:18,952 - INFO - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-28 15:30:18,952 - INFO - Current PnL (Dhan): Rs.0.00
+2025-07-28 15:30:18,952 - INFO - Realized PnL: Rs.0.00
+2025-07-28 15:30:18,952 - INFO - Unrealized PnL: Rs.-97.87
+2025-07-28 15:30:18,953 - INFO - Total Exposure: Rs.3899.04
+2025-07-28 15:30:18,971 - INFO - Fetched price for HDFCBANK.NS: Rs.2009.90
+2025-07-28 15:30:18,990 - INFO - Fetched price for SUZLON.NS: Rs.60.94
+2025-07-28 15:30:18,991 - INFO - Saved report to reports\report_20250728.json
+2025-07-28 15:30:18,991 - INFO - Daily Report: {'date': '2025-07-28', 'roi_today': np.float64(-0.9787001815795837), 'cumulative_roi': np.float64(-0.9787001815795837), 'sharpe': 0, 'drawdown': np.float64(0.9787001815795884), 'trades_executed': 2}
+2025-07-28 15:30:18,991 - INFO - Logging portfolio metrics at end of trading cycle...
+2025-07-28 15:30:19,012 - INFO - Fetched price for HDFCBANK.NS: Rs.2009.90
+2025-07-28 15:30:19,031 - INFO - Fetched price for SUZLON.NS: Rs.60.94
+2025-07-28 15:30:19,031 - INFO - Portfolio Metrics:
+2025-07-28 15:30:19,031 - INFO - Cash: Rs.6003.09
+2025-07-28 15:30:19,031 - INFO - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-28 15:30:19,032 - INFO - Total Value: Rs.9902.13
+2025-07-28 15:30:19,032 - INFO - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-28 15:30:19,032 - INFO - Current PnL (Dhan): Rs.0.00
+2025-07-28 15:30:19,032 - INFO - Realized PnL: Rs.0.00
+2025-07-28 15:30:19,032 - INFO - Unrealized PnL: Rs.-97.87
+2025-07-28 15:30:19,032 - INFO - Total Exposure: Rs.3899.04
+2025-07-28 15:30:19,053 - INFO - Fetched price for HDFCBANK.NS: Rs.2009.90
+2025-07-28 15:30:19,072 - INFO - Fetched price for SUZLON.NS: Rs.60.94
+2025-07-28 15:30:19,073 - INFO - Paper trading P&L summary generated
+2025-07-28 15:30:19,690 - INFO - Stopping Trading Bot...
+2025-07-28 15:30:19,690 - INFO - Waiting for trading thread to finish...
+2025-07-28 15:30:29,696 - WARNING - Trading thread did not stop within timeout, forcing stop...
+2025-07-28 15:30:29,696 - INFO - Web Trading Bot stopped successfully
+2025-07-28 15:30:29,698 - INFO - Applied HIGH risk settings: Stop Loss=8.0%, Max Allocation=35.0%
+2025-07-28 15:30:29,699 - INFO - Settings updated: Mode=paper, Risk Level=HIGH, Stop Loss=8.0%, Max Allocation=35.0%
+2025-07-28 15:30:30,201 - INFO - Applied HIGH risk settings: Stop Loss=8.0%, Max Allocation=35.0%
+2025-07-28 15:30:30,201 - INFO - Starting Indian Stock Trading Bot...
+2025-07-28 15:30:30,201 - INFO - Trading Mode: PAPER
+2025-07-28 15:30:30,202 - INFO - Starting Balance: Rs.10,000.00
+2025-07-28 15:30:30,202 - INFO - Watchlist: 
+2025-07-28 15:30:30,202 - INFO - ============================================================
+2025-07-28 15:30:30,203 - INFO - Starting Stock Trading Bot for Indian market...
+2025-07-28 15:30:30,203 - INFO - Web Trading Bot started successfully
+2025-07-28 15:30:30,203 - INFO - Logging portfolio metrics at start of trading cycle...
+2025-07-28 15:30:30,203 - INFO - Trading bot started with HIGH risk level
+2025-07-28 15:30:31,206 - INFO - Stopping Trading Bot...
+2025-07-28 15:30:31,206 - INFO - Waiting for trading thread to finish...
+2025-07-28 15:30:31,470 - INFO - Fetched price for HDFCBANK.NS: Rs.2009.90
+2025-07-28 15:30:31,574 - INFO - Fetched price for SUZLON.NS: Rs.60.94
+2025-07-28 15:30:31,574 - INFO - Portfolio Metrics:
+2025-07-28 15:30:31,574 - INFO - Cash: Rs.6003.09
+2025-07-28 15:30:31,574 - INFO - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-28 15:30:31,575 - INFO - Total Value: Rs.9902.13
+2025-07-28 15:30:31,575 - INFO - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-28 15:30:31,575 - INFO - Current PnL (Dhan): Rs.0.00
+2025-07-28 15:30:31,575 - INFO - Realized PnL: Rs.0.00
+2025-07-28 15:30:31,575 - INFO - Unrealized PnL: Rs.-97.87
+2025-07-28 15:30:31,575 - INFO - Total Exposure: Rs.3899.04
+2025-07-28 15:30:31,575 - INFO - Bot stop signal received, skipping report generation...
+2025-07-28 15:30:31,576 - INFO - Stock Trading Bot stopped successfully
+2025-07-28 15:30:31,578 - INFO - Trading thread stopped successfully
+2025-07-28 15:30:31,578 - INFO - Web Trading Bot stopped successfully
+2025-07-28 15:30:31,580 - INFO - Applied CUSTOM risk settings: Stop Loss=7.000000000000001%, Max Allocation=30.0%
+2025-07-28 15:30:31,580 - INFO - Settings updated: Mode=paper, Risk Level=CUSTOM, Stop Loss=7.000000000000001%, Max Allocation=30.0%
+2025-07-28 15:30:32,083 - INFO - Applied CUSTOM risk settings: Stop Loss=7.000000000000001%, Max Allocation=30.0%
+2025-07-28 15:30:32,083 - INFO - Starting Indian Stock Trading Bot...
+2025-07-28 15:30:32,083 - INFO - Trading Mode: PAPER
+2025-07-28 15:30:32,083 - INFO - Starting Balance: Rs.10,000.00
+2025-07-28 15:30:32,083 - INFO - Watchlist: 
+2025-07-28 15:30:32,084 - INFO - ============================================================
+2025-07-28 15:30:32,084 - INFO - Starting Stock Trading Bot for Indian market...
+2025-07-28 15:30:32,084 - INFO - Web Trading Bot started successfully
+2025-07-28 15:30:32,084 - INFO - Logging portfolio metrics at start of trading cycle...
+2025-07-28 15:30:32,085 - INFO - Trading bot started with CUSTOM risk level
+2025-07-28 15:30:32,126 - INFO - Fetched price for HDFCBANK.NS: Rs.2009.90
+2025-07-28 15:30:32,144 - INFO - Fetched price for SUZLON.NS: Rs.60.94
+2025-07-28 15:30:32,144 - INFO - Portfolio Metrics:
+2025-07-28 15:30:32,145 - INFO - Cash: Rs.6003.09
+2025-07-28 15:30:32,145 - INFO - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-28 15:30:32,145 - INFO - Total Value: Rs.9902.13
+2025-07-28 15:30:32,145 - INFO - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-28 15:30:32,145 - INFO - Current PnL (Dhan): Rs.0.00
+2025-07-28 15:30:32,145 - INFO - Realized PnL: Rs.0.00
+2025-07-28 15:30:32,146 - INFO - Unrealized PnL: Rs.-97.87
+2025-07-28 15:30:32,146 - INFO - Total Exposure: Rs.3899.04
+2025-07-28 15:30:32,165 - INFO - Fetched price for HDFCBANK.NS: Rs.2009.90
+2025-07-28 15:30:32,184 - INFO - Fetched price for SUZLON.NS: Rs.60.94
+2025-07-28 15:30:32,185 - INFO - Saved report to reports\report_20250728.json
+2025-07-28 15:30:32,186 - INFO - Daily Report: {'date': '2025-07-28', 'roi_today': np.float64(-0.9787001815795837), 'cumulative_roi': np.float64(-0.9787001815795837), 'sharpe': 0, 'drawdown': np.float64(0.9787001815795884), 'trades_executed': 2}
+2025-07-28 15:30:32,186 - INFO - Logging portfolio metrics at end of trading cycle...
+2025-07-28 15:30:32,215 - INFO - Fetched price for HDFCBANK.NS: Rs.2009.90
+2025-07-28 15:30:32,234 - INFO - Fetched price for SUZLON.NS: Rs.60.94
+2025-07-28 15:30:32,235 - INFO - Portfolio Metrics:
+2025-07-28 15:30:32,235 - INFO - Cash: Rs.6003.09
+2025-07-28 15:30:32,235 - INFO - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-28 15:30:32,235 - INFO - Total Value: Rs.9902.13
+2025-07-28 15:30:32,235 - INFO - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-28 15:30:32,235 - INFO - Current PnL (Dhan): Rs.0.00
+2025-07-28 15:30:32,236 - INFO - Realized PnL: Rs.0.00
+2025-07-28 15:30:32,236 - INFO - Unrealized PnL: Rs.-97.87
+2025-07-28 15:30:32,236 - INFO - Total Exposure: Rs.3899.04
+2025-07-28 15:30:32,260 - INFO - Fetched price for HDFCBANK.NS: Rs.2009.90
+2025-07-28 15:30:32,310 - INFO - Fetched price for SUZLON.NS: Rs.60.94
+2025-07-28 15:30:32,311 - INFO - Paper trading P&L summary generated
+2025-07-28 15:30:33,088 - INFO - Stopping Trading Bot...
+2025-07-28 15:30:33,088 - INFO - Waiting for trading thread to finish...
+2025-07-28 15:30:38,169 - INFO - Stock Trading Bot stopped successfully
+2025-07-28 15:30:43,090 - WARNING - Trading thread did not stop within timeout, forcing stop...
+2025-07-28 15:30:43,091 - INFO - Web Trading Bot stopped successfully
+2025-07-28 15:30:43,230 - INFO - Switched from paper mode to live mode
+2025-07-28 15:30:43,230 - INFO - Dhan API client initialized
+2025-07-28 15:30:43,557 - ERROR - Dhan API request failed: 500 Server Error:  for url: https://api.dhan.co/profile
+2025-07-28 15:30:43,558 - ERROR - Failed to get profile: Dhan API error: 500 Server Error:  for url: https://api.dhan.co/profile
+2025-07-28 15:30:43,558 - ERROR - Dhan API validation failed - invalid response
+2025-07-28 15:30:43,558 - ERROR - Failed to validate Dhan API connection
+2025-07-28 15:30:43,558 - ERROR - Failed to initialize live trading, reverting to paper mode
+2025-07-28 15:30:43,564 - INFO - Switched from live mode to paper mode
+2025-07-28 15:30:49,074 - INFO - Stock Trading Bot stopped successfully
+2025-07-28 15:31:02,311 - INFO - Stock Trading Bot stopped successfully
+2025-07-28 15:33:11,943 - INFO - Dual Portfolio Manager initialized with data directory: data
+2025-07-28 15:33:11,943 - INFO - Already in paper mode
+2025-07-28 15:33:11,945 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-28 15:33:11,945 - INFO - Loaded 2 trades from trade log
+2025-07-28 15:33:11,959 - INFO - Loaded 78 stocks from cache
+2025-07-28 15:33:11,959 - INFO - Dynamic ticker mapper initialized
+2025-07-28 15:33:11,961 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-28 15:33:11,961 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-28 15:33:11,962 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 15:33:11,962 - INFO - Trading bot initialized successfully
+2025-07-28 15:33:11,962 - INFO - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-28 15:33:11,962 - INFO - Web interface will be available at the above URL
+2025-07-28 15:33:11,962 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-28 15:33:11,994 - INFO - Dual Portfolio Manager initialized with data directory: data
+2025-07-28 15:33:11,994 - INFO - Already in paper mode
+2025-07-28 15:33:11,995 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-28 15:33:11,995 - INFO - Loaded 2 trades from trade log
+2025-07-28 15:33:12,010 - INFO - Loaded 78 stocks from cache
+2025-07-28 15:33:12,010 - INFO - Dynamic ticker mapper initialized
+2025-07-28 15:33:12,011 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-28 15:33:12,011 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-28 15:33:12,011 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 15:33:12,011 - INFO - Trading bot initialized successfully
+2025-07-28 15:33:12,011 - INFO - Trading bot initialized on startup
+2025-07-28 15:35:36,202 - INFO - Switched from paper mode to live mode
+2025-07-28 15:35:36,202 - INFO - Dhan API client initialized
+2025-07-28 15:35:36,669 - ERROR - Dhan API request failed: 500 Server Error:  for url: https://api.dhan.co/profile
+2025-07-28 15:35:36,669 - ERROR - Failed to get profile: Dhan API error: 500 Server Error:  for url: https://api.dhan.co/profile
+2025-07-28 15:35:36,669 - ERROR - Dhan API validation failed - invalid response
+2025-07-28 15:35:36,669 - ERROR - Failed to validate Dhan API connection
+2025-07-28 15:35:36,669 - ERROR - Failed to initialize live trading, reverting to paper mode
+2025-07-28 15:35:36,676 - INFO - Switched from live mode to paper mode
+2025-07-28 15:35:39,927 - INFO - Switched from paper mode to live mode
+2025-07-28 15:35:39,927 - INFO - Dhan API client initialized
+2025-07-28 15:35:40,357 - ERROR - Dhan API request failed: 500 Server Error:  for url: https://api.dhan.co/profile
+2025-07-28 15:35:40,357 - ERROR - Failed to get profile: Dhan API error: 500 Server Error:  for url: https://api.dhan.co/profile
+2025-07-28 15:35:40,358 - ERROR - Dhan API validation failed - invalid response
+2025-07-28 15:35:40,358 - ERROR - Failed to validate Dhan API connection
+2025-07-28 15:35:40,358 - ERROR - Failed to initialize live trading, reverting to paper mode
+2025-07-28 15:35:40,364 - INFO - Switched from live mode to paper mode
+2025-07-28 15:35:41,888 - INFO - Switched from paper mode to live mode
+2025-07-28 15:35:41,888 - INFO - Dhan API client initialized
+2025-07-28 15:35:42,551 - ERROR - Dhan API request failed: 500 Server Error:  for url: https://api.dhan.co/profile
+2025-07-28 15:35:42,552 - ERROR - Failed to get profile: Dhan API error: 500 Server Error:  for url: https://api.dhan.co/profile
+2025-07-28 15:35:42,552 - ERROR - Dhan API validation failed - invalid response
+2025-07-28 15:35:42,552 - ERROR - Failed to validate Dhan API connection
+2025-07-28 15:35:42,552 - ERROR - Failed to initialize live trading, reverting to paper mode
+2025-07-28 15:35:42,559 - INFO - Switched from live mode to paper mode
+2025-07-28 15:35:50,110 - INFO - Switched from paper mode to live mode
+2025-07-28 15:35:50,110 - INFO - Dhan API client initialized
+2025-07-28 15:35:50,565 - ERROR - Dhan API request failed: 500 Server Error:  for url: https://api.dhan.co/profile
+2025-07-28 15:35:50,566 - ERROR - Failed to get profile: Dhan API error: 500 Server Error:  for url: https://api.dhan.co/profile
+2025-07-28 15:35:50,566 - ERROR - Dhan API validation failed - invalid response
+2025-07-28 15:35:50,566 - ERROR - Failed to validate Dhan API connection
+2025-07-28 15:35:50,566 - ERROR - Failed to initialize live trading, reverting to paper mode
+2025-07-28 15:35:50,573 - INFO - Switched from live mode to paper mode
+2025-07-28 16:10:11,376 - INFO - Dual Portfolio Manager initialized with data directory: data
+2025-07-28 16:10:11,376 - INFO - Already in paper mode
+2025-07-28 16:10:11,377 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-28 16:10:11,378 - INFO - Loaded 2 trades from trade log
+2025-07-28 16:10:11,392 - INFO - Loaded 78 stocks from cache
+2025-07-28 16:10:11,393 - INFO - Dynamic ticker mapper initialized
+2025-07-28 16:10:11,395 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-28 16:10:11,395 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-28 16:10:11,395 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:10:11,395 - INFO - Trading bot initialized successfully
+2025-07-28 16:10:11,395 - INFO - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-28 16:10:11,396 - INFO - Web interface will be available at the above URL
+2025-07-28 16:10:11,396 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-28 16:10:11,427 - INFO - Dual Portfolio Manager initialized with data directory: data
+2025-07-28 16:10:11,428 - INFO - Already in paper mode
+2025-07-28 16:10:11,429 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-28 16:10:11,429 - INFO - Loaded 2 trades from trade log
+2025-07-28 16:10:11,444 - INFO - Loaded 78 stocks from cache
+2025-07-28 16:10:11,444 - INFO - Dynamic ticker mapper initialized
+2025-07-28 16:10:11,445 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-28 16:10:11,445 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-28 16:10:11,445 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:10:11,445 - INFO - Trading bot initialized successfully
+2025-07-28 16:10:11,445 - INFO - Trading bot initialized on startup
+2025-07-28 16:11:08,036 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:11:08,036 - INFO - Settings updated: Mode=paper, Risk Level=MEDIUM, Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:11:17,939 - INFO - Loaded live mode data - Cash: Rs.0.00, Holdings: 0, Trades: 0
+2025-07-28 16:11:17,939 - INFO - Switched from paper mode to live mode
+2025-07-28 16:11:17,939 - INFO - Dhan API client initialized
+2025-07-28 16:11:18,431 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Currency', 'ddpi': 'Deactive', 'dataPlan': 'Deactive'}
+2025-07-28 16:11:18,431 - INFO - Dhan API connection validated successfully
+2025-07-28 16:11:18,432 - INFO - Dhan API client initialized
+2025-07-28 16:11:18,432 - INFO - Live Trading Executor initialized
+2025-07-28 16:11:18,432 - INFO - Syncing portfolio with Dhan account...
+2025-07-28 16:11:18,821 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:11:18,822 - ERROR - Failed to get funds: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:11:18,834 - ERROR - Dhan API request failed: 400 Client Error:  for url: https://api.dhan.co/holdings
+2025-07-28 16:11:18,835 - ERROR - Failed to get holdings: Dhan API error: 400 Client Error:  for url: https://api.dhan.co/holdings
+2025-07-28 16:11:18,847 - INFO - Live trading initialized successfully
+2025-07-28 16:11:18,847 - INFO - Successfully switched from paper to live mode
+2025-07-28 16:11:18,847 - INFO - Successfully switched from paper to live mode
+2025-07-28 16:11:18,847 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:11:18,848 - INFO - Settings updated: Mode=live, Risk Level=MEDIUM, Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:11:19,181 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Currency', 'ddpi': 'Deactive', 'dataPlan': 'Deactive'}
+2025-07-28 16:11:19,182 - INFO - Dhan API connection validated successfully
+2025-07-28 16:11:19,279 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:11:19,280 - ERROR - Failed to get market status: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:11:19,475 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:11:19,475 - ERROR - Failed to get funds: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:11:31,370 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Currency', 'ddpi': 'Deactive', 'dataPlan': 'Deactive'}
+2025-07-28 16:11:31,370 - INFO - Dhan API connection validated successfully
+2025-07-28 16:11:31,463 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:11:31,464 - ERROR - Failed to get market status: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:11:31,663 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:11:31,664 - ERROR - Failed to get funds: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:11:49,962 - INFO - Loaded paper mode data - Cash: Rs.0.00, Holdings: 0, Trades: 0
+2025-07-28 16:11:49,962 - INFO - Switched from live mode to paper mode
+2025-07-28 16:11:49,966 - INFO - Successfully switched from live to paper mode
+2025-07-28 16:11:49,967 - INFO - Successfully switched from live to paper mode
+2025-07-28 16:11:49,967 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:11:49,967 - INFO - Settings updated: Mode=paper, Risk Level=MEDIUM, Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:12:13,208 - INFO - Loaded live mode data - Cash: Rs.0.00, Holdings: 0, Trades: 0
+2025-07-28 16:12:13,208 - INFO - Switched from paper mode to live mode
+2025-07-28 16:12:13,209 - INFO - Dhan API client initialized
+2025-07-28 16:12:13,677 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Currency', 'ddpi': 'Deactive', 'dataPlan': 'Deactive'}
+2025-07-28 16:12:13,678 - INFO - Dhan API connection validated successfully
+2025-07-28 16:12:13,678 - INFO - Dhan API client initialized
+2025-07-28 16:12:13,678 - INFO - Live Trading Executor initialized
+2025-07-28 16:12:13,678 - INFO - Syncing portfolio with Dhan account...
+2025-07-28 16:12:14,137 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:12:14,137 - ERROR - Failed to get funds: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:12:14,150 - ERROR - Dhan API request failed: 400 Client Error:  for url: https://api.dhan.co/holdings
+2025-07-28 16:12:14,151 - ERROR - Failed to get holdings: Dhan API error: 400 Client Error:  for url: https://api.dhan.co/holdings
+2025-07-28 16:12:14,154 - INFO - Live trading initialized successfully
+2025-07-28 16:12:14,155 - INFO - Successfully switched from paper to live mode
+2025-07-28 16:12:14,155 - INFO - Successfully switched from paper to live mode
+2025-07-28 16:12:14,155 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:12:14,155 - INFO - Settings updated: Mode=live, Risk Level=MEDIUM, Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:12:14,743 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Currency', 'ddpi': 'Deactive', 'dataPlan': 'Deactive'}
+2025-07-28 16:12:14,744 - INFO - Dhan API connection validated successfully
+2025-07-28 16:12:14,833 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:12:14,833 - ERROR - Failed to get market status: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:12:15,034 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:12:15,034 - ERROR - Failed to get funds: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:12:31,640 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Currency', 'ddpi': 'Deactive', 'dataPlan': 'Deactive'}
+2025-07-28 16:12:31,641 - INFO - Dhan API connection validated successfully
+2025-07-28 16:12:31,733 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:12:31,733 - ERROR - Failed to get market status: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:12:31,933 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:12:31,933 - ERROR - Failed to get funds: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:13:01,898 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Currency', 'ddpi': 'Deactive', 'dataPlan': 'Deactive'}
+2025-07-28 16:13:01,898 - INFO - Dhan API connection validated successfully
+2025-07-28 16:13:01,991 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:13:01,991 - ERROR - Failed to get market status: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:13:02,191 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:13:02,191 - ERROR - Failed to get funds: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:13:31,645 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Currency', 'ddpi': 'Deactive', 'dataPlan': 'Deactive'}
+2025-07-28 16:13:31,645 - INFO - Dhan API connection validated successfully
+2025-07-28 16:13:31,739 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:13:31,739 - ERROR - Failed to get market status: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:13:31,940 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:13:31,940 - ERROR - Failed to get funds: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:14:10,643 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Currency', 'ddpi': 'Deactive', 'dataPlan': 'Deactive'}
+2025-07-28 16:14:10,644 - INFO - Dhan API connection validated successfully
+2025-07-28 16:14:10,736 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:14:10,736 - ERROR - Failed to get market status: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:14:10,936 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:14:10,936 - ERROR - Failed to get funds: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:14:49,898 - INFO - Trading bot is already stopped
+2025-07-28 16:14:49,898 - INFO - Trading bot stopped on shutdown
+2025-07-28 16:14:49,899 - INFO - Web server stopped by user
+2025-07-28 16:14:59,515 - INFO - Dual Portfolio Manager initialized with data directory: data
+2025-07-28 16:14:59,515 - INFO - Already in paper mode
+2025-07-28 16:14:59,517 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-28 16:14:59,518 - INFO - Loaded 2 trades from trade log
+2025-07-28 16:14:59,533 - INFO - Loaded 78 stocks from cache
+2025-07-28 16:14:59,534 - INFO - Dynamic ticker mapper initialized
+2025-07-28 16:14:59,535 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-28 16:14:59,536 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-28 16:14:59,536 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:14:59,536 - INFO - Trading bot initialized successfully
+2025-07-28 16:14:59,536 - INFO - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-28 16:14:59,536 - INFO - Web interface will be available at the above URL
+2025-07-28 16:14:59,536 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-28 16:14:59,567 - INFO - Dual Portfolio Manager initialized with data directory: data
+2025-07-28 16:14:59,568 - INFO - Already in paper mode
+2025-07-28 16:14:59,569 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-28 16:14:59,569 - INFO - Loaded 2 trades from trade log
+2025-07-28 16:14:59,580 - INFO - Loaded 78 stocks from cache
+2025-07-28 16:14:59,580 - INFO - Dynamic ticker mapper initialized
+2025-07-28 16:14:59,581 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-28 16:14:59,582 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-28 16:14:59,582 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:14:59,582 - INFO - Trading bot initialized successfully
+2025-07-28 16:14:59,582 - INFO - Trading bot initialized on startup
+2025-07-28 16:15:43,184 - INFO - Loaded live mode data - Cash: Rs.0.00, Holdings: 0, Trades: 0
+2025-07-28 16:15:43,185 - INFO - Switched from paper mode to live mode
+2025-07-28 16:15:43,185 - INFO - Dhan API client initialized
+2025-07-28 16:15:43,684 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Currency', 'ddpi': 'Deactive', 'dataPlan': 'Deactive'}
+2025-07-28 16:15:43,685 - INFO - Dhan API connection validated successfully
+2025-07-28 16:15:43,685 - INFO - Dhan API client initialized
+2025-07-28 16:15:43,685 - INFO - Live Trading Executor initialized
+2025-07-28 16:15:43,685 - INFO - Syncing portfolio with Dhan account...
+2025-07-28 16:15:44,136 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:15:44,136 - ERROR - Failed to get funds: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:15:44,147 - ERROR - Dhan API request failed: 400 Client Error:  for url: https://api.dhan.co/holdings
+2025-07-28 16:15:44,148 - ERROR - Failed to get holdings: Dhan API error: 400 Client Error:  for url: https://api.dhan.co/holdings
+2025-07-28 16:15:44,160 - INFO - Live trading initialized successfully
+2025-07-28 16:15:44,160 - INFO - Successfully switched from paper to live mode
+2025-07-28 16:15:44,160 - INFO - Successfully switched from paper to live mode
+2025-07-28 16:15:44,160 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:15:44,160 - INFO - Settings updated: Mode=live, Risk Level=MEDIUM, Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:15:44,762 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Currency', 'ddpi': 'Deactive', 'dataPlan': 'Deactive'}
+2025-07-28 16:15:44,763 - INFO - Dhan API connection validated successfully
+2025-07-28 16:15:44,854 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:15:44,854 - ERROR - Failed to get market status: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:15:45,055 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:15:45,055 - ERROR - Failed to get funds: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:16:02,634 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Currency', 'ddpi': 'Deactive', 'dataPlan': 'Deactive'}
+2025-07-28 16:16:02,634 - INFO - Dhan API connection validated successfully
+2025-07-28 16:16:02,726 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:16:02,726 - ERROR - Failed to get market status: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:16:02,928 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:16:02,928 - ERROR - Failed to get funds: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:16:32,655 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Currency', 'ddpi': 'Deactive', 'dataPlan': 'Deactive'}
+2025-07-28 16:16:32,655 - INFO - Dhan API connection validated successfully
+2025-07-28 16:16:32,745 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:16:32,745 - ERROR - Failed to get market status: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/marketstatus
+2025-07-28 16:16:32,946 - ERROR - Dhan API request failed: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:16:32,946 - ERROR - Failed to get funds: Dhan API error: 404 Client Error:  for url: https://api.dhan.co/funds
+2025-07-28 16:16:33,494 - INFO - Trading bot is already stopped
+2025-07-28 16:16:33,494 - INFO - Trading bot stopped on shutdown
+2025-07-28 16:16:33,495 - INFO - Web server stopped by user
+2025-07-28 16:33:44,418 - INFO - Dual Portfolio Manager initialized with data directory: data
+2025-07-28 16:33:44,419 - INFO - Already in paper mode
+2025-07-28 16:33:44,420 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-28 16:33:44,421 - INFO - Loaded 2 trades from trade log
+2025-07-28 16:33:44,437 - INFO - Loaded 78 stocks from cache
+2025-07-28 16:33:44,437 - INFO - Dynamic ticker mapper initialized
+2025-07-28 16:33:44,439 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-28 16:33:44,439 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-28 16:33:44,440 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:33:44,440 - INFO - Trading bot initialized successfully
+2025-07-28 16:33:44,440 - INFO - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-28 16:33:44,440 - INFO - Web interface will be available at the above URL
+2025-07-28 16:33:44,440 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-28 16:33:44,495 - INFO - Dual Portfolio Manager initialized with data directory: data
+2025-07-28 16:33:44,495 - INFO - Already in paper mode
+2025-07-28 16:33:44,496 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-28 16:33:44,497 - INFO - Loaded 2 trades from trade log
+2025-07-28 16:33:44,513 - INFO - Loaded 78 stocks from cache
+2025-07-28 16:33:44,514 - INFO - Dynamic ticker mapper initialized
+2025-07-28 16:33:44,515 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-28 16:33:44,515 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-28 16:33:44,515 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:33:44,515 - INFO - Trading bot initialized successfully
+2025-07-28 16:33:44,515 - INFO - Trading bot initialized on startup
+2025-07-28 16:34:06,978 - WARNING - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-28 16:34:08,254 - WARNING - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-28 16:34:11,847 - WARNING - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-28 16:34:33,483 - WARNING - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-28 16:34:34,790 - WARNING - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-28 16:34:44,924 - INFO - Loaded live mode data - Cash: Rs.0.00, Holdings: 0, Trades: 0
+2025-07-28 16:34:44,925 - INFO - Switched from paper mode to live mode
+2025-07-28 16:34:44,925 - INFO - Dhan API client initialized
+2025-07-28 16:34:45,292 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Equity, ', 'ddpi': 'Deactive', 'mtf': 'Deactive', 'dataPlan': 'Deactive', 'dataValidity': 'NA'}
+2025-07-28 16:34:45,293 - INFO - Dhan API connection validated successfully
+2025-07-28 16:34:45,293 - INFO - Dhan API client initialized
+2025-07-28 16:34:45,293 - INFO - Live Trading Executor initialized
+2025-07-28 16:34:45,293 - INFO - Syncing portfolio with Dhan account...
+2025-07-28 16:34:45,583 - ERROR - Dhan API request failed: 500 Server Error:  for url: https://api.dhan.co/v2/holdings
+2025-07-28 16:34:45,584 - ERROR - Failed to get holdings: Dhan API error: 500 Server Error:  for url: https://api.dhan.co/v2/holdings
+2025-07-28 16:34:45,584 - INFO - Portfolio synced - Cash: Rs.0.00, Holdings: Rs.0.00
+2025-07-28 16:34:45,584 - INFO - Live trading initialized successfully
+2025-07-28 16:34:45,584 - INFO - Successfully switched from paper to live mode
+2025-07-28 16:34:45,584 - INFO - Successfully switched from paper to live mode
+2025-07-28 16:34:45,584 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:34:45,585 - INFO - Settings updated: Mode=live, Risk Level=MEDIUM, Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 16:35:02,953 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Equity, ', 'ddpi': 'Deactive', 'mtf': 'Deactive', 'dataPlan': 'Deactive', 'dataValidity': 'NA'}
+2025-07-28 16:35:02,953 - INFO - Dhan API connection validated successfully
+2025-07-28 16:35:03,586 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Equity, ', 'ddpi': 'Deactive', 'mtf': 'Deactive', 'dataPlan': 'Deactive', 'dataValidity': 'NA'}
+2025-07-28 16:35:03,586 - INFO - Dhan API connection validated successfully
+2025-07-28 16:35:32,390 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Equity, ', 'ddpi': 'Deactive', 'mtf': 'Deactive', 'dataPlan': 'Deactive', 'dataValidity': 'NA'}
+2025-07-28 16:35:32,391 - INFO - Dhan API connection validated successfully
+2025-07-28 16:35:32,783 - INFO - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Equity, ', 'ddpi': 'Deactive', 'mtf': 'Deactive', 'dataPlan': 'Deactive', 'dataValidity': 'NA'}
+2025-07-28 16:35:32,783 - INFO - Dhan API connection validated successfully
+2025-07-28 16:35:40,350 - INFO - Loaded paper mode data - Cash: Rs.0.00, Holdings: 0, Trades: 0
+2025-07-28 16:35:40,350 - INFO - Switched from live mode to paper mode
+2025-07-28 16:35:40,354 - INFO - Successfully switched from live to paper mode
+2025-07-28 16:35:40,354 - INFO - Successfully switched from live to paper mode
+2025-07-28 16:35:40,354 - INFO - Applied LOW risk settings: Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-28 16:35:40,355 - INFO - Settings updated: Mode=paper, Risk Level=LOW, Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-28 16:35:43,498 - WARNING - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-28 16:35:59,704 - INFO - Applied LOW risk settings: Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-28 16:35:59,705 - INFO - Settings updated: Mode=paper, Risk Level=LOW, Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-28 16:36:02,207 - WARNING - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-28 16:36:05,467 - WARNING - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-28 16:36:22,662 - INFO - Trading bot is already stopped
+2025-07-28 16:36:22,662 - INFO - Trading bot stopped on shutdown
+2025-07-28 16:36:22,663 - INFO - Web server stopped by user
