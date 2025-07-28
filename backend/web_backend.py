@@ -497,6 +497,44 @@ class WebTradingBot:
         except Exception as e:
             logger.error(f"Error in trade callback: {e}")
 
+def apply_risk_level_settings(bot, risk_level, custom_stop_loss=None, custom_allocation=None):
+    """Apply risk level settings to the trading bot"""
+    try:
+        # Define risk level mappings
+        risk_mappings = {
+            "LOW": {"stop_loss": 0.03, "allocation": 0.15},      # 3% stop-loss, 15% allocation
+            "MEDIUM": {"stop_loss": 0.05, "allocation": 0.25},   # 5% stop-loss, 25% allocation
+            "HIGH": {"stop_loss": 0.08, "allocation": 0.35}      # 8% stop-loss, 35% allocation
+        }
+
+        if risk_level == "CUSTOM":
+            # Use custom values if provided
+            if custom_stop_loss is not None:
+                bot.config['stop_loss_pct'] = custom_stop_loss
+                if hasattr(bot, 'executor') and bot.executor:
+                    bot.executor.stop_loss_pct = custom_stop_loss
+            if custom_allocation is not None:
+                bot.config['max_capital_per_trade'] = custom_allocation
+                if hasattr(bot, 'executor') and bot.executor:
+                    bot.executor.max_capital_per_trade = custom_allocation
+        elif risk_level in risk_mappings:
+            # Apply predefined risk level settings
+            settings = risk_mappings[risk_level]
+            bot.config['stop_loss_pct'] = settings['stop_loss']
+            bot.config['max_capital_per_trade'] = settings['allocation']
+
+            # Update executor if it exists
+            if hasattr(bot, 'executor') and bot.executor:
+                bot.executor.stop_loss_pct = settings['stop_loss']
+                bot.executor.max_capital_per_trade = settings['allocation']
+
+        logger.info(f"Applied {risk_level} risk settings: "
+                   f"Stop Loss={bot.config.get('stop_loss_pct')*100}%, "
+                   f"Max Allocation={bot.config.get('max_capital_per_trade')*100}%")
+
+    except Exception as e:
+        logger.error(f"Error applying risk level settings: {e}")
+
 def initialize_bot():
     """Initialize the trading bot with default configuration"""
     global trading_bot
@@ -513,19 +551,24 @@ def initialize_bot():
             "current_portfolio_value": 10000,
             "current_pnl": 0,
             "mode": "paper",  # Default to paper mode for web interface
+            "riskLevel": "MEDIUM",  # Default risk level
             "dhan_client_id": os.getenv("DHAN_CLIENT_ID"),
             "dhan_access_token": os.getenv("DHAN_ACCESS_TOKEN"),
             "period": "3y",
             "prediction_days": 30,
             "benchmark_tickers": ["^NSEI"],
             "sleep_interval": 30,  # 30 seconds
-            # Risk management settings
-            "stop_loss_pct": float(os.getenv("STOP_LOSS_PCT", "0.05")),
-            "max_capital_per_trade": float(os.getenv("MAX_CAPITAL_PER_TRADE", "0.25")),
-            "max_trade_limit": int(os.getenv("MAX_TRADE_LIMIT", "10"))
+            # Risk management settings - will be set by risk level
+            "stop_loss_pct": 0.05,  # Default 5% (MEDIUM)
+            "max_capital_per_trade": 0.25,  # Default 25% (MEDIUM)
+            "max_trade_limit": 10
         }
         
         trading_bot = WebTradingBot(config)
+
+        # Apply default risk level settings
+        apply_risk_level_settings(trading_bot, config["riskLevel"])
+
         logger.info("Trading bot initialized successfully")
         
     except Exception as e:
@@ -882,8 +925,15 @@ async def start_bot():
                 raise HTTPException(status_code=500, detail=f"Failed to initialize bot: {str(init_error)}")
 
         if trading_bot:
+            # Apply current risk level settings before starting
+            risk_level = trading_bot.config.get("riskLevel", "MEDIUM")
+            apply_risk_level_settings(trading_bot, risk_level)
+
             trading_bot.start()
-            return MessageResponse(message="Bot started successfully")
+            stop_loss_pct = trading_bot.config.get('stop_loss_pct', 0.05) * 100
+            max_allocation_pct = trading_bot.config.get('max_capital_per_trade', 0.25) * 100
+            logger.info(f"Trading bot started with {risk_level} risk level")
+            return MessageResponse(message=f"Bot started successfully with {risk_level} risk level (Stop Loss: {stop_loss_pct}%, Max Allocation: {max_allocation_pct}%)")
         else:
             raise HTTPException(status_code=500, detail="Bot not initialized")
     except HTTPException:
@@ -948,12 +998,29 @@ async def update_settings(request: SettingsRequest):
                 trading_bot.config['mode'] = request.mode
             if request.riskLevel is not None:
                 trading_bot.config['riskLevel'] = request.riskLevel
+                # Apply risk level settings dynamically
+                # For predefined levels, don't pass custom values so they use the mappings
+                if request.riskLevel in ["LOW", "MEDIUM", "HIGH"]:
+                    apply_risk_level_settings(trading_bot, request.riskLevel)
+                else:
+                    # For CUSTOM, use the provided values
+                    apply_risk_level_settings(trading_bot, request.riskLevel, request.stop_loss_pct, request.max_capital_per_trade)
             if request.stop_loss_pct is not None:
                 trading_bot.config['stop_loss_pct'] = request.stop_loss_pct
+                # Update executor if it exists
+                if hasattr(trading_bot, 'executor') and trading_bot.executor:
+                    trading_bot.executor.stop_loss_pct = request.stop_loss_pct
             if request.max_capital_per_trade is not None:
                 trading_bot.config['max_capital_per_trade'] = request.max_capital_per_trade
+                # Update executor if it exists
+                if hasattr(trading_bot, 'executor') and trading_bot.executor:
+                    trading_bot.executor.max_capital_per_trade = request.max_capital_per_trade
             if request.max_trade_limit is not None:
                 trading_bot.config['max_trade_limit'] = request.max_trade_limit
+
+            logger.info(f"Settings updated: Risk Level={trading_bot.config.get('riskLevel')}, "
+                       f"Stop Loss={trading_bot.config.get('stop_loss_pct')*100}%, "
+                       f"Max Allocation={trading_bot.config.get('max_capital_per_trade')*100}%")
 
             return MessageResponse(message="Settings updated successfully")
         else:

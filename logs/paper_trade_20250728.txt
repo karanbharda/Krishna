@@ -164,3 +164,51 @@ Decision Factors:
   • Sell Signals: 1/4
   • Final Decision: HOLD
 ============================================================
+
+[2025-07-28 14:49:46] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 95.7 hours
+
+Portfolio Performance:
+  • Starting Balance: ₹10,000.00
+  • Current Cash: ₹6,003.09
+  • Holdings Value: ₹3,894.24
+  • Total Portfolio Value: ₹9,897.33
+  • Total Return: ₹-102.67 (-1.03%)
+  • Realized P&L: ₹0.00
+  • Unrealized P&L: ₹-102.67
+
+Trading Statistics:
+  • Total Trades: 2
+  • Buy Orders: 2
+  • Sell Orders: 0
+  • Win Rate: 0.0%
+  • Active Positions: 2
+
+Current Holdings:
+  • HDFCBANK.NS: 1 shares @ ₹2015.70 (₹2,015.70)
+  • SUZLON.NS: 31 shares @ ₹63.91 (₹1,981.21)
+======================================================================
+
+[2025-07-28 14:50:18] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 95.7 hours
+
+Portfolio Performance:
+  • Starting Balance: ₹10,000.00
+  • Current Cash: ₹6,003.09
+  • Holdings Value: ₹3,896.07
+  • Total Portfolio Value: ₹9,899.16
+  • Total Return: ₹-100.84 (-1.01%)
+  • Realized P&L: ₹0.00
+  • Unrealized P&L: ₹-100.84
+
+Trading Statistics:
+  • Total Trades: 2
+  • Buy Orders: 2
+  • Sell Orders: 0
+  • Win Rate: 0.0%
+  • Active Positions: 2
+
+Current Holdings:
+  • HDFCBANK.NS: 1 shares @ ₹2015.70 (₹2,015.70)
+  • SUZLON.NS: 31 shares @ ₹63.91 (₹1,981.21)
+======================================================================
