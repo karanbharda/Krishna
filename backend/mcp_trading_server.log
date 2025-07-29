@@ -1,0 +1,39 @@
+2025-07-29 14:31:17,717 - mcp_server - INFO - [__init__.py:27] - MCP Trading Server components loaded successfully
+2025-07-29 14:31:17,867 - mcp_server.tools.market_analysis_tool - INFO - [market_analysis_tool.py:25] - TA library loaded successfully
+2025-07-29 14:31:19,293 - mcp_server - WARNING - [__init__.py:70] - Trading Agent not available: No module named 'mcp_trading_server'
+2025-07-29 14:31:23,231 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-29 14:31:23,232 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-29 14:31:23,234 - testindia - INFO - [testindia.py:1299] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-29 14:31:23,234 - testindia - INFO - [testindia.py:1305] - Loaded 2 trades from trade log
+2025-07-29 14:31:23,246 - testindia - INFO - [testindia.py:699] - Loaded 78 stocks from cache
+2025-07-29 14:31:23,246 - testindia - INFO - [testindia.py:2009] - Dynamic ticker mapper initialized
+2025-07-29 14:31:23,248 - testindia - INFO - [testindia.py:840] - Llama LLM initialized successfully with Ollama
+2025-07-29 14:31:23,249 - testindia - INFO - [testindia.py:3954] - Initializing Stock Trading Bot for Indian market...
+2025-07-29 14:31:23,249 - __main__ - INFO - [web_backend.py:841] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-29 14:31:23,249 - __main__ - INFO - [web_backend.py:882] - Trading bot initialized successfully
+2025-07-29 14:31:23,249 - __main__ - INFO - [web_backend.py:1781] - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-29 14:31:23,249 - __main__ - INFO - [web_backend.py:1782] - Web interface will be available at the above URL
+2025-07-29 14:31:23,249 - __main__ - INFO - [web_backend.py:1783] - API documentation available at http://{host}:{port}/docs
+2025-07-29 14:31:23,283 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-29 14:31:23,284 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-29 14:31:23,284 - testindia - INFO - [testindia.py:1299] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-29 14:31:23,285 - testindia - INFO - [testindia.py:1305] - Loaded 2 trades from trade log
+2025-07-29 14:31:23,300 - testindia - INFO - [testindia.py:699] - Loaded 78 stocks from cache
+2025-07-29 14:31:23,301 - testindia - INFO - [testindia.py:2009] - Dynamic ticker mapper initialized
+2025-07-29 14:31:23,302 - testindia - INFO - [testindia.py:840] - Llama LLM initialized successfully with Ollama
+2025-07-29 14:31:23,302 - testindia - INFO - [testindia.py:3954] - Initializing Stock Trading Bot for Indian market...
+2025-07-29 14:31:23,302 - __main__ - INFO - [web_backend.py:841] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-29 14:31:23,302 - __main__ - INFO - [web_backend.py:882] - Trading bot initialized successfully
+2025-07-29 14:31:23,302 - __main__ - INFO - [web_backend.py:1808] - Trading bot initialized on startup
+2025-07-29 14:34:36,033 - __main__ - INFO - [web_backend.py:1129] - Market query detected: what the market doing today ?
+2025-07-29 14:34:37,806 - __main__ - INFO - [web_backend.py:1131] - Real-time response: True
+2025-07-29 14:34:37,806 - __main__ - INFO - [web_backend.py:1133] - Returning real-time market response
+2025-07-29 14:38:20,960 - __main__ - INFO - [web_backend.py:533] - Trading bot is already stopped
+2025-07-29 14:38:20,960 - __main__ - INFO - [web_backend.py:1837] - Trading bot stopped on shutdown
+2025-07-29 14:38:20,987 - __main__ - INFO - [web_backend.py:1852] - Web server stopped by user
+2025-07-29 14:50:05,839 - mcp_server - INFO - [__init__.py:27] - MCP Trading Server components loaded successfully
+2025-07-29 14:50:05,882 - mcp_server.tools.market_analysis_tool - INFO - [market_analysis_tool.py:25] - TA library loaded successfully
+2025-07-29 14:50:07,194 - mcp_server - WARNING - [__init__.py:70] - Trading Agent not available: No module named 'mcp_trading_server'
+2025-07-29 14:50:11,297 - FyersAPIRequest - DEBUG - [fyersModel.py:140] - {'Status Code': 200, 'API': '/quotes'}
+2025-07-29 14:50:11,299 - web_backend - INFO - [web_backend.py:501] - Fyers client connected successfully
+2025-07-29 14:50:11,587 - FyersAPIRequest - DEBUG - [fyersModel.py:140] - {'Status Code': 200, 'API': '/quotes'}

@@ -2,3 +2,5 @@
 {"level":"ERROR","location":"[get_call:146] fyersModel","message":{"API":"/quotes","Error":{"message":"Please provide valid token","code":-15,"s":"error"}},"timestamp":"2025-07-28 11:32:26,272+0530","service":"FyersAPI"}
 {"level":"ERROR","location":"[get_call:146] fyersModel","message":{"API":"/profile","Error":{"s":"error","code":-8,"message":"Your token has expired. Please generate a token"}},"timestamp":"2025-07-28 11:35:41,543+0530","service":"FyersAPI"}
 {"level":"ERROR","location":"[get_call:146] fyersModel","message":{"API":"/profile","Error":{"s":"error","code":-352,"message":"Please provide a valid app id."}},"timestamp":"2025-07-28 11:50:55,712+0530","service":"FyersAPI"}
+{"level":"ERROR","location":"[get_call:146] fyersModel","message":{"API":"/quotes","Error":{"message":"Please provide valid token","code":-15,"s":"error"}},"timestamp":"2025-07-29 13:12:47,813+0530","service":"FyersAPI"}
+{"level":"ERROR","location":"[get_call:146] fyersModel","message":{"API":"/profile","Error":{"s":"error","code":-209,"message":"Please provide the validation parameter"}},"timestamp":"2025-07-29 14:48:46,842+0530","service":"FyersAPI"}

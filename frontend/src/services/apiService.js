@@ -145,6 +145,54 @@ export const apiService = {
     }
   },
 
+  // ============================================================================
+  // MCP (Model Context Protocol) API Endpoints
+  // ============================================================================
+
+  // MCP Market Analysis
+  async mcpAnalyzeMarket(analysisRequest) {
+    try {
+      const response = await api.post('/mcp/analyze', analysisRequest);
+      return response.data;
+    } catch (error) {
+      console.error('MCP market analysis error:', error);
+      throw error;
+    }
+  },
+
+  // MCP Trade Execution
+  async mcpExecuteTrade(tradeRequest) {
+    try {
+      const response = await api.post('/mcp/execute', tradeRequest);
+      return response.data;
+    } catch (error) {
+      console.error('MCP trade execution error:', error);
+      throw error;
+    }
+  },
+
+  // MCP Advanced Chat
+  async mcpChat(chatRequest) {
+    try {
+      const response = await api.post('/mcp/chat', chatRequest);
+      return response.data;
+    } catch (error) {
+      console.error('MCP chat error:', error);
+      throw error;
+    }
+  },
+
+  // MCP Status Check
+  async getMcpStatus() {
+    try {
+      const response = await api.get('/mcp/status');
+      return response.data;
+    } catch (error) {
+      console.error('MCP status error:', error);
+      throw error;
+    }
+  },
+
   // Bot Control
   async startBot() {
     try {

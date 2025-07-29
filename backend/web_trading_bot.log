@@ -1564,3 +1564,27 @@
 2025-07-28 16:36:22,662 - INFO - Trading bot is already stopped
 2025-07-28 16:36:22,662 - INFO - Trading bot stopped on shutdown
 2025-07-28 16:36:22,663 - INFO - Web server stopped by user
+2025-07-28 17:15:28,389 - INFO - Dual Portfolio Manager initialized with data directory: data
+2025-07-28 17:15:28,390 - INFO - Already in paper mode
+2025-07-28 17:15:28,392 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-28 17:15:28,392 - INFO - Loaded 2 trades from trade log
+2025-07-28 17:15:28,407 - INFO - Loaded 78 stocks from cache
+2025-07-28 17:15:28,408 - INFO - Dynamic ticker mapper initialized
+2025-07-28 17:15:28,410 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-28 17:15:28,410 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-28 17:15:28,410 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 17:15:28,410 - INFO - Trading bot initialized successfully
+2025-07-28 17:15:28,410 - INFO - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-28 17:15:28,411 - INFO - Web interface will be available at the above URL
+2025-07-28 17:15:28,411 - INFO - API documentation available at http://{host}:{port}/docs
+2025-07-28 17:15:28,444 - INFO - Dual Portfolio Manager initialized with data directory: data
+2025-07-28 17:15:28,444 - INFO - Already in paper mode
+2025-07-28 17:15:28,445 - INFO - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-28 17:15:28,446 - INFO - Loaded 2 trades from trade log
+2025-07-28 17:15:28,459 - INFO - Loaded 78 stocks from cache
+2025-07-28 17:15:28,460 - INFO - Dynamic ticker mapper initialized
+2025-07-28 17:15:28,461 - INFO - Llama LLM initialized successfully with Ollama
+2025-07-28 17:15:28,461 - INFO - Initializing Stock Trading Bot for Indian market...
+2025-07-28 17:15:28,461 - INFO - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-28 17:15:28,461 - INFO - Trading bot initialized successfully
+2025-07-28 17:15:28,461 - INFO - Trading bot initialized on startup

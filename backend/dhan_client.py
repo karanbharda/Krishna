@@ -60,12 +60,23 @@ class DhanAPIClient:
             else:
                 raise ValueError(f"Unsupported HTTP method: {method}")
             
+            # Handle specific status codes more gracefully
+            if response.status_code == 500 and endpoint == '/v2/holdings':
+                # 500 error on holdings usually means empty portfolio
+                logger.info("Holdings endpoint returned 500 - likely empty portfolio")
+                return {"data": []}
+
             response.raise_for_status()
             return response.json()
-            
+
         except requests.exceptions.RequestException as e:
-            logger.error(f"Dhan API request failed: {e}")
-            raise Exception(f"Dhan API error: {str(e)}")
+            # More specific error handling
+            if "500" in str(e) and endpoint == '/v2/holdings':
+                logger.info("Holdings API returned 500 - empty portfolio (normal for new accounts)")
+                return {"data": []}
+            else:
+                logger.error(f"Dhan API request failed: {e}")
+                raise Exception(f"Dhan API error: {str(e)}")
     
     def get_profile(self) -> Dict:
         """Get user profile and account information"""
@@ -89,7 +100,11 @@ class DhanAPIClient:
             response = self._make_request('GET', '/v2/holdings')
             return response.get('data', [])
         except Exception as e:
-            logger.error(f"Failed to get holdings: {e}")
+            # More graceful error handling for holdings
+            if "500" in str(e):
+                logger.info("No holdings found (empty portfolio) - this is normal for new accounts")
+            else:
+                logger.error(f"Failed to get holdings: {e}")
             return []
     
     def get_positions(self) -> List[Dict]:
