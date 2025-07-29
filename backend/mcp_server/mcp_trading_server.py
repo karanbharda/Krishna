@@ -18,24 +18,54 @@ from dataclasses import dataclass, asdict
 from enum import Enum
 import uuid
 
-# MCP Protocol imports
-try:
-    from mcp import ClientSession, StdioServerParameters
-    from mcp.server import Server
-    from mcp.server.models import InitializationOptions
-    from mcp.types import (
-        CallToolRequest, CallToolResult, ListToolsRequest, ListToolsResult,
-        Tool, TextContent, ImageContent, EmbeddedResource
-    )
-    MCP_AVAILABLE = True
-except ImportError:
-    # Fallback for development without MCP
-    MCP_AVAILABLE = False
-    logging.warning("MCP not available - using fallback implementation")
+# MCP Protocol - Using our own implementation (no external dependencies)
+MCP_AVAILABLE = True
 
-# Production monitoring
-import psutil
-from prometheus_client import Counter, Histogram, Gauge, start_http_server
+# Define our own MCP-like classes for internal use
+class Tool:
+    def __init__(self, name, description, inputSchema):
+        self.name = name
+        self.description = description
+        self.inputSchema = inputSchema
+
+class TextContent:
+    def __init__(self, type, text):
+        self.type = type
+        self.text = text
+
+class CallToolResult:
+    def __init__(self, content, isError=False):
+        self.content = content
+        self.isError = isError
+
+class ListToolsResult:
+    def __init__(self, tools):
+        self.tools = tools
+
+# Production monitoring (optional)
+try:
+    import psutil
+    from prometheus_client import Counter, Histogram, Gauge, start_http_server
+    MONITORING_AVAILABLE = True
+except ImportError:
+    MONITORING_AVAILABLE = False
+    # Create dummy classes for monitoring
+    class Counter:
+        def __init__(self, *args, **kwargs): pass
+        def labels(self, *args, **kwargs): return self
+        def inc(self): pass
+
+    class Histogram:
+        def __init__(self, *args, **kwargs): pass
+        def labels(self, *args, **kwargs): return self
+        def observe(self, value): pass
+
+    class Gauge:
+        def __init__(self, *args, **kwargs): pass
+        def inc(self): pass
+        def dec(self): pass
+
+    def start_http_server(port): pass
 
 # Configure production logging
 logging.basicConfig(
@@ -107,12 +137,15 @@ class MCPTradingServer:
     
     def _start_monitoring(self):
         """Start Prometheus monitoring server"""
-        try:
-            monitoring_port = self.config.get("monitoring_port", 8001)
-            start_http_server(monitoring_port)
-            logger.info(f"Monitoring server started on port {monitoring_port}")
-        except Exception as e:
-            logger.error(f"Failed to start monitoring: {e}")
+        if MONITORING_AVAILABLE:
+            try:
+                monitoring_port = self.config.get("monitoring_port", 8001)
+                start_http_server(monitoring_port)
+                logger.info(f"Monitoring server started on port {monitoring_port}")
+            except Exception as e:
+                logger.error(f"Failed to start monitoring: {e}")
+        else:
+            logger.info("Monitoring disabled (prometheus-client not available)")
     
     def _register_handlers(self):
         """Register MCP protocol handlers"""

@@ -18,14 +18,24 @@ from dataclasses import dataclass
 # Set up logger first
 logger = logging.getLogger(__name__)
 
-# Use 'ta' library instead of TA-Lib for better compatibility
+# Use 'ta' library for technical analysis
 try:
     import ta
     TA_AVAILABLE = True
     logger.info("TA library loaded successfully")
 except ImportError as e:
-    TA_AVAILABLE = False
-    logger.warning(f"TA library not available - using simplified analysis: {e}")
+    # Install ta library if not available
+    try:
+        import subprocess
+        import sys
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "ta"])
+        import ta
+        TA_AVAILABLE = True
+        logger.info("TA library installed and loaded successfully")
+    except Exception as install_error:
+        TA_AVAILABLE = False
+        logger.error(f"Failed to install/load TA library: {install_error}")
+        raise ImportError("TA library is required for market analysis")
 
 try:
     from sklearn.preprocessing import StandardScaler

@@ -186,7 +186,7 @@ class DynamicMarketExpert:
                         }
 
                     if market_data:
-                        logger.info(f"✅ Fetched live data from Fyers for {len(market_data)} symbols")
+                        logger.info(f"[SUCCESS] Fetched live data from Fyers for {len(market_data)} symbols")
                         return market_data
                 else:
                     logger.warning(f"Fyers API error: {quotes_response}")
@@ -231,9 +231,9 @@ class DynamicMarketExpert:
                     continue
 
             if market_data:
-                logger.info(f"✅ Fetched live data from yfinance for {len(market_data)} symbols")
+                logger.info(f"[SUCCESS] Fetched live data from yfinance for {len(market_data)} symbols")
             else:
-                logger.warning("❌ No market data available from any source")
+                logger.warning("[ERROR] No market data available from any source")
 
         except Exception as e:
             logger.error(f"yfinance fallback failed: {e}")
@@ -246,11 +246,11 @@ class DynamicMarketExpert:
         if not market_data:
             return "No live market data available at the moment."
         
-        summary = "📊 **Live Market Data:**\n"
+        summary = "**Live Market Data:**\n"
         for symbol, data in market_data.items():
-            change_emoji = "🟢" if data['change'] >= 0 else "🔴"
-            summary += f"{change_emoji} **{symbol}**: ₹{data['price']:.2f} ({data['change']:+.2f}, {data['change_pct']:+.2f}%)\n"
-            summary += f"   📈 High: ₹{data['high']:.2f} | 📉 Low: ₹{data['low']:.2f} | 📊 Volume: {data['volume']:,}\n"
+            change_emoji = "[+]" if data['change'] >= 0 else "[-]"
+            summary += f"{change_emoji} **{symbol}**: Rs.{data['price']:.2f} ({data['change']:+.2f}, {data['change_pct']:+.2f}%)\n"
+            summary += f"   High: Rs.{data['high']:.2f} | Low: Rs.{data['low']:.2f} | Volume: {data['volume']:,}\n"
         
         return summary
     
@@ -302,9 +302,9 @@ class DynamicMarketExpert:
         if is_price_query:
             response += f"**Current Prices & Analysis:**\n"
             for symbol, data in market_data.items():
-                change_emoji = "🟢" if data['change'] >= 0 else "🔴"
+                change_emoji = "[+]" if data['change'] >= 0 else "[-]"
                 trend = "uptrend" if data['change'] > 0 else "downtrend" if data['change'] < 0 else "flat"
-                response += f"{change_emoji} **{symbol}**: ₹{data['price']:.2f} ({data['change_pct']:+.2f}%) - Currently in {trend}\n"
+                response += f"{change_emoji} **{symbol}**: Rs.{data['price']:.2f} ({data['change_pct']:+.2f}%) - Currently in {trend}\n"
 
         elif is_performance_query:
             response += f"**Performance Analysis:**\n"
@@ -318,15 +318,15 @@ class DynamicMarketExpert:
                 else:
                     performance = "stable trading"
 
-                change_emoji = "🟢" if data['change'] >= 0 else "🔴"
-                response += f"{change_emoji} **{symbol}**: {performance} at ₹{data['price']:.2f} with {data['volume']:,} volume\n"
+                change_emoji = "[+]" if data['change'] >= 0 else "[-]"
+                response += f"{change_emoji} **{symbol}**: {performance} at Rs.{data['price']:.2f} with {data['volume']:,} volume\n"
 
         elif is_buy_query:
             response += f"**Investment Recommendation:**\n"
             response += f"Current market shows {market_sentiment}. {advice}.\n\n"
 
             for symbol, data in market_data.items():
-                change_emoji = "🟢" if data['change'] >= 0 else "🔴"
+                change_emoji = "[+]" if data['change'] >= 0 else "[-]"
 
                 if data['change_pct'] > 3:
                     recommendation = "Overbought - wait for correction"
@@ -346,9 +346,9 @@ class DynamicMarketExpert:
             sorted_stocks = sorted(market_data.items(), key=lambda x: x[1]['change_pct'], reverse=True)
 
             for i, (symbol, data) in enumerate(sorted_stocks):
-                rank = "🥇" if i == 0 else "🥈" if i == 1 else "🥉" if i == 2 else "📊"
-                change_emoji = "🟢" if data['change'] >= 0 else "🔴"
-                response += f"{rank} **{symbol}**: ₹{data['price']:.2f} ({data['change_pct']:+.2f}%) {change_emoji}\n"
+                rank = "#1" if i == 0 else "#2" if i == 1 else "#3" if i == 2 else "#"
+                change_emoji = "[+]" if data['change'] >= 0 else "[-]"
+                response += f"{rank} **{symbol}**: Rs.{data['price']:.2f} ({data['change_pct']:+.2f}%) {change_emoji}\n"
 
         else:
             # General analysis
@@ -356,8 +356,8 @@ class DynamicMarketExpert:
             response += f"Showing {market_sentiment} with average change of {avg_change:+.2f}%.\n\n"
 
             for symbol, data in market_data.items():
-                change_emoji = "🟢" if data['change'] >= 0 else "🔴"
-                response += f"{change_emoji} **{symbol}**: ₹{data['price']:.2f} ({data['change_pct']:+.2f}%) | Vol: {data['volume']:,}\n"
+                change_emoji = "[+]" if data['change'] >= 0 else "[-]"
+                response += f"{change_emoji} **{symbol}**: Rs.{data['price']:.2f} ({data['change_pct']:+.2f}%) | Vol: {data['volume']:,}\n"
 
         # Add professional insight
         response += f"\n💡 **Professional Insight:** {advice}. "
@@ -407,7 +407,7 @@ class DynamicMarketExpert:
         
         # Individual stock insights
         for symbol, data in market_data.items():
-            change_emoji = "🟢" if data['change'] >= 0 else "🔴"
+            change_emoji = "[+]" if data['change'] >= 0 else "[-]"
             
             if abs(data['change_pct']) > 2:
                 movement = "significant movement"

@@ -37,3 +37,981 @@
 2025-07-29 14:50:11,297 - FyersAPIRequest - DEBUG - [fyersModel.py:140] - {'Status Code': 200, 'API': '/quotes'}
 2025-07-29 14:50:11,299 - web_backend - INFO - [web_backend.py:501] - Fyers client connected successfully
 2025-07-29 14:50:11,587 - FyersAPIRequest - DEBUG - [fyersModel.py:140] - {'Status Code': 200, 'API': '/quotes'}
+2025-07-29 15:23:14,923 - mcp_server - INFO - [__init__.py:26] - MCP Trading Server components loaded successfully
+2025-07-29 15:23:15,095 - mcp_server.tools.market_analysis_tool - INFO - [market_analysis_tool.py:25] - TA library loaded successfully
+2025-07-29 15:23:16,403 - mcp_server - INFO - [__init__.py:33] - All MCP agents loaded successfully
+2025-07-29 15:23:20,329 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-29 15:23:20,329 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-29 15:23:20,331 - testindia - INFO - [testindia.py:1384] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-29 15:23:20,331 - testindia - INFO - [testindia.py:1390] - Loaded 2 trades from trade log
+2025-07-29 15:23:20,348 - testindia - INFO - [testindia.py:705] - Loaded 78 stocks from cache
+2025-07-29 15:23:20,348 - testindia - INFO - [testindia.py:2093] - Dynamic ticker mapper initialized
+2025-07-29 15:23:20,351 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-29 15:23:20,351 - testindia - INFO - [testindia.py:4042] - Initializing Stock Trading Bot for Indian market...
+2025-07-29 15:23:20,351 - __main__ - INFO - [web_backend.py:1012] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-29 15:23:20,352 - __main__ - INFO - [web_backend.py:1053] - Trading bot initialized successfully
+2025-07-29 15:23:20,352 - __main__ - INFO - [web_backend.py:1952] - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-29 15:23:20,352 - __main__ - INFO - [web_backend.py:1953] - Web interface will be available at the above URL
+2025-07-29 15:23:20,352 - __main__ - INFO - [web_backend.py:1954] - API documentation available at http://{host}:{port}/docs
+2025-07-29 15:23:20,409 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-29 15:23:20,410 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-29 15:23:20,410 - testindia - INFO - [testindia.py:1384] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-29 15:23:20,411 - testindia - INFO - [testindia.py:1390] - Loaded 2 trades from trade log
+2025-07-29 15:23:20,423 - testindia - INFO - [testindia.py:705] - Loaded 78 stocks from cache
+2025-07-29 15:23:20,423 - testindia - INFO - [testindia.py:2093] - Dynamic ticker mapper initialized
+2025-07-29 15:23:20,424 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-29 15:23:20,425 - testindia - INFO - [testindia.py:4042] - Initializing Stock Trading Bot for Indian market...
+2025-07-29 15:23:20,425 - __main__ - INFO - [web_backend.py:1012] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-29 15:23:20,425 - __main__ - INFO - [web_backend.py:1053] - Trading bot initialized successfully
+2025-07-29 15:23:20,425 - __main__ - INFO - [web_backend.py:1979] - Trading bot initialized on startup
+2025-07-29 15:23:32,962 - __main__ - WARNING - [web_backend.py:753] - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:23:32,965 - __main__ - INFO - [web_backend.py:1230] - Added ticker SBIN.NS to watchlist via bulk upload
+2025-07-29 15:23:32,966 - __main__ - INFO - [web_backend.py:1230] - Added ticker JSWSTEEL.NS to watchlist via bulk upload
+2025-07-29 15:23:32,966 - __main__ - INFO - [web_backend.py:1230] - Added ticker TATASTEEL.NS to watchlist via bulk upload
+2025-07-29 15:23:32,966 - __main__ - INFO - [web_backend.py:1230] - Added ticker BPCL.NS to watchlist via bulk upload
+2025-07-29 15:23:32,966 - __main__ - INFO - [web_backend.py:1230] - Added ticker IOC.NS to watchlist via bulk upload
+2025-07-29 15:23:32,966 - __main__ - INFO - [web_backend.py:1250] - Updated data feed with 5 new tickers
+2025-07-29 15:23:34,901 - __main__ - WARNING - [web_backend.py:753] - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:23:36,881 - __main__ - WARNING - [web_backend.py:753] - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:23:48,840 - __main__ - INFO - [web_backend.py:1012] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-29 15:23:48,840 - __main__ - INFO - [web_backend.py:674] - Starting Indian Stock Trading Bot...
+2025-07-29 15:23:48,840 - __main__ - INFO - [web_backend.py:675] - Trading Mode: PAPER
+2025-07-29 15:23:48,841 - __main__ - INFO - [web_backend.py:676] - Starting Balance: Rs.10,000.00
+2025-07-29 15:23:48,841 - __main__ - INFO - [web_backend.py:677] - Watchlist: SBIN.NS, JSWSTEEL.NS, TATASTEEL.NS, BPCL.NS, IOC.NS
+2025-07-29 15:23:48,841 - __main__ - INFO - [web_backend.py:678] - ============================================================
+2025-07-29 15:23:48,842 - testindia - INFO - [testindia.py:4493] - Starting Stock Trading Bot for Indian market...
+2025-07-29 15:23:48,842 - __main__ - INFO - [web_backend.py:683] - Web Trading Bot started successfully
+2025-07-29 15:23:48,842 - testindia - INFO - [testindia.py:4519] - Logging portfolio metrics at start of trading cycle...
+2025-07-29 15:23:48,843 - __main__ - INFO - [web_backend.py:1438] - Trading bot started with MEDIUM risk level
+2025-07-29 15:23:49,324 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:23:49,325 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2025.50
+2025-07-29 15:23:49,794 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:23:49,795 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.75
+2025-07-29 15:23:49,795 - testindia - INFO - [testindia.py:2062] - Portfolio Metrics:
+2025-07-29 15:23:49,796 - testindia - INFO - [testindia.py:2063] - Cash: Rs.6003.09
+2025-07-29 15:23:49,796 - testindia - INFO - [testindia.py:2064] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-29 15:23:49,796 - testindia - INFO - [testindia.py:2065] - Total Value: Rs.9942.84
+2025-07-29 15:23:49,796 - testindia - INFO - [testindia.py:2066] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-29 15:23:49,796 - testindia - INFO - [testindia.py:2067] - Current PnL (Dhan): Rs.0.00
+2025-07-29 15:23:49,796 - testindia - INFO - [testindia.py:2068] - Realized PnL: Rs.0.00
+2025-07-29 15:23:49,796 - testindia - INFO - [testindia.py:2069] - Unrealized PnL: Rs.-57.16
+2025-07-29 15:23:49,796 - testindia - INFO - [testindia.py:2070] - Total Exposure: Rs.3939.75
+2025-07-29 15:23:49,797 - testindia - INFO - [testindia.py:4528] - Processing SBIN.NS...
+2025-07-29 15:23:49,797 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for SBIN.NS...
+2025-07-29 15:23:50,381 - __main__ - WARNING - [web_backend.py:753] - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:23:51,699 - testindia - ERROR - [testindia.py:3884] - Error analyzing SBIN.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:23:51,778 - testindia - WARNING - [testindia.py:4540] - Analysis failed for SBIN.NS: Error analyzing SBIN.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:23:51,778 - testindia - INFO - [testindia.py:4528] - Processing JSWSTEEL.NS...
+2025-07-29 15:23:51,779 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for JSWSTEEL.NS...
+2025-07-29 15:23:53,853 - testindia - ERROR - [testindia.py:3884] - Error analyzing JSWSTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:23:53,856 - testindia - WARNING - [testindia.py:4540] - Analysis failed for JSWSTEEL.NS: Error analyzing JSWSTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:23:53,857 - testindia - INFO - [testindia.py:4528] - Processing TATASTEEL.NS...
+2025-07-29 15:23:53,857 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for TATASTEEL.NS...
+2025-07-29 15:23:55,173 - testindia - ERROR - [testindia.py:3884] - Error analyzing TATASTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:23:55,176 - testindia - WARNING - [testindia.py:4540] - Analysis failed for TATASTEEL.NS: Error analyzing TATASTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:23:55,177 - testindia - INFO - [testindia.py:4528] - Processing BPCL.NS...
+2025-07-29 15:23:55,177 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for BPCL.NS...
+2025-07-29 15:23:56,633 - testindia - ERROR - [testindia.py:3884] - Error analyzing BPCL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:23:56,636 - testindia - WARNING - [testindia.py:4540] - Analysis failed for BPCL.NS: Error analyzing BPCL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:23:56,636 - testindia - INFO - [testindia.py:4528] - Processing IOC.NS...
+2025-07-29 15:23:56,636 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for IOC.NS...
+2025-07-29 15:23:58,583 - testindia - ERROR - [testindia.py:3884] - Error analyzing IOC.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:23:58,586 - testindia - WARNING - [testindia.py:4540] - Analysis failed for IOC.NS: Error analyzing IOC.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:23:59,094 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:23:59,095 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2026.00
+2025-07-29 15:23:59,574 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:23:59,575 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.70
+2025-07-29 15:23:59,577 - testindia - INFO - [testindia.py:2047] - Saved report to reports\report_20250729.json
+2025-07-29 15:23:59,577 - testindia - INFO - [testindia.py:4548] - Daily Report: {'date': '2025-07-29', 'roi_today': np.float64(-0.5820999999999965), 'cumulative_roi': np.float64(-0.5820999999999965), 'sharpe': 0, 'drawdown': np.float64(0.5820999999999913), 'trades_executed': 2}
+2025-07-29 15:23:59,577 - testindia - INFO - [testindia.py:4550] - Logging portfolio metrics at end of trading cycle...
+2025-07-29 15:24:00,051 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:24:00,052 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2026.00
+2025-07-29 15:24:00,537 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:24:00,537 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.69
+2025-07-29 15:24:00,538 - testindia - INFO - [testindia.py:2062] - Portfolio Metrics:
+2025-07-29 15:24:00,538 - testindia - INFO - [testindia.py:2063] - Cash: Rs.6003.09
+2025-07-29 15:24:00,538 - testindia - INFO - [testindia.py:2064] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-29 15:24:00,538 - testindia - INFO - [testindia.py:2065] - Total Value: Rs.9941.48
+2025-07-29 15:24:00,538 - testindia - INFO - [testindia.py:2066] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-29 15:24:00,538 - testindia - INFO - [testindia.py:2067] - Current PnL (Dhan): Rs.0.00
+2025-07-29 15:24:00,539 - testindia - INFO - [testindia.py:2068] - Realized PnL: Rs.0.00
+2025-07-29 15:24:00,539 - testindia - INFO - [testindia.py:2069] - Unrealized PnL: Rs.-58.52
+2025-07-29 15:24:00,539 - testindia - INFO - [testindia.py:2070] - Total Exposure: Rs.3938.39
+2025-07-29 15:24:01,034 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:24:01,035 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2025.90
+2025-07-29 15:24:01,510 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:24:01,511 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.69
+2025-07-29 15:24:01,513 - testindia - INFO - [testindia.py:1809] - Paper trading P&L summary generated
+2025-07-29 15:24:05,307 - __main__ - WARNING - [web_backend.py:753] - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:24:31,513 - testindia - INFO - [testindia.py:4519] - Logging portfolio metrics at start of trading cycle...
+2025-07-29 15:24:32,004 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:24:32,005 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2026.30
+2025-07-29 15:24:32,400 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:24:32,401 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.75
+2025-07-29 15:24:32,401 - testindia - INFO - [testindia.py:2062] - Portfolio Metrics:
+2025-07-29 15:24:32,401 - testindia - INFO - [testindia.py:2063] - Cash: Rs.6003.09
+2025-07-29 15:24:32,401 - testindia - INFO - [testindia.py:2064] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-29 15:24:32,402 - testindia - INFO - [testindia.py:2065] - Total Value: Rs.9943.64
+2025-07-29 15:24:32,402 - testindia - INFO - [testindia.py:2066] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-29 15:24:32,402 - testindia - INFO - [testindia.py:2067] - Current PnL (Dhan): Rs.0.00
+2025-07-29 15:24:32,402 - testindia - INFO - [testindia.py:2068] - Realized PnL: Rs.0.00
+2025-07-29 15:24:32,402 - testindia - INFO - [testindia.py:2069] - Unrealized PnL: Rs.-56.36
+2025-07-29 15:24:32,402 - testindia - INFO - [testindia.py:2070] - Total Exposure: Rs.3940.55
+2025-07-29 15:24:32,402 - testindia - INFO - [testindia.py:4528] - Processing SBIN.NS...
+2025-07-29 15:24:32,402 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for SBIN.NS...
+2025-07-29 15:24:34,376 - testindia - ERROR - [testindia.py:3884] - Error analyzing SBIN.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:24:34,379 - testindia - WARNING - [testindia.py:4540] - Analysis failed for SBIN.NS: Error analyzing SBIN.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:24:34,379 - testindia - INFO - [testindia.py:4528] - Processing JSWSTEEL.NS...
+2025-07-29 15:24:34,379 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for JSWSTEEL.NS...
+2025-07-29 15:24:35,602 - testindia - ERROR - [testindia.py:3884] - Error analyzing JSWSTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:24:35,604 - testindia - WARNING - [testindia.py:4540] - Analysis failed for JSWSTEEL.NS: Error analyzing JSWSTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:24:35,605 - testindia - INFO - [testindia.py:4528] - Processing TATASTEEL.NS...
+2025-07-29 15:24:35,605 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for TATASTEEL.NS...
+2025-07-29 15:24:36,676 - testindia - ERROR - [testindia.py:3884] - Error analyzing TATASTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:24:36,679 - testindia - WARNING - [testindia.py:4540] - Analysis failed for TATASTEEL.NS: Error analyzing TATASTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:24:36,679 - testindia - INFO - [testindia.py:4528] - Processing BPCL.NS...
+2025-07-29 15:24:36,679 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for BPCL.NS...
+2025-07-29 15:24:36,682 - __main__ - WARNING - [web_backend.py:753] - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:24:38,061 - testindia - ERROR - [testindia.py:3884] - Error analyzing BPCL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:24:38,063 - testindia - WARNING - [testindia.py:4540] - Analysis failed for BPCL.NS: Error analyzing BPCL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:24:38,064 - testindia - INFO - [testindia.py:4528] - Processing IOC.NS...
+2025-07-29 15:24:38,064 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for IOC.NS...
+2025-07-29 15:24:39,322 - testindia - ERROR - [testindia.py:3884] - Error analyzing IOC.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:24:39,325 - testindia - WARNING - [testindia.py:4540] - Analysis failed for IOC.NS: Error analyzing IOC.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:24:39,824 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:24:39,825 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2025.90
+2025-07-29 15:24:40,178 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:24:40,179 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.74
+2025-07-29 15:24:40,180 - testindia - INFO - [testindia.py:2047] - Saved report to reports\report_20250729.json
+2025-07-29 15:24:40,180 - testindia - INFO - [testindia.py:4548] - Daily Report: {'date': '2025-07-29', 'roi_today': np.float64(-0.5707000000000018), 'cumulative_roi': np.float64(-0.5707000000000018), 'sharpe': 0, 'drawdown': np.float64(0.5706999999999971), 'trades_executed': 2}
+2025-07-29 15:24:40,180 - testindia - INFO - [testindia.py:4550] - Logging portfolio metrics at end of trading cycle...
+2025-07-29 15:24:40,520 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:24:40,521 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2026.00
+2025-07-29 15:24:40,973 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:24:40,973 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.74
+2025-07-29 15:24:40,974 - testindia - INFO - [testindia.py:2062] - Portfolio Metrics:
+2025-07-29 15:24:40,974 - testindia - INFO - [testindia.py:2063] - Cash: Rs.6003.09
+2025-07-29 15:24:40,974 - testindia - INFO - [testindia.py:2064] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-29 15:24:40,974 - testindia - INFO - [testindia.py:2065] - Total Value: Rs.9943.03
+2025-07-29 15:24:40,974 - testindia - INFO - [testindia.py:2066] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-29 15:24:40,974 - testindia - INFO - [testindia.py:2067] - Current PnL (Dhan): Rs.0.00
+2025-07-29 15:24:40,975 - testindia - INFO - [testindia.py:2068] - Realized PnL: Rs.0.00
+2025-07-29 15:24:40,975 - testindia - INFO - [testindia.py:2069] - Unrealized PnL: Rs.-56.97
+2025-07-29 15:24:40,975 - testindia - INFO - [testindia.py:2070] - Total Exposure: Rs.3939.94
+2025-07-29 15:24:41,366 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:24:41,366 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2025.90
+2025-07-29 15:24:41,705 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:24:41,706 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.74
+2025-07-29 15:24:41,707 - testindia - INFO - [testindia.py:1809] - Paper trading P&L summary generated
+2025-07-29 15:25:07,086 - __main__ - WARNING - [web_backend.py:753] - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:11,707 - testindia - INFO - [testindia.py:4519] - Logging portfolio metrics at start of trading cycle...
+2025-07-29 15:25:12,171 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:25:12,171 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2025.90
+2025-07-29 15:25:12,471 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:25:12,472 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.76
+2025-07-29 15:25:12,472 - testindia - INFO - [testindia.py:2062] - Portfolio Metrics:
+2025-07-29 15:25:12,472 - testindia - INFO - [testindia.py:2063] - Cash: Rs.6003.09
+2025-07-29 15:25:12,472 - testindia - INFO - [testindia.py:2064] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-29 15:25:12,473 - testindia - INFO - [testindia.py:2065] - Total Value: Rs.9943.55
+2025-07-29 15:25:12,473 - testindia - INFO - [testindia.py:2066] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-29 15:25:12,473 - testindia - INFO - [testindia.py:2067] - Current PnL (Dhan): Rs.0.00
+2025-07-29 15:25:12,473 - testindia - INFO - [testindia.py:2068] - Realized PnL: Rs.0.00
+2025-07-29 15:25:12,473 - testindia - INFO - [testindia.py:2069] - Unrealized PnL: Rs.-56.45
+2025-07-29 15:25:12,473 - testindia - INFO - [testindia.py:2070] - Total Exposure: Rs.3940.46
+2025-07-29 15:25:12,473 - testindia - INFO - [testindia.py:4528] - Processing SBIN.NS...
+2025-07-29 15:25:12,474 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for SBIN.NS...
+2025-07-29 15:25:14,448 - testindia - ERROR - [testindia.py:3884] - Error analyzing SBIN.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:14,450 - testindia - WARNING - [testindia.py:4540] - Analysis failed for SBIN.NS: Error analyzing SBIN.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:14,451 - testindia - INFO - [testindia.py:4528] - Processing JSWSTEEL.NS...
+2025-07-29 15:25:14,451 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for JSWSTEEL.NS...
+2025-07-29 15:25:16,689 - testindia - ERROR - [testindia.py:3884] - Error analyzing JSWSTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:16,691 - testindia - WARNING - [testindia.py:4540] - Analysis failed for JSWSTEEL.NS: Error analyzing JSWSTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:16,691 - testindia - INFO - [testindia.py:4528] - Processing TATASTEEL.NS...
+2025-07-29 15:25:16,692 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for TATASTEEL.NS...
+2025-07-29 15:25:17,918 - testindia - ERROR - [testindia.py:3884] - Error analyzing TATASTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:17,920 - testindia - WARNING - [testindia.py:4540] - Analysis failed for TATASTEEL.NS: Error analyzing TATASTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:17,920 - testindia - INFO - [testindia.py:4528] - Processing BPCL.NS...
+2025-07-29 15:25:17,921 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for BPCL.NS...
+2025-07-29 15:25:19,715 - testindia - ERROR - [testindia.py:3884] - Error analyzing BPCL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:19,718 - testindia - WARNING - [testindia.py:4540] - Analysis failed for BPCL.NS: Error analyzing BPCL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:19,718 - testindia - INFO - [testindia.py:4528] - Processing IOC.NS...
+2025-07-29 15:25:19,718 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for IOC.NS...
+2025-07-29 15:25:20,881 - testindia - ERROR - [testindia.py:3884] - Error analyzing IOC.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:20,883 - testindia - WARNING - [testindia.py:4540] - Analysis failed for IOC.NS: Error analyzing IOC.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:21,206 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:25:21,207 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2026.00
+2025-07-29 15:25:21,585 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:25:21,585 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.76
+2025-07-29 15:25:21,586 - testindia - INFO - [testindia.py:2047] - Saved report to reports\report_20250729.json
+2025-07-29 15:25:21,586 - testindia - INFO - [testindia.py:4548] - Daily Report: {'date': '2025-07-29', 'roi_today': np.float64(-0.5635000000000057), 'cumulative_roi': np.float64(-0.5635000000000057), 'sharpe': 0, 'drawdown': np.float64(0.5635000000000037), 'trades_executed': 2}
+2025-07-29 15:25:21,586 - testindia - INFO - [testindia.py:4550] - Logging portfolio metrics at end of trading cycle...
+2025-07-29 15:25:21,995 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:25:21,996 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2026.20
+2025-07-29 15:25:22,463 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:25:22,464 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.76
+2025-07-29 15:25:22,464 - testindia - INFO - [testindia.py:2062] - Portfolio Metrics:
+2025-07-29 15:25:22,464 - testindia - INFO - [testindia.py:2063] - Cash: Rs.6003.09
+2025-07-29 15:25:22,464 - testindia - INFO - [testindia.py:2064] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-29 15:25:22,464 - testindia - INFO - [testindia.py:2065] - Total Value: Rs.9943.85
+2025-07-29 15:25:22,465 - testindia - INFO - [testindia.py:2066] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-29 15:25:22,465 - testindia - INFO - [testindia.py:2067] - Current PnL (Dhan): Rs.0.00
+2025-07-29 15:25:22,465 - testindia - INFO - [testindia.py:2068] - Realized PnL: Rs.0.00
+2025-07-29 15:25:22,465 - testindia - INFO - [testindia.py:2069] - Unrealized PnL: Rs.-56.15
+2025-07-29 15:25:22,465 - testindia - INFO - [testindia.py:2070] - Total Exposure: Rs.3940.76
+2025-07-29 15:25:22,933 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:25:22,934 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2026.30
+2025-07-29 15:25:23,292 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:25:23,293 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.76
+2025-07-29 15:25:23,293 - testindia - INFO - [testindia.py:1809] - Paper trading P&L summary generated
+2025-07-29 15:25:35,877 - __main__ - WARNING - [web_backend.py:753] - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:53,294 - testindia - INFO - [testindia.py:4519] - Logging portfolio metrics at start of trading cycle...
+2025-07-29 15:25:53,623 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:25:53,624 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2025.50
+2025-07-29 15:25:54,044 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:25:54,045 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.77
+2025-07-29 15:25:54,045 - testindia - INFO - [testindia.py:2062] - Portfolio Metrics:
+2025-07-29 15:25:54,045 - testindia - INFO - [testindia.py:2063] - Cash: Rs.6003.09
+2025-07-29 15:25:54,045 - testindia - INFO - [testindia.py:2064] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-29 15:25:54,045 - testindia - INFO - [testindia.py:2065] - Total Value: Rs.9943.46
+2025-07-29 15:25:54,045 - testindia - INFO - [testindia.py:2066] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-29 15:25:54,046 - testindia - INFO - [testindia.py:2067] - Current PnL (Dhan): Rs.0.00
+2025-07-29 15:25:54,046 - testindia - INFO - [testindia.py:2068] - Realized PnL: Rs.0.00
+2025-07-29 15:25:54,046 - testindia - INFO - [testindia.py:2069] - Unrealized PnL: Rs.-56.54
+2025-07-29 15:25:54,046 - testindia - INFO - [testindia.py:2070] - Total Exposure: Rs.3940.37
+2025-07-29 15:25:54,046 - testindia - INFO - [testindia.py:4528] - Processing SBIN.NS...
+2025-07-29 15:25:54,046 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for SBIN.NS...
+2025-07-29 15:25:55,834 - testindia - ERROR - [testindia.py:3884] - Error analyzing SBIN.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:55,837 - testindia - WARNING - [testindia.py:4540] - Analysis failed for SBIN.NS: Error analyzing SBIN.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:55,837 - testindia - INFO - [testindia.py:4528] - Processing JSWSTEEL.NS...
+2025-07-29 15:25:55,837 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for JSWSTEEL.NS...
+2025-07-29 15:25:57,732 - testindia - ERROR - [testindia.py:3884] - Error analyzing JSWSTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:57,735 - testindia - WARNING - [testindia.py:4540] - Analysis failed for JSWSTEEL.NS: Error analyzing JSWSTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:57,735 - testindia - INFO - [testindia.py:4528] - Processing TATASTEEL.NS...
+2025-07-29 15:25:57,735 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for TATASTEEL.NS...
+2025-07-29 15:25:58,794 - testindia - ERROR - [testindia.py:3884] - Error analyzing TATASTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:58,797 - testindia - WARNING - [testindia.py:4540] - Analysis failed for TATASTEEL.NS: Error analyzing TATASTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:25:58,797 - testindia - INFO - [testindia.py:4528] - Processing BPCL.NS...
+2025-07-29 15:25:58,797 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for BPCL.NS...
+2025-07-29 15:26:00,164 - testindia - ERROR - [testindia.py:3884] - Error analyzing BPCL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:00,167 - testindia - WARNING - [testindia.py:4540] - Analysis failed for BPCL.NS: Error analyzing BPCL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:00,167 - testindia - INFO - [testindia.py:4528] - Processing IOC.NS...
+2025-07-29 15:26:00,167 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for IOC.NS...
+2025-07-29 15:26:01,540 - testindia - ERROR - [testindia.py:3884] - Error analyzing IOC.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:01,543 - testindia - WARNING - [testindia.py:4540] - Analysis failed for IOC.NS: Error analyzing IOC.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:01,869 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:26:01,869 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2025.60
+2025-07-29 15:26:02,365 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:26:02,366 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.80
+2025-07-29 15:26:02,366 - testindia - INFO - [testindia.py:2047] - Saved report to reports\report_20250729.json
+2025-07-29 15:26:02,366 - testindia - INFO - [testindia.py:4548] - Daily Report: {'date': '2025-07-29', 'roi_today': np.float64(-0.5550999999999973), 'cumulative_roi': np.float64(-0.5550999999999973), 'sharpe': 0, 'drawdown': np.float64(0.5551000000000023), 'trades_executed': 2}
+2025-07-29 15:26:02,367 - testindia - INFO - [testindia.py:4550] - Logging portfolio metrics at end of trading cycle...
+2025-07-29 15:26:02,693 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:26:02,694 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2025.60
+2025-07-29 15:26:02,985 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:26:02,986 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.78
+2025-07-29 15:26:02,986 - testindia - INFO - [testindia.py:2062] - Portfolio Metrics:
+2025-07-29 15:26:02,986 - testindia - INFO - [testindia.py:2063] - Cash: Rs.6003.09
+2025-07-29 15:26:02,987 - testindia - INFO - [testindia.py:2064] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-29 15:26:02,987 - testindia - INFO - [testindia.py:2065] - Total Value: Rs.9943.87
+2025-07-29 15:26:02,987 - testindia - INFO - [testindia.py:2066] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-29 15:26:02,987 - testindia - INFO - [testindia.py:2067] - Current PnL (Dhan): Rs.0.00
+2025-07-29 15:26:02,987 - testindia - INFO - [testindia.py:2068] - Realized PnL: Rs.0.00
+2025-07-29 15:26:02,987 - testindia - INFO - [testindia.py:2069] - Unrealized PnL: Rs.-56.13
+2025-07-29 15:26:02,987 - testindia - INFO - [testindia.py:2070] - Total Exposure: Rs.3940.78
+2025-07-29 15:26:03,329 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:26:03,330 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2025.10
+2025-07-29 15:26:03,799 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:26:03,800 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.82
+2025-07-29 15:26:03,801 - testindia - INFO - [testindia.py:1809] - Paper trading P&L summary generated
+2025-07-29 15:26:06,391 - __main__ - WARNING - [web_backend.py:753] - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:33,801 - testindia - INFO - [testindia.py:4519] - Logging portfolio metrics at start of trading cycle...
+2025-07-29 15:26:34,199 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:26:34,200 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2024.90
+2025-07-29 15:26:34,656 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:26:34,657 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.83
+2025-07-29 15:26:34,657 - testindia - INFO - [testindia.py:2062] - Portfolio Metrics:
+2025-07-29 15:26:34,657 - testindia - INFO - [testindia.py:2063] - Cash: Rs.6003.09
+2025-07-29 15:26:34,657 - testindia - INFO - [testindia.py:2064] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-29 15:26:34,657 - testindia - INFO - [testindia.py:2065] - Total Value: Rs.9944.72
+2025-07-29 15:26:34,657 - testindia - INFO - [testindia.py:2066] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-29 15:26:34,658 - testindia - INFO - [testindia.py:2067] - Current PnL (Dhan): Rs.0.00
+2025-07-29 15:26:34,658 - testindia - INFO - [testindia.py:2068] - Realized PnL: Rs.0.00
+2025-07-29 15:26:34,658 - testindia - INFO - [testindia.py:2069] - Unrealized PnL: Rs.-55.28
+2025-07-29 15:26:34,658 - testindia - INFO - [testindia.py:2070] - Total Exposure: Rs.3941.63
+2025-07-29 15:26:34,658 - testindia - INFO - [testindia.py:4528] - Processing SBIN.NS...
+2025-07-29 15:26:34,658 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for SBIN.NS...
+2025-07-29 15:26:35,395 - __main__ - WARNING - [web_backend.py:753] - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:36,748 - testindia - ERROR - [testindia.py:3884] - Error analyzing SBIN.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:36,751 - testindia - WARNING - [testindia.py:4540] - Analysis failed for SBIN.NS: Error analyzing SBIN.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:36,751 - testindia - INFO - [testindia.py:4528] - Processing JSWSTEEL.NS...
+2025-07-29 15:26:36,751 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for JSWSTEEL.NS...
+2025-07-29 15:26:37,781 - testindia - ERROR - [testindia.py:3884] - Error analyzing JSWSTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:37,783 - testindia - WARNING - [testindia.py:4540] - Analysis failed for JSWSTEEL.NS: Error analyzing JSWSTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:37,783 - testindia - INFO - [testindia.py:4528] - Processing TATASTEEL.NS...
+2025-07-29 15:26:37,783 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for TATASTEEL.NS...
+2025-07-29 15:26:39,528 - testindia - ERROR - [testindia.py:3884] - Error analyzing TATASTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:39,531 - testindia - WARNING - [testindia.py:4540] - Analysis failed for TATASTEEL.NS: Error analyzing TATASTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:39,531 - testindia - INFO - [testindia.py:4528] - Processing BPCL.NS...
+2025-07-29 15:26:39,532 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for BPCL.NS...
+2025-07-29 15:26:40,927 - testindia - ERROR - [testindia.py:3884] - Error analyzing BPCL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:40,930 - testindia - WARNING - [testindia.py:4540] - Analysis failed for BPCL.NS: Error analyzing BPCL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:40,930 - testindia - INFO - [testindia.py:4528] - Processing IOC.NS...
+2025-07-29 15:26:40,930 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for IOC.NS...
+2025-07-29 15:26:42,214 - testindia - ERROR - [testindia.py:3884] - Error analyzing IOC.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:42,217 - testindia - WARNING - [testindia.py:4540] - Analysis failed for IOC.NS: Error analyzing IOC.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:26:42,657 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:26:42,657 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2024.30
+2025-07-29 15:26:43,084 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:26:43,085 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.79
+2025-07-29 15:26:43,086 - testindia - INFO - [testindia.py:2047] - Saved report to reports\report_20250729.json
+2025-07-29 15:26:43,086 - testindia - INFO - [testindia.py:4548] - Daily Report: {'date': '2025-07-29', 'roi_today': np.float64(-0.5711999999999939), 'cumulative_roi': np.float64(-0.5711999999999939), 'sharpe': 0, 'drawdown': np.float64(0.5711999999999897), 'trades_executed': 2}
+2025-07-29 15:26:43,086 - testindia - INFO - [testindia.py:4550] - Logging portfolio metrics at end of trading cycle...
+2025-07-29 15:26:43,466 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:26:43,466 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2024.50
+2025-07-29 15:26:43,865 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:26:43,866 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.79
+2025-07-29 15:26:43,866 - testindia - INFO - [testindia.py:2062] - Portfolio Metrics:
+2025-07-29 15:26:43,866 - testindia - INFO - [testindia.py:2063] - Cash: Rs.6003.09
+2025-07-29 15:26:43,867 - testindia - INFO - [testindia.py:2064] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-29 15:26:43,867 - testindia - INFO - [testindia.py:2065] - Total Value: Rs.9943.08
+2025-07-29 15:26:43,867 - testindia - INFO - [testindia.py:2066] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-29 15:26:43,867 - testindia - INFO - [testindia.py:2067] - Current PnL (Dhan): Rs.0.00
+2025-07-29 15:26:43,867 - testindia - INFO - [testindia.py:2068] - Realized PnL: Rs.0.00
+2025-07-29 15:26:43,867 - testindia - INFO - [testindia.py:2069] - Unrealized PnL: Rs.-56.92
+2025-07-29 15:26:43,867 - testindia - INFO - [testindia.py:2070] - Total Exposure: Rs.3939.99
+2025-07-29 15:26:44,288 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:26:44,289 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2024.30
+2025-07-29 15:26:44,582 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:26:44,583 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.79
+2025-07-29 15:26:44,584 - testindia - INFO - [testindia.py:1809] - Paper trading P&L summary generated
+2025-07-29 15:27:14,584 - testindia - INFO - [testindia.py:4519] - Logging portfolio metrics at start of trading cycle...
+2025-07-29 15:27:14,945 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:27:14,945 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2023.60
+2025-07-29 15:27:15,278 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:27:15,279 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.84
+2025-07-29 15:27:15,279 - testindia - INFO - [testindia.py:2062] - Portfolio Metrics:
+2025-07-29 15:27:15,279 - testindia - INFO - [testindia.py:2063] - Cash: Rs.6003.09
+2025-07-29 15:27:15,279 - testindia - INFO - [testindia.py:2064] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-29 15:27:15,279 - testindia - INFO - [testindia.py:2065] - Total Value: Rs.9943.73
+2025-07-29 15:27:15,280 - testindia - INFO - [testindia.py:2066] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-29 15:27:15,280 - testindia - INFO - [testindia.py:2067] - Current PnL (Dhan): Rs.0.00
+2025-07-29 15:27:15,280 - testindia - INFO - [testindia.py:2068] - Realized PnL: Rs.0.00
+2025-07-29 15:27:15,280 - testindia - INFO - [testindia.py:2069] - Unrealized PnL: Rs.-56.27
+2025-07-29 15:27:15,280 - testindia - INFO - [testindia.py:2070] - Total Exposure: Rs.3940.64
+2025-07-29 15:27:15,280 - testindia - INFO - [testindia.py:4528] - Processing SBIN.NS...
+2025-07-29 15:27:15,280 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for SBIN.NS...
+2025-07-29 15:27:16,317 - testindia - ERROR - [testindia.py:3884] - Error analyzing SBIN.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:16,319 - testindia - WARNING - [testindia.py:4540] - Analysis failed for SBIN.NS: Error analyzing SBIN.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:16,320 - testindia - INFO - [testindia.py:4528] - Processing JSWSTEEL.NS...
+2025-07-29 15:27:16,320 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for JSWSTEEL.NS...
+2025-07-29 15:27:17,893 - testindia - ERROR - [testindia.py:3884] - Error analyzing JSWSTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:17,895 - testindia - WARNING - [testindia.py:4540] - Analysis failed for JSWSTEEL.NS: Error analyzing JSWSTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:17,895 - testindia - INFO - [testindia.py:4528] - Processing TATASTEEL.NS...
+2025-07-29 15:27:17,896 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for TATASTEEL.NS...
+2025-07-29 15:27:18,935 - testindia - ERROR - [testindia.py:3884] - Error analyzing TATASTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:18,937 - testindia - WARNING - [testindia.py:4540] - Analysis failed for TATASTEEL.NS: Error analyzing TATASTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:18,938 - testindia - INFO - [testindia.py:4528] - Processing BPCL.NS...
+2025-07-29 15:27:18,938 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for BPCL.NS...
+2025-07-29 15:27:20,062 - testindia - ERROR - [testindia.py:3884] - Error analyzing BPCL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:20,065 - testindia - WARNING - [testindia.py:4540] - Analysis failed for BPCL.NS: Error analyzing BPCL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:20,065 - testindia - INFO - [testindia.py:4528] - Processing IOC.NS...
+2025-07-29 15:27:20,066 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for IOC.NS...
+2025-07-29 15:27:21,359 - __main__ - WARNING - [web_backend.py:753] - Error fetching current prices: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:22,462 - testindia - ERROR - [testindia.py:3884] - Error analyzing IOC.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:22,464 - testindia - WARNING - [testindia.py:4540] - Analysis failed for IOC.NS: Error analyzing IOC.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:22,862 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:27:22,862 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2023.50
+2025-07-29 15:27:23,236 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:27:23,237 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.85
+2025-07-29 15:27:23,237 - testindia - INFO - [testindia.py:2047] - Saved report to reports\report_20250729.json
+2025-07-29 15:27:23,237 - testindia - INFO - [testindia.py:4548] - Daily Report: {'date': '2025-07-29', 'roi_today': np.float64(-0.5606), 'cumulative_roi': np.float64(-0.5606), 'sharpe': 0, 'drawdown': np.float64(0.5605999999999949), 'trades_executed': 2}
+2025-07-29 15:27:23,238 - testindia - INFO - [testindia.py:4550] - Logging portfolio metrics at end of trading cycle...
+2025-07-29 15:27:23,597 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:27:23,597 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2023.50
+2025-07-29 15:27:23,958 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:27:23,958 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.84
+2025-07-29 15:27:23,959 - testindia - INFO - [testindia.py:2062] - Portfolio Metrics:
+2025-07-29 15:27:23,959 - testindia - INFO - [testindia.py:2063] - Cash: Rs.6003.09
+2025-07-29 15:27:23,959 - testindia - INFO - [testindia.py:2064] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-29 15:27:23,959 - testindia - INFO - [testindia.py:2065] - Total Value: Rs.9943.63
+2025-07-29 15:27:23,959 - testindia - INFO - [testindia.py:2066] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-29 15:27:23,959 - testindia - INFO - [testindia.py:2067] - Current PnL (Dhan): Rs.0.00
+2025-07-29 15:27:23,959 - testindia - INFO - [testindia.py:2068] - Realized PnL: Rs.0.00
+2025-07-29 15:27:23,960 - testindia - INFO - [testindia.py:2069] - Unrealized PnL: Rs.-56.37
+2025-07-29 15:27:23,960 - testindia - INFO - [testindia.py:2070] - Total Exposure: Rs.3940.54
+2025-07-29 15:27:24,352 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:27:24,353 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2023.50
+2025-07-29 15:27:24,721 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:27:24,722 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.85
+2025-07-29 15:27:24,722 - testindia - INFO - [testindia.py:1809] - Paper trading P&L summary generated
+2025-07-29 15:27:54,723 - testindia - INFO - [testindia.py:4519] - Logging portfolio metrics at start of trading cycle...
+2025-07-29 15:27:55,168 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:27:55,169 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2023.30
+2025-07-29 15:27:55,492 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:27:55,493 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.87
+2025-07-29 15:27:55,493 - testindia - INFO - [testindia.py:2062] - Portfolio Metrics:
+2025-07-29 15:27:55,493 - testindia - INFO - [testindia.py:2063] - Cash: Rs.6003.09
+2025-07-29 15:27:55,493 - testindia - INFO - [testindia.py:2064] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-29 15:27:55,493 - testindia - INFO - [testindia.py:2065] - Total Value: Rs.9944.36
+2025-07-29 15:27:55,494 - testindia - INFO - [testindia.py:2066] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-29 15:27:55,494 - testindia - INFO - [testindia.py:2067] - Current PnL (Dhan): Rs.0.00
+2025-07-29 15:27:55,494 - testindia - INFO - [testindia.py:2068] - Realized PnL: Rs.0.00
+2025-07-29 15:27:55,494 - testindia - INFO - [testindia.py:2069] - Unrealized PnL: Rs.-55.64
+2025-07-29 15:27:55,494 - testindia - INFO - [testindia.py:2070] - Total Exposure: Rs.3941.27
+2025-07-29 15:27:55,494 - testindia - INFO - [testindia.py:4528] - Processing SBIN.NS...
+2025-07-29 15:27:55,494 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for SBIN.NS...
+2025-07-29 15:27:56,515 - testindia - ERROR - [testindia.py:3884] - Error analyzing SBIN.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:56,544 - testindia - WARNING - [testindia.py:4540] - Analysis failed for SBIN.NS: Error analyzing SBIN.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:56,544 - testindia - INFO - [testindia.py:4528] - Processing JSWSTEEL.NS...
+2025-07-29 15:27:56,544 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for JSWSTEEL.NS...
+2025-07-29 15:27:57,582 - testindia - ERROR - [testindia.py:3884] - Error analyzing JSWSTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:57,584 - testindia - WARNING - [testindia.py:4540] - Analysis failed for JSWSTEEL.NS: Error analyzing JSWSTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:57,585 - testindia - INFO - [testindia.py:4528] - Processing TATASTEEL.NS...
+2025-07-29 15:27:57,585 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for TATASTEEL.NS...
+2025-07-29 15:27:59,042 - testindia - ERROR - [testindia.py:3884] - Error analyzing TATASTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:59,044 - testindia - WARNING - [testindia.py:4540] - Analysis failed for TATASTEEL.NS: Error analyzing TATASTEEL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:27:59,045 - testindia - INFO - [testindia.py:4528] - Processing BPCL.NS...
+2025-07-29 15:27:59,045 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for BPCL.NS...
+2025-07-29 15:28:00,374 - testindia - ERROR - [testindia.py:3884] - Error analyzing BPCL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:28:00,377 - testindia - WARNING - [testindia.py:4540] - Analysis failed for BPCL.NS: Error analyzing BPCL.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:28:00,377 - testindia - INFO - [testindia.py:4528] - Processing IOC.NS...
+2025-07-29 15:28:00,377 - testindia - INFO - [testindia.py:3356] - Fetching and analyzing data for IOC.NS...
+2025-07-29 15:28:02,324 - testindia - ERROR - [testindia.py:3884] - Error analyzing IOC.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:28:02,327 - testindia - WARNING - [testindia.py:4540] - Analysis failed for IOC.NS: Error analyzing IOC.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-29 15:28:02,792 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:28:02,793 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2023.10
+2025-07-29 15:28:03,205 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:28:03,205 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.85
+2025-07-29 15:28:03,206 - testindia - INFO - [testindia.py:2047] - Saved report to reports\report_20250729.json
+2025-07-29 15:28:03,206 - testindia - INFO - [testindia.py:4548] - Daily Report: {'date': '2025-07-29', 'roi_today': np.float64(-0.5645999999999929), 'cumulative_roi': np.float64(-0.5645999999999929), 'sharpe': 0, 'drawdown': np.float64(0.5645999999999912), 'trades_executed': 2}
+2025-07-29 15:28:03,206 - testindia - INFO - [testindia.py:4550] - Logging portfolio metrics at end of trading cycle...
+2025-07-29 15:28:03,571 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:28:03,571 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2023.00
+2025-07-29 15:28:04,004 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:28:04,004 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.87
+2025-07-29 15:28:04,005 - testindia - INFO - [testindia.py:2062] - Portfolio Metrics:
+2025-07-29 15:28:04,005 - testindia - INFO - [testindia.py:2063] - Cash: Rs.6003.09
+2025-07-29 15:28:04,005 - testindia - INFO - [testindia.py:2064] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-29 15:28:04,005 - testindia - INFO - [testindia.py:2065] - Total Value: Rs.9944.06
+2025-07-29 15:28:04,005 - testindia - INFO - [testindia.py:2066] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-29 15:28:04,005 - testindia - INFO - [testindia.py:2067] - Current PnL (Dhan): Rs.0.00
+2025-07-29 15:28:04,006 - testindia - INFO - [testindia.py:2068] - Realized PnL: Rs.0.00
+2025-07-29 15:28:04,006 - testindia - INFO - [testindia.py:2069] - Unrealized PnL: Rs.-55.94
+2025-07-29 15:28:04,006 - testindia - INFO - [testindia.py:2070] - Total Exposure: Rs.3940.97
+2025-07-29 15:28:04,055 - __main__ - INFO - [web_backend.py:693] - Stopping Trading Bot...
+2025-07-29 15:28:04,055 - __main__ - INFO - [web_backend.py:695] - Waiting for trading thread to finish...
+2025-07-29 15:28:04,358 - testindia - INFO - [testindia.py:1287] - Using Fyers data for HDFCBANK.NS
+2025-07-29 15:28:04,359 - testindia - INFO - [testindia.py:1877] - Fetched price for HDFCBANK.NS: Rs.2022.90
+2025-07-29 15:28:04,676 - testindia - INFO - [testindia.py:1287] - Using Fyers data for SUZLON.NS
+2025-07-29 15:28:04,677 - testindia - INFO - [testindia.py:1877] - Fetched price for SUZLON.NS: Rs.61.87
+2025-07-29 15:28:04,678 - testindia - INFO - [testindia.py:1809] - Paper trading P&L summary generated
+2025-07-29 15:28:14,070 - __main__ - WARNING - [web_backend.py:699] - Trading thread did not stop within timeout, forcing stop...
+2025-07-29 15:28:14,070 - __main__ - INFO - [web_backend.py:702] - Web Trading Bot stopped successfully
+2025-07-29 15:28:14,070 - __main__ - INFO - [web_backend.py:2008] - Trading bot stopped on shutdown
+2025-07-29 15:28:14,071 - __main__ - INFO - [web_backend.py:2023] - Web server stopped by user
+2025-07-29 15:36:04,463 - mcp_server - INFO - [__init__.py:26] - MCP Trading Server components loaded successfully
+2025-07-29 15:36:04,622 - mcp_server.tools.market_analysis_tool - INFO - [market_analysis_tool.py:25] - TA library loaded successfully
+2025-07-29 15:36:05,731 - mcp_server - INFO - [__init__.py:33] - All MCP agents loaded successfully
+2025-07-29 15:36:09,652 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-29 15:36:09,653 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-29 15:36:09,654 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-29 15:36:09,654 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-29 15:36:09,666 - testindia - INFO - [testindia.py:705] - Loaded 78 stocks from cache
+2025-07-29 15:36:09,666 - testindia - INFO - [testindia.py:2169] - Dynamic ticker mapper initialized
+2025-07-29 15:36:09,668 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-29 15:36:09,669 - testindia - INFO - [testindia.py:4120] - Initializing Stock Trading Bot for Indian market...
+2025-07-29 15:36:09,669 - __main__ - INFO - [web_backend.py:1068] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-29 15:36:09,669 - __main__ - INFO - [web_backend.py:1109] - Trading bot initialized successfully
+2025-07-29 15:36:09,669 - __main__ - INFO - [web_backend.py:2008] - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-29 15:36:09,669 - __main__ - INFO - [web_backend.py:2009] - Web interface will be available at the above URL
+2025-07-29 15:36:09,670 - __main__ - INFO - [web_backend.py:2010] - API documentation available at http://{host}:{port}/docs
+2025-07-29 15:36:09,716 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-29 15:36:09,717 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-29 15:36:09,717 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-29 15:36:09,718 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-29 15:36:09,731 - testindia - INFO - [testindia.py:705] - Loaded 78 stocks from cache
+2025-07-29 15:36:09,731 - testindia - INFO - [testindia.py:2169] - Dynamic ticker mapper initialized
+2025-07-29 15:36:09,732 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-29 15:36:09,732 - testindia - INFO - [testindia.py:4120] - Initializing Stock Trading Bot for Indian market...
+2025-07-29 15:36:09,732 - __main__ - INFO - [web_backend.py:1068] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-29 15:36:09,733 - __main__ - INFO - [web_backend.py:1109] - Trading bot initialized successfully
+2025-07-29 15:36:09,733 - __main__ - INFO - [web_backend.py:2035] - Trading bot initialized on startup
+2025-07-29 15:37:48,112 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:37:49,426 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:38:18,718 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:38:48,081 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:39:18,957 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:39:48,980 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:40:18,708 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:40:48,648 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:41:18,086 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:41:48,605 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:42:18,090 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:42:48,696 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:43:18,665 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:43:53,798 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:44:05,353 - portfolio_manager - INFO - [portfolio_manager.py:145] - Loaded live mode data - Cash: Rs.0.00, Holdings: 0, Trades: 0
+2025-07-29 15:44:05,353 - portfolio_manager - INFO - [portfolio_manager.py:117] - Switched from paper mode to live mode
+2025-07-29 15:44:05,353 - dhan_client - INFO - [dhan_client.py:35] - Dhan API client initialized
+2025-07-29 15:44:05,838 - dhan_client - INFO - [dhan_client.py:294] - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Equity, ', 'ddpi': 'Deactive', 'mtf': 'Deactive', 'dataPlan': 'Deactive', 'dataValidity': 'NA'}
+2025-07-29 15:44:05,838 - dhan_client - INFO - [dhan_client.py:296] - Dhan API connection validated successfully
+2025-07-29 15:44:05,838 - dhan_client - INFO - [dhan_client.py:35] - Dhan API client initialized
+2025-07-29 15:44:05,838 - live_executor - INFO - [live_executor.py:42] - Live Trading Executor initialized
+2025-07-29 15:44:05,839 - live_executor - INFO - [live_executor.py:55] - Syncing portfolio with Dhan account...
+2025-07-29 15:44:06,296 - dhan_client - INFO - [dhan_client.py:66] - Holdings endpoint returned 500 - likely empty portfolio
+2025-07-29 15:44:06,296 - live_executor - INFO - [live_executor.py:90] - Portfolio synced - Cash: Rs.0.00, Holdings: Rs.0.00
+2025-07-29 15:44:06,296 - __main__ - INFO - [web_backend.py:641] - Live trading initialized successfully
+2025-07-29 15:44:06,297 - __main__ - INFO - [web_backend.py:699] - Successfully switched from paper to live mode
+2025-07-29 15:44:06,297 - __main__ - INFO - [web_backend.py:1566] - Successfully switched from paper to live mode
+2025-07-29 15:44:06,297 - __main__ - INFO - [web_backend.py:1068] - Applied LOW risk settings: Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-29 15:44:06,297 - __main__ - INFO - [web_backend.py:1593] - Settings updated: Mode=live, Risk Level=LOW, Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-29 15:44:06,642 - dhan_client - INFO - [dhan_client.py:294] - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Equity, ', 'ddpi': 'Deactive', 'mtf': 'Deactive', 'dataPlan': 'Deactive', 'dataValidity': 'NA'}
+2025-07-29 15:44:06,643 - dhan_client - INFO - [dhan_client.py:296] - Dhan API connection validated successfully
+2025-07-29 15:44:18,184 - dhan_client - INFO - [dhan_client.py:294] - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Equity, ', 'ddpi': 'Deactive', 'mtf': 'Deactive', 'dataPlan': 'Deactive', 'dataValidity': 'NA'}
+2025-07-29 15:44:18,184 - dhan_client - INFO - [dhan_client.py:296] - Dhan API connection validated successfully
+2025-07-29 15:44:48,886 - dhan_client - INFO - [dhan_client.py:294] - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Equity, ', 'ddpi': 'Deactive', 'mtf': 'Deactive', 'dataPlan': 'Deactive', 'dataValidity': 'NA'}
+2025-07-29 15:44:48,886 - dhan_client - INFO - [dhan_client.py:296] - Dhan API connection validated successfully
+2025-07-29 15:45:07,578 - portfolio_manager - INFO - [portfolio_manager.py:145] - Loaded paper mode data - Cash: Rs.0.00, Holdings: 0, Trades: 0
+2025-07-29 15:45:07,578 - portfolio_manager - INFO - [portfolio_manager.py:117] - Switched from live mode to paper mode
+2025-07-29 15:45:07,581 - __main__ - INFO - [web_backend.py:699] - Successfully switched from live to paper mode
+2025-07-29 15:45:07,581 - __main__ - INFO - [web_backend.py:1566] - Successfully switched from live to paper mode
+2025-07-29 15:45:07,582 - __main__ - INFO - [web_backend.py:1068] - Applied LOW risk settings: Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-29 15:45:07,582 - __main__ - INFO - [web_backend.py:1593] - Settings updated: Mode=paper, Risk Level=LOW, Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-29 15:45:08,267 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:45:18,996 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:45:48,960 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:46:19,970 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:47:10,480 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:47:18,599 - __main__ - INFO - [web_backend.py:526] - Fyers client connected successfully
+2025-07-29 15:47:22,989 - __main__ - INFO - [web_backend.py:740] - Trading bot is already stopped
+2025-07-29 15:47:22,989 - __main__ - INFO - [web_backend.py:2064] - Trading bot stopped on shutdown
+2025-07-29 15:47:22,990 - __main__ - INFO - [web_backend.py:2079] - Web server stopped by user
+2025-07-29 15:49:24,885 - mcp_server - INFO - [__init__.py:26] - MCP Trading Server components loaded successfully
+2025-07-29 15:49:25,046 - mcp_server.tools.market_analysis_tool - INFO - [market_analysis_tool.py:25] - TA library loaded successfully
+2025-07-29 15:49:26,230 - mcp_server - INFO - [__init__.py:33] - All MCP agents loaded successfully
+2025-07-29 15:49:30,229 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-29 15:49:30,229 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-29 15:49:30,231 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-29 15:49:30,231 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-29 15:49:30,245 - testindia - INFO - [testindia.py:705] - Loaded 78 stocks from cache
+2025-07-29 15:49:30,245 - testindia - INFO - [testindia.py:2213] - Dynamic ticker mapper initialized
+2025-07-29 15:49:30,247 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-29 15:49:30,247 - testindia - INFO - [testindia.py:4170] - Initializing Stock Trading Bot for Indian market...
+2025-07-29 15:49:30,247 - __main__ - INFO - [web_backend.py:1080] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-29 15:49:30,247 - __main__ - INFO - [web_backend.py:1121] - Trading bot initialized successfully
+2025-07-29 15:49:30,248 - __main__ - INFO - [web_backend.py:2088] - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-29 15:49:30,248 - __main__ - INFO - [web_backend.py:2089] - Web interface will be available at the above URL
+2025-07-29 15:49:30,248 - __main__ - INFO - [web_backend.py:2090] - API documentation available at http://{host}:{port}/docs
+2025-07-29 15:49:30,301 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-29 15:49:30,301 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-29 15:49:30,302 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-29 15:49:30,303 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-29 15:49:30,316 - testindia - INFO - [testindia.py:705] - Loaded 78 stocks from cache
+2025-07-29 15:49:30,317 - testindia - INFO - [testindia.py:2213] - Dynamic ticker mapper initialized
+2025-07-29 15:49:30,318 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-29 15:49:30,318 - testindia - INFO - [testindia.py:4170] - Initializing Stock Trading Bot for Indian market...
+2025-07-29 15:49:30,318 - __main__ - INFO - [web_backend.py:1080] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-29 15:49:30,318 - __main__ - INFO - [web_backend.py:1121] - Trading bot initialized successfully
+2025-07-29 15:49:30,319 - __main__ - INFO - [web_backend.py:2115] - Trading bot initialized on startup
+2025-07-29 15:49:31,689 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:49:45,190 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:49:48,281 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:49:49,729 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:49:58,023 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:50:02,714 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:50:07,713 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:50:12,714 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:50:17,712 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:50:18,638 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:50:23,616 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:50:28,310 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:50:33,309 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:50:38,298 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:50:43,311 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:50:48,309 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:50:48,967 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:50:53,300 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:50:57,706 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:51:19,052 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:51:48,937 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:52:13,201 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:52:18,977 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:52:49,118 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:53:19,971 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:54:04,046 - __main__ - ERROR - [web_backend.py:1218] - Error getting portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:54:11,804 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:54:18,334 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:54:19,301 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:54:23,734 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:54:28,732 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:54:33,737 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:54:39,307 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:54:44,305 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:54:48,628 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:54:49,601 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:54:54,610 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:54:59,297 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:55:04,306 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:55:09,305 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:55:14,302 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:55:18,641 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:55:19,608 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:55:24,305 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:55:29,310 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:55:34,297 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:55:35,217 - __main__ - ERROR - [web_backend.py:1218] - Error getting portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:55:45,451 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:55:48,177 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:55:49,048 - __main__ - ERROR - [web_backend.py:1273] - Error getting real-time portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:56:18,330 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:56:48,347 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:57:18,565 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:57:41,985 - __main__ - ERROR - [web_backend.py:1218] - Error getting portfolio: 'WebTradingBot' object has no attribute 'portfolio'
+2025-07-29 15:57:49,024 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:58:18,952 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 15:59:45,944 - mcp_server - INFO - [__init__.py:26] - MCP Trading Server components loaded successfully
+2025-07-29 15:59:46,106 - mcp_server.tools.market_analysis_tool - INFO - [market_analysis_tool.py:25] - TA library loaded successfully
+2025-07-29 15:59:47,318 - mcp_server - INFO - [__init__.py:33] - All MCP agents loaded successfully
+2025-07-29 15:59:51,043 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-29 15:59:51,044 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-29 15:59:51,045 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-29 15:59:51,046 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-29 15:59:51,060 - testindia - INFO - [testindia.py:705] - Loaded 78 stocks from cache
+2025-07-29 15:59:51,061 - testindia - INFO - [testindia.py:2213] - Dynamic ticker mapper initialized
+2025-07-29 15:59:51,063 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-29 15:59:51,064 - testindia - INFO - [testindia.py:4170] - Initializing Stock Trading Bot for Indian market...
+2025-07-29 15:59:51,064 - __main__ - INFO - [web_backend.py:626] - Trading bot type: <class 'testindia.StockTradingBot'>
+2025-07-29 15:59:51,064 - __main__ - INFO - [web_backend.py:627] - Trading bot attributes: ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__firstlineno__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__static_attributes__', '__str__', '__subclasshook__', '__weakref__', 'bot_running', 'chatbot', 'command_queue', 'config', 'data_feed', 'executor', 'initialize', 'is_market_open', 'make_trading_decision', 'portfolio', 'reporter', 'run', 'run_analysis', 'stock_analyzer', 'timezone', 'tracker']
+2025-07-29 15:59:51,064 - __main__ - INFO - [web_backend.py:630] - Successfully registered portfolio callback
+2025-07-29 15:59:51,065 - __main__ - INFO - [web_backend.py:1118] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-29 15:59:51,065 - __main__ - INFO - [web_backend.py:1159] - Trading bot initialized successfully
+2025-07-29 15:59:51,065 - __main__ - INFO - [web_backend.py:2126] - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-29 15:59:51,065 - __main__ - INFO - [web_backend.py:2127] - Web interface will be available at the above URL
+2025-07-29 15:59:51,065 - __main__ - INFO - [web_backend.py:2128] - API documentation available at http://{host}:{port}/docs
+2025-07-29 15:59:51,116 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-29 15:59:51,117 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-29 15:59:51,118 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-29 15:59:51,118 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-29 15:59:51,132 - testindia - INFO - [testindia.py:705] - Loaded 78 stocks from cache
+2025-07-29 15:59:51,133 - testindia - INFO - [testindia.py:2213] - Dynamic ticker mapper initialized
+2025-07-29 15:59:51,134 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-29 15:59:51,134 - testindia - INFO - [testindia.py:4170] - Initializing Stock Trading Bot for Indian market...
+2025-07-29 15:59:51,134 - __main__ - INFO - [web_backend.py:626] - Trading bot type: <class 'testindia.StockTradingBot'>
+2025-07-29 15:59:51,134 - __main__ - INFO - [web_backend.py:627] - Trading bot attributes: ['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__firstlineno__', '__format__', '__ge__', '__getattribute__', '__getstate__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__static_attributes__', '__str__', '__subclasshook__', '__weakref__', 'bot_running', 'chatbot', 'command_queue', 'config', 'data_feed', 'executor', 'initialize', 'is_market_open', 'make_trading_decision', 'portfolio', 'reporter', 'run', 'run_analysis', 'stock_analyzer', 'timezone', 'tracker']
+2025-07-29 15:59:51,134 - __main__ - INFO - [web_backend.py:630] - Successfully registered portfolio callback
+2025-07-29 15:59:51,135 - __main__ - INFO - [web_backend.py:1118] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-29 15:59:51,135 - __main__ - INFO - [web_backend.py:1159] - Trading bot initialized successfully
+2025-07-29 15:59:51,135 - __main__ - INFO - [web_backend.py:2153] - Trading bot initialized on startup
+2025-07-29 16:00:19,411 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:00:33,288 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:00:34,305 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:01:56,980 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:01:58,167 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:06,098 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:07,513 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:11,102 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:12,489 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:16,111 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:17,605 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:20,128 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:21,581 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:22,772 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:26,481 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:27,912 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:29,024 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:30,612 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:31,520 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:35,734 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:36,999 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:45,671 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:46,599 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:50,679 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:51,658 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:55,624 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:56,799 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:02:58,025 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:03:00,799 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:03:01,889 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:03:05,703 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:03:06,728 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:03:07,743 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:03:09,129 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:03:19,600 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:03:20,625 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:03:27,845 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:03:36,823 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:03:57,931 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:04:06,954 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:04:15,239 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:04:19,982 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:04:20,995 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:04:28,036 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:04:37,069 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:04:56,632 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:04:57,624 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:04:58,737 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:01,982 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:03,094 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:06,621 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:10,727 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:11,856 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:15,610 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:16,705 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:20,844 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:21,875 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:25,705 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:26,740 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:30,628 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:31,728 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:36,895 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:38,415 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:39,363 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:05:58,338 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:06:06,683 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:06:19,757 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:06:20,723 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:06:22,052 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:06:28,606 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:06:29,785 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:06:33,681 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:06:35,370 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:06:38,697 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:06:39,912 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:06:44,932 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:06:45,943 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:06:49,932 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:06:50,998 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:06:59,641 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:07:00,614 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:07:04,731 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:07:05,736 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:07:11,049 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:07:12,153 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:07:14,678 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:07:15,777 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:07:20,027 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:07:21,945 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:07:23,008 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:07:24,095 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:08:19,805 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:08:21,119 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:08:22,582 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:08:24,025 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:09:19,743 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:09:20,885 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:09:21,980 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:09:23,183 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:10:04,493 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:10:05,660 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:10:19,637 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:10:21,071 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:10:22,040 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:10:23,435 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:11:01,608 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:11:02,600 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:11:19,740 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:11:20,874 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:11:22,107 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:11:23,534 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:11:54,024 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:11:55,290 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:11:56,405 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:11:57,775 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:12:10,614 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:12:28,823 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:12:35,512 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:12:36,551 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:12:57,757 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:13:47,942 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:13:48,918 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:14:20,057 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:14:21,843 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:14:22,888 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:15:20,063 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:16:19,974 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:16:34,938 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:16:46,404 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:16:47,814 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:16:51,396 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:16:52,791 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:16:56,943 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:16:58,265 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:16:59,207 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:01,637 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:02,556 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:06,609 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:07,539 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:11,701 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:12,558 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:14,014 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:14,873 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:16,661 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:17,646 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:21,612 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:22,595 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:26,725 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:28,005 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:29,280 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:31,625 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:32,514 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:36,772 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:37,874 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:41,599 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:42,494 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:46,266 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:47,225 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:48,177 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:49,168 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:51,609 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:17:52,586 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:18:19,828 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:18:20,718 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:18:21,644 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:18:24,320 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:18:25,462 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:18:26,910 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:18:28,048 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:18:29,102 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:18:31,089 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:18:32,494 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:18:35,903 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:18:37,199 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:18:44,478 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:18:57,752 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:19:13,984 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:19:27,624 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:20:19,691 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:21:19,689 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:22:19,622 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:22:55,729 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:22:57,926 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:22:58,937 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:23:28,669 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:23:37,056 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:23:55,943 - __main__ - INFO - [web_backend.py:1474] - Market query detected: today top stock
+2025-07-29 16:23:56,445 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:23:56,900 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:24:00,467 - __main__ - INFO - [web_backend.py:453] - Using real Fyers market data
+2025-07-29 16:24:00,468 - __main__ - INFO - [web_backend.py:1476] - Real-time response: True
+2025-07-29 16:24:00,468 - __main__ - INFO - [web_backend.py:1478] - Returning real-time market response
+2025-07-29 16:24:00,950 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:24:28,050 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:24:58,027 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:25:11,521 - dynamic_market_expert - INFO - [dynamic_market_expert.py:43] - Fyers API initialized successfully
+2025-07-29 16:25:11,521 - dynamic_market_expert - INFO - [dynamic_market_expert.py:133] - Dynamic Market Expert initialized successfully
+2025-07-29 16:25:11,521 - __main__ - INFO - [web_backend.py:1492] - Dynamic Market Expert initialized for web chat
+2025-07-29 16:25:28,924 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:25:41,145 - __main__ - INFO - [web_backend.py:1474] - Market query detected: higest voulme stock
+2025-07-29 16:25:41,630 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:25:41,630 - __main__ - INFO - [web_backend.py:1476] - Real-time response: False
+2025-07-29 16:25:58,046 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:26:10,467 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:26:28,714 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:26:57,839 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:27:28,615 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:27:58,622 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:29:20,083 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:30:20,138 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:31:20,267 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:32:20,163 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:33:20,131 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:34:20,084 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:35:20,111 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:36:20,064 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:37:20,132 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:38:20,113 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:39:20,090 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:40:20,083 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:41:20,141 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:42:20,191 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:43:20,145 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:44:20,071 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:44:59,422 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:45:13,391 - __main__ - INFO - [web_backend.py:768] - Trading bot is already stopped
+2025-07-29 16:45:13,391 - __main__ - INFO - [web_backend.py:2182] - Trading bot stopped on shutdown
+2025-07-29 16:45:13,392 - __main__ - INFO - [web_backend.py:2197] - Web server stopped by user
+2025-07-29 16:46:02,489 - mcp_server - INFO - [__init__.py:26] - MCP Trading Server components loaded successfully
+2025-07-29 16:46:02,652 - mcp_server.tools.market_analysis_tool - INFO - [market_analysis_tool.py:25] - TA library loaded successfully
+2025-07-29 16:46:04,096 - mcp_server - INFO - [__init__.py:33] - All MCP agents loaded successfully
+2025-07-29 16:46:08,433 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-29 16:46:08,433 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-29 16:46:08,435 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-29 16:46:08,435 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-29 16:46:08,451 - testindia - INFO - [testindia.py:705] - Loaded 78 stocks from cache
+2025-07-29 16:46:08,451 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-29 16:46:08,454 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-29 16:46:08,454 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-29 16:46:08,454 - __main__ - INFO - [web_backend.py:628] - Successfully registered portfolio callback
+2025-07-29 16:46:08,454 - __main__ - INFO - [web_backend.py:1118] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-29 16:46:08,454 - __main__ - INFO - [web_backend.py:1159] - Trading bot initialized successfully
+2025-07-29 16:46:08,455 - __main__ - INFO - [web_backend.py:2125] - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-29 16:46:08,455 - __main__ - INFO - [web_backend.py:2126] - Web interface will be available at the above URL
+2025-07-29 16:46:08,455 - __main__ - INFO - [web_backend.py:2127] - API documentation available at http://{host}:{port}/docs
+2025-07-29 16:46:08,492 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-29 16:46:08,492 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-29 16:46:08,493 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-29 16:46:08,494 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-29 16:46:08,507 - testindia - INFO - [testindia.py:705] - Loaded 78 stocks from cache
+2025-07-29 16:46:08,507 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-29 16:46:08,508 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-29 16:46:08,508 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-29 16:46:08,508 - __main__ - INFO - [web_backend.py:628] - Successfully registered portfolio callback
+2025-07-29 16:46:08,508 - __main__ - INFO - [web_backend.py:1118] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-29 16:46:08,509 - __main__ - INFO - [web_backend.py:1159] - Trading bot initialized successfully
+2025-07-29 16:46:08,509 - __main__ - INFO - [web_backend.py:2152] - Trading bot initialized on startup
+2025-07-29 16:46:42,147 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:46:43,423 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:46:50,812 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:46:52,211 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:47:03,806 - __main__ - INFO - [web_backend.py:1473] - Market query detected: which stock should i buy according to todays ?
+2025-07-29 16:47:04,250 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:47:04,737 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:47:08,614 - __main__ - INFO - [web_backend.py:453] - Using real Fyers market data
+2025-07-29 16:47:08,615 - __main__ - INFO - [web_backend.py:1475] - Real-time response: True
+2025-07-29 16:47:08,615 - __main__ - INFO - [web_backend.py:1477] - Returning real-time market response
+2025-07-29 16:47:12,188 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:47:42,194 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:47:58,222 - __main__ - INFO - [web_backend.py:1473] - Market query detected: top 5 penny stock which i should buy ?
+2025-07-29 16:47:58,693 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:47:58,693 - __main__ - INFO - [web_backend.py:1475] - Real-time response: False
+2025-07-29 16:47:58,702 - dynamic_market_expert - INFO - [dynamic_market_expert.py:43] - Fyers API initialized successfully
+2025-07-29 16:47:58,703 - dynamic_market_expert - INFO - [dynamic_market_expert.py:133] - Dynamic Market Expert initialized successfully
+2025-07-29 16:47:58,703 - __main__ - INFO - [web_backend.py:1491] - Dynamic Market Expert initialized for web chat
+2025-07-29 16:47:59,185 - dynamic_market_expert - INFO - [dynamic_market_expert.py:189] - [SUCCESS] Fetched live data from Fyers for 4 symbols
+2025-07-29 16:48:12,440 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:48:28,419 - __main__ - INFO - [web_backend.py:1473] - Market query detected: market analysis of today
+2025-07-29 16:48:28,936 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:48:29,414 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:48:32,262 - __main__ - INFO - [web_backend.py:453] - Using real Fyers market data
+2025-07-29 16:48:32,263 - __main__ - INFO - [web_backend.py:1475] - Real-time response: True
+2025-07-29 16:48:32,263 - __main__ - INFO - [web_backend.py:1477] - Returning real-time market response
+2025-07-29 16:48:42,018 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:49:12,032 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:49:16,794 - portfolio_manager - INFO - [portfolio_manager.py:145] - Loaded live mode data - Cash: Rs.0.00, Holdings: 0, Trades: 0
+2025-07-29 16:49:16,794 - portfolio_manager - INFO - [portfolio_manager.py:117] - Switched from paper mode to live mode
+2025-07-29 16:49:16,795 - dhan_client - INFO - [dhan_client.py:35] - Dhan API client initialized
+2025-07-29 16:49:17,307 - dhan_client - INFO - [dhan_client.py:294] - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Equity, ', 'ddpi': 'Deactive', 'mtf': 'Deactive', 'dataPlan': 'Deactive', 'dataValidity': 'NA'}
+2025-07-29 16:49:17,307 - dhan_client - INFO - [dhan_client.py:296] - Dhan API connection validated successfully
+2025-07-29 16:49:17,308 - dhan_client - INFO - [dhan_client.py:35] - Dhan API client initialized
+2025-07-29 16:49:17,308 - live_executor - INFO - [live_executor.py:42] - Live Trading Executor initialized
+2025-07-29 16:49:17,308 - live_executor - INFO - [live_executor.py:55] - Syncing portfolio with Dhan account...
+2025-07-29 16:49:17,777 - dhan_client - INFO - [dhan_client.py:66] - Holdings endpoint returned 500 - likely empty portfolio
+2025-07-29 16:49:17,778 - live_executor - INFO - [live_executor.py:90] - Portfolio synced - Cash: Rs.0.00, Holdings: Rs.0.00
+2025-07-29 16:49:17,778 - __main__ - INFO - [web_backend.py:667] - Live trading initialized successfully
+2025-07-29 16:49:17,778 - __main__ - INFO - [web_backend.py:725] - Successfully switched from paper to live mode
+2025-07-29 16:49:17,778 - __main__ - INFO - [web_backend.py:1683] - Successfully switched from paper to live mode
+2025-07-29 16:49:17,778 - __main__ - INFO - [web_backend.py:1118] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-29 16:49:17,778 - __main__ - INFO - [web_backend.py:1710] - Settings updated: Mode=live, Risk Level=MEDIUM, Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-29 16:49:18,383 - dhan_client - INFO - [dhan_client.py:294] - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Equity, ', 'ddpi': 'Deactive', 'mtf': 'Deactive', 'dataPlan': 'Deactive', 'dataValidity': 'NA'}
+2025-07-29 16:49:18,384 - dhan_client - INFO - [dhan_client.py:296] - Dhan API connection validated successfully
+2025-07-29 16:49:42,276 - dhan_client - INFO - [dhan_client.py:294] - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Equity, ', 'ddpi': 'Deactive', 'mtf': 'Deactive', 'dataPlan': 'Deactive', 'dataValidity': 'NA'}
+2025-07-29 16:49:42,276 - dhan_client - INFO - [dhan_client.py:296] - Dhan API connection validated successfully
+2025-07-29 16:49:52,280 - portfolio_manager - INFO - [portfolio_manager.py:145] - Loaded paper mode data - Cash: Rs.0.00, Holdings: 0, Trades: 0
+2025-07-29 16:49:52,280 - portfolio_manager - INFO - [portfolio_manager.py:117] - Switched from live mode to paper mode
+2025-07-29 16:49:52,284 - __main__ - INFO - [web_backend.py:725] - Successfully switched from live to paper mode
+2025-07-29 16:49:52,285 - __main__ - INFO - [web_backend.py:1683] - Successfully switched from live to paper mode
+2025-07-29 16:49:52,285 - __main__ - INFO - [web_backend.py:1118] - Applied LOW risk settings: Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-29 16:49:52,285 - __main__ - INFO - [web_backend.py:1710] - Settings updated: Mode=paper, Risk Level=LOW, Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-29 16:49:53,079 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:50:13,067 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully
+2025-07-29 16:50:43,184 - __main__ - INFO - [web_backend.py:538] - Fyers client connected successfully

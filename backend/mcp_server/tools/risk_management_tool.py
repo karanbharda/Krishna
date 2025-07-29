@@ -20,7 +20,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from mcp_trading_server import MCPToolResult, MCPToolStatus
+from ..mcp_trading_server import MCPToolResult, MCPToolStatus
 from mcp_server.agents.risk_agent import RiskAgent
 
 logger = logging.getLogger(__name__)

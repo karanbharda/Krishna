@@ -427,6 +427,7 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
+  const [realtimeData, setRealtimeData] = useState(null);
 
   // Fetch trade history on component mount
   useEffect(() => {
@@ -442,18 +443,25 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
     fetchTradeHistory();
   }, []);
 
-  // Real-time updates every 10 seconds
+  // Real-time updates every 5 seconds for professional trading
   useEffect(() => {
     const interval = setInterval(async () => {
       setLastUpdate(new Date());
       try {
+        // Fetch real-time portfolio data
+        const response = await fetch('/api/portfolio/realtime');
+        if (response.ok) {
+          const data = await response.json();
+          setRealtimeData(data);
+        }
+
         // Refetch trade history for real-time updates
         const trades = await apiService.getTrades(50);
         setTradeHistory(trades);
       } catch (error) {
         console.error('Error updating real-time data:', error);
       }
-    }, 10000); // Update every 10 seconds
+    }, 5000); // Update every 5 seconds for professional real-time feel
 
     return () => clearInterval(interval);
   }, []);
@@ -609,21 +617,33 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
   };
 
   const calculatePortfolioPercentage = (currentValue, totalValue) => {
-    if (!totalValue || totalValue <= 0 || !currentValue || currentValue <= 0) {
+    if (!totalValue || totalValue <= 0 || currentValue === null || currentValue === undefined) {
       return '0.0';
     }
-    const percentage = ((currentValue / totalValue) * 100);
+    const percentage = ((Math.abs(currentValue) / totalValue) * 100);
     return isNaN(percentage) ? '0.0' : percentage.toFixed(1);
   };
 
-  const holdings = botData.portfolio.holdings || {};
-  const totalValue = botData.portfolio.totalValue || 0;
-  const cash = botData.portfolio.cash || 0;
-  const unrealizedPnL = botData.portfolio.unrealizedPnL || 0;
-  const totalReturn = botData.portfolio.totalReturn || 0;
-  const totalReturnPercentage = botData.portfolio.totalReturnPercentage || 0;
-  const realizedPnL = botData.portfolio.realizedPnL || 0;
-  const totalInvested = botData.portfolio.totalInvested || 10000; // Starting balance
+  // Use real-time data if available, otherwise fallback to botData
+  const portfolioData = realtimeData?.portfolio_metrics || botData.portfolio;
+
+  const holdings = portfolioData.holdings || {};
+  const totalValue = portfolioData.total_value || portfolioData.totalValue || 0;
+  const cash = portfolioData.cash || 0;
+  const cashPercentage = portfolioData.cash_percentage || 0;
+  const totalInvested = portfolioData.total_invested || 0;
+  const investedPercentage = portfolioData.invested_percentage || 0;
+  const currentHoldingsValue = portfolioData.current_holdings_value || 0;
+  const unrealizedPnL = portfolioData.unrealized_pnl || portfolioData.unrealizedPnL || 0;
+  const unrealizedPnLPct = portfolioData.unrealized_pnl_pct || 0;
+  const realizedPnL = portfolioData.realized_pnl || portfolioData.realizedPnL || 0;
+  const realizedPnLPct = portfolioData.realized_pnl_pct || 0;
+  const totalReturn = portfolioData.total_return || 0;
+  const totalReturnPct = portfolioData.total_return_pct || 0;
+  const profitLoss = portfolioData.profit_loss || totalReturn || 0;
+  const profitLossPct = portfolioData.profit_loss_pct || totalReturnPct || 0;
+  const initialBalance = portfolioData.initial_balance || portfolioData.startingBalance || 10000;
+  const tradesTotal = portfolioData.trades_today || 0;
   // const portfolioPerformance = botData.portfolio.performance || [];
 
   return (
@@ -649,10 +669,10 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
           >
             <div className="title">Total Portfolio Value</div>
             <div className="main-value">{formatCurrency(totalValue)}</div>
-            <div className="sub-value">Cash: {formatCurrency(cash)}</div>
+            <div className="sub-value">Cash: {formatCurrency(cash)} ({cashPercentage.toFixed(1)}%)</div>
             <div className="change">
               {totalReturn >= 0 ? '+' : ''}{formatCurrency(totalReturn)}
-              ({totalReturnPercentage >= 0 ? '+' : ''}{totalReturnPercentage.toFixed(2)}%)
+              ({totalReturnPct >= 0 ? '+' : ''}{totalReturnPct.toFixed(2)}%)
             </div>
           </PerformanceCard>
 
@@ -667,7 +687,7 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
             </div>
             <div className="sub-value">Open Positions</div>
             <div className="change">
-              {((unrealizedPnL / totalInvested) * 100).toFixed(2)}% of invested
+              {unrealizedPnLPct >= 0 ? '+' : ''}{unrealizedPnLPct.toFixed(2)}% of invested
             </div>
           </PerformanceCard>
 
@@ -682,22 +702,22 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
             </div>
             <div className="sub-value">Closed Positions</div>
             <div className="change">
-              {((realizedPnL / totalInvested) * 100).toFixed(2)}% of invested
+              {realizedPnLPct >= 0 ? '+' : ''}{realizedPnLPct.toFixed(2)}% return
             </div>
           </PerformanceCard>
 
           <PerformanceCard
             borderColor="#f39c12"
             valueColor="#2c3e50"
-            changeColor="neutral"
+            changeColor={profitLoss >= 0 ? 'positive' : 'negative'}
           >
             <div className="title">Total Return</div>
             <div className="main-value">
-              {totalReturn >= 0 ? '+' : ''}{formatCurrency(totalReturn)}
+              {profitLoss >= 0 ? '+' : ''}{formatCurrency(profitLoss)}
             </div>
             <div className="sub-value">Overall Performance</div>
             <div className="change">
-              {totalReturnPercentage >= 0 ? '+' : ''}{totalReturnPercentage.toFixed(2)}% return
+              {profitLossPct >= 0 ? '+' : ''}{profitLossPct.toFixed(2)}% return
             </div>
           </PerformanceCard>
         </PerformanceSection>
@@ -740,13 +760,15 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
                 </HoldingsRow>
               ) : (
                 Object.entries(holdings).map(([ticker, data]) => {
-                  // Use currentPrice if available, otherwise fall back to avg_price
-                  const currentPrice = data.currentPrice || data.avg_price || 0;
+                  // Use real-time price if available, otherwise fall back to stored currentPrice or avg_price
+                  const realtimePrice = realtimeData?.current_prices?.[ticker]?.price;
+                  const currentPrice = realtimePrice || data.currentPrice || data.avg_price || 0;
                   const avgPrice = data.avg_price || 0;
                   const qty = data.qty || 0;
                   const currentValue = qty * currentPrice;
                   const costBasis = qty * avgPrice;
                   const profitLoss = currentValue - costBasis;
+                  const profitLossPct = costBasis > 0 ? ((profitLoss / costBasis) * 100) : 0;
                   const portfolioPercentage = calculatePortfolioPercentage(currentValue, totalValue);
 
                   // Get the actual last trade type from trade history
@@ -769,6 +791,9 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
                       <div>{formatCurrency(currentPrice)}</div>
                       <ProfitLoss value={profitLoss}>
                         {profitLoss >= 0 ? '+' : ''}{formatCurrency(profitLoss)}
+                        <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>
+                          ({profitLossPct >= 0 ? '+' : ''}{profitLossPct.toFixed(2)}%)
+                        </div>
                       </ProfitLoss>
                       <div>{portfolioPercentage}%</div>
                     </HoldingsRow>

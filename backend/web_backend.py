@@ -38,23 +38,11 @@ except ImportError as e:
     print(f"Live trading components not available: {e}")
     LIVE_TRADING_AVAILABLE = False
 
-# Import MCP server components
-try:
-    from mcp_server import MCPTradingServer, TradingAgent, ExplanationAgent, MCP_SERVER_AVAILABLE
-    from fyers_client import FyersAPIClient
-    from llama_integration import LlamaReasoningEngine, TradingContext, LlamaResponse
-    MCP_AVAILABLE = True
-except ImportError as e:
-    print(f"MCP components not available: {e}")
-    MCP_AVAILABLE = False
-    # Define fallback classes
-    class TradingContext:
-        def __init__(self, **kwargs):
-            pass
-    class LlamaResponse:
-        def __init__(self, **kwargs):
-            self.content = kwargs.get('content', '')
-            self.reasoning = kwargs.get('reasoning', '')
+# Import MCP server components - NO FALLBACKS
+from mcp_server import MCPTradingServer, TradingAgent, ExplanationAgent, MCP_SERVER_AVAILABLE
+from fyers_client import FyersAPIClient
+from llama_integration import LlamaReasoningEngine, TradingContext, LlamaResponse
+MCP_AVAILABLE = True
 
 # Configure logging for detailed output
 logging.basicConfig(
@@ -137,13 +125,25 @@ class MCPChatRequest(BaseModel):
 class PortfolioMetrics(BaseModel):
     total_value: float
     cash: float
+    cash_percentage: float = 0
     holdings: Dict[str, Any]
+    total_invested: float = 0
+    invested_percentage: float = 0
+    current_holdings_value: float = 0
     total_return: float
     return_percentage: float
-    realized_pnl: float
+    total_return_pct: float = 0
     unrealized_pnl: float
+    unrealized_pnl_pct: float = 0
+    realized_pnl: float
+    realized_pnl_pct: float = 0
     total_exposure: float
+    exposure_ratio: float = 0
+    profit_loss: float = 0
+    profit_loss_pct: float = 0
     active_positions: int
+    trades_today: int = 0
+    initial_balance: float = 10000
 
 class BotStatus(BaseModel):
     is_running: bool
@@ -231,13 +231,13 @@ async def get_real_time_market_response(message: str) -> Optional[str]:
                 volume_data.sort(key=lambda x: x["volume"], reverse=True)
                 top_stocks = volume_data[:4]
 
-                response = f"📊 **Real-Time Highest Volume Stocks** (as of {current_time.strftime('%I:%M %p')})\n\n"
+                response = f"**Real-Time Highest Volume Stocks** (as of {current_time.strftime('%I:%M %p')})\n\n"
                 response += "**Market Overview:**\n"
                 response += f"Showing live data with real-time volume analysis.\n\n"
 
                 for i, stock in enumerate(top_stocks, 1):
-                    change_emoji = "🟢" if stock["change"] >= 0 else "🔴"
-                    response += f"{change_emoji} **{stock['symbol']}**: ₹{stock['price']:.2f} ({stock['change_pct']:+.2f}%) | Vol: {stock['volume']:,}\n"
+                    change_emoji = "[+]" if stock["change"] >= 0 else "[-]"
+                    response += f"{change_emoji} **{stock['symbol']}**: Rs.{stock['price']:.2f} ({stock['change_pct']:+.2f}%) | Vol: {stock['volume']:,}\n"
 
                 response += f"\n💡 **Live Market Insight:** High volume indicates strong institutional interest and active trading."
 
@@ -269,13 +269,13 @@ async def get_real_time_market_response(message: str) -> Optional[str]:
                 volume_data.sort(key=lambda x: x["volume"])
                 low_volume_stocks = volume_data[:4]
 
-                response = f"📊 **Real-Time Lowest Volume Stocks** (as of {current_time.strftime('%I:%M %p')})\n\n"
+                response = f"**Real-Time Lowest Volume Stocks** (as of {current_time.strftime('%I:%M %p')})\n\n"
                 response += "**Market Overview:**\n"
                 response += f"Showing live data with low volume analysis.\n\n"
 
                 for i, stock in enumerate(low_volume_stocks, 1):
-                    change_emoji = "🟢" if stock["change"] >= 0 else "🔴"
-                    response += f"{change_emoji} **{stock['symbol']}**: ₹{stock['price']:.2f} ({stock['change_pct']:+.2f}%) | Vol: {stock['volume']:,}\n"
+                    change_emoji = "[+]" if stock["change"] >= 0 else "[-]"
+                    response += f"{change_emoji} **{stock['symbol']}**: Rs.{stock['price']:.2f} ({stock['change_pct']:+.2f}%) | Vol: {stock['volume']:,}\n"
 
                 response += f"\n💡 **Live Market Insight:** Low volume may indicate consolidation or lack of institutional interest."
 
@@ -306,12 +306,12 @@ async def get_real_time_market_response(message: str) -> Optional[str]:
                 positive_stocks = len([s for s in market_data if s["change"] >= 0])
                 avg_change = sum(s["change_pct"] for s in market_data) / len(market_data)
 
-                response = f"📈 **Live Market Overview** (as of {current_time.strftime('%I:%M %p')})\n\n"
+                response = f"**Live Market Overview** (as of {current_time.strftime('%I:%M %p')})\n\n"
                 response += f"**Market Sentiment:** {'Positive' if avg_change > 0 else 'Negative'} with average change of {avg_change:+.2f}%\n\n"
 
                 for stock in market_data:
-                    change_emoji = "🟢" if stock["change"] >= 0 else "🔴"
-                    response += f"{change_emoji} **{stock['symbol']}**: ₹{stock['price']:.2f} ({stock['change_pct']:+.2f}%) | Vol: {stock['volume']:,}\n"
+                    change_emoji = "[+]" if stock["change"] >= 0 else "[-]"
+                    response += f"{change_emoji} **{stock['symbol']}**: Rs.{stock['price']:.2f} ({stock['change_pct']:+.2f}%) | Vol: {stock['volume']:,}\n"
 
                 response += f"\n💡 **Market Status:** {positive_stocks}/{len(market_data)} stocks are positive today."
 
@@ -421,7 +421,42 @@ def get_realistic_mock_data():
     return market_data
 
 def get_real_market_data_from_api():
-    """Get real market data from Yahoo Finance API as fallback"""
+    """Get real market data from Fyers API first, then fallback"""
+    # Try Fyers first for real-time data
+    fyers_client = get_fyers_client()
+    if fyers_client:
+        try:
+            import random
+
+            # Get dynamic stock list
+            major_stocks = get_dynamic_stock_list()
+            selected_stocks = random.sample(major_stocks, random.randint(6, 10))
+
+            market_data = []
+            for symbol in selected_stocks:
+                try:
+                    quotes = fyers_client.quotes({"symbols": symbol})
+                    if quotes and quotes.get("s") == "ok" and quotes.get("d"):
+                        data = quotes["d"][0]["v"]
+                        market_data.append({
+                            "symbol": symbol.replace("NSE:", "").replace("-EQ", ""),
+                            "price": round(data.get("lp", 0), 2),
+                            "change": round(data.get("ch", 0), 2),
+                            "change_pct": round(data.get("chp", 0), 2),
+                            "volume": int(data.get("volume", 0))
+                        })
+                except Exception as e:
+                    logger.warning(f"Error fetching Fyers data for {symbol}: {e}")
+                    continue
+
+            if market_data and any(d['price'] > 0 for d in market_data):
+                logger.info("Using real Fyers market data")
+                return market_data
+
+        except Exception as e:
+            logger.warning(f"Fyers API failed: {e}")
+
+    # Fallback to Yahoo Finance
     try:
         import yfinance as yf
         import random
@@ -455,22 +490,23 @@ def get_real_market_data_from_api():
                         "volume": int(volume)
                     })
             except Exception as e:
-                logger.warning(f"Error fetching data for {symbol}: {e}")
+                logger.warning(f"Error fetching Yahoo data for {symbol}: {e}")
                 continue
 
         # If we got real data, return it
         if market_data and any(d['price'] > 0 for d in market_data):
+            logger.info("Using Yahoo Finance fallback data")
             return market_data
         else:
             # Fallback to realistic mock data
-            logger.info("Using realistic mock data as fallback")
+            logger.info("Using realistic mock data as final fallback")
             return get_realistic_mock_data()
 
     except ImportError:
         logger.warning("yfinance not available - using realistic mock data")
         return get_realistic_mock_data()
     except Exception as e:
-        logger.error(f"Error fetching real market data: {e} - using realistic mock data")
+        logger.error(f"Error fetching market data: {e} - using realistic mock data")
         return get_realistic_mock_data()
 
 def get_fyers_client():
@@ -586,7 +622,16 @@ class WebTradingBot:
             self._initialize_live_trading()
 
         # Register WebSocket callback for real-time updates
-        self.trading_bot.portfolio.add_trade_callback(self._on_trade_executed)
+        try:
+            if hasattr(self.trading_bot, 'portfolio'):
+                self.trading_bot.portfolio.add_trade_callback(self._on_trade_executed)
+                logger.info("Successfully registered portfolio callback")
+            else:
+                logger.warning("Trading bot does not have portfolio attribute")
+        except AttributeError as e:
+            # Portfolio might not be directly accessible, skip callback registration
+            logger.warning(f"Could not register portfolio callback: {e}")
+            pass
 
     def _initialize_live_trading(self):
         """Initialize live trading components"""
@@ -607,10 +652,15 @@ class WebTradingBot:
                 return False
 
             # Initialize live executor
-            self.live_executor = LiveTradingExecutor(
-                portfolio=self.trading_bot.portfolio,
-                config=self.config
-            )
+            try:
+                self.live_executor = LiveTradingExecutor(
+                    portfolio=self.trading_bot.portfolio,
+                    config=self.config
+                )
+            except AttributeError:
+                # Portfolio might not be directly accessible, skip live executor
+                self.live_executor = None
+                logger.warning("Could not initialize live executor - portfolio not accessible")
 
             # Sync portfolio with Dhan account
             if self.live_executor.sync_portfolio_with_dhan():
@@ -730,6 +780,7 @@ class WebTradingBot:
         import json
         import os
         import yfinance as yf
+        from datetime import datetime
 
         try:
             # Try to read from the actual portfolio file created by the trading bot
@@ -748,18 +799,40 @@ class WebTradingBot:
 
                 # Get current prices for unrealized P&L calculation
                 current_prices = {}
-                unrealized_pnl = portfolio_data.get('unrealized_pnl', 0)  # Use saved value as fallback
+                unrealized_pnl = 0  # Will be recalculated with current prices
                 price_fetch_success = False
+
+
 
                 if holdings:
                     try:
+                        # Use Fyers for real-time price updates
+                        fyers_client = get_fyers_client()
                         for ticker in holdings.keys():
-                            stock = yf.Ticker(ticker)
-                            hist = stock.history(period="1d")
-                            if not hist.empty:
-                                current_prices[ticker] = hist['Close'].iloc[-1]
-                                price_fetch_success = True
-                            else:
+                            if fyers_client:
+                                try:
+                                    # Convert ticker format for Fyers
+                                    fyers_symbol = f"NSE:{ticker.replace('.NS', '').replace('.BO', '')}-EQ"
+                                    quotes = fyers_client.quotes({"symbols": fyers_symbol})
+
+                                    if quotes and quotes.get("s") == "ok" and quotes.get("d"):
+                                        data = quotes["d"][0]["v"]
+                                        current_prices[ticker] = data.get("lp", 0)
+                                        price_fetch_success = True
+                                        continue
+                                except Exception as e:
+                                    logger.warning(f"Fyers failed for {ticker}: {e}")
+
+                            # Fallback to Yahoo Finance
+                            try:
+                                import yfinance as yf
+                                stock = yf.Ticker(ticker)
+                                hist = stock.history(period="1d")
+                                if not hist.empty:
+                                    current_prices[ticker] = hist['Close'].iloc[-1]
+                                    price_fetch_success = True
+                            except Exception as e:
+                                logger.warning(f"Yahoo Finance failed for {ticker}: {e}")
                                 current_prices[ticker] = holdings[ticker]['avg_price']  # Fallback to avg price
                     except Exception as e:
                         logger.warning(f"Error fetching current prices: {e}")
@@ -767,12 +840,12 @@ class WebTradingBot:
                         for ticker, data in holdings.items():
                             current_prices[ticker] = data['avg_price']
 
-                # Calculate unrealized P&L with current prices only if we successfully fetched prices
-                if price_fetch_success:
-                    unrealized_pnl = 0
-                    for ticker, data in holdings.items():
-                        current_price = current_prices.get(ticker, data['avg_price'])
-                        unrealized_pnl += (current_price - data['avg_price']) * data['qty']
+                # Always calculate unrealized P&L with current prices (or avg prices as fallback)
+                unrealized_pnl = 0
+                for ticker, data in holdings.items():
+                    current_price = current_prices.get(ticker, data['avg_price'])
+                    pnl_for_ticker = (current_price - data['avg_price']) * data['qty']
+                    unrealized_pnl += pnl_for_ticker
 
                 # Calculate total exposure and total value with current prices
                 total_exposure = sum(data['qty'] * data['avg_price'] for data in holdings.values())
@@ -807,16 +880,37 @@ class WebTradingBot:
                 # Get trade log
                 trade_log = self.get_recent_trades(limit=100)  # Get all trades for portfolio
 
+                # Professional calculations
+                total_invested = sum(data['qty'] * data['avg_price'] for data in holdings.values())
+                cash_percentage = (cash / total_value) * 100 if total_value > 0 else 100
+                invested_percentage = (total_invested / total_value) * 100 if total_value > 0 else 0
+                unrealized_pnl_pct = (unrealized_pnl / total_invested) * 100 if total_invested > 0 else 0
+                realized_pnl_pct = (realized_pnl / starting_balance) * 100 if starting_balance > 0 else 0
+                total_return_pct = (total_return / starting_balance) * 100 if starting_balance > 0 else 0
+
                 return {
-                    "total_value": total_value,
-                    "cash": cash,
+                    "total_value": round(total_value, 2),
+                    "cash": round(cash, 2),
+                    "cash_percentage": round(cash_percentage, 2),
                     "holdings": enriched_holdings,
-                    "total_return": total_return,
-                    "return_percentage": return_pct,
-                    "realized_pnl": portfolio_data.get('realized_pnl', 0),
-                    "unrealized_pnl": unrealized_pnl,
-                    "total_exposure": total_exposure,
+                    "total_invested": round(total_invested, 2),
+                    "invested_percentage": round(invested_percentage, 2),
+                    "current_holdings_value": round(current_market_value, 2),
+                    "total_return": round(total_return, 2),
+                    "return_percentage": round(return_pct, 2),  # Legacy field
+                    "total_return_pct": round(total_return_pct, 2),
+                    "unrealized_pnl": round(unrealized_pnl, 2),
+                    "unrealized_pnl_pct": round(unrealized_pnl_pct, 2),
+                    "realized_pnl": round(realized_pnl, 2),
+                    "realized_pnl_pct": round(realized_pnl_pct, 2),
+                    "total_exposure": round(total_exposure, 2),
+                    "exposure_ratio": round((total_invested / total_value) * 100, 2) if total_value > 0 else 0,
+                    "profit_loss": round(total_return, 2),
+                    "profit_loss_pct": round(total_return_pct, 2),
                     "active_positions": len(holdings),
+                    "positions": len(holdings),
+                    "trades_today": len([t for t in trade_log if t.get("date", "").startswith(datetime.now().strftime("%Y-%m-%d"))]),
+                    "initial_balance": starting_balance,
                     "trade_log": trade_log
                 }
             else:
@@ -902,7 +996,7 @@ class WebTradingBot:
                     "totalValue": portfolio_metrics["total_value"],
                     "cash": portfolio_metrics["cash"],
                     "holdings": portfolio_metrics["holdings"],
-                    "startingBalance": self.trading_bot.portfolio.starting_balance,
+                    "startingBalance": portfolio_metrics.get("initial_balance", 10000),
                     "unrealizedPnL": portfolio_metrics["unrealized_pnl"],
                     "realizedPnL": portfolio_metrics["realized_pnl"],
                     "tradeLog": self.get_recent_trades(50)
@@ -1125,11 +1219,37 @@ async def get_bot_data():
 
 @app.get("/api/portfolio", response_model=PortfolioMetrics)
 async def get_portfolio():
-    """Get portfolio metrics"""
+    """Get comprehensive portfolio metrics with real-time calculations"""
     try:
         if trading_bot:
             metrics = trading_bot.get_portfolio_metrics()
-            return PortfolioMetrics(**metrics)
+
+            # Map metrics to response model with all professional fields
+            portfolio_response = {
+                "total_value": metrics.get("total_value", 0),
+                "cash": metrics.get("cash", 0),
+                "cash_percentage": metrics.get("cash_percentage", 0),
+                "holdings": metrics.get("holdings", {}),
+                "total_invested": metrics.get("total_invested", 0),
+                "invested_percentage": metrics.get("invested_percentage", 0),
+                "current_holdings_value": metrics.get("current_holdings_value", 0),
+                "total_return": metrics.get("total_return", 0),
+                "return_percentage": metrics.get("total_return_pct", 0),  # Legacy field
+                "total_return_pct": metrics.get("total_return_pct", 0),
+                "unrealized_pnl": metrics.get("unrealized_pnl", 0),
+                "unrealized_pnl_pct": metrics.get("unrealized_pnl_pct", 0),
+                "realized_pnl": metrics.get("realized_pnl", 0),
+                "realized_pnl_pct": metrics.get("realized_pnl_pct", 0),
+                "total_exposure": metrics.get("total_exposure", 0),
+                "exposure_ratio": metrics.get("exposure_ratio", 0),
+                "profit_loss": metrics.get("profit_loss", 0),
+                "profit_loss_pct": metrics.get("profit_loss_pct", 0),
+                "active_positions": metrics.get("positions", 0),
+                "trades_today": metrics.get("trades_today", 0),
+                "initial_balance": metrics.get("initial_balance", 10000)
+            }
+
+            return PortfolioMetrics(**portfolio_response)
         else:
             raise HTTPException(status_code=500, detail="Bot not initialized")
     except Exception as e:
@@ -1147,6 +1267,47 @@ async def get_trades(limit: int = 10):
             return []
     except Exception as e:
         logger.error(f"Error getting trades: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/portfolio/realtime")
+async def get_realtime_portfolio():
+    """Get real-time portfolio updates with current prices"""
+    try:
+        if trading_bot:
+            metrics = trading_bot.get_portfolio_metrics()
+
+            # Get current prices for all holdings
+            current_prices = {}
+            fyers_client = get_fyers_client()
+
+            for ticker in metrics.get("holdings", {}).keys():
+                try:
+                    if fyers_client:
+                        # Convert ticker format for Fyers
+                        fyers_symbol = f"NSE:{ticker.replace('.NS', '').replace('.BO', '')}-EQ"
+                        quotes = fyers_client.quotes({"symbols": fyers_symbol})
+
+                        if quotes and quotes.get("s") == "ok" and quotes.get("d"):
+                            data = quotes["d"][0]["v"]
+                            current_prices[ticker] = {
+                                "price": data.get("lp", 0),
+                                "change": data.get("ch", 0),
+                                "change_pct": data.get("chp", 0),
+                                "volume": data.get("volume", 0)
+                            }
+                except Exception as e:
+                    logger.warning(f"Error fetching real-time price for {ticker}: {e}")
+
+            return {
+                "portfolio_metrics": metrics,
+                "current_prices": current_prices,
+                "last_updated": datetime.now().isoformat(),
+                "market_status": "OPEN" if datetime.now().hour >= 9 and datetime.now().hour < 16 else "CLOSED"
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Bot not initialized")
+    except Exception as e:
+        logger.error(f"Error getting real-time portfolio: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/watchlist")
@@ -1402,7 +1563,7 @@ async def chat(request: ChatRequest):
 
         # Final professional fallback
         return ChatResponse(
-            response=f"""I'm your professional stock market advisor! 📈
+            response=f"""I'm your professional stock market advisor!
 
 I can help you with:
 • **Live Stock Prices** - "What's the price of {', '.join(['Reliance', 'TCS', 'HDFC Bank'])}?"

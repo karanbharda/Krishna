@@ -4,6 +4,12 @@ import time
 import numpy as np
 import pandas as pd
 import yfinance as yf
+# Fyers API integration
+try:
+    from fyers_apiv3 import fyersModel
+    FYERS_AVAILABLE = True
+except ImportError:
+    FYERS_AVAILABLE = False
 from datetime import datetime, timedelta
 import requests
 import csv
@@ -540,9 +546,9 @@ class DynamicTickerMapper:
         try:
             nse_data = self.fetch_nse_stock_list()
             all_mappings.update(nse_data)
-            logger.info(f"✅ Successfully fetched {len(nse_data)} stocks from NSE API")
+            logger.info(f"[SUCCESS] Successfully fetched {len(nse_data)} stocks from NSE API")
         except Exception as e:
-            logger.warning(f"❌ NSE API failed: {e}")
+            logger.warning(f"[ERROR] NSE API failed: {e}")
 
         # Method 2: Try BSE API
         try:
@@ -555,9 +561,9 @@ class DynamicTickerMapper:
                     all_mappings[ticker] = list(set(all_mappings[ticker]))
                 else:
                     all_mappings[ticker] = names
-            logger.info(f"✅ Successfully added {len(bse_data)} stocks from BSE API")
+            logger.info(f"[SUCCESS] Successfully added {len(bse_data)} stocks from BSE API")
         except Exception as e:
-            logger.warning(f"❌ BSE API failed: {e}")
+            logger.warning(f"[ERROR] BSE API failed: {e}")
 
         # Method 3: Fallback to essential stocks if we don't have enough data
         if len(all_mappings) < 50:
@@ -566,18 +572,18 @@ class DynamicTickerMapper:
             for ticker, names in fallback_mapping.items():
                 if ticker not in all_mappings:
                     all_mappings[ticker] = names
-            logger.info(f"✅ Added {len(fallback_mapping)} fallback stocks")
+            logger.info(f"[SUCCESS] Added {len(fallback_mapping)} fallback stocks")
         else:
-            logger.info(f"✅ Sufficient stocks ({len(all_mappings)}) fetched from APIs")
+            logger.info(f"[SUCCESS] Sufficient stocks ({len(all_mappings)}) fetched from APIs")
 
         self.ticker_mapping = all_mappings
         self.last_updated = datetime.now()
 
-        logger.info(f"🎯 Final mapping contains {len(self.ticker_mapping)} stocks")
+        logger.info(f"Target: Final mapping contains {len(self.ticker_mapping)} stocks")
 
         # Log sample of stocks for verification
         sample_stocks = list(self.ticker_mapping.keys())[:5]
-        logger.info(f"📊 Sample stocks: {sample_stocks}")
+        logger.info(f"[DATA] Sample stocks: {sample_stocks}")
 
     def get_fallback_mapping(self):
         """Fallback hardcoded mapping for essential stocks - expanded to 50+ stocks"""
@@ -915,7 +921,7 @@ class ChatbotCommandHandler:
         try:
             # Add context about the trading bot
             context = f"""You are an AI assistant for an Indian stock trading bot. Current context:
-- Portfolio Value: ₹{self.trading_bot.portfolio.get_metrics()['total_value']:,.2f}
+- Portfolio Value: Rs.{self.trading_bot.portfolio.get_metrics()['total_value']:,.2f}
 - Active Positions: {len(self.trading_bot.portfolio.holdings)}
 - Trading Mode: {self.trading_bot.portfolio.mode}
 - Available Commands: /start_bot, /set_risk, /get_pnl, /why_trade, /list_positions, /set_ticker, /get_signals, /pause_trading, /resume_trading, /get_performance, /set_allocation
@@ -937,9 +943,9 @@ Please provide a helpful response about trading, markets, or the user's portfoli
         """Start the trading bot."""
         try:
             logger.info("Bot start command received via chat interface")
-            return "✅ Trading bot is active and monitoring markets. Check logs for detailed activity."
+            return "[SUCCESS] Trading bot is active and monitoring markets. Check logs for detailed activity."
         except Exception as e:
-            return f"❌ Error starting bot: {str(e)}"
+            return f"[ERROR] Error starting bot: {str(e)}"
 
     def set_risk(self, risk_level: str) -> str:
         """Set risk level and update stop-loss."""
@@ -951,15 +957,15 @@ Please provide a helpful response about trading, markets, or the user's portfoli
             }
 
             if risk_level not in risk_mapping:
-                return f"❌ Invalid risk level. Use: LOW, MEDIUM, or HIGH"
+                return f"[ERROR] Invalid risk level. Use: LOW, MEDIUM, or HIGH"
 
             new_stop_loss = risk_mapping[risk_level]
             self.trading_bot.config["stop_loss_pct"] = new_stop_loss
             self.trading_bot.executor.stop_loss_pct = new_stop_loss
 
-            return f"✅ Risk level set to {risk_level}. Stop-loss updated to {new_stop_loss*100}%"
+            return f"[SUCCESS] Risk level set to {risk_level}. Stop-loss updated to {new_stop_loss*100}%"
         except Exception as e:
-            return f"❌ Error setting risk level: {str(e)}"
+            return f"[ERROR] Error setting risk level: {str(e)}"
 
     def get_pnl(self) -> str:
         """Get current portfolio P&L metrics."""
@@ -970,29 +976,29 @@ Please provide a helpful response about trading, markets, or the user's portfoli
             return_pct = (total_return / starting_balance) * 100
 
             pnl_report = f"""
-📊 **Portfolio Metrics**
-💰 Total Value: ₹{metrics['total_value']:,.2f}
-💵 Cash: ₹{metrics['cash']:,.2f}
-📈 Holdings Value: ₹{metrics['total_exposure']:,.2f}
-🎯 Total Return: ₹{total_return:,.2f} ({return_pct:+.2f}%)
-✅ Realized P&L: ₹{metrics['realized_pnl']:,.2f}
-📊 Unrealized P&L: ₹{metrics['unrealized_pnl']:,.2f}
-🏢 Active Positions: {len(self.trading_bot.portfolio.holdings)}
+[DATA] **Portfolio Metrics**
+Rs. Total Value: Rs.{metrics['total_value']:,.2f}
+Cash: Cash: Rs.{metrics['cash']:,.2f}
+[UP] Holdings Value: Rs.{metrics['total_exposure']:,.2f}
+Target: Total Return: Rs.{total_return:,.2f} ({return_pct:+.2f}%)
+[SUCCESS] Realized P&L: Rs.{metrics['realized_pnl']:,.2f}
+[DATA] Unrealized P&L: Rs.{metrics['unrealized_pnl']:,.2f}
+Positions: Active Positions: {len(self.trading_bot.portfolio.holdings)}
             """
             return pnl_report.strip()
         except Exception as e:
-            return f"❌ Error getting P&L: {str(e)}"
+            return f"[ERROR] Error getting P&L: {str(e)}"
 
     def why_trade(self, ticker: str) -> str:
         """Explain why a particular ticker should be traded."""
         try:
             if not ticker:
-                return "❌ Please specify a ticker. Example: /why_trade RELIANCE.NS"
+                return "[ERROR] Please specify a ticker. Example: /why_trade RELIANCE.NS"
 
             # Get analysis for the ticker
             analysis = self.trading_bot.run_analysis(ticker)
             if not analysis.get("success"):
-                return f"❌ Could not analyze {ticker}: {analysis.get('message', 'Unknown error')}"
+                return f"[ERROR] Could not analyze {ticker}: {analysis.get('message', 'Unknown error')}"
 
             # Extract key metrics
             technical = analysis["technical_indicators"]
@@ -1034,19 +1040,19 @@ Please provide a helpful response about trading, markets, or the user's portfoli
 
             # Overall recommendation
             if buy_signals > sell_signals:
-                recommendation = "🟢 BUY"
+                recommendation = "[+] BUY"
                 reason = "Technical indicators suggest upward momentum"
             elif sell_signals > buy_signals:
-                recommendation = "🔴 SELL"
+                recommendation = "[-] SELL"
                 reason = "Technical indicators suggest downward pressure"
             else:
-                recommendation = "🟡 HOLD"
+                recommendation = "[=] HOLD"
                 reason = "Mixed signals, wait for clearer direction"
 
             analysis_text = f"""
-🎯 **Trade Analysis for {ticker}**
-💰 Current Price: ₹{current_price:.2f}
-📊 Recommendation: {recommendation}
+Target: **Trade Analysis for {ticker}**
+Rs. Current Price: Rs.{current_price:.2f}
+[DATA] Recommendation: {recommendation}
 
 **Technical Signals:**
 • RSI ({rsi:.1f}): {rsi_signal}
@@ -1060,7 +1066,7 @@ Please provide a helpful response about trading, markets, or the user's portfoli
             return analysis_text.strip()
 
         except Exception as e:
-            return f"❌ Error analyzing trade: {str(e)}"
+            return f"[ERROR] Error analyzing trade: {str(e)}"
 
     def list_positions(self) -> str:
         """List all open positions."""
@@ -1069,71 +1075,71 @@ Please provide a helpful response about trading, markets, or the user's portfoli
             if not holdings:
                 return "📭 No open positions currently."
 
-            positions_text = "📊 **Current Positions:**\n"
+            positions_text = "[DATA] **Current Positions:**\n"
             for ticker, data in holdings.items():
                 current_value = data['qty'] * data['avg_price']
-                positions_text += f"• {ticker}: {data['qty']} shares @ ₹{data['avg_price']:.2f} (₹{current_value:,.2f})\n"
+                positions_text += f"• {ticker}: {data['qty']} shares @ Rs.{data['avg_price']:.2f} (Rs.{current_value:,.2f})\n"
 
             return positions_text.strip()
         except Exception as e:
-            return f"❌ Error listing positions: {str(e)}"
+            return f"[ERROR] Error listing positions: {str(e)}"
 
     def set_ticker(self, ticker: str, action: str) -> str:
         """Add or remove ticker from watchlist."""
         try:
             if not ticker:
-                return "❌ Please specify a ticker. Example: /set_ticker RELIANCE.NS ADD"
+                return "[ERROR] Please specify a ticker. Example: /set_ticker RELIANCE.NS ADD"
 
             current_tickers = self.trading_bot.config["tickers"]
 
             if action == "ADD":
                 if ticker not in current_tickers:
                     current_tickers.append(ticker)
-                    return f"✅ Added {ticker} to watchlist. Total tickers: {len(current_tickers)}"
+                    return f"[SUCCESS] Added {ticker} to watchlist. Total tickers: {len(current_tickers)}"
                 else:
                     return f"ℹ️ {ticker} is already in watchlist."
 
             elif action == "REMOVE":
                 if ticker in current_tickers:
                     current_tickers.remove(ticker)
-                    return f"✅ Removed {ticker} from watchlist. Total tickers: {len(current_tickers)}"
+                    return f"[SUCCESS] Removed {ticker} from watchlist. Total tickers: {len(current_tickers)}"
                 else:
                     return f"ℹ️ {ticker} is not in watchlist."
 
             else:
-                return "❌ Invalid action. Use ADD or REMOVE."
+                return "[ERROR] Invalid action. Use ADD or REMOVE."
 
         except Exception as e:
-            return f"❌ Error managing ticker: {str(e)}"
+            return f"[ERROR] Error managing ticker: {str(e)}"
 
     def get_signals(self, ticker: str) -> str:
         """Get current trading signals for a ticker."""
         try:
             if not ticker:
-                return "❌ Please specify a ticker. Example: /get_signals TCS.NS"
+                return "[ERROR] Please specify a ticker. Example: /get_signals TCS.NS"
 
             analysis = self.trading_bot.run_analysis(ticker)
             if not analysis.get("success"):
-                return f"❌ Could not get signals for {ticker}: {analysis.get('message', 'Unknown error')}"
+                return f"[ERROR] Could not get signals for {ticker}: {analysis.get('message', 'Unknown error')}"
 
             technical = analysis["technical_indicators"]
             current_price = analysis["stock_data"]["current_price"]["INR"]
 
             signals_text = f"""
-🎯 **Trading Signals for {ticker}**
-💰 Current Price: ₹{current_price:.2f}
+Target: **Trading Signals for {ticker}**
+Rs. Current Price: Rs.{current_price:.2f}
 
-📊 **Technical Signals:**
-• RSI: {technical['rsi']:.2f} {'🔴 Overbought' if technical['rsi'] > 70 else '🟢 Oversold' if technical['rsi'] < 30 else '🟡 Neutral'}
-• MACD: {technical['macd']:.4f} {'🟢 Bullish' if technical['macd'] > 0 else '🔴 Bearish'}
-• SMA Trend: {'🟢 Bullish' if technical['sma_50'] > technical['sma_200'] else '🔴 Bearish'}
-• Bollinger Bands: {'🔴 Overbought' if current_price > technical['bb_upper'] else '🟢 Oversold' if current_price < technical['bb_lower'] else '🟡 Normal'}
+[DATA] **Technical Signals:**
+• RSI: {technical['rsi']:.2f} {'[-] Overbought' if technical['rsi'] > 70 else '[+] Oversold' if technical['rsi'] < 30 else '[=] Neutral'}
+• MACD: {technical['macd']:.4f} {'[+] Bullish' if technical['macd'] > 0 else '[-] Bearish'}
+• SMA Trend: {'[+] Bullish' if technical['sma_50'] > technical['sma_200'] else '[-] Bearish'}
+• Bollinger Bands: {'[-] Overbought' if current_price > technical['bb_upper'] else '[+] Oversold' if current_price < technical['bb_lower'] else '[=] Normal'}
 
-📈 **Overall Signal:** {analysis['recommendation']}
+[UP] **Overall Signal:** {analysis['recommendation']}
             """
             return signals_text.strip()
         except Exception as e:
-            return f"❌ Error getting signals: {str(e)}"
+            return f"[ERROR] Error getting signals: {str(e)}"
 
     def pause_trading(self, minutes: int) -> str:
         """Pause trading for specified minutes."""
@@ -1142,7 +1148,7 @@ Please provide a helpful response about trading, markets, or the user's portfoli
             self.pause_until = datetime.now() + timedelta(minutes=minutes)
             return f"⏸️ Trading paused for {minutes} minutes until {self.pause_until.strftime('%H:%M:%S')}"
         except Exception as e:
-            return f"❌ Error pausing trading: {str(e)}"
+            return f"[ERROR] Error pausing trading: {str(e)}"
 
     def resume_trading(self) -> str:
         """Resume trading."""
@@ -1151,7 +1157,7 @@ Please provide a helpful response about trading, markets, or the user's portfoli
             self.pause_until = None
             return "▶️ Trading resumed successfully."
         except Exception as e:
-            return f"❌ Error resuming trading: {str(e)}"
+            return f"[ERROR] Error resuming trading: {str(e)}"
 
     def get_performance(self, period: str) -> str:
         """Get performance report for specified period."""
@@ -1190,31 +1196,186 @@ Please provide a helpful response about trading, markets, or the user's portfoli
                     continue
 
             performance_text = f"""
-📈 **Performance Report ({period})**
-💰 Current Value: ₹{metrics['total_value']:,.2f}
-🎯 Total Return: ₹{total_return:,.2f} ({return_pct:+.2f}%)
-📊 Realized P&L: ₹{metrics['realized_pnl']:,.2f}
-📈 Unrealized P&L: ₹{metrics['unrealized_pnl']:,.2f}
-🔄 Recent Trades: {len(recent_trades)}
-🏢 Active Positions: {len(self.trading_bot.portfolio.holdings)}
+[UP] **Performance Report ({period})**
+Rs. Current Value: Rs.{metrics['total_value']:,.2f}
+Target: Total Return: Rs.{total_return:,.2f} ({return_pct:+.2f}%)
+[DATA] Realized P&L: Rs.{metrics['realized_pnl']:,.2f}
+[UP] Unrealized P&L: Rs.{metrics['unrealized_pnl']:,.2f}
+Trades: Recent Trades: {len(recent_trades)}
+Positions: Active Positions: {len(self.trading_bot.portfolio.holdings)}
             """
             return performance_text.strip()
         except Exception as e:
-            return f"❌ Error getting performance: {str(e)}"
+            return f"[ERROR] Error getting performance: {str(e)}"
 
     def set_allocation(self, percentage: float) -> str:
         """Set maximum capital allocation per trade."""
         try:
             if percentage <= 0 or percentage > 100:
-                return "❌ Allocation must be between 0 and 100%"
+                return "[ERROR] Allocation must be between 0 and 100%"
 
             allocation_decimal = percentage / 100
             self.trading_bot.config["max_capital_per_trade"] = allocation_decimal
             self.trading_bot.executor.max_capital_per_trade = allocation_decimal
 
-            return f"✅ Maximum allocation per trade set to {percentage}%"
+            return f"[SUCCESS] Maximum allocation per trade set to {percentage}%"
         except Exception as e:
-            return f"❌ Error setting allocation: {str(e)}"
+            return f"[ERROR] Error setting allocation: {str(e)}"
+
+def get_fyers_client():
+    """Get Fyers client for real-time data - same as web_backend"""
+    try:
+        import os
+        from dotenv import load_dotenv
+        load_dotenv()
+
+        app_id = os.getenv("FYERS_APP_ID")
+        access_token = os.getenv("FYERS_ACCESS_TOKEN")
+
+        if not app_id or not access_token or not FYERS_AVAILABLE:
+            return None
+
+        fyers = fyersModel.FyersModel(
+            client_id=app_id,
+            is_async=False,
+            token=access_token,
+            log_path=""
+        )
+        return fyers
+    except Exception as e:
+        logger.warning(f"Fyers client creation failed: {e}")
+        return None
+
+def fyers_to_yfinance_format(fyers_data, ticker):
+    """Convert Fyers data to yfinance-like DataFrame format"""
+    try:
+        if not fyers_data or fyers_data.get("s") != "ok" or not fyers_data.get("d"):
+            return None
+
+        data = fyers_data["d"][0]["v"]
+
+        # Create a simple DataFrame with current price as Close
+        import pandas as pd
+        from datetime import datetime
+
+        df = pd.DataFrame({
+            'Open': [data.get('open_price', data.get('lp', 0))],
+            'High': [data.get('high_price', data.get('lp', 0))],
+            'Low': [data.get('low_price', data.get('lp', 0))],
+            'Close': [data.get('lp', 0)],
+            'Volume': [data.get('volume', 0)]
+        }, index=[datetime.now()])
+
+        return df
+    except Exception as e:
+        logger.warning(f"Error converting Fyers data: {e}")
+        return None
+
+def get_stock_data_fyers_or_yf(ticker, period="1d"):
+    """Get stock data from Fyers first, fallback to yfinance - SAME LOGIC"""
+    # Try Fyers first
+    fyers_client = get_fyers_client()
+    if fyers_client:
+        try:
+            # Convert ticker format for Fyers
+            fyers_symbol = f"NSE:{ticker.replace('.NS', '').replace('.BO', '')}-EQ"
+
+            if period == "1d":
+                # For current day data, use quotes
+                quotes = fyers_client.quotes({"symbols": fyers_symbol})
+                if quotes and quotes.get("s") == "ok":
+                    df = fyers_to_yfinance_format(quotes, ticker)
+                    if df is not None and not df.empty:
+                        logger.info(f"Using Fyers current data for {ticker}")
+                        return df
+            else:
+                # For historical data, use Fyers historical API
+                df = get_fyers_historical_data(fyers_client, fyers_symbol, ticker, period)
+                if df is not None and not df.empty:
+                    logger.info(f"Using Fyers historical data for {ticker} ({period})")
+                    return df
+        except Exception as e:
+            logger.warning(f"Fyers failed for {ticker}: {e}")
+
+    # Fallback to yfinance - EXACT SAME LOGIC
+    try:
+        stock = yf.Ticker(ticker)
+        df = stock.history(period=period)
+        if not df.empty:
+            logger.info(f"Using Yahoo Finance data for {ticker} ({period})")
+            return df
+    except Exception as e:
+        logger.warning(f"Yahoo Finance failed for {ticker}: {e}")
+
+    return None
+
+def get_fyers_historical_data(fyers_client, fyers_symbol, ticker, period):
+    """Get historical data from Fyers API"""
+    try:
+        from datetime import datetime, timedelta
+        import pandas as pd
+
+        # Convert period to date range
+        end_date = datetime.now()
+        if period == "2y":
+            start_date = end_date - timedelta(days=730)
+            resolution = "D"  # Daily
+        elif period == "1y":
+            start_date = end_date - timedelta(days=365)
+            resolution = "D"
+        elif period == "6m":
+            start_date = end_date - timedelta(days=180)
+            resolution = "D"
+        elif period == "3m":
+            start_date = end_date - timedelta(days=90)
+            resolution = "D"
+        elif period == "1m":
+            start_date = end_date - timedelta(days=30)
+            resolution = "D"
+        else:
+            start_date = end_date - timedelta(days=1)
+            resolution = "1"  # 1 minute
+
+        # Format dates for Fyers API
+        range_from = start_date.strftime("%Y-%m-%d")
+        range_to = end_date.strftime("%Y-%m-%d")
+
+        # Get historical data from Fyers
+        historical_data = fyers_client.history({
+            "symbol": fyers_symbol,
+            "resolution": resolution,
+            "date_format": "1",
+            "range_from": range_from,
+            "range_to": range_to,
+            "cont_flag": "1"
+        })
+
+        if historical_data and historical_data.get("s") == "ok" and historical_data.get("candles"):
+            # Convert Fyers historical data to yfinance format
+            candles = historical_data["candles"]
+
+            # Fyers candles format: [timestamp, open, high, low, close, volume]
+            data = []
+            for candle in candles:
+                data.append({
+                    'Open': candle[1],
+                    'High': candle[2],
+                    'Low': candle[3],
+                    'Close': candle[4],
+                    'Volume': candle[5]
+                })
+
+            # Create DataFrame with proper datetime index
+            df = pd.DataFrame(data)
+            df.index = pd.to_datetime([candle[0] for candle in candles], unit='s')
+            df.index.name = 'Datetime'
+
+            return df
+
+    except Exception as e:
+        logger.warning(f"Error getting Fyers historical data for {ticker}: {e}")
+
+    return None
 
 class DataFeed:
     def __init__(self, tickers):
@@ -1225,8 +1386,8 @@ class DataFeed:
         data = {}
         for ticker in self.tickers:
             try:
-                stock = yf.Ticker(ticker)
-                df = stock.history(period="1d", interval="1m")
+                # Use Fyers first, fallback to yfinance - SAME LOGIC
+                df = get_stock_data_fyers_or_yf(ticker)
                 if not df.empty:
                     latest = df.iloc[-1]
                     data[ticker] = {
@@ -1516,26 +1677,74 @@ class VirtualPortfolio:
         return total_value
 
     def get_metrics(self):
-        """Return portfolio metrics including PnL and exposure."""
+        """Return comprehensive portfolio metrics with professional calculations."""
         current_prices = self.get_current_prices()
+
+        # Calculate portfolio values
+        total_invested = sum(data["qty"] * data["avg_price"] for data in self.holdings.values())  # Cost basis
+        current_holdings_value = 0
+        total_unrealized = 0
+
+        # Calculate current market value and unrealized P&L
+        for ticker, data in self.holdings.items():
+            qty = data["qty"]
+            avg_price = data["avg_price"]
+            invested_amount = qty * avg_price
+
+            if ticker in current_prices:
+                # Handle both dict format {"price": value} and direct value
+                if isinstance(current_prices[ticker], dict):
+                    current_price = current_prices[ticker].get("price", avg_price)
+                else:
+                    current_price = current_prices[ticker]
+                current_value = qty * current_price
+                current_holdings_value += current_value
+                unrealized_pnl = current_value - invested_amount
+                total_unrealized += unrealized_pnl
+            else:
+                current_holdings_value += invested_amount
+
+        # Total portfolio value = Cash + Current holdings value
+        total_portfolio_value = self.cash + current_holdings_value
+
+        # Calculate returns based on initial investment
+        initial_balance = self.starting_balance
+        total_return = total_portfolio_value - initial_balance
+        total_return_pct = (total_return / initial_balance) * 100 if initial_balance > 0 else 0
+
+        # Calculate realized P&L from completed trades
+        realized_pnl = sum(
+            (t["price"] - self.holdings.get(t["asset"], {}).get("avg_price", t["price"])) * t["qty"]
+            for t in self.trade_log if t["action"] == "sell"
+        )
+
+        # Professional metrics
+        cash_percentage = (self.cash / total_portfolio_value) * 100 if total_portfolio_value > 0 else 100
+        invested_percentage = (total_invested / total_portfolio_value) * 100 if total_portfolio_value > 0 else 0
+
         metrics = {
-            "cash": self.cash,
+            "cash": round(self.cash, 2),
+            "cash_percentage": round(cash_percentage, 2),
             "holdings": self.holdings,
-            "total_value": self.get_value(current_prices),
-            "current_portfolio_value": self.config.get("current_portfolio_value", 0),
-            "current_pnl": self.config.get("current_pnl", 0),
-            "realized_pnl": sum(
-                (t["price"] - self.holdings.get(t["asset"], {}).get("avg_price", t["price"])) * t["qty"]
-                for t in self.trade_log if t["action"] == "sell"
-            ),
-            "unrealized_pnl": sum(
-                (current_prices.get(asset, {}).get("price", 0) - data["avg_price"]) * data["qty"]
-                for asset, data in self.holdings.items()
-            ),
-            "total_exposure": sum(
-                data["qty"] * current_prices.get(asset, {}).get("price", 0)
-                for asset, data in self.holdings.items()
-            )
+            "total_value": round(total_portfolio_value, 2),
+            "current_holdings_value": round(current_holdings_value, 2),
+            "total_invested": round(total_invested, 2),
+            "invested_percentage": round(invested_percentage, 2),
+            "total_exposure": round(current_holdings_value, 2),  # Current market value of holdings
+            "exposure_ratio": round((total_invested / total_portfolio_value) * 100, 2) if total_portfolio_value > 0 else 0,
+            "unrealized_pnl": round(total_unrealized, 2),
+            "unrealized_pnl_pct": round((total_unrealized / total_invested) * 100, 2) if total_invested > 0 else 0,
+            "realized_pnl": round(realized_pnl, 2),
+            "realized_pnl_pct": round((realized_pnl / initial_balance) * 100, 2) if initial_balance > 0 else 0,
+            "total_return": round(total_return, 2),
+            "total_return_pct": round(total_return_pct, 2),
+            "profit_loss": round(total_return, 2),
+            "profit_loss_pct": round(total_return_pct, 2),
+            "positions": len(self.holdings),
+            "initial_balance": initial_balance,
+            "trades_today": len([t for t in self.trade_log if t.get("date", "").startswith(datetime.now().strftime("%Y-%m-%d"))]),
+            "current_portfolio_value": self.config.get("current_portfolio_value", total_portfolio_value),
+            "current_pnl": self.config.get("current_pnl", total_return)
         }
         return metrics
 
@@ -1567,23 +1776,23 @@ class VirtualPortfolio:
 
             log_entry = f"\n[{timestamp}] === {action} SIGNAL EXECUTED ===\n"
             log_entry += f"Asset: {asset}\n"
-            log_entry += f"Action: {action} {qty} shares at ₹{price:.2f}\n"
-            log_entry += f"Trade Value: ₹{qty * price:,.2f}\n"
+            log_entry += f"Action: {action} {qty} shares at Rs.{price:.2f}\n"
+            log_entry += f"Trade Value: Rs.{qty * price:,.2f}\n"
 
             if action == "BUY":
-                log_entry += f"Entry Signal: Price ₹{price:.2f} identified as favorable entry point\n"
+                log_entry += f"Entry Signal: Price Rs.{price:.2f} identified as favorable entry point\n"
                 log_entry += f"Position Size: {qty} shares ({(qty * price / metrics['total_value'] * 100):.1f}% of portfolio)\n"
             else:
                 if asset in self.holdings:
                     avg_price = self.holdings[asset]["avg_price"]
                     pnl = (price - avg_price) * qty
                     pnl_pct = ((price / avg_price) - 1) * 100
-                    log_entry += f"Exit Signal: Price ₹{price:.2f} vs Entry ₹{avg_price:.2f}\n"
-                    log_entry += f"Trade P&L: ₹{pnl:,.2f} ({pnl_pct:+.2f}%)\n"
+                    log_entry += f"Exit Signal: Price Rs.{price:.2f} vs Entry Rs.{avg_price:.2f}\n"
+                    log_entry += f"Trade P&L: Rs.{pnl:,.2f} ({pnl_pct:+.2f}%)\n"
 
-            log_entry += f"Portfolio Cash: ₹{metrics['cash']:,.2f}\n"
-            log_entry += f"Total Portfolio Value: ₹{metrics['total_value']:,.2f}\n"
-            log_entry += f"Unrealized P&L: ₹{metrics['unrealized_pnl']:,.2f}\n"
+            log_entry += f"Portfolio Cash: Rs.{metrics['cash']:,.2f}\n"
+            log_entry += f"Total Portfolio Value: Rs.{metrics['total_value']:,.2f}\n"
+            log_entry += f"Unrealized P&L: Rs.{metrics['unrealized_pnl']:,.2f}\n"
             log_entry += "="*60 + "\n"
 
             with open(self.paper_trade_log, "a", encoding='utf-8') as f:
@@ -1608,8 +1817,8 @@ class VirtualPortfolio:
                 log_entry += f"Technical Indicators:\n"
                 log_entry += f"  • RSI: {tech.get('rsi', 'N/A'):.2f} {'(Oversold)' if tech.get('rsi', 50) < 30 else '(Overbought)' if tech.get('rsi', 50) > 70 else '(Neutral)'}\n"
                 log_entry += f"  • MACD: {tech.get('macd', 'N/A'):.4f}\n"
-                log_entry += f"  • SMA 50: ₹{tech.get('sma_50', 'N/A'):.2f}\n"
-                log_entry += f"  • SMA 200: ₹{tech.get('sma_200', 'N/A'):.2f}\n"
+                log_entry += f"  • SMA 50: Rs.{tech.get('sma_50', 'N/A'):.2f}\n"
+                log_entry += f"  • SMA 200: Rs.{tech.get('sma_200', 'N/A'):.2f}\n"
                 log_entry += f"  • Trend: {'Bullish' if tech.get('sma_50', 0) > tech.get('sma_200', 0) else 'Bearish'}\n"
 
             # Sentiment Analysis Summary
@@ -1632,8 +1841,8 @@ class VirtualPortfolio:
                 price_change = ((predicted_price / current_price) - 1) * 100 if current_price > 0 else 0
 
                 log_entry += f"ML/RL Analysis:\n"
-                log_entry += f"  • Current Price: ₹{current_price:.2f}\n"
-                log_entry += f"  • Predicted Price: ₹{predicted_price:.2f}\n"
+                log_entry += f"  • Current Price: Rs.{current_price:.2f}\n"
+                log_entry += f"  • Predicted Price: Rs.{predicted_price:.2f}\n"
                 log_entry += f"  • Expected Change: {price_change:+.2f}%\n"
                 log_entry += f"  • RL Recommendation: {ml.get('rl_metrics', {}).get('recommendation', 'HOLD')}\n"
 
@@ -1647,7 +1856,7 @@ class VirtualPortfolio:
 
             if decision_data.get('action') in ['BUY', 'SELL']:
                 log_entry += f"  • Quantity: {decision_data.get('quantity', 0)} shares\n"
-                log_entry += f"  • Trade Value: ₹{decision_data.get('trade_value', 0):,.2f}\n"
+                log_entry += f"  • Trade Value: Rs.{decision_data.get('trade_value', 0):,.2f}\n"
 
             log_entry += "="*60 + "\n"
 
@@ -1695,13 +1904,13 @@ class VirtualPortfolio:
             summary = f"\n[{timestamp}] === PAPER TRADING P&L SUMMARY ===\n"
             summary += f"Session Duration: {(datetime.now() - datetime.strptime(self.trade_log[0]['timestamp'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() / 3600:.1f} hours\n" if self.trade_log else "Session Duration: 0 hours\n"
             summary += f"\nPortfolio Performance:\n"
-            summary += f"  • Starting Balance: ₹{self.starting_balance:,.2f}\n"
-            summary += f"  • Current Cash: ₹{metrics['cash']:,.2f}\n"
-            summary += f"  • Holdings Value: ₹{metrics['total_exposure']:,.2f}\n"
-            summary += f"  • Total Portfolio Value: ₹{metrics['total_value']:,.2f}\n"
-            summary += f"  • Total Return: ₹{total_return:,.2f} ({total_return_pct:+.2f}%)\n"
-            summary += f"  • Realized P&L: ₹{realized_pnl:,.2f}\n"
-            summary += f"  • Unrealized P&L: ₹{metrics['unrealized_pnl']:,.2f}\n"
+            summary += f"  • Starting Balance: Rs.{self.starting_balance:,.2f}\n"
+            summary += f"  • Current Cash: Rs.{metrics['cash']:,.2f}\n"
+            summary += f"  • Holdings Value: Rs.{metrics['total_exposure']:,.2f}\n"
+            summary += f"  • Total Portfolio Value: Rs.{metrics['total_value']:,.2f}\n"
+            summary += f"  • Total Return: Rs.{total_return:,.2f} ({total_return_pct:+.2f}%)\n"
+            summary += f"  • Realized P&L: Rs.{realized_pnl:,.2f}\n"
+            summary += f"  • Unrealized P&L: Rs.{metrics['unrealized_pnl']:,.2f}\n"
 
             summary += f"\nTrading Statistics:\n"
             summary += f"  • Total Trades: {len(self.trade_log)}\n"
@@ -1714,7 +1923,7 @@ class VirtualPortfolio:
                 summary += f"\nCurrent Holdings:\n"
                 for asset, data in self.holdings.items():
                     current_value = data['qty'] * data['avg_price']  # Simplified - would need current price
-                    summary += f"  • {asset}: {data['qty']} shares @ ₹{data['avg_price']:.2f} (₹{current_value:,.2f})\n"
+                    summary += f"  • {asset}: {data['qty']} shares @ Rs.{data['avg_price']:.2f} (Rs.{current_value:,.2f})\n"
 
             summary += "="*70 + "\n"
 
@@ -1756,15 +1965,14 @@ class VirtualPortfolio:
                 self.unrealized_pnl = 0
                 return
 
-            import yfinance as yf
             total_unrealized = 0
 
             for ticker, data in self.holdings.items():
                 try:
-                    stock = yf.Ticker(ticker)
-                    hist = stock.history(period="1d")
-                    if not hist.empty:
-                        current_price = hist['Close'].iloc[-1]
+                    # Use Fyers first, fallback to yfinance - SAME LOGIC
+                    df = get_stock_data_fyers_or_yf(ticker)
+                    if df is not None and not df.empty:
+                        current_price = df['Close'].iloc[-1]
                         unrealized_for_stock = (current_price - data['avg_price']) * data['qty']
                         total_unrealized += unrealized_for_stock
                     else:
@@ -1784,9 +1992,9 @@ class VirtualPortfolio:
         prices = {}
         for asset in self.holdings:
             try:
-                stock = yf.Ticker(asset)
-                hist = stock.history(period="1d")
-                if not hist.empty:
+                # Use Fyers first, fallback to yfinance - SAME LOGIC
+                hist = get_stock_data_fyers_or_yf(asset)
+                if hist is not None and not hist.empty:
                     current_price = hist['Close'].iloc[-1]
                     volume = hist['Volume'].iloc[-1] if 'Volume' in hist.columns else 0
                     prices[asset] = {"price": current_price, "volume": volume}
@@ -2541,7 +2749,7 @@ class Stock:
                                         price_to_sma200, trend_direction, sentiment_score,
                                         volatility, sharpe_ratio):
         explanation = f"Recommendation for {stock_data['name']} ({stock_data['symbol']}): {recommendation}\n"
-        explanation += f"Current Price: ₹{stock_data['current_price']['INR']:.2f}\n\n"
+        explanation += f"Current Price: Rs.{stock_data['current_price']['INR']:.2f}\n\n"
         explanation += f"Buy Score: {buy_score:.3f}, Sell Score: {sell_score:.3f}\n\n"
 
         if recommendation in ["STRONG BUY", "BUY"]:
@@ -2590,6 +2798,7 @@ class Stock:
 
     def income_statement(self, ticker):
         try:
+            # Financial data still uses yfinance (Fyers doesn't provide this)
             stock = yf.Ticker(ticker)
             income_stmt = stock.financials
             if income_stmt.empty:
@@ -2605,6 +2814,7 @@ class Stock:
 
     def balance_sheet(self, ticker):
         try:
+            # Financial data still uses yfinance (Fyers doesn't provide this)
             stock = yf.Ticker(ticker)
             balance = stock.balance_sheet
             if balance.empty:
@@ -2620,6 +2830,7 @@ class Stock:
 
     def cash_flow(self, ticker):
         try:
+            # Financial data still uses yfinance (Fyers doesn't provide this)
             stock = yf.Ticker(ticker)
             cashflow = stock.cashflow
             if cashflow.empty:
@@ -2653,9 +2864,12 @@ class Stock:
             beta = "N/A"
             alpha = "N/A"
             for benchmark_ticker in benchmark_tickers:
-                benchmark = yf.Ticker(benchmark_ticker)
-                benchmark_history = benchmark.history(period="2y")
-                benchmark_returns = benchmark_history["Close"].pct_change().dropna()
+                # Use Fyers for benchmark data too - SAME LOGIC
+                benchmark_history = get_stock_data_fyers_or_yf(benchmark_ticker, period="2y")
+                if benchmark_history is not None and not benchmark_history.empty:
+                    benchmark_returns = benchmark_history["Close"].pct_change().dropna()
+                else:
+                    benchmark_returns = pd.Series()
 
                 if not benchmark_returns.empty:
                     aligned_returns = pd.concat([stock_returns, benchmark_returns], axis=1, join='inner')
@@ -3268,17 +3482,23 @@ class Stock:
             ticker = ticker.strip().upper()
             logger.info(f"Fetching and analyzing data for {ticker}...")
 
-            stock = yf.Ticker(ticker)
-            history = stock.history(period="2y")
+            # Use Fyers for historical data (2y) - SAME LOGIC
+            history = get_stock_data_fyers_or_yf(ticker, period="2y")
 
-            if history.empty:
+            if history is None or history.empty:
                 logger.error(f"No price data found for {ticker}.")
                 return {
                     "success": False,
                     "message": f"Unable to fetch data for {ticker}: No price data found"
                 }
 
-            stock_info = stock.info
+            # Get stock info for additional data (still use yfinance for company info)
+            try:
+                stock = yf.Ticker(ticker)
+                stock_info = stock.info
+            except Exception as e:
+                logger.warning(f"Could not fetch stock info for {ticker}: {e}")
+                stock_info = {}
             current_price = float(history["Close"].iloc[-1])
             exchange_rates = self.fetch_exchange_rates()
             converted_prices = self.convert_price(current_price, exchange_rates)
@@ -3486,9 +3706,9 @@ class Stock:
             )
 
             logger.info(f"Fetching extended data for {ticker} for ML analysis...")
-            extended_history = stock.history(period=training_period)
+            extended_history = get_stock_data_fyers_or_yf(ticker, period=training_period)
 
-            if extended_history.empty:
+            if extended_history is None or extended_history.empty:
                 logger.error(f"Unable to fetch sufficient extended historical data for {ticker}")
                 ml_analysis = {
                     "success": False,
@@ -3991,7 +4211,8 @@ class StockTradingBot:
         metrics = self.portfolio.get_metrics()
         available_cash = metrics["cash"]
         total_value = metrics["total_value"]
-        history = yf.Ticker(ticker).history(period="2y")
+        # Use Fyers for historical data (2y) - SAME LOGIC
+        history = get_stock_data_fyers_or_yf(ticker, period="2y")
 
         # Signal weights
         weights = {
@@ -4139,7 +4360,7 @@ class StockTradingBot:
         if ticker in self.portfolio.holdings:
             # avg_price = self.portfolio.holdings[ticker]["avg_price"]  # Not used in current logic
             trailing_stop_pct = 0.06
-            highest_price = max(history["Close"].iloc[-30:]) if not history.empty else current_ticker_price
+            highest_price = max(history["Close"].iloc[-30:]) if history is not None and not history.empty else current_ticker_price
             trailing_stop = highest_price * (1 - trailing_stop_pct)
             if current_ticker_price < trailing_stop:
                 logger.info(f"Trailing Stop-Loss triggered for {ticker}: Price Rs.{current_ticker_price:.2f} < Trailing Stop Rs.{trailing_stop:.2f}")
@@ -4492,7 +4713,7 @@ def main():
 def signal_handler(_sig, _frame):
     """Handle Ctrl+C gracefully."""
     logger.info("Bot shutdown signal received. Shutting down gracefully...")
-    print("\n🤖 Bot shut down successfully!")
+    print("\n[BOT] Bot shut down successfully!")
     sys.exit(0)
     sys.exit(0)
 
