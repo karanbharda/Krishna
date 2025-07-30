@@ -4,37 +4,37 @@
         "symbol": "TATASTEEL.NS",
         "name": "TATA STEEL LIMITED",
         "current_price": {
-            "INR": 161.3,
-            "USD": 1.86,
-            "EUR": 1.59,
-            "BTC": 1.561e-05,
-            "ETH": 0.00047418
+            "INR": 161.68,
+            "USD": 1.85,
+            "EUR": 1.6,
+            "BTC": 1.566e-05,
+            "ETH": 0.00048464
         },
         "sector": "Basic Materials",
         "industry": "Steel",
-        "pe_ratio": 58.85401,
+        "pe_ratio": 59.22344,
         "dividends": 2.23
     },
     "recommendation": "STRONG SELL",
-    "buy_score": -0.32053548628155004,
-    "sell_score": 0.42053548628155,
+    "buy_score": -0.238721948454959,
+    "sell_score": 0.33872194845495895,
     "technical_indicators": {
-        "sma_50": 158.22132751464844,
-        "sma_200": 144.30960174560548,
-        "ema_50": 157.10739215350793,
-        "rsi": 53.75151743576552,
-        "macd": 1.4057895991529108,
-        "signal_line": 1.6015612288128,
-        "macd_histogram": -0.19577162965988926,
-        "bb_upper": 166.03363103441689,
-        "bb_lower": 157.24736719556358,
-        "volatility": 0.012268341814746427,
-        "momentum": 0.05701177326520274,
+        "sma_50": 158.39572814941405,
+        "sma_200": 144.36077522277833,
+        "ema_50": 157.40072778725,
+        "rsi": 54.30527979225396,
+        "macd": 1.151894809908299,
+        "signal_line": 1.433215617150726,
+        "macd_histogram": -0.2813208072424269,
+        "bb_upper": 165.37949800638157,
+        "bb_lower": 157.48249845357938,
+        "volatility": 0.012411822620963915,
+        "momentum": 0.07072842831643211,
         "volume_trend": "HIGH"
     },
     "fundamental_analysis": {
-        "market_cap": 2023296860160,
-        "pe_ratio": 58.85401,
+        "market_cap": 2025300688896,
+        "pe_ratio": 59.22344,
         "dividend_yield": 223.0,
         "52w_high": 170.18,
         "52w_low": 122.62,
@@ -1391,12 +1391,12 @@
     },
     "sentiment_analysis": {
         "newsapi": {
-            "positive": 0,
-            "negative": 0,
-            "neutral": 0
+            "positive": 6,
+            "negative": 3,
+            "neutral": 1
         },
         "gnews": {
-            "positive": 0,
+            "positive": 10,
             "negative": 0,
             "neutral": 0
         },
@@ -1407,136 +1407,136 @@
         },
         "google_news": {
             "positive": 3,
-            "negative": 2,
-            "neutral": 5
+            "negative": 3,
+            "neutral": 4
         },
         "aggregated": {
-            "positive": 3,
-            "negative": 2,
+            "positive": 19,
+            "negative": 6,
             "neutral": 5
         }
     },
     "mpt_metrics": {
-        "annual_return": 0.2114896147908577,
-        "annual_volatility": 0.28415313010915316,
-        "sharpe_ratio": 0.5331266797330906,
-        "beta": 1.4199210471587778,
-        "alpha": 0.054381700051845006
+        "annual_return": 0.2015255724212274,
+        "annual_volatility": 0.28373738019002054,
+        "sharpe_ratio": 0.498790720935137,
+        "beta": 1.4190253780634112,
+        "alpha": 0.04760418685668091
     },
     "institutional_holders": {
         "institutional_ownership_pct": 0.33735,
-        "insider_ownership_pct": 0.32176998
+        "insider_ownership_pct": 0.32152
     },
     "mutual_fund_holders": {},
-    "support_level": 137.0941216583252,
-    "resistance_level": 169.3650032043457,
+    "support_level": 137.1427364616394,
+    "resistance_level": 169.7639923095703,
     "risk_level": "LOW",
-    "timeframe": "MEDIUM_TERM",
-    "explanation": "Recommendation for TATA STEEL LIMITED (TATASTEEL.NS): STRONG SELL\nCurrent Price: ₹161.30\n\nBuy Score: -0.321, Sell Score: 0.421\n\nBearish Factors:\n- Price is above the 200-day SMA, suggesting potential overvaluation.\n- Negative market sentiment from news and social media.\n- Negative risk-adjusted return (Sharpe Ratio).\n\nRisk Assessment:\n- Volatility: 0.0123 (higher values indicate higher risk)\n- Sector: Basic Materials\n- Industry: Steel\n",
+    "timeframe": "LONG_TERM",
+    "explanation": "Recommendation for TATA STEEL LIMITED (TATASTEEL.NS): STRONG SELL\nCurrent Price: Rs.161.68\n\nBuy Score: -0.239, Sell Score: 0.339\n\nBearish Factors:\n- Price is above the 200-day SMA, suggesting potential overvaluation.\n- Negative risk-adjusted return (Sharpe Ratio).\n\nRisk Assessment:\n- Volatility: 0.0124 (higher values indicate higher risk)\n- Sector: Basic Materials\n- Industry: Steel\n",
     "ml_analysis": {
         "success": true,
-        "predicted_price": 132.64888942158936,
-        "confidence": -0.40781416448094365,
-        "mse": 271.25979890055976,
-        "mae": 13.690151916333113,
-        "r2_score": -0.40781416448094365,
+        "predicted_price": 161.2768766144537,
+        "confidence": -0.04764341821889606,
+        "mse": 32.89706611702154,
+        "mae": 2.373345116148994,
+        "r2_score": -0.04764341821889606,
         "stacking_regressor_metrics": {
-            "mse": 271.25979890055976,
-            "mae": 13.690151916333113,
-            "r2": -0.40781416448094365
+            "mse": 32.89706611702154,
+            "mae": 2.373345116148994,
+            "r2": -0.04764341821889606
         },
         "lstm_metrics": {
-            "mse": 0.018711838871240616,
-            "r2": -0.14384257793426514,
-            "adv_mse": 0.0755692645907402,
-            "adv_r2": -3.619500160217285
+            "mse": 0.013387847691774368,
+            "r2": -0.060588836669921875,
+            "adv_mse": 0.016548680141568184,
+            "adv_r2": -0.3109908103942871
         },
         "transformer_metrics": {
-            "mse": 0.02935831993818283,
-            "r2": -0.7946550846099854,
-            "adv_mse": 0.17179229855537415,
-            "adv_r2": -9.501551628112793
+            "mse": 0.014639158733189106,
+            "r2": -0.15971803665161133,
+            "adv_mse": 0.017713211476802826,
+            "adv_r2": -0.40324532985687256
         },
         "rl_metrics": {
             "success": true,
             "recommendation": "HOLD",
-            "performance_pct": 4.390518161780928,
-            "final_net_worth": 104390.51816178093,
-            "average_reward": 1482577.684634229,
-            "average_events_per_episode": 147.76,
+            "performance_pct": -2.4926209417486533,
+            "final_net_worth": 97507.37905825135,
+            "average_reward": 161601.8920409383,
+            "average_events_per_episode": 125.15,
             "actions_distribution": {
-                "hold": 0.9200542005420054,
-                "buy": 0.036585365853658534,
-                "sell": 0.04336043360433604
+                "hold": 0.9369951534733441,
+                "buy": 0.035541195476575124,
+                "sell": 0.027463651050080775
             },
             "epoch_logs": [
                 {
                     "episode": 10,
-                    "total_reward": 1679185.4477488662,
-                    "average_reward": 951175.0752247488,
-                    "events_triggered": 142
+                    "total_reward": 231464.56566092293,
+                    "average_reward": 74372.87669341604,
+                    "events_triggered": 135
                 },
                 {
                     "episode": 20,
-                    "total_reward": 1100173.664868552,
-                    "average_reward": 1582638.7266813968,
-                    "events_triggered": 163
+                    "total_reward": 685051.6986020738,
+                    "average_reward": 60747.30467483572,
+                    "events_triggered": 105
                 },
                 {
                     "episode": 30,
-                    "total_reward": 420326.56292395684,
-                    "average_reward": 1566937.8794208213,
-                    "events_triggered": 149
+                    "total_reward": 391409.32599685877,
+                    "average_reward": 405822.9919062238,
+                    "events_triggered": 126
                 },
                 {
                     "episode": 40,
-                    "total_reward": 1330808.0332567778,
-                    "average_reward": 1223865.5210162043,
-                    "events_triggered": 151
+                    "total_reward": -149988.38293725904,
+                    "average_reward": 14196.754780585039,
+                    "events_triggered": 120
                 },
                 {
                     "episode": 50,
-                    "total_reward": 1048120.0576028607,
-                    "average_reward": 1695187.7506822627,
-                    "events_triggered": 158
+                    "total_reward": -180277.79317961106,
+                    "average_reward": 41146.4547869911,
+                    "events_triggered": 132
                 },
                 {
                     "episode": 60,
-                    "total_reward": -189804.0658345354,
-                    "average_reward": 2078917.4422684752,
-                    "events_triggered": 136
+                    "total_reward": 80285.8894929195,
+                    "average_reward": -219872.90749385068,
+                    "events_triggered": 131
                 },
                 {
                     "episode": 70,
-                    "total_reward": 1709283.2621280777,
-                    "average_reward": 1795685.460288778,
-                    "events_triggered": 139
+                    "total_reward": -970425.0313545483,
+                    "average_reward": 447253.5390445782,
+                    "events_triggered": 125
                 },
                 {
                     "episode": 80,
-                    "total_reward": 999225.7200974015,
-                    "average_reward": 1212293.0825663137,
-                    "events_triggered": 160
+                    "total_reward": -1350084.9972481779,
+                    "average_reward": -30349.263257247523,
+                    "events_triggered": 130
                 },
                 {
                     "episode": 90,
-                    "total_reward": 1400471.8600279952,
-                    "average_reward": 1389424.627787192,
-                    "events_triggered": 154
+                    "total_reward": 404488.23696216906,
+                    "average_reward": 414833.64375295315,
+                    "events_triggered": 122
                 },
                 {
                     "episode": 100,
-                    "total_reward": 1000057.0601363583,
-                    "average_reward": 1329651.2804060974,
-                    "events_triggered": 148
+                    "total_reward": -783365.7779349297,
+                    "average_reward": 407867.52552089817,
+                    "events_triggered": 122
                 }
             ]
         },
         "ensemble_components": {
-            "stacking_regressor": 135.12720262756108,
-            "lstm": 147.90896606445312,
-            "transformer": 114.9104995727539
+            "stacking_regressor": 162.19021846640797,
+            "lstm": 161.6177978515625,
+            "transformer": 160.02261352539062
         }
     },
-    "timestamp": "2025-07-28 11:21:12"
+    "timestamp": "2025-07-30 13:21:35"
 }

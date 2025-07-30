@@ -255,10 +255,10 @@ class DynamicMarketExpert:
         return summary
     
     def generate_professional_analysis(self, query: str, market_data: Dict[str, Any]) -> str:
-        """Generate professional market analysis - FAST VERSION"""
+        """Generate professional market analysis - ENHANCED REAL-TIME VERSION"""
 
-        # Skip LLM for speed - use intelligent structured response
-        return self.create_intelligent_analysis(query, market_data)
+        # Use enhanced analysis for better insights
+        return self.generate_enhanced_analysis(query, market_data)
     
     def create_intelligent_analysis(self, query: str, market_data: Dict[str, Any]) -> str:
         """Create intelligent analysis without LLM delays"""
@@ -430,37 +430,289 @@ class DynamicMarketExpert:
         return response
     
     def process_query(self, user_query: str) -> str:
-        """Process user query and return professional response"""
-        
+        """Process user query with enhanced real-time analysis"""
+
         try:
-            # Extract symbols from query
+            query_lower = user_query.lower()
+
+            # Enhanced symbol selection based on query intelligence
             symbols = self.extract_symbols(user_query)
-            
+
+            # If no specific symbols, intelligently select based on query type
+            if not symbols:
+                if any(word in query_lower for word in ['penny', 'cheap', 'low price', 'under 100', 'under 50']):
+                    symbols = self.get_penny_stocks()
+                elif any(word in query_lower for word in ['top 5', 'best 5', 'top five', 'best five']):
+                    symbols = self.get_top_performers()
+                elif any(word in query_lower for word in ['high volume', 'most traded', 'active']):
+                    symbols = self.get_high_volume_stocks()
+                elif any(word in query_lower for word in ['tech', 'it', 'software', 'technology']):
+                    symbols = ["TCS.NS", "INFY.NS", "WIPRO.NS", "HCLTECH.NS", "TECHM.NS"]
+                elif any(word in query_lower for word in ['bank', 'finance', 'financial']):
+                    symbols = ["HDFCBANK.NS", "ICICIBANK.NS", "SBIN.NS", "KOTAKBANK.NS", "AXISBANK.NS"]
+                elif any(word in query_lower for word in ['pharma', 'healthcare', 'medical']):
+                    symbols = ["SUNPHARMA.NS", "DRREDDY.NS", "CIPLA.NS", "DIVISLAB.NS", "BIOCON.NS"]
+                else:
+                    # Default diverse portfolio for general queries
+                    symbols = ["RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "INFY.NS", "ICICIBANK.NS"]
+
             # Get live market data
             market_data = self.get_live_market_data(symbols)
-            
-            # Generate professional analysis
+
+            # Generate enhanced professional analysis
             if market_data:
-                response = self.generate_professional_analysis(user_query, market_data)
+                response = self.generate_enhanced_analysis(user_query, market_data)
             else:
-                # No live data available
-                response = f"""I understand you're asking about: "{user_query}"
+                # Fallback with intelligent response
+                response = self.generate_fallback_response(user_query)
 
-I'm your professional stock market expert, but I'm currently unable to fetch live market data. 
-
-I can help you with:
-📊 **Live Stock Analysis** - Ask about specific stocks like Reliance, TCS, HDFC Bank
-💼 **Investment Advice** - Get professional insights on market trends
-📈 **Technical Analysis** - Understand price movements and patterns
-🎯 **Portfolio Strategy** - Risk management and allocation advice
-
-Please try asking about a specific stock, and I'll provide live data and professional analysis!"""
-            
             return response
-            
+
         except Exception as e:
             logger.error(f"Error processing query: {e}")
             return f"I apologize for the technical difficulty. As your market expert, I'm here to help with stock analysis and investment advice. Please try asking about specific Indian stocks like Reliance, TCS, or HDFC Bank."
+
+    def get_penny_stocks(self) -> List[str]:
+        """Get list of penny stocks (under Rs. 100)"""
+        return [
+            "SUZLON.NS", "YESBANK.NS", "VODAFONE.NS", "JPASSOCIAT.NS",
+            "RPOWER.NS", "JETAIRWAYS.NS", "RCOM.NS", "SAIL.NS",
+            "NMDC.NS", "COALINDIA.NS"
+        ]
+
+    def get_top_performers(self) -> List[str]:
+        """Get top performing stocks"""
+        return [
+            "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "INFY.NS",
+            "HINDUNILVR.NS", "ICICIBANK.NS", "KOTAKBANK.NS",
+            "BHARTIARTL.NS", "ITC.NS", "LT.NS"
+        ]
+
+    def get_high_volume_stocks(self) -> List[str]:
+        """Get high volume trading stocks"""
+        return [
+            "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "ICICIBANK.NS",
+            "SBIN.NS", "BHARTIARTL.NS", "INFY.NS", "ITC.NS",
+            "HINDUNILVR.NS", "KOTAKBANK.NS"
+        ]
+
+    def generate_enhanced_analysis(self, query: str, market_data: Dict[str, Any]) -> str:
+        """Generate enhanced real-time analysis with actionable insights"""
+
+        query_lower = query.lower()
+
+        # Real-time market overview
+        response = f"🔴 **Live Market Overview** (as of {datetime.now().strftime('%H:%M PM')})\n\n"
+
+        # Calculate market sentiment
+        positive_stocks = sum(1 for data in market_data.values() if data['change'] > 0)
+        total_stocks = len(market_data)
+        sentiment_pct = (positive_stocks / total_stocks) * 100 if total_stocks > 0 else 0
+
+        if sentiment_pct > 60:
+            sentiment = "Positive"
+            sentiment_desc = "Strong bullish momentum"
+        elif sentiment_pct > 40:
+            sentiment = "Neutral"
+            sentiment_desc = "Mixed signals, selective approach"
+        else:
+            sentiment = "Negative"
+            sentiment_desc = "Bearish pressure, defensive strategy"
+
+        response += f"**Market Sentiment:** {sentiment} with average change of {sentiment_desc}\n\n"
+
+        # Specific analysis based on query type
+        if any(word in query_lower for word in ['penny', 'cheap', 'low price']):
+            response += self.analyze_penny_stocks(market_data)
+        elif any(word in query_lower for word in ['top 5', 'best 5', 'buy']):
+            response += self.analyze_top_picks(market_data)
+        elif any(word in query_lower for word in ['analysis', 'today', 'market']):
+            response += self.analyze_market_overview(market_data)
+        else:
+            response += self.analyze_specific_stocks(market_data)
+
+        # Add professional insight
+        response += f"\n💡 **Professional Insight:** {self.get_market_insight(market_data)}"
+
+        return response
+
+    def analyze_penny_stocks(self, market_data: Dict[str, Any]) -> str:
+        """Analyze penny stocks with risk assessment"""
+
+        analysis = "**🎯 Penny Stock Analysis:**\n"
+
+        penny_picks = []
+        for symbol, data in market_data.items():
+            if data['price'] < 100:  # Penny stock threshold
+                risk_level = "High" if data['price'] < 50 else "Medium"
+                momentum = "Positive" if data['change'] > 0 else "Negative"
+
+                penny_picks.append({
+                    'symbol': symbol,
+                    'price': data['price'],
+                    'change': data['change'],
+                    'change_pct': data['change_pct'],
+                    'risk': risk_level,
+                    'momentum': momentum
+                })
+
+        if penny_picks:
+            # Sort by performance
+            penny_picks.sort(key=lambda x: x['change_pct'], reverse=True)
+
+            for i, stock in enumerate(penny_picks[:5], 1):
+                change_emoji = "[+]" if stock['change'] >= 0 else "[-]"
+                analysis += f"{change_emoji} **{stock['symbol']}** at ₹{stock['price']:.2f} ({stock['change']:+.2f}%)\n"
+                analysis += f"   Risk: {stock['risk']} | Momentum: {stock['momentum']}\n"
+        else:
+            analysis += "No penny stocks in current selection. Consider SUZLON, YESBANK for penny stock exposure.\n"
+
+        analysis += "\n⚠️ **Risk Warning:** Penny stocks are highly volatile. Only invest what you can afford to lose.\n"
+
+        return analysis
+
+    def analyze_top_picks(self, market_data: Dict[str, Any]) -> str:
+        """Analyze top stock picks with buy recommendations"""
+
+        analysis = "**🏆 Top Investment Recommendations:**\n"
+
+        # Sort stocks by performance and fundamentals
+        stock_scores = []
+        for symbol, data in market_data.items():
+            # Simple scoring algorithm
+            price_score = min(data['change_pct'] * 2, 10)  # Performance weight
+            volume_score = min(data['volume'] / 1000000, 5)  # Volume weight
+            total_score = price_score + volume_score
+
+            stock_scores.append({
+                'symbol': symbol,
+                'score': total_score,
+                'data': data
+            })
+
+        # Sort by score
+        stock_scores.sort(key=lambda x: x['score'], reverse=True)
+
+        for i, stock in enumerate(stock_scores[:5], 1):
+            data = stock['data']
+            change_emoji = "[+]" if data['change'] >= 0 else "[-]"
+
+            # Recommendation logic
+            if data['change_pct'] > 2:
+                recommendation = "Strong Buy"
+            elif data['change_pct'] > 0:
+                recommendation = "Buy"
+            elif data['change_pct'] > -2:
+                recommendation = "Hold"
+            else:
+                recommendation = "Wait"
+
+            analysis += f"{change_emoji} **{stock['symbol']}** at ₹{data['price']:.2f} ({data['change']:+.2f}%)\n"
+            analysis += f"   Recommendation: {recommendation} | Volume: {data['volume']:,}\n"
+
+        return analysis
+
+    def analyze_market_overview(self, market_data: Dict[str, Any]) -> str:
+        """Provide comprehensive market overview"""
+
+        analysis = "**📊 Live Market Analysis:**\n"
+
+        # Market statistics
+        total_stocks = len(market_data)
+        gainers = sum(1 for data in market_data.values() if data['change'] > 0)
+        losers = total_stocks - gainers
+
+        avg_change = sum(data['change_pct'] for data in market_data.values()) / total_stocks
+        total_volume = sum(data['volume'] for data in market_data.values())
+
+        analysis += f"**Market Statistics:**\n"
+        analysis += f"• Gainers: {gainers} | Losers: {losers}\n"
+        analysis += f"• Average Change: {avg_change:+.2f}%\n"
+        analysis += f"• Total Volume: {total_volume:,}\n\n"
+
+        # Top performers
+        sorted_stocks = sorted(market_data.items(), key=lambda x: x[1]['change_pct'], reverse=True)
+
+        analysis += "**Top Performers:**\n"
+        for symbol, data in sorted_stocks[:3]:
+            change_emoji = "[+]" if data['change'] >= 0 else "[-]"
+            analysis += f"{change_emoji} **{symbol}**: ₹{data['price']:.2f} ({data['change']:+.2f}%)\n"
+
+        analysis += "\n**Underperformers:**\n"
+        for symbol, data in sorted_stocks[-3:]:
+            change_emoji = "[+]" if data['change'] >= 0 else "[-]"
+            analysis += f"{change_emoji} **{symbol}**: ₹{data['price']:.2f} ({data['change']:+.2f}%)\n"
+
+        return analysis
+
+    def analyze_specific_stocks(self, market_data: Dict[str, Any]) -> str:
+        """Analyze specific stocks with detailed insights"""
+
+        analysis = "**🔍 Stock Analysis:**\n"
+
+        for symbol, data in market_data.items():
+            change_emoji = "[+]" if data['change'] >= 0 else "[-]"
+
+            # Technical analysis
+            if data['price'] > data['high'] * 0.95:
+                technical = "Near day high - momentum strong"
+            elif data['price'] < data['low'] * 1.05:
+                technical = "Near day low - potential support"
+            else:
+                technical = "Trading in range - watch for breakout"
+
+            analysis += f"{change_emoji} **{symbol}**: ₹{data['price']:.2f} ({data['change']:+.2f}%)\n"
+            analysis += f"   Range: ₹{data['low']:.2f} - ₹{data['high']:.2f} | {technical}\n"
+
+        return analysis
+
+    def get_market_insight(self, market_data: Dict[str, Any]) -> str:
+        """Generate professional market insight"""
+
+        avg_change = sum(data['change_pct'] for data in market_data.values()) / len(market_data)
+        high_volume_stocks = sum(1 for data in market_data.values() if data['volume'] > 1000000)
+
+        if avg_change > 1:
+            return "Strong bullish momentum across sectors. Consider increasing equity exposure with proper risk management."
+        elif avg_change > 0:
+            return "Moderate positive sentiment. Selective stock picking recommended with focus on fundamentals."
+        elif avg_change > -1:
+            return "Mixed market conditions. Maintain balanced portfolio and wait for clearer direction."
+        else:
+            return "Bearish pressure evident. Consider defensive stocks and maintain higher cash allocation."
+
+    def generate_fallback_response(self, query: str) -> str:
+        """Generate intelligent fallback response when live data unavailable"""
+
+        query_lower = query.lower()
+
+        response = f"🤖 **Market Expert Analysis** (Live data temporarily unavailable)\n\n"
+        response += f"**Your Query:** {query}\n\n"
+
+        if any(word in query_lower for word in ['penny', 'cheap']):
+            response += "**Penny Stock Strategy:**\n"
+            response += "• Focus on companies with strong fundamentals\n"
+            response += "• Look for stocks under ₹100 with good volume\n"
+            response += "• Consider SUZLON, SAIL, NMDC for penny exposure\n"
+            response += "• ⚠️ High risk - only invest spare money\n"
+
+        elif any(word in query_lower for word in ['top 5', 'best']):
+            response += "**Top Stock Recommendations:**\n"
+            response += "• Large Cap: RELIANCE, TCS, HDFCBANK\n"
+            response += "• IT Sector: INFY, WIPRO, TECHM\n"
+            response += "• Banking: ICICIBANK, KOTAKBANK, SBIN\n"
+            response += "• Diversified portfolio approach recommended\n"
+
+        else:
+            response += "**General Market Guidance:**\n"
+            response += "• Focus on fundamentally strong companies\n"
+            response += "• Maintain proper risk management\n"
+            response += "• Consider sector diversification\n"
+            response += "• Monitor market trends and news\n"
+
+        response += "\n💡 **Tip:** Ask about specific stocks like 'Reliance price' or 'TCS analysis' for live data!"
+
+        return response
 
 # Test function
 def test_expert():
