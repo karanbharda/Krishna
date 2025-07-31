@@ -255,6 +255,57 @@ export const apiService = {
       console.error('Health check failed:', error);
       return false;
     }
+  },
+
+  // Production-level API calls (seamlessly integrated)
+  async getSignalPerformance() {
+    try {
+      const response = await api.get('/production/signal-performance');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting signal performance:', error);
+      throw error;
+    }
+  },
+
+  async getRiskMetrics() {
+    try {
+      const response = await api.get('/production/risk-metrics');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting risk metrics:', error);
+      throw error;
+    }
+  },
+
+  async makeProductionDecision(symbol) {
+    try {
+      const response = await api.post('/production/make-decision', { symbol });
+      return response.data;
+    } catch (error) {
+      console.error('Error making production decision:', error);
+      throw error;
+    }
+  },
+
+  async getLearningInsights() {
+    try {
+      const response = await api.get('/production/learning-insights');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting learning insights:', error);
+      throw error;
+    }
+  },
+
+  async getDecisionHistory(days = 7) {
+    try {
+      const response = await api.get(`/production/decision-history?days=${days}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error getting decision history:', error);
+      throw error;
+    }
   }
 };
 

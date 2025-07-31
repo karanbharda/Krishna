@@ -1,0 +1,626 @@
+2025-07-30 16:10:04,396 - mcp_server - INFO - [__init__.py:26] - MCP Trading Server components loaded successfully
+2025-07-30 16:10:04,682 - mcp_server.tools.market_analysis_tool - INFO - [market_analysis_tool.py:25] - TA library loaded successfully
+2025-07-30 16:10:12,920 - mcp_server - INFO - [__init__.py:33] - All MCP agents loaded successfully
+2025-07-30 16:10:15,262 - __main__ - INFO - [web_backend.py:68] - Production core components loaded successfully
+2025-07-30 16:10:19,973 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-30 16:10:19,973 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-30 16:10:19,977 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-30 16:10:19,990 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-30 16:10:20,040 - testindia - INFO - [testindia.py:705] - Loaded 24 stocks from cache
+2025-07-30 16:10:20,041 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-30 16:10:20,043 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-30 16:10:20,043 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-30 16:10:20,043 - __main__ - INFO - [web_backend.py:732] - Signal sources registered successfully
+2025-07-30 16:10:20,044 - __main__ - ERROR - [web_backend.py:690] - Error initializing production components: no running event loop
+2025-07-30 16:10:20,044 - __main__ - INFO - [web_backend.py:646] - Successfully registered portfolio callback
+2025-07-30 16:10:20,044 - __main__ - INFO - [web_backend.py:1554] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-30 16:10:20,044 - __main__ - INFO - [web_backend.py:1595] - Trading bot initialized successfully
+2025-07-30 16:10:20,045 - __main__ - INFO - [web_backend.py:2662] - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-30 16:10:20,045 - __main__ - INFO - [web_backend.py:2663] - Web interface will be available at the above URL
+2025-07-30 16:10:20,045 - __main__ - INFO - [web_backend.py:2664] - API documentation available at http://{host}:{port}/docs
+2025-07-30 16:10:20,161 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-30 16:10:20,162 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-30 16:10:20,163 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-30 16:10:20,163 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-30 16:10:20,176 - testindia - INFO - [testindia.py:705] - Loaded 24 stocks from cache
+2025-07-30 16:10:20,176 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-30 16:10:20,177 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-30 16:10:20,177 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-30 16:10:20,177 - __main__ - INFO - [web_backend.py:732] - Signal sources registered successfully
+2025-07-30 16:10:22,006 - __main__ - INFO - [web_backend.py:687] - Production components initialized successfully
+2025-07-30 16:10:22,006 - __main__ - INFO - [web_backend.py:646] - Successfully registered portfolio callback
+2025-07-30 16:10:22,006 - __main__ - INFO - [web_backend.py:1554] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-30 16:10:22,006 - __main__ - INFO - [web_backend.py:1595] - Trading bot initialized successfully
+2025-07-30 16:10:22,006 - __main__ - INFO - [web_backend.py:2689] - Trading bot initialized on startup
+2025-07-30 16:10:22,861 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:10:23,778 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:10:24,433 - core.async_signal_collector - INFO - [async_signal_collector.py:59] - Starting parallel signal collection for RELIANCE.NS
+2025-07-30 16:10:24,434 - core.async_signal_collector - INFO - [async_signal_collector.py:126] - Signal collection completed: 4 successful, 0 failed, 0.00s total
+2025-07-30 16:10:24,434 - core.adaptive_threshold_manager - INFO - [adaptive_threshold_manager.py:199] - Adaptive thresholds: BUY=0.787, SELL=-0.787, CONF=0.693
+2025-07-30 16:10:24,748 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:10:25,350 - core.integrated_risk_manager - INFO - [integrated_risk_manager.py:77] - Assessing risk for HOLD 0 shares of RELIANCE.NS
+2025-07-30 16:10:25,351 - core.integrated_risk_manager - INFO - [integrated_risk_manager.py:159] - Risk assessment complete: low risk (0.310), recommendation: APPROVE
+2025-07-30 16:10:25,352 - core.decision_audit_trail - INFO - [decision_audit_trail.py:123] - Decision logged: c834901e-606f-4849-a58f-d314f82b4ee6 - HOLD RELIANCE.NS
+2025-07-30 16:10:25,353 - __main__ - INFO - [web_backend.py:889] - Production decision for RELIANCE.NS: HOLD (confidence: 0.00, risk: 0.31)
+2025-07-30 16:10:25,356 - core.async_signal_collector - INFO - [async_signal_collector.py:59] - Starting parallel signal collection for TCS.NS
+2025-07-30 16:10:25,357 - core.async_signal_collector - INFO - [async_signal_collector.py:126] - Signal collection completed: 4 successful, 0 failed, 0.00s total
+2025-07-30 16:10:25,357 - core.adaptive_threshold_manager - INFO - [adaptive_threshold_manager.py:199] - Adaptive thresholds: BUY=0.787, SELL=-0.787, CONF=0.693
+2025-07-30 16:10:25,685 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:10:26,260 - core.integrated_risk_manager - INFO - [integrated_risk_manager.py:77] - Assessing risk for HOLD 0 shares of TCS.NS
+2025-07-30 16:10:26,261 - core.integrated_risk_manager - INFO - [integrated_risk_manager.py:159] - Risk assessment complete: low risk (0.310), recommendation: APPROVE
+2025-07-30 16:10:26,262 - core.decision_audit_trail - INFO - [decision_audit_trail.py:123] - Decision logged: eddbd324-8ae4-49a0-9e34-8426441c0763 - HOLD TCS.NS
+2025-07-30 16:10:26,262 - __main__ - INFO - [web_backend.py:889] - Production decision for TCS.NS: HOLD (confidence: 0.00, risk: 0.31)
+2025-07-30 16:10:26,288 - core.async_signal_collector - INFO - [async_signal_collector.py:59] - Starting parallel signal collection for HDFCBANK.NS
+2025-07-30 16:10:26,289 - core.async_signal_collector - INFO - [async_signal_collector.py:126] - Signal collection completed: 4 successful, 0 failed, 0.00s total
+2025-07-30 16:10:26,289 - core.adaptive_threshold_manager - INFO - [adaptive_threshold_manager.py:199] - Adaptive thresholds: BUY=0.787, SELL=-0.787, CONF=0.693
+2025-07-30 16:10:26,655 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:10:27,396 - core.integrated_risk_manager - INFO - [integrated_risk_manager.py:77] - Assessing risk for HOLD 0 shares of HDFCBANK.NS
+2025-07-30 16:10:27,397 - core.integrated_risk_manager - INFO - [integrated_risk_manager.py:159] - Risk assessment complete: low risk (0.312), recommendation: APPROVE
+2025-07-30 16:10:27,398 - core.decision_audit_trail - INFO - [decision_audit_trail.py:123] - Decision logged: bb31cd41-0e2d-425f-8406-cba81c1059e3 - HOLD HDFCBANK.NS
+2025-07-30 16:10:27,398 - __main__ - INFO - [web_backend.py:889] - Production decision for HDFCBANK.NS: HOLD (confidence: 0.00, risk: 0.31)
+2025-07-30 16:10:27,404 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-30 16:10:27,405 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-30 16:10:27,405 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-30 16:10:27,406 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-30 16:10:27,421 - testindia - INFO - [testindia.py:705] - Loaded 24 stocks from cache
+2025-07-30 16:10:27,421 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-30 16:10:27,422 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-30 16:10:27,422 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-30 16:10:27,422 - __main__ - INFO - [web_backend.py:732] - Signal sources registered successfully
+2025-07-30 16:10:27,429 - __main__ - INFO - [web_backend.py:687] - Production components initialized successfully
+2025-07-30 16:10:27,429 - __main__ - INFO - [web_backend.py:646] - Successfully registered portfolio callback
+2025-07-30 16:10:27,429 - __main__ - INFO - [web_backend.py:1554] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-30 16:10:27,429 - __main__ - INFO - [web_backend.py:1595] - Trading bot initialized successfully
+2025-07-30 16:10:27,442 - core.decision_audit_trail - INFO - [decision_audit_trail.py:363] - Loaded 3 recent decisions
+2025-07-30 16:10:27,445 - __main__ - INFO - [web_backend.py:1554] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-30 16:10:27,445 - __main__ - INFO - [web_backend.py:1172] - Starting Indian Stock Trading Bot...
+2025-07-30 16:10:27,445 - __main__ - INFO - [web_backend.py:1173] - Trading Mode: PAPER
+2025-07-30 16:10:27,445 - __main__ - INFO - [web_backend.py:1174] - Starting Balance: Rs.10,000.00
+2025-07-30 16:10:27,445 - __main__ - INFO - [web_backend.py:1175] - Watchlist: 
+2025-07-30 16:10:27,445 - __main__ - INFO - [web_backend.py:1176] - ============================================================
+2025-07-30 16:10:27,446 - testindia - INFO - [testindia.py:4625] - Starting Stock Trading Bot for Indian market...
+2025-07-30 16:10:27,446 - __main__ - INFO - [web_backend.py:1181] - Web Trading Bot started successfully
+2025-07-30 16:10:27,447 - testindia - INFO - [testindia.py:4651] - Logging portfolio metrics at start of trading cycle...
+2025-07-30 16:10:27,447 - __main__ - INFO - [web_backend.py:2072] - Trading bot started with MEDIUM risk level
+2025-07-30 16:10:27,456 - __main__ - INFO - [web_backend.py:1191] - Stopping Trading Bot...
+2025-07-30 16:10:27,456 - __main__ - INFO - [web_backend.py:1193] - Waiting for trading thread to finish...
+2025-07-30 16:10:27,879 - testindia - INFO - [testindia.py:1289] - Using Fyers current data for HDFCBANK.NS
+2025-07-30 16:10:27,879 - testindia - INFO - [testindia.py:2001] - Fetched price for HDFCBANK.NS: Rs.2025.80
+2025-07-30 16:10:28,277 - testindia - INFO - [testindia.py:1289] - Using Fyers current data for SUZLON.NS
+2025-07-30 16:10:28,278 - testindia - INFO - [testindia.py:2001] - Fetched price for SUZLON.NS: Rs.61.21
+2025-07-30 16:10:28,279 - testindia - INFO - [testindia.py:2186] - Portfolio Metrics:
+2025-07-30 16:10:28,279 - testindia - INFO - [testindia.py:2187] - Cash: Rs.6003.09
+2025-07-30 16:10:28,279 - testindia - INFO - [testindia.py:2188] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-30 16:10:28,279 - testindia - INFO - [testindia.py:2189] - Total Value: Rs.9926.40
+2025-07-30 16:10:28,279 - testindia - INFO - [testindia.py:2190] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-30 16:10:28,279 - testindia - INFO - [testindia.py:2191] - Current PnL (Dhan): Rs.0.00
+2025-07-30 16:10:28,280 - testindia - INFO - [testindia.py:2192] - Realized PnL: Rs.0.00
+2025-07-30 16:10:28,280 - testindia - INFO - [testindia.py:2193] - Unrealized PnL: Rs.-73.60
+2025-07-30 16:10:28,280 - testindia - INFO - [testindia.py:2194] - Total Exposure: Rs.3923.31
+2025-07-30 16:10:28,280 - testindia - INFO - [testindia.py:4676] - Bot stop signal received, skipping report generation...
+2025-07-30 16:10:28,280 - testindia - INFO - [testindia.py:4694] - Stock Trading Bot stopped successfully
+2025-07-30 16:10:28,281 - __main__ - INFO - [web_backend.py:1199] - Trading thread stopped successfully
+2025-07-30 16:10:28,281 - __main__ - INFO - [web_backend.py:1200] - Web Trading Bot stopped successfully
+2025-07-30 16:10:28,287 - dynamic_market_expert - INFO - [dynamic_market_expert.py:43] - Fyers API initialized successfully
+2025-07-30 16:10:28,288 - dynamic_market_expert - INFO - [dynamic_market_expert.py:133] - Dynamic Market Expert initialized successfully
+2025-07-30 16:10:28,288 - __main__ - INFO - [web_backend.py:1952] - Dynamic Market Expert initialized for web chat
+2025-07-30 16:10:28,648 - dynamic_market_expert - INFO - [dynamic_market_expert.py:189] - [SUCCESS] Fetched live data from Fyers for 5 symbols
+2025-07-30 16:10:28,652 - __main__ - INFO - [web_backend.py:1934] - Market query detected: Analyze RELIANCE.NS stock
+2025-07-30 16:10:29,005 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:10:29,006 - __main__ - INFO - [web_backend.py:1936] - Real-time response: False
+2025-07-30 16:10:29,368 - dynamic_market_expert - INFO - [dynamic_market_expert.py:189] - [SUCCESS] Fetched live data from Fyers for 1 symbols
+2025-07-30 16:10:29,390 - __main__ - INFO - [web_backend.py:1934] - Market query detected: What are the top performing stocks today?
+2025-07-30 16:10:29,841 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:10:30,164 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:10:32,537 - __main__ - INFO - [web_backend.py:468] - Using real Fyers market data
+2025-07-30 16:10:32,538 - __main__ - INFO - [web_backend.py:1936] - Real-time response: True
+2025-07-30 16:10:32,538 - __main__ - INFO - [web_backend.py:1938] - Returning real-time market response
+2025-07-30 16:10:32,574 - __main__ - INFO - [web_backend.py:2171] - Settings updated: Mode=paper, Risk Level=MEDIUM, Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-30 16:11:01,801 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:11:39,340 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:11:40,473 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:11:40,585 - mcp_server - INFO - [__init__.py:26] - MCP Trading Server components loaded successfully
+2025-07-30 16:11:40,738 - mcp_server.tools.market_analysis_tool - INFO - [market_analysis_tool.py:25] - TA library loaded successfully
+2025-07-30 16:11:41,179 - core.async_signal_collector - INFO - [async_signal_collector.py:59] - Starting parallel signal collection for RELIANCE.NS
+2025-07-30 16:11:41,180 - core.async_signal_collector - INFO - [async_signal_collector.py:126] - Signal collection completed: 4 successful, 0 failed, 0.00s total
+2025-07-30 16:11:41,180 - core.adaptive_threshold_manager - INFO - [adaptive_threshold_manager.py:199] - Adaptive thresholds: BUY=0.787, SELL=-0.787, CONF=0.693
+2025-07-30 16:11:41,533 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:11:42,020 - mcp_server - INFO - [__init__.py:33] - All MCP agents loaded successfully
+2025-07-30 16:11:42,273 - core.integrated_risk_manager - INFO - [integrated_risk_manager.py:77] - Assessing risk for HOLD 0 shares of RELIANCE.NS
+2025-07-30 16:11:42,273 - core.integrated_risk_manager - INFO - [integrated_risk_manager.py:159] - Risk assessment complete: low risk (0.310), recommendation: APPROVE
+2025-07-30 16:11:42,274 - core.decision_audit_trail - INFO - [decision_audit_trail.py:123] - Decision logged: 2fec4dd5-933c-4682-8b47-870fa0ce454c - HOLD RELIANCE.NS
+2025-07-30 16:11:42,274 - __main__ - INFO - [web_backend.py:889] - Production decision for RELIANCE.NS: HOLD (confidence: 0.00, risk: 0.31)
+2025-07-30 16:11:42,278 - core.async_signal_collector - INFO - [async_signal_collector.py:59] - Starting parallel signal collection for TCS.NS
+2025-07-30 16:11:42,278 - core.async_signal_collector - INFO - [async_signal_collector.py:126] - Signal collection completed: 4 successful, 0 failed, 0.00s total
+2025-07-30 16:11:42,278 - core.adaptive_threshold_manager - INFO - [adaptive_threshold_manager.py:199] - Adaptive thresholds: BUY=0.787, SELL=-0.787, CONF=0.693
+2025-07-30 16:11:42,742 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:11:43,388 - core.integrated_risk_manager - INFO - [integrated_risk_manager.py:77] - Assessing risk for HOLD 0 shares of TCS.NS
+2025-07-30 16:11:43,390 - core.integrated_risk_manager - INFO - [integrated_risk_manager.py:159] - Risk assessment complete: low risk (0.310), recommendation: APPROVE
+2025-07-30 16:11:43,391 - core.decision_audit_trail - INFO - [decision_audit_trail.py:123] - Decision logged: a3638998-25ec-422b-a2d0-01a31163a7e8 - HOLD TCS.NS
+2025-07-30 16:11:43,391 - __main__ - INFO - [web_backend.py:889] - Production decision for TCS.NS: HOLD (confidence: 0.00, risk: 0.31)
+2025-07-30 16:11:43,405 - core.async_signal_collector - INFO - [async_signal_collector.py:59] - Starting parallel signal collection for HDFCBANK.NS
+2025-07-30 16:11:43,406 - core.async_signal_collector - INFO - [async_signal_collector.py:126] - Signal collection completed: 4 successful, 0 failed, 0.00s total
+2025-07-30 16:11:43,406 - core.adaptive_threshold_manager - INFO - [adaptive_threshold_manager.py:199] - Adaptive thresholds: BUY=0.787, SELL=-0.787, CONF=0.693
+2025-07-30 16:11:43,756 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:11:44,380 - core.integrated_risk_manager - INFO - [integrated_risk_manager.py:77] - Assessing risk for HOLD 0 shares of HDFCBANK.NS
+2025-07-30 16:11:44,380 - core.integrated_risk_manager - INFO - [integrated_risk_manager.py:159] - Risk assessment complete: low risk (0.312), recommendation: APPROVE
+2025-07-30 16:11:44,381 - core.decision_audit_trail - INFO - [decision_audit_trail.py:123] - Decision logged: 3904b02c-a4f4-4aae-aa03-328ed810b75f - HOLD HDFCBANK.NS
+2025-07-30 16:11:44,381 - __main__ - INFO - [web_backend.py:889] - Production decision for HDFCBANK.NS: HOLD (confidence: 0.00, risk: 0.31)
+2025-07-30 16:11:44,399 - __main__ - INFO - [web_backend.py:68] - Production core components loaded successfully
+2025-07-30 16:11:44,405 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-30 16:11:44,405 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-30 16:11:44,406 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-30 16:11:44,406 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-30 16:11:44,415 - testindia - INFO - [testindia.py:705] - Loaded 24 stocks from cache
+2025-07-30 16:11:44,416 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-30 16:11:44,416 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-30 16:11:44,417 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-30 16:11:44,417 - __main__ - INFO - [web_backend.py:732] - Signal sources registered successfully
+2025-07-30 16:11:44,420 - __main__ - INFO - [web_backend.py:687] - Production components initialized successfully
+2025-07-30 16:11:44,420 - __main__ - INFO - [web_backend.py:646] - Successfully registered portfolio callback
+2025-07-30 16:11:44,420 - __main__ - INFO - [web_backend.py:1554] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-30 16:11:44,420 - __main__ - INFO - [web_backend.py:1595] - Trading bot initialized successfully
+2025-07-30 16:11:44,436 - core.decision_audit_trail - INFO - [decision_audit_trail.py:363] - Loaded 6 recent decisions
+2025-07-30 16:11:44,449 - __main__ - INFO - [web_backend.py:1554] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-30 16:11:44,449 - __main__ - INFO - [web_backend.py:1172] - Starting Indian Stock Trading Bot...
+2025-07-30 16:11:44,449 - __main__ - INFO - [web_backend.py:1173] - Trading Mode: PAPER
+2025-07-30 16:11:44,450 - __main__ - INFO - [web_backend.py:1174] - Starting Balance: Rs.10,000.00
+2025-07-30 16:11:44,450 - __main__ - INFO - [web_backend.py:1175] - Watchlist: 
+2025-07-30 16:11:44,450 - __main__ - INFO - [web_backend.py:1176] - ============================================================
+2025-07-30 16:11:44,451 - testindia - INFO - [testindia.py:4625] - Starting Stock Trading Bot for Indian market...
+2025-07-30 16:11:44,451 - __main__ - INFO - [web_backend.py:1181] - Web Trading Bot started successfully
+2025-07-30 16:11:44,451 - testindia - INFO - [testindia.py:4651] - Logging portfolio metrics at start of trading cycle...
+2025-07-30 16:11:44,451 - __main__ - INFO - [web_backend.py:2072] - Trading bot started with MEDIUM risk level
+2025-07-30 16:11:44,459 - __main__ - INFO - [web_backend.py:1191] - Stopping Trading Bot...
+2025-07-30 16:11:44,460 - __main__ - INFO - [web_backend.py:1193] - Waiting for trading thread to finish...
+2025-07-30 16:11:44,928 - testindia - INFO - [testindia.py:1289] - Using Fyers current data for HDFCBANK.NS
+2025-07-30 16:11:44,929 - testindia - INFO - [testindia.py:2001] - Fetched price for HDFCBANK.NS: Rs.2025.80
+2025-07-30 16:11:45,368 - testindia - INFO - [testindia.py:1289] - Using Fyers current data for SUZLON.NS
+2025-07-30 16:11:45,369 - testindia - INFO - [testindia.py:2001] - Fetched price for SUZLON.NS: Rs.61.21
+2025-07-30 16:11:45,369 - testindia - INFO - [testindia.py:2186] - Portfolio Metrics:
+2025-07-30 16:11:45,369 - testindia - INFO - [testindia.py:2187] - Cash: Rs.6003.09
+2025-07-30 16:11:45,369 - testindia - INFO - [testindia.py:2188] - Holdings: {'HDFCBANK.NS': {'qty': 1, 'avg_price': 2015.7}, 'SUZLON.NS': {'qty': 31, 'avg_price': 63.91}}
+2025-07-30 16:11:45,369 - testindia - INFO - [testindia.py:2189] - Total Value: Rs.9926.40
+2025-07-30 16:11:45,370 - testindia - INFO - [testindia.py:2190] - Current Portfolio Value (Dhan): Rs.10000.00
+2025-07-30 16:11:45,370 - testindia - INFO - [testindia.py:2191] - Current PnL (Dhan): Rs.0.00
+2025-07-30 16:11:45,370 - testindia - INFO - [testindia.py:2192] - Realized PnL: Rs.0.00
+2025-07-30 16:11:45,370 - testindia - INFO - [testindia.py:2193] - Unrealized PnL: Rs.-73.60
+2025-07-30 16:11:45,370 - testindia - INFO - [testindia.py:2194] - Total Exposure: Rs.3923.31
+2025-07-30 16:11:45,370 - testindia - INFO - [testindia.py:4676] - Bot stop signal received, skipping report generation...
+2025-07-30 16:11:45,370 - testindia - INFO - [testindia.py:4694] - Stock Trading Bot stopped successfully
+2025-07-30 16:11:45,371 - __main__ - INFO - [web_backend.py:1199] - Trading thread stopped successfully
+2025-07-30 16:11:45,371 - __main__ - INFO - [web_backend.py:1200] - Web Trading Bot stopped successfully
+2025-07-30 16:11:45,815 - dynamic_market_expert - INFO - [dynamic_market_expert.py:189] - [SUCCESS] Fetched live data from Fyers for 5 symbols
+2025-07-30 16:11:45,838 - __main__ - INFO - [web_backend.py:1934] - Market query detected: Analyze RELIANCE.NS stock
+2025-07-30 16:11:45,860 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-30 16:11:45,860 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-30 16:11:45,861 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-30 16:11:45,862 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-30 16:11:45,877 - testindia - INFO - [testindia.py:705] - Loaded 24 stocks from cache
+2025-07-30 16:11:45,877 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-30 16:11:45,879 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-30 16:11:45,879 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-30 16:11:45,879 - __main__ - INFO - [web_backend.py:732] - Signal sources registered successfully
+2025-07-30 16:11:45,880 - __main__ - ERROR - [web_backend.py:690] - Error initializing production components: no running event loop
+2025-07-30 16:11:45,880 - __main__ - INFO - [web_backend.py:646] - Successfully registered portfolio callback
+2025-07-30 16:11:45,880 - __main__ - INFO - [web_backend.py:1554] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-30 16:11:45,880 - __main__ - INFO - [web_backend.py:1595] - Trading bot initialized successfully
+2025-07-30 16:11:45,880 - __main__ - INFO - [web_backend.py:2662] - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-30 16:11:45,880 - __main__ - INFO - [web_backend.py:2663] - Web interface will be available at the above URL
+2025-07-30 16:11:45,880 - __main__ - INFO - [web_backend.py:2664] - API documentation available at http://{host}:{port}/docs
+2025-07-30 16:11:45,920 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-30 16:11:45,921 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-30 16:11:45,922 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-30 16:11:45,922 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-30 16:11:45,932 - testindia - INFO - [testindia.py:705] - Loaded 24 stocks from cache
+2025-07-30 16:11:45,933 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-30 16:11:45,933 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-30 16:11:45,933 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-30 16:11:45,933 - __main__ - INFO - [web_backend.py:732] - Signal sources registered successfully
+2025-07-30 16:11:46,237 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:11:46,237 - __main__ - INFO - [web_backend.py:1936] - Real-time response: False
+2025-07-30 16:11:46,617 - dynamic_market_expert - INFO - [dynamic_market_expert.py:189] - [SUCCESS] Fetched live data from Fyers for 1 symbols
+2025-07-30 16:11:46,622 - __main__ - INFO - [web_backend.py:1934] - Market query detected: What are the top performing stocks today?
+2025-07-30 16:11:46,930 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:11:47,352 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:11:47,696 - __main__ - INFO - [web_backend.py:687] - Production components initialized successfully
+2025-07-30 16:11:47,697 - __main__ - INFO - [web_backend.py:646] - Successfully registered portfolio callback
+2025-07-30 16:11:47,697 - __main__ - INFO - [web_backend.py:1554] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-30 16:11:47,697 - __main__ - INFO - [web_backend.py:1595] - Trading bot initialized successfully
+2025-07-30 16:11:47,697 - __main__ - INFO - [web_backend.py:2689] - Trading bot initialized on startup
+2025-07-30 16:11:47,698 - core.decision_audit_trail - INFO - [decision_audit_trail.py:363] - Loaded 6 recent decisions
+2025-07-30 16:11:47,699 - __main__ - INFO - [web_backend.py:1202] - Trading bot is already stopped
+2025-07-30 16:11:47,699 - __main__ - INFO - [web_backend.py:2718] - Trading bot stopped on shutdown
+2025-07-30 16:11:49,804 - __main__ - INFO - [web_backend.py:468] - Using real Fyers market data
+2025-07-30 16:11:49,805 - __main__ - INFO - [web_backend.py:1936] - Real-time response: True
+2025-07-30 16:11:49,805 - __main__ - INFO - [web_backend.py:1938] - Returning real-time market response
+2025-07-30 16:11:49,821 - __main__ - INFO - [web_backend.py:2171] - Settings updated: Mode=paper, Risk Level=MEDIUM, Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-30 16:11:55,289 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:11:56,441 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:12:01,789 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:12:21,824 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:12:23,207 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:12:25,772 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:12:52,014 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:12:56,080 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:13:01,754 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:13:22,133 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:13:26,099 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:13:52,142 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:13:56,103 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:14:01,679 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:14:05,845 - __main__ - INFO - [web_backend.py:1202] - Trading bot is already stopped
+2025-07-30 16:14:05,846 - __main__ - INFO - [web_backend.py:2718] - Trading bot stopped on shutdown
+2025-07-30 16:14:05,847 - __main__ - INFO - [web_backend.py:2733] - Web server stopped by user
+2025-07-30 16:15:02,206 - mcp_server - INFO - [__init__.py:26] - MCP Trading Server components loaded successfully
+2025-07-30 16:15:02,726 - mcp_server.tools.market_analysis_tool - INFO - [market_analysis_tool.py:25] - TA library loaded successfully
+2025-07-30 16:15:12,422 - mcp_server - INFO - [__init__.py:33] - All MCP agents loaded successfully
+2025-07-30 16:15:17,007 - __main__ - INFO - [web_backend.py:68] - Production core components loaded successfully
+2025-07-30 16:15:20,509 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-30 16:15:20,509 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-30 16:15:20,511 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-30 16:15:20,511 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-30 16:15:20,551 - testindia - INFO - [testindia.py:705] - Loaded 24 stocks from cache
+2025-07-30 16:15:20,552 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-30 16:15:20,554 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-30 16:15:20,555 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-30 16:15:20,555 - __main__ - INFO - [web_backend.py:732] - Signal sources registered successfully
+2025-07-30 16:15:20,555 - __main__ - ERROR - [web_backend.py:690] - Error initializing production components: no running event loop
+2025-07-30 16:15:20,555 - __main__ - INFO - [web_backend.py:646] - Successfully registered portfolio callback
+2025-07-30 16:15:20,556 - __main__ - INFO - [web_backend.py:1554] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-30 16:15:20,556 - __main__ - INFO - [web_backend.py:1595] - Trading bot initialized successfully
+2025-07-30 16:15:20,556 - __main__ - INFO - [web_backend.py:2662] - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-30 16:15:20,556 - __main__ - INFO - [web_backend.py:2663] - Web interface will be available at the above URL
+2025-07-30 16:15:20,556 - __main__ - INFO - [web_backend.py:2664] - API documentation available at http://{host}:{port}/docs
+2025-07-30 16:15:20,717 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-30 16:15:20,718 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-30 16:15:20,719 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-30 16:15:20,719 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-30 16:15:20,734 - testindia - INFO - [testindia.py:705] - Loaded 24 stocks from cache
+2025-07-30 16:15:20,734 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-30 16:15:20,735 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-30 16:15:20,735 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-30 16:15:20,735 - __main__ - INFO - [web_backend.py:732] - Signal sources registered successfully
+2025-07-30 16:15:23,588 - __main__ - INFO - [web_backend.py:687] - Production components initialized successfully
+2025-07-30 16:15:23,588 - __main__ - INFO - [web_backend.py:646] - Successfully registered portfolio callback
+2025-07-30 16:15:23,588 - __main__ - INFO - [web_backend.py:1554] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-30 16:15:23,588 - __main__ - INFO - [web_backend.py:1595] - Trading bot initialized successfully
+2025-07-30 16:15:23,588 - __main__ - INFO - [web_backend.py:2689] - Trading bot initialized on startup
+2025-07-30 16:15:23,589 - core.decision_audit_trail - INFO - [decision_audit_trail.py:363] - Loaded 6 recent decisions
+2025-07-30 16:16:45,804 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:16:47,007 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:17:01,810 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:17:15,749 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:17:17,106 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:17:18,882 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:17:46,771 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:17:48,486 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:18:16,764 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:18:18,551 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:18:46,801 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:18:48,459 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:19:16,613 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:19:17,889 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:19:46,593 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:19:47,893 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:20:16,610 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:20:38,696 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:20:46,693 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:21:01,632 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:21:16,161 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:21:47,085 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:22:02,096 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:22:17,105 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:23:01,778 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:23:03,519 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:24:01,784 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:24:03,528 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:25:01,765 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:25:03,489 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:26:01,786 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:26:03,502 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:27:01,825 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:27:03,568 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:28:01,794 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:28:03,445 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:29:01,801 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:29:03,590 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:30:01,788 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:30:03,558 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:31:01,812 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:31:03,485 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:32:01,823 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:32:03,569 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:33:01,802 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:33:03,577 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:34:01,798 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:34:03,575 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:35:01,808 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:35:03,574 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:36:01,790 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:36:03,588 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:37:01,819 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:37:03,453 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:38:01,792 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:38:03,594 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:39:01,793 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:39:03,556 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:40:01,727 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:40:03,396 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:41:01,808 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:41:03,442 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:42:01,716 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:42:03,545 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:43:01,805 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:43:03,584 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:44:01,726 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:44:03,473 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:45:02,119 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:45:03,574 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:46:01,807 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:46:03,599 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:47:01,808 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:47:03,579 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:48:01,762 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:48:03,546 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:49:01,799 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:49:03,412 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:50:01,792 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:50:03,578 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:51:01,797 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:51:03,759 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:52:01,826 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:52:03,645 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:53:01,804 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:53:03,556 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:54:01,824 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:54:03,529 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:55:01,820 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:55:03,613 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:56:01,799 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:56:03,574 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:57:01,798 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:57:03,718 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:58:01,797 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:58:03,622 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:59:01,758 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 16:59:03,532 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:00:01,812 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:00:03,681 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:01:01,718 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:01:03,508 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:02:01,761 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:02:03,422 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:03:01,815 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:04:01,790 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:04:03,541 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:05:01,801 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:05:03,507 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:06:01,810 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:06:21,928 - __main__ - WARNING - [web_backend.py:1271] - Yahoo Finance failed for HDFCBANK.NS: Too Many Requests. Rate limited. Try after a while.
+2025-07-30 17:07:01,805 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:07:03,625 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:08:01,809 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:08:03,462 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:09:01,808 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:09:03,570 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:10:01,790 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:10:03,524 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:11:01,819 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:11:03,642 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:12:01,707 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:12:03,497 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:13:01,809 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:13:03,538 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:14:25,878 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:15:02,069 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:15:03,394 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:16:01,813 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:16:03,510 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:17:01,821 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:17:03,683 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:18:01,794 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:18:03,590 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:19:01,820 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:19:03,467 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:20:01,816 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:20:03,543 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:21:01,824 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:21:03,582 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:22:29,668 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:22:40,767 - yfinance - ERROR - [history.py:247] - $HDFCBANK.NS: possibly delisted; no price data found  (period=1d)
+2025-07-30 17:22:40,772 - yfinance - ERROR - [history.py:247] - $SUZLON.NS: possibly delisted; no price data found  (period=1d)
+2025-07-30 17:23:01,812 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:23:03,600 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:24:01,812 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:24:03,589 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:25:01,723 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:25:03,490 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:26:01,609 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:26:03,377 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:27:01,843 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:27:03,660 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:28:01,830 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:28:03,629 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:29:01,795 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:29:03,614 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:30:01,812 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:30:03,467 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:31:01,800 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:31:03,596 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:32:01,790 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:32:03,491 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:33:01,836 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:33:03,602 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:34:01,858 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:34:03,680 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:35:01,788 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:35:03,612 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:36:01,803 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:36:03,687 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:36:39,398 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:36:46,789 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:37:01,668 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:37:15,214 - __main__ - INFO - [web_backend.py:1202] - Trading bot is already stopped
+2025-07-30 17:37:15,214 - __main__ - INFO - [web_backend.py:2718] - Trading bot stopped on shutdown
+2025-07-30 17:37:15,215 - __main__ - INFO - [web_backend.py:2733] - Web server stopped by user
+2025-07-30 17:45:02,310 - mcp_server - INFO - [__init__.py:26] - MCP Trading Server components loaded successfully
+2025-07-30 17:45:02,501 - mcp_server.tools.market_analysis_tool - INFO - [market_analysis_tool.py:25] - TA library loaded successfully
+2025-07-30 17:45:03,471 - mcp_server - INFO - [__init__.py:33] - All MCP agents loaded successfully
+2025-07-30 17:45:05,800 - __main__ - INFO - [web_backend.py:68] - Production core components loaded successfully
+2025-07-30 17:45:07,304 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-30 17:45:07,305 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-30 17:45:07,306 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-30 17:45:07,307 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-30 17:45:07,325 - testindia - INFO - [testindia.py:705] - Loaded 24 stocks from cache
+2025-07-30 17:45:07,325 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-30 17:45:07,327 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-30 17:45:07,327 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-30 17:45:07,328 - __main__ - INFO - [web_backend.py:732] - Signal sources registered successfully
+2025-07-30 17:45:07,328 - __main__ - ERROR - [web_backend.py:690] - Error initializing production components: no running event loop
+2025-07-30 17:45:07,328 - __main__ - INFO - [web_backend.py:646] - Successfully registered portfolio callback
+2025-07-30 17:45:07,328 - __main__ - INFO - [web_backend.py:1554] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-30 17:45:07,329 - __main__ - INFO - [web_backend.py:1595] - Trading bot initialized successfully
+2025-07-30 17:45:07,329 - __main__ - INFO - [web_backend.py:2662] - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-30 17:45:07,329 - __main__ - INFO - [web_backend.py:2663] - Web interface will be available at the above URL
+2025-07-30 17:45:07,329 - __main__ - INFO - [web_backend.py:2664] - API documentation available at http://{host}:{port}/docs
+2025-07-30 17:45:07,378 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-30 17:45:07,378 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-30 17:45:07,379 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-30 17:45:07,380 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-30 17:45:07,394 - testindia - INFO - [testindia.py:705] - Loaded 24 stocks from cache
+2025-07-30 17:45:07,394 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-30 17:45:07,395 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-30 17:45:07,395 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-30 17:45:07,395 - __main__ - INFO - [web_backend.py:732] - Signal sources registered successfully
+2025-07-30 17:45:09,014 - __main__ - INFO - [web_backend.py:687] - Production components initialized successfully
+2025-07-30 17:45:09,014 - __main__ - INFO - [web_backend.py:646] - Successfully registered portfolio callback
+2025-07-30 17:45:09,014 - __main__ - INFO - [web_backend.py:1554] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-30 17:45:09,014 - __main__ - INFO - [web_backend.py:1595] - Trading bot initialized successfully
+2025-07-30 17:45:09,014 - __main__ - INFO - [web_backend.py:2689] - Trading bot initialized on startup
+2025-07-30 17:45:09,015 - core.decision_audit_trail - INFO - [decision_audit_trail.py:363] - Loaded 6 recent decisions
+2025-07-30 17:46:58,379 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:46:59,366 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:47:00,678 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:47:02,177 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:47:28,606 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:47:29,917 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:47:54,346 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:47:55,335 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:47:58,601 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:48:00,334 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:48:24,785 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:48:28,604 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:48:29,909 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:48:33,919 - dynamic_market_expert - INFO - [dynamic_market_expert.py:43] - Fyers API initialized successfully
+2025-07-30 17:48:33,919 - dynamic_market_expert - INFO - [dynamic_market_expert.py:133] - Dynamic Market Expert initialized successfully
+2025-07-30 17:48:33,919 - __main__ - INFO - [web_backend.py:1952] - Dynamic Market Expert initialized for web chat
+2025-07-30 17:48:34,309 - dynamic_market_expert - INFO - [dynamic_market_expert.py:189] - [SUCCESS] Fetched live data from Fyers for 5 symbols
+2025-07-30 17:48:34,695 - dynamic_market_expert - INFO - [dynamic_market_expert.py:189] - [SUCCESS] Fetched live data from Fyers for 5 symbols
+2025-07-30 17:48:35,125 - dynamic_market_expert - INFO - [dynamic_market_expert.py:189] - [SUCCESS] Fetched live data from Fyers for 1 symbols
+2025-07-30 17:48:35,130 - core.async_signal_collector - INFO - [async_signal_collector.py:59] - Starting parallel signal collection for RELIANCE.NS
+2025-07-30 17:48:35,131 - core.async_signal_collector - INFO - [async_signal_collector.py:126] - Signal collection completed: 4 successful, 0 failed, 0.00s total
+2025-07-30 17:48:35,131 - core.adaptive_threshold_manager - INFO - [adaptive_threshold_manager.py:199] - Adaptive thresholds: BUY=0.787, SELL=-0.787, CONF=0.693
+2025-07-30 17:48:35,461 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:48:36,219 - core.integrated_risk_manager - INFO - [integrated_risk_manager.py:77] - Assessing risk for HOLD 0 shares of RELIANCE.NS
+2025-07-30 17:48:36,220 - core.integrated_risk_manager - INFO - [integrated_risk_manager.py:159] - Risk assessment complete: low risk (0.310), recommendation: APPROVE
+2025-07-30 17:48:36,221 - core.decision_audit_trail - INFO - [decision_audit_trail.py:123] - Decision logged: 1e4a3883-d744-45a0-b07d-82804c5ab2d4 - HOLD RELIANCE.NS
+2025-07-30 17:48:36,221 - __main__ - INFO - [web_backend.py:889] - Production decision for RELIANCE.NS: HOLD (confidence: 0.00, risk: 0.31)
+2025-07-30 17:48:47,226 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:48:48,611 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:48:59,112 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:49:00,397 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-30 17:49:06,533 - portfolio_manager - INFO - [portfolio_manager.py:145] - Loaded live mode data - Cash: Rs.0.00, Holdings: 0, Trades: 0
+2025-07-30 17:49:06,533 - portfolio_manager - INFO - [portfolio_manager.py:117] - Switched from paper mode to live mode
+2025-07-30 17:49:06,533 - dhan_client - INFO - [dhan_client.py:35] - Dhan API client initialized
+2025-07-30 17:49:06,963 - dhan_client - INFO - [dhan_client.py:294] - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Equity, ', 'ddpi': 'Deactive', 'mtf': 'Deactive', 'dataPlan': 'Deactive', 'dataValidity': 'NA'}
+2025-07-30 17:49:06,964 - dhan_client - INFO - [dhan_client.py:296] - Dhan API connection validated successfully
+2025-07-30 17:49:06,964 - dhan_client - INFO - [dhan_client.py:35] - Dhan API client initialized
+2025-07-30 17:49:06,964 - live_executor - INFO - [live_executor.py:42] - Live Trading Executor initialized
+2025-07-30 17:49:06,964 - live_executor - INFO - [live_executor.py:55] - Syncing portfolio with Dhan account...
+2025-07-30 17:49:07,393 - dhan_client - INFO - [dhan_client.py:66] - Holdings endpoint returned 500 - likely empty portfolio
+2025-07-30 17:49:07,394 - live_executor - INFO - [live_executor.py:90] - Portfolio synced - Cash: Rs.0.00, Holdings: Rs.0.00
+2025-07-30 17:49:07,394 - __main__ - INFO - [web_backend.py:1103] - Live trading initialized successfully
+2025-07-30 17:49:07,394 - __main__ - INFO - [web_backend.py:1161] - Successfully switched from paper to live mode
+2025-07-30 17:49:07,394 - __main__ - INFO - [web_backend.py:2144] - Successfully switched from paper to live mode
+2025-07-30 17:49:07,394 - __main__ - INFO - [web_backend.py:1554] - Applied LOW risk settings: Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-30 17:49:07,394 - __main__ - INFO - [web_backend.py:2171] - Settings updated: Mode=live, Risk Level=LOW, Stop Loss=3.0%, Max Allocation=15.0%
+2025-07-30 17:49:07,987 - dhan_client - INFO - [dhan_client.py:294] - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Equity, ', 'ddpi': 'Deactive', 'mtf': 'Deactive', 'dataPlan': 'Deactive', 'dataValidity': 'NA'}
+2025-07-30 17:49:07,988 - dhan_client - INFO - [dhan_client.py:296] - Dhan API connection validated successfully
+2025-07-30 17:49:17,177 - dhan_client - INFO - [dhan_client.py:294] - Profile response: {'dhanClientId': '1107443739', 'tokenValidity': '22/08/2025 13:06', 'activeSegment': 'Equity, ', 'ddpi': 'Deactive', 'mtf': 'Deactive', 'dataPlan': 'Deactive', 'dataValidity': 'NA'}
+2025-07-30 17:49:17,178 - dhan_client - INFO - [dhan_client.py:296] - Dhan API connection validated successfully
+2025-07-30 17:49:19,077 - portfolio_manager - INFO - [portfolio_manager.py:145] - Loaded paper mode data - Cash: Rs.0.00, Holdings: 0, Trades: 0
+2025-07-30 17:49:19,077 - portfolio_manager - INFO - [portfolio_manager.py:117] - Switched from live mode to paper mode
+2025-07-30 17:49:19,082 - __main__ - INFO - [web_backend.py:1161] - Successfully switched from live to paper mode
+2025-07-30 17:49:19,082 - __main__ - INFO - [web_backend.py:2144] - Successfully switched from live to paper mode
+2025-07-30 17:49:19,082 - __main__ - INFO - [web_backend.py:1554] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-30 17:49:19,083 - __main__ - INFO - [web_backend.py:2171] - Settings updated: Mode=paper, Risk Level=MEDIUM, Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-31 12:01:03,771 - mcp_server - INFO - [__init__.py:26] - MCP Trading Server components loaded successfully
+2025-07-31 12:01:04,265 - mcp_server.tools.market_analysis_tool - INFO - [market_analysis_tool.py:25] - TA library loaded successfully
+2025-07-31 12:01:13,893 - mcp_server - INFO - [__init__.py:33] - All MCP agents loaded successfully
+2025-07-31 12:01:16,262 - __main__ - INFO - [web_backend.py:68] - Production core components loaded successfully
+2025-07-31 12:01:20,364 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-31 12:01:20,364 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-31 12:01:20,366 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-31 12:01:20,367 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-31 12:01:20,408 - testindia - INFO - [testindia.py:705] - Loaded 24 stocks from cache
+2025-07-31 12:01:20,408 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-31 12:01:20,411 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-31 12:01:20,411 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-31 12:01:20,411 - __main__ - ERROR - [web_backend.py:730] - Error initializing production components: AdaptiveThresholdManager.__init__() got an unexpected keyword argument 'learning_rate'
+2025-07-31 12:01:20,412 - __main__ - INFO - [web_backend.py:647] - Successfully registered portfolio callback
+2025-07-31 12:01:20,412 - __main__ - INFO - [web_backend.py:1456] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-31 12:01:20,412 - __main__ - INFO - [web_backend.py:1497] - Trading bot initialized successfully
+2025-07-31 12:01:20,412 - __main__ - INFO - [web_backend.py:2596] - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-31 12:01:20,412 - __main__ - INFO - [web_backend.py:2597] - Web interface will be available at the above URL
+2025-07-31 12:01:20,412 - __main__ - INFO - [web_backend.py:2598] - API documentation available at http://{host}:{port}/docs
+2025-07-31 12:01:20,572 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-31 12:01:20,573 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-31 12:01:20,574 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-31 12:01:20,574 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-31 12:01:20,588 - testindia - INFO - [testindia.py:705] - Loaded 24 stocks from cache
+2025-07-31 12:01:20,588 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-31 12:01:20,588 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-31 12:01:20,589 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-31 12:01:20,589 - __main__ - ERROR - [web_backend.py:730] - Error initializing production components: AdaptiveThresholdManager.__init__() got an unexpected keyword argument 'learning_rate'
+2025-07-31 12:01:20,589 - __main__ - INFO - [web_backend.py:647] - Successfully registered portfolio callback
+2025-07-31 12:01:20,589 - __main__ - INFO - [web_backend.py:1456] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-31 12:01:20,589 - __main__ - INFO - [web_backend.py:1497] - Trading bot initialized successfully
+2025-07-31 12:01:20,589 - __main__ - INFO - [web_backend.py:2623] - Trading bot initialized on startup
+2025-07-31 12:01:22,102 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-31 12:02:22,102 - __main__ - INFO - [web_backend.py:553] - Fyers client connected successfully
+2025-07-31 12:03:22,586 - mcp_server - INFO - [__init__.py:26] - MCP Trading Server components loaded successfully
+2025-07-31 12:03:22,759 - mcp_server.tools.market_analysis_tool - INFO - [market_analysis_tool.py:25] - TA library loaded successfully
+2025-07-31 12:03:24,051 - mcp_server - INFO - [__init__.py:33] - All MCP agents loaded successfully
+2025-07-31 12:03:26,526 - __main__ - INFO - [web_backend.py:68] - Production core components loaded successfully
+2025-07-31 12:03:28,008 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-31 12:03:28,008 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-31 12:03:28,009 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-31 12:03:28,010 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-31 12:03:28,026 - testindia - INFO - [testindia.py:705] - Loaded 24 stocks from cache
+2025-07-31 12:03:28,027 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-31 12:03:28,029 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-31 12:03:28,029 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-31 12:03:28,030 - __main__ - ERROR - [web_backend.py:713] - Error initializing production components: no running event loop
+2025-07-31 12:03:28,030 - __main__ - INFO - [web_backend.py:647] - Successfully registered portfolio callback
+2025-07-31 12:03:28,031 - __main__ - INFO - [web_backend.py:1439] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-31 12:03:28,031 - __main__ - INFO - [web_backend.py:1480] - Trading bot initialized successfully
+2025-07-31 12:03:28,031 - __main__ - INFO - [web_backend.py:2579] - Starting FastAPI web server on http://127.0.0.1:5000
+2025-07-31 12:03:28,031 - __main__ - INFO - [web_backend.py:2580] - Web interface will be available at the above URL
+2025-07-31 12:03:28,031 - __main__ - INFO - [web_backend.py:2581] - API documentation available at http://{host}:{port}/docs
+2025-07-31 12:03:28,090 - portfolio_manager - INFO - [portfolio_manager.py:48] - Dual Portfolio Manager initialized with data directory: data
+2025-07-31 12:03:28,091 - portfolio_manager - INFO - [portfolio_manager.py:104] - Already in paper mode
+2025-07-31 12:03:28,092 - testindia - INFO - [testindia.py:1460] - Loaded portfolio: Cash=Rs.6003.09, Holdings=2 positions
+2025-07-31 12:03:28,092 - testindia - INFO - [testindia.py:1466] - Loaded 2 trades from trade log
+2025-07-31 12:03:28,107 - testindia - INFO - [testindia.py:705] - Loaded 24 stocks from cache
+2025-07-31 12:03:28,107 - testindia - INFO - [testindia.py:2217] - Dynamic ticker mapper initialized
+2025-07-31 12:03:28,107 - testindia - INFO - [testindia.py:846] - Llama LLM initialized successfully with Ollama
+2025-07-31 12:03:28,108 - testindia - INFO - [testindia.py:4174] - Initializing Stock Trading Bot for Indian market...
+2025-07-31 12:03:30,834 - __main__ - INFO - [web_backend.py:708] - Production components initialized successfully
+2025-07-31 12:03:30,834 - __main__ - INFO - [web_backend.py:709] - Signal Collector: 3 sources registered
+2025-07-31 12:03:30,834 - __main__ - INFO - [web_backend.py:710] - Adaptive thresholds, risk management, audit trail, and learning engine active
+2025-07-31 12:03:30,835 - __main__ - INFO - [web_backend.py:647] - Successfully registered portfolio callback
+2025-07-31 12:03:30,835 - __main__ - INFO - [web_backend.py:1439] - Applied MEDIUM risk settings: Stop Loss=5.0%, Max Allocation=25.0%
+2025-07-31 12:03:30,835 - __main__ - INFO - [web_backend.py:1480] - Trading bot initialized successfully
+2025-07-31 12:03:30,835 - __main__ - INFO - [web_backend.py:2606] - Trading bot initialized on startup
+2025-07-31 12:03:30,850 - core.decision_audit_trail - INFO - [decision_audit_trail.py:363] - Loaded 7 recent decisions
