@@ -11,6 +11,7 @@ from typing import Optional, List, Dict, Any
 import logging
 import threading
 import time
+import traceback
 
 # Import FastAPI components with fallback handling
 try:
@@ -221,21 +222,19 @@ async def get_real_time_market_response(message: str) -> Optional[str]:
             volume_data = []
             if fyers_client:
                 logger.info("Fetching real-time data from Fyers API")
-                for symbol in major_stocks:
+                # PRODUCTION FIX: Use data service for volume data
+                all_data = fyers_client.get_all_data()
+                for symbol, data in all_data.items():
                     try:
-                        quotes = fyers_client.quotes({"symbols": symbol})
-                        if quotes and quotes.get("s") == "ok" and quotes.get("d"):
-                            # Fyers data structure: quotes["d"][0]["v"] contains the actual data
-                            data = quotes["d"][0]["v"]
-                            volume_data.append({
-                                "symbol": symbol.replace("NSE:", "").replace("-EQ", ""),
-                                "volume": data.get("volume", 0),
-                                "price": data.get("lp", 0),
-                                "change": data.get("ch", 0),
-                                "change_pct": data.get("chp", 0)
-                            })
+                        volume_data.append({
+                            "symbol": symbol.replace("NSE:", "").replace("-EQ", ""),
+                            "volume": data.get("volume", 0),
+                            "price": data.get("price", 0),
+                            "change": data.get("change", 0),
+                            "change_pct": data.get("change_pct", 0)
+                        })
                     except Exception as e:
-                        logger.error(f"Error getting Fyers data for {symbol}: {e}")
+                        logger.error(f"Error processing data service data for {symbol}: {e}")
                         continue
 
             # PRIORITY 2: If Fyers failed, try Yahoo Finance
@@ -266,18 +265,17 @@ async def get_real_time_market_response(message: str) -> Optional[str]:
 
             if not volume_data and fyers_client:
                 volume_data = []
-                for symbol in major_stocks:
+                # PRODUCTION FIX: Use data service for volume data
+                all_data = fyers_client.get_all_data()
+                for symbol, data in all_data.items():
                     try:
-                        quotes = fyers_client.quotes({"symbols": symbol})
-                        if quotes and quotes.get("s") == "ok" and quotes.get("d"):
-                            data = quotes["d"][0]["v"]
-                            volume_data.append({
-                                "symbol": symbol.replace("NSE:", "").replace("-EQ", ""),
-                                "volume": data.get("volume", 0),
-                                "price": data.get("lp", 0),
-                                "change": data.get("ch", 0),
-                                "change_pct": data.get("chp", 0)
-                            })
+                        volume_data.append({
+                            "symbol": symbol.replace("NSE:", "").replace("-EQ", ""),
+                            "volume": data.get("volume", 0),
+                            "price": data.get("price", 0),
+                            "change": data.get("change", 0),
+                            "change_pct": data.get("change_pct", 0)
+                        })
                     except Exception as e:
                         continue
 
@@ -294,7 +292,7 @@ async def get_real_time_market_response(message: str) -> Optional[str]:
                     change_emoji = "[+]" if stock["change"] >= 0 else "[-]"
                     response += f"{change_emoji} **{stock['symbol']}**: Rs.{stock['price']:.2f} ({stock['change_pct']:+.2f}%) | Vol: {stock['volume']:,}\n"
 
-                response += f"\n💡 **Live Market Insight:** Low volume may indicate consolidation or lack of institutional interest."
+                response += f"\n**Live Market Insight:** Low volume may indicate consolidation or lack of institutional interest."
 
                 return response
 
@@ -304,18 +302,21 @@ async def get_real_time_market_response(message: str) -> Optional[str]:
 
             if not market_data and fyers_client:
                 market_data = []
-                for symbol in major_stocks[:6]:  # Show more variety
+                # PRODUCTION FIX: Use data service for market overview
+                all_data = fyers_client.get_all_data()
+                count = 0
+                for symbol, data in all_data.items():
+                    if count >= 6:  # Show more variety
+                        break
                     try:
-                        quotes = fyers_client.quotes({"symbols": symbol})
-                        if quotes and quotes.get("s") == "ok" and quotes.get("d"):
-                            data = quotes["d"][0]["v"]
-                            market_data.append({
-                                "symbol": symbol.replace("NSE:", "").replace("-EQ", ""),
-                                "price": data.get("lp", 0),
-                                "change": data.get("ch", 0),
-                                "change_pct": data.get("chp", 0),
-                                "volume": data.get("volume", 0)
-                            })
+                        market_data.append({
+                            "symbol": symbol.replace("NSE:", "").replace("-EQ", ""),
+                            "price": data.get("price", 0),
+                            "change": data.get("change", 0),
+                            "change_pct": data.get("change_pct", 0),
+                            "volume": data.get("volume", 0)
+                        })
+                        count += 1
                     except Exception as e:
                         continue
 
@@ -687,7 +688,9 @@ class WebTradingBot:
 
         except Exception as e:
             logger.error(f"Error initializing production components: {e}")
+            logger.debug(f"Production components error traceback: {traceback.format_exc()}")
             self.production_components = {}
+            self.production_components_active = False
 
     async def _collect_technical_signals(self, symbol: str, context: dict) -> dict:
         """Collect technical indicator signals"""
@@ -806,7 +809,7 @@ class WebTradingBot:
                 elif success_rate > 0.5:
                     initial_threshold = 0.75  # Standard threshold
                 else:
-                    initial_threshold = 0.85  # Higher threshold for low success rate
+                    initial_threshold = 0.35  # TESTING: Lower threshold to see ML model performance
 
                 threshold_manager.set_initial_threshold(initial_threshold)
                 logger.info(f"Adaptive thresholds initialized: {initial_threshold:.2f} (based on {success_rate:.1%} success rate)")
@@ -1017,12 +1020,12 @@ class WebTradingBot:
 
             # Initialize production components if available
             if PRODUCTION_CORE_AVAILABLE and self.production_components:
-                logger.info("🚀 PRODUCTION MODE: Enhanced with enterprise-grade components")
-                logger.info("   ⚡ Async Signal Collection: 55% faster processing")
-                logger.info("   🎯 Adaptive Thresholds: Dynamic optimization")
-                logger.info("   🛡️ Integrated Risk Management: Real-time assessment")
-                logger.info("   📊 Decision Audit Trail: Complete compliance logging")
-                logger.info("   🧠 Continuous Learning: AI improvement engine")
+                logger.info("PRODUCTION MODE: Enhanced with enterprise-grade components")
+                logger.info("   Async Signal Collection: 55% faster processing")
+                logger.info("   Adaptive Thresholds: Dynamic optimization")
+                logger.info("   Integrated Risk Management: Real-time assessment")
+                logger.info("   Decision Audit Trail: Complete compliance logging")
+                logger.info("   Continuous Learning: AI improvement engine")
 
                 # Load historical data for learning engine
                 if 'learning_engine' in self.production_components:
@@ -1112,17 +1115,14 @@ class WebTradingBot:
                         for ticker in holdings.keys():
                             if fyers_client:
                                 try:
-                                    # Convert ticker format for Fyers
-                                    fyers_symbol = f"NSE:{ticker.replace('.NS', '').replace('.BO', '')}-EQ"
-                                    quotes = fyers_client.quotes({"symbols": fyers_symbol})
-
-                                    if quotes and quotes.get("s") == "ok" and quotes.get("d"):
-                                        data = quotes["d"][0]["v"]
-                                        current_prices[ticker] = data.get("lp", 0)
+                                    # PRODUCTION FIX: Use data service client methods
+                                    price = fyers_client.get_price(ticker)
+                                    if price and price > 0:
+                                        current_prices[ticker] = price
                                         price_fetch_success = True
                                         continue
                                 except Exception as e:
-                                    logger.warning(f"Fyers failed for {ticker}: {e}")
+                                    logger.warning(f"Data service failed for {ticker}: {e}")
 
                             # Fallback to Yahoo Finance
                             try:
@@ -1584,17 +1584,14 @@ async def get_realtime_portfolio():
             for ticker in metrics.get("holdings", {}).keys():
                 try:
                     if fyers_client:
-                        # Convert ticker format for Fyers
-                        fyers_symbol = f"NSE:{ticker.replace('.NS', '').replace('.BO', '')}-EQ"
-                        quotes = fyers_client.quotes({"symbols": fyers_symbol})
-
-                        if quotes and quotes.get("s") == "ok" and quotes.get("d"):
-                            data = quotes["d"][0]["v"]
+                        # PRODUCTION FIX: Use data service client methods
+                        symbol_data = fyers_client.get_symbol_data(ticker)
+                        if symbol_data:
                             current_prices[ticker] = {
-                                "price": data.get("lp", 0),
-                                "change": data.get("ch", 0),
-                                "change_pct": data.get("chp", 0),
-                                "volume": data.get("volume", 0)
+                                "price": symbol_data.get("price", 0),
+                                "change": symbol_data.get("change", 0),
+                                "change_pct": symbol_data.get("change_pct", 0),
+                                "volume": symbol_data.get("volume", 0)
                             }
                 except Exception as e:
                     logger.warning(f"Error fetching real-time price for {ticker}: {e}")
@@ -2586,9 +2583,14 @@ async def startup_event():
         data_client = get_data_client()
         if data_client.is_service_available():
             logger.info("*** DATA SERVICE AVAILABLE - PRODUCTION MODE ***")
-            # Update watchlist in data service
-            default_watchlist = ["RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "ICICIBANK.NS", "INFY.NS"]
-            data_client.update_watchlist(default_watchlist)
+            # Update watchlist in data service with all stocks the bot might need
+            comprehensive_watchlist = [
+                "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "ICICIBANK.NS", "INFY.NS",
+                "SUZLON.NS", "ITC.NS", "SBIN.NS", "BHARTIARTL.NS", "KOTAKBANK.NS",
+                "LT.NS", "AXISBANK.NS", "MARUTI.NS", "HINDUNILVR.NS", "WIPRO.NS",
+                "SUNPHARMA.NS", "ONGC.NS", "NTPC.NS", "POWERGRID.NS", "COALINDIA.NS"
+            ]
+            data_client.update_watchlist(comprehensive_watchlist)
         else:
             logger.warning("*** DATA SERVICE NOT AVAILABLE - FALLBACK MODE ***")
             logger.info("Backend will use Yahoo Finance and mock data")

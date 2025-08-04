@@ -320,3 +320,255 @@ Decision Factors:
   • Sell Signals: 1/4
   • Final Decision: HOLD
 ============================================================
+
+[2025-07-31 14:40:29] === STRATEGY ANALYSIS: RELIANCE.NS ===
+Market Sentiment:
+  • Positive: 30.0% (9 articles)
+  • Negative: 36.7% (11 articles)
+  • Overall: Bearish
+ML/RL Analysis:
+  • Current Price: Rs.1394.40
+  • Predicted Price: Rs.1407.25
+  • Expected Change: +0.92%
+  • RL Recommendation: BUY
+Decision Factors:
+  • Buy Score: 0.000
+  • Sell Score: 0.660
+  • Buy Signals: 1/4
+  • Sell Signals: 2/4
+  • Final Decision: HOLD
+============================================================
+
+[2025-07-31 15:08:34] === STRATEGY ANALYSIS: RELIANCE.NS ===
+Market Sentiment:
+  • Positive: 36.7% (11 articles)
+  • Negative: 36.7% (11 articles)
+  • Overall: Bearish
+ML/RL Analysis:
+  • Current Price: Rs.1390.00
+  • Predicted Price: Rs.1403.05
+  • Expected Change: +0.94%
+  • RL Recommendation: HOLD
+Decision Factors:
+  • Buy Score: 0.000
+  • Sell Score: 0.660
+  • Buy Signals: 1/4
+  • Sell Signals: 2/4
+  • Final Decision: HOLD
+============================================================
+
+[2025-07-31 15:21:26] === STRATEGY ANALYSIS: RELIANCE.NS ===
+Market Sentiment:
+  • Positive: 33.3% (10 articles)
+  • Negative: 36.7% (11 articles)
+  • Overall: Bearish
+ML/RL Analysis:
+  • Current Price: Rs.1389.00
+  • Predicted Price: Rs.1403.59
+  • Expected Change: +1.05%
+  • RL Recommendation: SELL
+Decision Factors:
+  • Buy Score: 0.000
+  • Sell Score: 0.660
+  • Buy Signals: 1/4
+  • Sell Signals: 2/4
+  • Final Decision: HOLD
+============================================================
+
+[2025-07-31 15:23:34] === STRATEGY ANALYSIS: TCS.NS ===
+Market Sentiment:
+  • Positive: 43.3% (13 articles)
+  • Negative: 36.7% (11 articles)
+  • Overall: Bullish
+ML/RL Analysis:
+  • Current Price: Rs.3036.40
+  • Predicted Price: Rs.3056.56
+  • Expected Change: +0.66%
+  • RL Recommendation: HOLD
+Decision Factors:
+  • Buy Score: 0.120
+  • Sell Score: 0.960
+  • Buy Signals: 1/4
+  • Sell Signals: 3/4
+  • Final Decision: HOLD
+============================================================
+
+[2025-07-31 15:25:35] === STRATEGY ANALYSIS: HDFCBANK.NS ===
+Market Sentiment:
+  • Positive: 76.7% (23 articles)
+  • Negative: 10.0% (3 articles)
+  • Overall: Bullish
+ML/RL Analysis:
+  • Current Price: Rs.2018.90
+  • Predicted Price: Rs.2016.63
+  • Expected Change: -0.11%
+  • RL Recommendation: HOLD
+Decision Factors:
+  • Buy Score: 0.340
+  • Sell Score: 0.480
+  • Buy Signals: 2/4
+  • Sell Signals: 1/4
+  • Final Decision: HOLD
+============================================================
+
+[2025-07-31 15:27:44] === STRATEGY ANALYSIS: INFY.NS ===
+Market Sentiment:
+  • Positive: 60.0% (18 articles)
+  • Negative: 23.3% (7 articles)
+  • Overall: Bullish
+ML/RL Analysis:
+  • Current Price: Rs.1509.00
+  • Predicted Price: Rs.1518.92
+  • Expected Change: +0.66%
+  • RL Recommendation: BUY
+Decision Factors:
+  • Buy Score: 0.120
+  • Sell Score: 0.840
+  • Buy Signals: 2/4
+  • Sell Signals: 2/4
+  • Final Decision: HOLD
+============================================================
+
+[2025-07-31 15:29:56] === STRATEGY ANALYSIS: ICICIBANK.NS ===
+Market Sentiment:
+  • Positive: 60.0% (18 articles)
+  • Negative: 23.3% (7 articles)
+  • Overall: Bullish
+ML/RL Analysis:
+  • Current Price: Rs.1480.60
+  • Predicted Price: Rs.1478.51
+  • Expected Change: -0.14%
+  • RL Recommendation: SELL
+Decision Factors:
+  • Buy Score: 0.120
+  • Sell Score: 0.600
+  • Buy Signals: 2/4
+  • Sell Signals: 1/4
+  • Final Decision: HOLD
+============================================================
+
+[2025-07-31 15:32:07] === STRATEGY ANALYSIS: KOTAKBANK.NS ===
+Market Sentiment:
+  • Positive: 56.7% (17 articles)
+  • Negative: 23.3% (7 articles)
+  • Overall: Bullish
+ML/RL Analysis:
+  • Current Price: Rs.1980.00
+  • Predicted Price: Rs.1966.65
+  • Expected Change: -0.67%
+  • RL Recommendation: HOLD
+Decision Factors:
+  • Buy Score: 0.080
+  • Sell Score: 0.660
+  • Buy Signals: 2/4
+  • Sell Signals: 2/4
+  • Final Decision: HOLD
+============================================================
+
+[2025-07-31 15:34:21] === STRATEGY ANALYSIS: BHARTIARTL.NS ===
+Market Sentiment:
+  • Positive: 46.7% (14 articles)
+  • Negative: 20.0% (6 articles)
+  • Overall: Bullish
+ML/RL Analysis:
+  • Current Price: Rs.1914.30
+  • Predicted Price: Rs.1929.14
+  • Expected Change: +0.78%
+  • RL Recommendation: HOLD
+Decision Factors:
+  • Buy Score: 0.000
+  • Sell Score: 0.660
+  • Buy Signals: 0/4
+  • Sell Signals: 2/4
+  • Final Decision: HOLD
+============================================================
+
+[2025-07-31 15:36:26] === STRATEGY ANALYSIS: ITC.NS ===
+Market Sentiment:
+  • Positive: 61.5% (16 articles)
+  • Negative: 19.2% (5 articles)
+  • Overall: Bullish
+ML/RL Analysis:
+  • Current Price: Rs.411.95
+  • Predicted Price: Rs.407.18
+  • Expected Change: -1.16%
+  • RL Recommendation: HOLD
+Decision Factors:
+  • Buy Score: 0.249
+  • Sell Score: 0.840
+  • Buy Signals: 1/4
+  • Sell Signals: 2/4
+  • Final Decision: HOLD
+============================================================
+
+[2025-07-31 15:38:38] === STRATEGY ANALYSIS: SBIN.NS ===
+Market Sentiment:
+  • Positive: 66.7% (20 articles)
+  • Negative: 10.0% (3 articles)
+  • Overall: Bullish
+ML/RL Analysis:
+  • Current Price: Rs.796.55
+  • Predicted Price: Rs.799.81
+  • Expected Change: +0.41%
+  • RL Recommendation: SELL
+Decision Factors:
+  • Buy Score: 0.280
+  • Sell Score: 0.660
+  • Buy Signals: 1/4
+  • Sell Signals: 2/4
+  • Final Decision: HOLD
+============================================================
+
+[2025-07-31 15:41:07] === STRATEGY ANALYSIS: HINDUNILVR.NS ===
+Market Sentiment:
+  • Positive: 70.0% (21 articles)
+  • Negative: 13.3% (4 articles)
+  • Overall: Bullish
+ML/RL Analysis:
+  • Current Price: Rs.2521.20
+  • Predicted Price: Rs.2479.78
+  • Expected Change: -1.64%
+  • RL Recommendation: SELL
+Decision Factors:
+  • Buy Score: 0.300
+  • Sell Score: 0.780
+  • Buy Signals: 1/4
+  • Sell Signals: 2/4
+  • Final Decision: HOLD
+============================================================
+
+[2025-07-31 15:43:43] === STRATEGY ANALYSIS: BAJFINANCE.NS ===
+Market Sentiment:
+  • Positive: 60.0% (18 articles)
+  • Negative: 16.7% (5 articles)
+  • Overall: Bullish
+ML/RL Analysis:
+  • Current Price: Rs.881.20
+  • Predicted Price: Rs.892.85
+  • Expected Change: +1.32%
+  • RL Recommendation: SELL
+Decision Factors:
+  • Buy Score: 0.120
+  • Sell Score: 0.660
+  • Buy Signals: 2/4
+  • Sell Signals: 2/4
+  • Final Decision: HOLD
+============================================================
+
+[2025-07-31 15:46:25] === STRATEGY ANALYSIS: ASIANPAINT.NS ===
+Market Sentiment:
+  • Positive: 63.3% (19 articles)
+  • Negative: 30.0% (9 articles)
+  • Overall: Bullish
+ML/RL Analysis:
+  • Current Price: Rs.2396.10
+  • Predicted Price: Rs.2408.13
+  • Expected Change: +0.50%
+  • RL Recommendation: SELL
+Decision Factors:
+  • Buy Score: 0.260
+  • Sell Score: 0.840
+  • Buy Signals: 1/4
+  • Sell Signals: 2/4
+  • Final Decision: HOLD
+============================================================

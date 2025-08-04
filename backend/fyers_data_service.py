@@ -84,21 +84,64 @@ class FyersDataService:
         self.update_interval = 5  # seconds
         self.max_retries = 3
         
-        # Default watchlist (Indian stocks)
-        self.watchlist = [
-            "NSE:RELIANCE-EQ", "NSE:TCS-EQ", "NSE:HDFCBANK-EQ", 
-            "NSE:ICICIBANK-EQ", "NSE:INFY-EQ", "NSE:ITC-EQ",
-            "NSE:SBIN-EQ", "NSE:BHARTIARTL-EQ", "NSE:KOTAKBANK-EQ",
-            "NSE:LT-EQ", "NSE:AXISBANK-EQ", "NSE:MARUTI-EQ"
-        ]
+        # Dynamic watchlist - starts empty, stocks added on-demand
+        self.watchlist = set()  # Use set for O(1) lookups and automatic deduplication
+        self.requested_stocks = set()  # Track all stocks ever requested
         
         # Background task management
         self.executor = ThreadPoolExecutor(max_workers=2)
         self.data_update_task = None
         self.is_running = False
-        
+
+        # Cache for symbol conversions and data
+        self.symbol_cache = {}  # Yahoo -> Fyers symbol mapping cache
+        self.data_cache = {}    # Latest price data cache
+
         logger.info("Fyers Data Service initialized")
-    
+
+    def yahoo_to_fyers_symbol(self, yahoo_symbol: str) -> str:
+        """Convert Yahoo Finance symbol to Fyers format
+
+        Examples:
+        RELIANCE.NS -> NSE:RELIANCE-EQ
+        TCS.NS -> NSE:TCS-EQ
+        SUZLON.NS -> NSE:SUZLON-EQ
+        """
+        if yahoo_symbol in self.symbol_cache:
+            return self.symbol_cache[yahoo_symbol]
+
+        # Remove .NS suffix and convert to Fyers format
+        if yahoo_symbol.endswith('.NS'):
+            base_symbol = yahoo_symbol[:-3]  # Remove .NS
+            fyers_symbol = f"NSE:{base_symbol}-EQ"
+            self.symbol_cache[yahoo_symbol] = fyers_symbol
+            return fyers_symbol
+        elif yahoo_symbol.endswith('.BO'):
+            base_symbol = yahoo_symbol[:-3]  # Remove .BO
+            fyers_symbol = f"BSE:{base_symbol}-EQ"
+            self.symbol_cache[yahoo_symbol] = fyers_symbol
+            return fyers_symbol
+        else:
+            # Assume NSE if no suffix
+            fyers_symbol = f"NSE:{yahoo_symbol}-EQ"
+            self.symbol_cache[yahoo_symbol] = fyers_symbol
+            return fyers_symbol
+
+    def add_stock_to_watchlist(self, yahoo_symbol: str) -> bool:
+        """Dynamically add a stock to the watchlist"""
+        try:
+            fyers_symbol = self.yahoo_to_fyers_symbol(yahoo_symbol)
+
+            # Add to watchlist and requested stocks
+            self.watchlist.add(fyers_symbol)
+            self.requested_stocks.add(yahoo_symbol)
+
+            logger.info(f"Added {yahoo_symbol} ({fyers_symbol}) to dynamic watchlist")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to add {yahoo_symbol} to watchlist: {e}")
+            return False
+
     def setup_cors(self):
         """Setup CORS middleware"""
         self.app.add_middleware(
@@ -131,14 +174,53 @@ class FyersDataService:
         
         @self.app.get("/data/{symbol}")
         async def get_symbol_data(symbol: str):
-            """Get data for specific symbol"""
+            """Get data for specific symbol - dynamically adds to watchlist if not present"""
             # Convert symbol format if needed
             fyers_symbol = self.convert_to_fyers_format(symbol)
-            
+
+            # Check if data is already cached
             if fyers_symbol in self.market_data_cache:
                 return asdict(self.market_data_cache[fyers_symbol])
-            else:
-                raise HTTPException(status_code=404, detail=f"Data not found for {symbol}")
+
+            # If not in cache, add to watchlist and try to fetch immediately
+            if fyers_symbol not in self.watchlist:
+                logger.info(f"New stock requested: {symbol} -> {fyers_symbol}")
+                self.add_stock_to_watchlist(symbol)
+
+                # Try to fetch data immediately for this specific stock
+                try:
+                    if self.fyers_client and self.is_connected:
+                        quotes_response = self.fyers_client.quotes({"symbols": fyers_symbol})
+
+                        if quotes_response and quotes_response.get('s') == 'ok':
+                            quote_data = quotes_response.get('d', [])
+
+                            if quote_data and len(quote_data) > 0:
+                                # Process the immediate response
+                                quote_item = quote_data[0] if isinstance(quote_data, list) else quote_data
+                                symbol_data = quote_item.get('v', {}) if isinstance(quote_item, dict) and 'v' in quote_item else quote_item
+
+                                market_data = MarketData(
+                                    symbol=fyers_symbol,
+                                    price=float(symbol_data.get('lp', 0.0)),
+                                    change=float(symbol_data.get('ch', 0.0)),
+                                    change_pct=float(symbol_data.get('chp', 0.0)),
+                                    volume=int(symbol_data.get('volume', symbol_data.get('v', 0))),
+                                    high=float(symbol_data.get('h', 0.0)),
+                                    low=float(symbol_data.get('l', 0.0)),
+                                    open=float(symbol_data.get('o', 0.0)),
+                                    timestamp=datetime.now().isoformat()
+                                )
+
+                                # Cache the data
+                                self.market_data_cache[fyers_symbol] = market_data
+                                logger.info(f"Immediately fetched data for {symbol}: Rs.{market_data.price}")
+                                return asdict(market_data)
+                except Exception as e:
+                    logger.error(f"Error fetching immediate data for {symbol}: {e}")
+
+            # If still no data available, return 404
+            raise HTTPException(status_code=404, detail=f"Data not available for {symbol}. Added to watchlist for future updates.")
         
         @self.app.get("/data")
         async def get_all_data():
@@ -147,15 +229,20 @@ class FyersDataService:
         
         @self.app.post("/watchlist")
         async def update_watchlist(symbols: List[str]):
-            """Update watchlist"""
-            self.watchlist = [self.convert_to_fyers_format(symbol) for symbol in symbols]
-            logger.info(f"Watchlist updated with {len(self.watchlist)} symbols")
-            return {"message": f"Watchlist updated with {len(self.watchlist)} symbols"}
-        
+            """Update watchlist - adds to existing dynamic watchlist"""
+            for symbol in symbols:
+                self.add_stock_to_watchlist(symbol)
+            logger.info(f"Added {len(symbols)} symbols to dynamic watchlist")
+            return {"message": f"Added {len(symbols)} symbols to watchlist. Total: {len(self.watchlist)}"}
+
         @self.app.get("/watchlist")
         async def get_watchlist():
-            """Get current watchlist"""
-            return {"watchlist": self.watchlist}
+            """Get current dynamic watchlist"""
+            return {
+                "watchlist": list(self.watchlist),
+                "requested_stocks": list(self.requested_stocks),
+                "total_symbols": len(self.watchlist)
+            }
         
         @self.app.post("/connect")
         async def connect_fyers():
@@ -185,147 +272,162 @@ class FyersDataService:
             return f"NSE:{symbol}-EQ"
     
     async def connect_to_fyers(self) -> bool:
-        """Connect to Fyers API"""
+        """Connect to Fyers API - ONLY REAL DATA"""
         if not FYERS_AVAILABLE:
-            logger.warning("Fyers API not available, using mock data")
-            self.is_connected = True
-            return True
-        
+            logger.error("Fyers API not available - cannot proceed without real data")
+            return False
+
         try:
-            # Get credentials from environment
-            client_id = os.getenv('FYERS_CLIENT_ID')
+            # Get credentials from environment - using correct variable names
+            app_id = os.getenv('FYERS_APP_ID')
             access_token = os.getenv('FYERS_ACCESS_TOKEN')
-            
-            if not client_id or not access_token:
+
+            if not app_id or not access_token:
                 logger.error("Fyers credentials not found in environment variables")
+                logger.error("Required: FYERS_APP_ID and FYERS_ACCESS_TOKEN")
                 return False
-            
-            # Initialize Fyers client
+
+            # Initialize Fyers client with correct format
             self.fyers_client = fyersModel.FyersModel(
-                client_id=client_id,
+                client_id=app_id,
                 token=access_token,
                 log_path=""
             )
-            
-            # Test connection
-            profile = self.fyers_client.get_profile()
-            if profile['s'] == 'ok':
+
+            # Test connection with a simple quote request
+            test_symbols = "NSE:RELIANCE-EQ"
+            test_quote = self.fyers_client.quotes({"symbols": test_symbols})
+
+            if test_quote and test_quote.get('s') == 'ok':
                 self.is_connected = True
-                logger.info("Successfully connected to Fyers API")
+                logger.info("Successfully connected to Fyers API with real data")
+                logger.info(f"Test quote successful for {test_symbols}")
                 return True
             else:
-                logger.error(f"Fyers connection failed: {profile}")
+                logger.error(f"Fyers connection test failed: {test_quote}")
                 return False
-                
+
         except Exception as e:
             logger.error(f"Error connecting to Fyers: {e}")
             return False
     
     def fetch_market_data(self) -> Dict[str, MarketData]:
-        """Fetch market data for watchlist"""
-        if not self.is_connected:
-            return self.generate_mock_data()
-        
+        """Fetch market data from Fyers API - ONLY REAL DATA"""
+        if not self.is_connected or not self.fyers_client:
+            logger.error("Fyers not connected - cannot fetch real data")
+            return {}
+
         try:
             if FYERS_AVAILABLE and self.fyers_client:
-                return self.fetch_real_data()
+                real_data = self.fetch_real_data()
+                if real_data:
+                    logger.info(f"Successfully fetched real data for {len(real_data)} symbols")
+                    return real_data
+                else:
+                    logger.error("No real data received from Fyers")
+                    return {}
             else:
-                return self.generate_mock_data()
-                
+                logger.error("Fyers API not available - cannot proceed without real data")
+                return {}
+
         except Exception as e:
-            logger.error(f"Error fetching market data: {e}")
-            return self.generate_mock_data()
+            logger.error(f"Error fetching Fyers data: {e}")
+            return {}
     
     def fetch_real_data(self) -> Dict[str, MarketData]:
-        """Fetch real data from Fyers"""
+        """Fetch ONLY real data from Fyers API - NO MOCK DATA"""
         data = {}
-        
+
         try:
+            if not self.fyers_client:
+                logger.error("Fyers client not initialized")
+                return {}
+
+            if not self.watchlist:
+                logger.debug("No symbols in dynamic watchlist yet")
+                return {}
+
             # Get quotes for all symbols
-            quotes_response = self.fyers_client.quotes({"symbols": ",".join(self.watchlist)})
-            
-            if quotes_response['s'] == 'ok':
-                for symbol_data in quotes_response['d']:
-                    symbol = symbol_data['n']
-                    
-                    market_data = MarketData(
-                        symbol=symbol,
-                        price=float(symbol_data['v']['lp']),
-                        change=float(symbol_data['v']['ch']),
-                        change_pct=float(symbol_data['v']['chp']),
-                        volume=int(symbol_data['v']['volume']),
-                        high=float(symbol_data['v']['h']),
-                        low=float(symbol_data['v']['l']),
-                        open=float(symbol_data['v']['o']),
-                        timestamp=datetime.now().isoformat()
-                    )
-                    
-                    data[symbol] = market_data
-                    
-                logger.info(f"Fetched real data for {len(data)} symbols")
+            symbols_str = ",".join(self.watchlist)
+            logger.info(f"Fetching real Fyers data for: {symbols_str}")
+
+            quotes_response = self.fyers_client.quotes({"symbols": symbols_str})
+
+            if quotes_response and quotes_response.get('s') == 'ok':
+                quote_data = quotes_response.get('d', [])
+                logger.info(f"Fyers API returned {len(quote_data)} quotes")
+
+                # Handle both list and dict formats from Fyers API
+                if isinstance(quote_data, list):
+                    # List format: [{'n': 'symbol', 'v': {...}}]
+                    for quote_item in quote_data:
+                        try:
+                            symbol = quote_item.get('n', '')
+                            symbol_data = quote_item.get('v', {})
+
+                            market_data = MarketData(
+                                symbol=symbol,
+                                price=float(symbol_data.get('lp', 0.0)),  # Last price
+                                change=float(symbol_data.get('ch', 0.0)),  # Change
+                                change_pct=float(symbol_data.get('chp', 0.0)),  # Change percentage
+                                volume=int(symbol_data.get('volume', symbol_data.get('v', 0))),  # Volume
+                                high=float(symbol_data.get('h', 0.0)),  # High
+                                low=float(symbol_data.get('l', 0.0)),  # Low
+                                open=float(symbol_data.get('o', 0.0)),  # Open
+                                timestamp=datetime.now().isoformat()
+                            )
+
+                            data[symbol] = market_data
+                            logger.info(f"Real data for {symbol}: Rs.{market_data.price}")
+                        except Exception as e:
+                            logger.error(f"Error processing {symbol}: {e}")
+                            continue
+                elif isinstance(quote_data, dict):
+                    # Dict format: {'symbol': {...}}
+                    for symbol, symbol_data in quote_data.items():
+                        try:
+                            market_data = MarketData(
+                                symbol=symbol,
+                                price=float(symbol_data.get('lp', 0.0)),  # Last price
+                                change=float(symbol_data.get('ch', 0.0)),  # Change
+                                change_pct=float(symbol_data.get('chp', 0.0)),  # Change percentage
+                                volume=int(symbol_data.get('v', 0)),  # Volume
+                                high=float(symbol_data.get('h', 0.0)),  # High
+                                low=float(symbol_data.get('l', 0.0)),  # Low
+                                open=float(symbol_data.get('o', 0.0)),  # Open
+                                timestamp=datetime.now().isoformat()
+                            )
+
+                            data[symbol] = market_data
+                            logger.info(f"Real data for {symbol}: ₹{market_data.price}")
+                        except Exception as e:
+                            logger.error(f"Error processing {symbol}: {e}")
+                            continue
+
+                logger.info(f"Successfully fetched REAL data for {len(data)} symbols")
             else:
                 logger.error(f"Fyers quotes API error: {quotes_response}")
-                return self.generate_mock_data()
-                
+                return {}
+
         except Exception as e:
             logger.error(f"Error fetching real Fyers data: {e}")
-            return self.generate_mock_data()
-        
+            return {}
+
         return data
     
-    def generate_mock_data(self) -> Dict[str, MarketData]:
-        """Generate mock market data for testing"""
-        import random
-        
-        data = {}
-        base_prices = {
-            "NSE:RELIANCE-EQ": 2500.0,
-            "NSE:TCS-EQ": 3200.0,
-            "NSE:HDFCBANK-EQ": 1600.0,
-            "NSE:ICICIBANK-EQ": 900.0,
-            "NSE:INFY-EQ": 1400.0,
-            "NSE:ITC-EQ": 450.0,
-            "NSE:SBIN-EQ": 600.0,
-            "NSE:BHARTIARTL-EQ": 800.0,
-            "NSE:KOTAKBANK-EQ": 1700.0,
-            "NSE:LT-EQ": 3000.0,
-            "NSE:AXISBANK-EQ": 1000.0,
-            "NSE:MARUTI-EQ": 10000.0
-        }
-        
-        for symbol in self.watchlist:
-            base_price = base_prices.get(symbol, 1000.0)
-            change_pct = random.uniform(-3.0, 3.0)
-            change = base_price * (change_pct / 100)
-            current_price = base_price + change
-            
-            market_data = MarketData(
-                symbol=symbol,
-                price=round(current_price, 2),
-                change=round(change, 2),
-                change_pct=round(change_pct, 2),
-                volume=random.randint(100000, 1000000),
-                high=round(current_price * random.uniform(1.0, 1.05), 2),
-                low=round(current_price * random.uniform(0.95, 1.0), 2),
-                open=round(base_price * random.uniform(0.98, 1.02), 2),
-                timestamp=datetime.now().isoformat()
-            )
-            
-            data[symbol] = market_data
-        
-        logger.info(f"Generated mock data for {len(data)} symbols")
-        return data
+    # REMOVED: generate_mock_data method - ONLY REAL FYERS DATA ALLOWED
 
     async def start_data_updates(self):
-        """Start background data updates"""
+        """Start background data updates - ONLY REAL FYERS DATA"""
         if self.is_running:
             return
 
-        self.is_running = True
-        logger.info("Starting background data updates")
+        if not self.is_connected:
+            logger.error("Cannot start data updates - Fyers not connected")
+            return
 
-        # Connect to Fyers first
-        await self.connect_to_fyers()
+        self.is_running = True
+        logger.info("Starting background data updates with REAL Fyers data")
 
         # Start background task
         self.data_update_task = asyncio.create_task(self.data_update_loop())
@@ -377,10 +479,21 @@ class FyersDataService:
                 await asyncio.sleep(min(retry_count * 2, 30))  # Exponential backoff
 
     async def startup_event(self):
-        """Startup event handler"""
-        logger.info("*** FYERS DATA SERVICE STARTING ***")
-        logger.info(f"Service will provide data for {len(self.watchlist)} symbols")
+        """Startup event handler - ONLY REAL FYERS DATA"""
+        logger.info("*** FYERS DATA SERVICE STARTING - DYNAMIC REAL DATA ***")
+        logger.info("Service will provide REAL data for ANY Indian stock on-demand")
         logger.info(f"Update interval: {self.update_interval} seconds")
+        logger.info("Watchlist starts empty - stocks added automatically when requested")
+        logger.info("Starting background data updates")
+
+        # MUST connect to Fyers - no fallback allowed
+        connection_success = await self.connect_to_fyers()
+
+        if not connection_success:
+            logger.error("CRITICAL: Failed to connect to Fyers API")
+            logger.error("Service cannot start without real data connection")
+            raise Exception("Fyers connection required - no mock data allowed")
+
         await self.start_data_updates()
 
     async def shutdown_event(self):

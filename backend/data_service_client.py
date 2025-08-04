@@ -33,14 +33,18 @@ class DataServiceClient:
     def health_check(self) -> bool:
         """Check if data service is healthy"""
         try:
-            response = self.session.get(f"{self.base_url}/health")
+            response = self.session.get(f"{self.base_url}/health", timeout=5)
             if response.status_code == 200:
                 health_data = response.json()
-                self.is_healthy = health_data.get('status') == 'healthy'
+                # Accept both 'healthy' and 'degraded' as working states
+                service_status = health_data.get('status', 'unavailable')
+                self.is_healthy = service_status in ['healthy', 'degraded']
                 self.last_health_check = datetime.now()
+                logger.info(f"Data service health check: {service_status} (healthy={self.is_healthy})")
                 return self.is_healthy
             else:
                 self.is_healthy = False
+                logger.warning(f"Health check failed with status {response.status_code}")
                 return False
         except Exception as e:
             logger.warning(f"Health check failed: {e}")

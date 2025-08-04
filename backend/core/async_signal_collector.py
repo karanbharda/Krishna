@@ -173,7 +173,12 @@ class AsyncSignalCollector:
                 return await collector_func(symbol, context)
             else:
                 # Run sync function in thread pool to avoid blocking
-                loop = asyncio.get_event_loop()
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    # No running event loop, create a new one
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
                 return await loop.run_in_executor(None, collector_func, symbol, context)
         except Exception as e:
             raise e

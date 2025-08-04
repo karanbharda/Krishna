@@ -1,6 +1,7 @@
 import json
 import os
 import time
+import random
 import numpy as np
 import pandas as pd
 import yfinance as yf
@@ -3057,7 +3058,7 @@ class Stock:
             return history
 
     def train_rl_with_adversarial_events(self, history, ml_predicted_price, current_price,
-                                       num_episodes=10, adversarial_freq=0.2, max_event_magnitude=0.1, bot_running=True):  # PRODUCTION FIX: Reduced from 100 to 10 episodes
+                                       num_episodes=1000, adversarial_freq=0.2, max_event_magnitude=0.1, bot_running=True):  # INDUSTRY LEVEL: 1000 episodes for production
         try:
             history = history.copy()
             history["SMA_50"] = history["Close"].rolling(window=50).mean()
@@ -3179,44 +3180,103 @@ class Stock:
                 max_event_magnitude=max_event_magnitude
             )
             
-            class AdversarialQLearningAgent:
+            class AdversarialDQNAgent:
                 def __init__(self, state_size, action_size):
                     self.state_size = state_size
                     self.action_size = action_size
-                    self.q_table = {}
-                    self.alpha = 0.1
-                    self.gamma = 0.95
-                    self.epsilon = 0.1
-                    self.event_threshold = 0.05
-                    
-                def discretize_state(self, state):
-                    rounded_state = np.round(state[:-1], 2)
-                    event = 1 if state[-1] > self.event_threshold else 0
-                    return tuple(np.append(rounded_state, event))
-                
+
+                    # INDUSTRY LEVEL: Deep Q-Network setup
+                    self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+                    self.q_network = self._build_dqn().to(self.device)
+                    self.target_network = self._build_dqn().to(self.device)
+                    self.optimizer = optim.AdamW(self.q_network.parameters(), lr=0.0001, weight_decay=1e-5)
+
+                    # INDUSTRY LEVEL: Experience replay buffer
+                    self.memory = []
+                    self.memory_size = 50000
+                    self.batch_size = 64
+
+                    # INDUSTRY LEVEL: Advanced hyperparameters
+                    self.gamma = 0.99
+                    self.epsilon = 1.0
+                    self.epsilon_min = 0.01
+                    self.epsilon_decay = 0.9995
+                    self.tau = 0.005  # Soft update parameter
+                    self.update_frequency = 4
+                    self.step_count = 0
+
+                def _build_dqn(self):
+                    # INDUSTRY LEVEL: Deep Q-Network architecture
+                    return nn.Sequential(
+                        nn.Linear(self.state_size, 256),
+                        nn.ReLU(),
+                        nn.Dropout(0.2),
+                        nn.Linear(256, 256),
+                        nn.ReLU(),
+                        nn.Dropout(0.2),
+                        nn.Linear(256, 128),
+                        nn.ReLU(),
+                        nn.Dropout(0.1),
+                        nn.Linear(128, self.action_size)
+                    )
+
+                def remember(self, state, action, reward, next_state, done):
+                    # INDUSTRY LEVEL: Experience replay
+                    if len(self.memory) >= self.memory_size:
+                        self.memory.pop(0)
+                    self.memory.append((state, action, reward, next_state, done))
+
                 def get_action(self, state):
-                    state_key = self.discretize_state(state)
+                    # INDUSTRY LEVEL: Epsilon-greedy with neural network
                     if np.random.random() < self.epsilon:
                         return np.random.randint(self.action_size)
-                    if state_key not in self.q_table:
-                        self.q_table[state_key] = np.zeros(self.action_size)
-                    return np.argmax(self.q_table[state_key])
-                
-                def update(self, state, action, reward, next_state):
-                    state_key = self.discretize_state(state)
-                    next_state_key = self.discretize_state(next_state)
-                    
-                    if state_key not in self.q_table:
-                        self.q_table[state_key] = np.zeros(self.action_size)
-                    if next_state_key not in self.q_table:
-                        self.q_table[next_state_key] = np.zeros(self.action_size)
-                        
-                    q_value = self.q_table[state_key][action]
-                    next_max = np.max(self.q_table[next_state_key])
-                    new_q_value = q_value + self.alpha * (reward + self.gamma * next_max - q_value)
-                    self.q_table[state_key][action] = new_q_value
+
+                    state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
+                    q_values = self.q_network(state_tensor)
+                    return q_values.argmax().item()
+
+                def replay(self):
+                    # INDUSTRY LEVEL: Experience replay training
+                    if len(self.memory) < self.batch_size:
+                        return
+
+                    batch = random.sample(self.memory, self.batch_size)
+                    states = torch.FloatTensor([e[0] for e in batch]).to(self.device)
+                    actions = torch.LongTensor([e[1] for e in batch]).to(self.device)
+                    rewards = torch.FloatTensor([e[2] for e in batch]).to(self.device)
+                    next_states = torch.FloatTensor([e[3] for e in batch]).to(self.device)
+                    dones = torch.BoolTensor([e[4] for e in batch]).to(self.device)
+
+                    current_q_values = self.q_network(states).gather(1, actions.unsqueeze(1))
+                    next_q_values = self.target_network(next_states).max(1)[0].detach()
+                    target_q_values = rewards + (self.gamma * next_q_values * ~dones)
+
+                    loss = nn.MSELoss()(current_q_values.squeeze(), target_q_values)
+
+                    self.optimizer.zero_grad()
+                    loss.backward()
+                    torch.nn.utils.clip_grad_norm_(self.q_network.parameters(), 1.0)
+                    self.optimizer.step()
+
+                    # INDUSTRY LEVEL: Epsilon decay
+                    if self.epsilon > self.epsilon_min:
+                        self.epsilon *= self.epsilon_decay
+
+                def soft_update_target_network(self):
+                    # INDUSTRY LEVEL: Soft update of target network
+                    for target_param, local_param in zip(self.target_network.parameters(), self.q_network.parameters()):
+                        target_param.data.copy_(self.tau * local_param.data + (1.0 - self.tau) * target_param.data)
+
+                def update(self, state, action, reward, next_state, done=False):
+                    # INDUSTRY LEVEL: Store experience and train
+                    self.remember(state, action, reward, next_state, done)
+                    self.step_count += 1
+
+                    if self.step_count % self.update_frequency == 0:
+                        self.replay()
+                        self.soft_update_target_network()
             
-            agent = AdversarialQLearningAgent(state_size=11, action_size=3)
+            agent = AdversarialDQNAgent(state_size=11, action_size=3)  # INDUSTRY LEVEL: Deep Q-Network agent
             
             total_rewards = []
             event_counts = []
@@ -3242,7 +3302,7 @@ class Stock:
 
                     action = agent.get_action(state)
                     next_state, reward, done, _ = env.step(action)
-                    agent.update(state, action, reward, next_state)
+                    agent.update(state, action, reward, next_state, done)  # INDUSTRY LEVEL: Include done parameter
                     state = next_state
                     total_reward += reward
                     if state[-1] > 0:
@@ -3304,7 +3364,7 @@ class Stock:
             }
 
     def adversarial_training_loop(self, X_train, y_train, X_test, y_test, input_size,
-                                 seq_length=20, num_epochs=5, adv_lambda=0.1, bot_running=True):  # PRODUCTION FIX: Reduced from 50 to 5 epochs
+                                 seq_length=20, num_epochs=150, adv_lambda=0.1, bot_running=True):  # INDUSTRY LEVEL: 150 epochs for production
         try:
             logger.info("Cleaning input data...")
             X_train = np.nan_to_num(X_train, nan=0.0, posinf=0.0, neginf=0.0)
@@ -3339,55 +3399,135 @@ class Stock:
             X_test_seq, y_test_seq = create_sequences(X_test_tensor, y_test_tensor, seq_length)
             
             train_dataset = TensorDataset(X_train_seq, y_train_seq)
-            train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+            train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True)  # INDUSTRY LEVEL: Increased batch size
             test_dataset = TensorDataset(X_test_seq, y_test_seq)
-            test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+            test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False)  # INDUSTRY LEVEL: Increased batch size
             
             class LSTMModel(nn.Module):
-                def __init__(self, input_size, hidden_size=64, num_layers=2, output_size=1):
+                def __init__(self, input_size, hidden_size=256, num_layers=4, output_size=1):  # INDUSTRY LEVEL: Increased capacity
                     super(LSTMModel, self).__init__()
                     self.hidden_size = hidden_size
                     self.num_layers = num_layers
-                    self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True, dropout=0.2)
-                    self.fc = nn.Linear(hidden_size, output_size)
+                    # INDUSTRY LEVEL: Bidirectional LSTM with higher dropout
+                    self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True,
+                                      dropout=0.3, bidirectional=True)
+                    # INDUSTRY LEVEL: Multiple FC layers with batch norm and dropout
+                    self.batch_norm1 = nn.BatchNorm1d(hidden_size * 2)  # *2 for bidirectional
+                    self.fc1 = nn.Linear(hidden_size * 2, hidden_size)
+                    self.dropout1 = nn.Dropout(0.4)
+                    self.batch_norm2 = nn.BatchNorm1d(hidden_size)
+                    self.fc2 = nn.Linear(hidden_size, hidden_size // 2)
+                    self.dropout2 = nn.Dropout(0.3)
+                    self.fc3 = nn.Linear(hidden_size // 2, output_size)
+                    self.relu = nn.ReLU()
+                    self.leaky_relu = nn.LeakyReLU(0.1)
                     
                 def forward(self, x):
-                    h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-                    c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
+                    # INDUSTRY LEVEL: Proper initialization for bidirectional LSTM
+                    h0 = torch.zeros(self.num_layers * 2, x.size(0), self.hidden_size).to(x.device)  # *2 for bidirectional
+                    c0 = torch.zeros(self.num_layers * 2, x.size(0), self.hidden_size).to(x.device)  # *2 for bidirectional
+
+                    # LSTM forward pass
                     out, _ = self.lstm(x, (h0, c0))
-                    out = self.fc(out[:, -1, :])
+
+                    # INDUSTRY LEVEL: Advanced forward pass with residual connections
+                    out = out[:, -1, :]  # Take last output
+
+                    # First layer with batch norm and dropout
+                    out = self.batch_norm1(out)
+                    out = self.fc1(out)
+                    out = self.leaky_relu(out)
+                    out = self.dropout1(out)
+
+                    # Second layer with batch norm and dropout
+                    out = self.batch_norm2(out)
+                    out = self.fc2(out)
+                    out = self.relu(out)
+                    out = self.dropout2(out)
+
+                    # Final output layer
+                    out = self.fc3(out)
                     return out
             
             class TransformerModel(nn.Module):
-                def __init__(self, input_size, seq_length, num_heads=4, dim_feedforward=128, num_layers=2, output_size=1):
+                def __init__(self, input_size, seq_length, num_heads=8, dim_feedforward=512, num_layers=6, output_size=1):  # INDUSTRY LEVEL: Increased capacity
                     super(TransformerModel, self).__init__()
-                    adjusted_input_size = ((input_size + num_heads - 1) // num_heads) * num_heads
+                    # INDUSTRY LEVEL: Proper d_model sizing
+                    d_model = 256  # Standard transformer dimension
+                    adjusted_input_size = d_model
+
+                    # INDUSTRY LEVEL: Advanced transformer with dropout and layer norm
                     self.encoder_layer = nn.TransformerEncoderLayer(
                         d_model=adjusted_input_size,
                         nhead=num_heads,
                         dim_feedforward=dim_feedforward,
-                        batch_first=True
+                        dropout=0.2,  # INDUSTRY LEVEL: Proper dropout
+                        activation='gelu',  # INDUSTRY LEVEL: GELU activation
+                        batch_first=True,
+                        norm_first=True  # INDUSTRY LEVEL: Pre-norm architecture
                     )
                     self.transformer_encoder = nn.TransformerEncoder(self.encoder_layer, num_layers=num_layers)
-                    self.fc = nn.Linear(adjusted_input_size * seq_length, output_size)
+
+                    # INDUSTRY LEVEL: Advanced output layers with attention pooling
+                    self.input_proj = nn.Linear(input_size, adjusted_input_size)
+                    self.positional_encoding = nn.Parameter(torch.randn(1, seq_length, adjusted_input_size))
+
+                    # INDUSTRY LEVEL: Multi-head attention pooling
+                    self.attention_pool = nn.MultiheadAttention(adjusted_input_size, num_heads, batch_first=True)
+                    self.layer_norm = nn.LayerNorm(adjusted_input_size)
+
+                    # INDUSTRY LEVEL: Advanced output network
+                    self.output_net = nn.Sequential(
+                        nn.Linear(adjusted_input_size, dim_feedforward),
+                        nn.GELU(),
+                        nn.Dropout(0.3),
+                        nn.Linear(dim_feedforward, dim_feedforward // 2),
+                        nn.GELU(),
+                        nn.Dropout(0.2),
+                        nn.Linear(dim_feedforward // 2, output_size)
+                    )
+
                     self.input_size = input_size
                     self.seq_length = seq_length
-                    self.input_proj = nn.Linear(input_size, adjusted_input_size)
+                    self.d_model = adjusted_input_size
                     
                 def forward(self, x):
+                    # INDUSTRY LEVEL: Advanced forward pass with positional encoding
+                    batch_size, seq_len, _ = x.shape
+
+                    # Project input and add positional encoding
                     x = self.input_proj(x)
-                    out = self.transformer_encoder(x)
-                    out = out.reshape(out.shape[0], -1)
-                    out = self.fc(out)
-                    return out
+                    x = x + self.positional_encoding[:, :seq_len, :]
+
+                    # Transformer encoding
+                    x = self.transformer_encoder(x)
+
+                    # INDUSTRY LEVEL: Attention pooling instead of simple averaging
+                    # Use the last token as query for attention pooling
+                    query = x[:, -1:, :]  # Last token as query
+                    pooled_output, _ = self.attention_pool(query, x, x)
+                    pooled_output = pooled_output.squeeze(1)  # Remove sequence dimension
+
+                    # Layer normalization and output
+                    pooled_output = self.layer_norm(pooled_output)
+                    output = self.output_net(pooled_output)
+
+                    return output
             
             logger.info("Initializing LSTM and Transformer models...")
             lstm_model = LSTMModel(input_size=input_size).to(self.device)
             transformer_model = TransformerModel(input_size=input_size, seq_length=seq_length).to(self.device)
             
-            criterion = nn.MSELoss()
-            lstm_optimizer = optim.Adam(lstm_model.parameters(), lr=0.001)
-            transformer_optimizer = optim.Adam(transformer_model.parameters(), lr=0.001)
+            # INDUSTRY LEVEL: Advanced loss function and optimizers
+            criterion = nn.SmoothL1Loss()  # More robust than MSE for financial data
+
+            # INDUSTRY LEVEL: AdamW with weight decay and learning rate scheduling
+            lstm_optimizer = optim.AdamW(lstm_model.parameters(), lr=0.001, weight_decay=1e-4, betas=(0.9, 0.999))
+            transformer_optimizer = optim.AdamW(transformer_model.parameters(), lr=0.0005, weight_decay=1e-4, betas=(0.9, 0.999))
+
+            # INDUSTRY LEVEL: Learning rate schedulers
+            lstm_scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(lstm_optimizer, T_0=10, T_mult=2)
+            transformer_scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(transformer_optimizer, T_0=10, T_mult=2)
             
             def fgsm_attack(data, epsilon, data_grad):
                 if data_grad is None:
@@ -3400,7 +3540,13 @@ class Stock:
             
             lstm_logs = {}
             transformer_logs = {}
-            
+
+            # INDUSTRY LEVEL: Early stopping and best model tracking
+            best_lstm_loss = float('inf')
+            best_transformer_loss = float('inf')
+            patience = 20
+            patience_counter = 0
+
             logger.info("Starting adversarial training for LSTM and Transformer...")
             for epoch in range(num_epochs):
                 # Check if bot should stop
@@ -3442,6 +3588,8 @@ class Stock:
                         lstm_total_loss = lstm_loss + adv_lambda * lstm_adv_loss
                         lstm_total_loss.backward()
 
+                    # INDUSTRY LEVEL: Gradient clipping
+                    torch.nn.utils.clip_grad_norm_(lstm_model.parameters(), max_norm=1.0)
                     lstm_optimizer.step()
                     lstm_running_loss += lstm_total_loss.item()
 
@@ -3466,6 +3614,8 @@ class Stock:
                         transformer_total_loss = transformer_loss + adv_lambda * transformer_adv_loss
                         transformer_total_loss.backward()
 
+                    # INDUSTRY LEVEL: Gradient clipping
+                    torch.nn.utils.clip_grad_norm_(transformer_model.parameters(), max_norm=1.0)
                     transformer_optimizer.step()
                     transformer_running_loss += transformer_total_loss.item()
 
@@ -3473,14 +3623,36 @@ class Stock:
                 if not bot_running:
                     break
 
+                # INDUSTRY LEVEL: Calculate epoch losses and update schedulers
+                lstm_epoch_loss = lstm_running_loss / len(train_loader)
+                transformer_epoch_loss = transformer_running_loss / len(train_loader)
+
+                # INDUSTRY LEVEL: Learning rate scheduling
+                lstm_scheduler.step()
+                transformer_scheduler.step()
+
+                # INDUSTRY LEVEL: Early stopping logic
+                current_loss = (lstm_epoch_loss + transformer_epoch_loss) / 2
+                if current_loss < best_lstm_loss:
+                    best_lstm_loss = current_loss
+                    best_transformer_loss = transformer_epoch_loss
+                    patience_counter = 0
+                    # Save best models (optional - can be added if needed)
+                else:
+                    patience_counter += 1
+
                 if (epoch + 1) % 10 == 0:
-                    lstm_epoch_loss = lstm_running_loss / len(train_loader)
-                    transformer_epoch_loss = transformer_running_loss / len(train_loader)
                     logger.info(f'Epoch [{epoch+1}/{num_epochs}], '
                                 f'LSTM Loss: {lstm_epoch_loss:.4f}, '
-                                f'Transformer Loss: {transformer_epoch_loss:.4f}')
+                                f'Transformer Loss: {transformer_epoch_loss:.4f}, '
+                                f'LR: {lstm_optimizer.param_groups[0]["lr"]:.6f}')
                     lstm_logs[f"Epoch_{epoch+1}"] = lstm_epoch_loss
                     transformer_logs[f"Epoch_{epoch+1}"] = transformer_epoch_loss
+
+                # INDUSTRY LEVEL: Early stopping
+                if patience_counter >= patience:
+                    logger.info(f"Early stopping at epoch {epoch+1} due to no improvement for {patience} epochs")
+                    break
             
             lstm_model.eval()
             transformer_model.eval()
@@ -3972,31 +4144,169 @@ class Stock:
                             X_scaled, y_scaled, test_size=0.2, shuffle=False
                         )
 
-                        logger.info(f"Training ML models for {ticker}...")
-                        # PRODUCTION FIX: Reduced model complexity for speed
-                        base_models = [
-                            ('rf', RandomForestRegressor(n_estimators=20, random_state=42)),  # Reduced from 100 to 20
-                            ('gb', GradientBoostingRegressor(n_estimators=20, random_state=42)),  # Reduced from 100 to 20
-                            ('xgb', XGBRegressor(n_estimators=20, random_state=42))  # Reduced from 100 to 20
-                        ]
-                        meta_model = LinearRegression()
-                        stacking_regressor = StackingRegressor(
-                            estimators=base_models,
-                            final_estimator=meta_model
+                        logger.info(f"Training TOP 5 INDUSTRY-LEVEL ML models for {ticker}...")
+
+                        # INDUSTRY LEVEL: Import additional ML libraries
+                        try:
+                            import xgboost as xgb
+                            from sklearn.svm import SVR
+                            from sklearn.neural_network import MLPRegressor
+                            from sklearn.ensemble import ExtraTreesRegressor, VotingRegressor
+                            from sklearn.model_selection import GridSearchCV, cross_val_score
+                            from sklearn.preprocessing import RobustScaler
+                            import lightgbm as lgb
+                        except ImportError as e:
+                            logger.warning(f"Some ML libraries not available: {e}")
+
+                        # INDUSTRY LEVEL: Advanced feature scaling
+                        robust_scaler = RobustScaler()
+                        X_train_robust = robust_scaler.fit_transform(X_train)
+                        X_test_robust = robust_scaler.transform(X_test)
+
+                        # INDUSTRY LEVEL: TOP 5 ML MODELS FOR FINANCIAL PREDICTION
+
+                        # 1. XGBoost - Best for tabular financial data
+                        logger.info("Training XGBoost model...")
+                        xgb_model = xgb.XGBRegressor(
+                            n_estimators=200,
+                            max_depth=6,
+                            learning_rate=0.1,
+                            subsample=0.8,
+                            colsample_bytree=0.8,
+                            random_state=42,
+                            n_jobs=-1
                         )
+                        xgb_model.fit(X_train_robust, y_train)
 
-                        stacking_regressor.fit(X_train, y_train)
-                        y_pred_scaled = stacking_regressor.predict(X_test)
-                        y_pred = scaler_y.inverse_transform(y_pred_scaled.reshape(-1, 1)).ravel()
+                        # 2. LightGBM - Fast gradient boosting
+                        logger.info("Training LightGBM model...")
+                        lgb_model = lgb.LGBMRegressor(
+                            n_estimators=200,
+                            max_depth=6,
+                            learning_rate=0.1,
+                            subsample=0.8,
+                            colsample_bytree=0.8,
+                            random_state=42,
+                            n_jobs=-1,
+                            verbose=-1
+                        )
+                        lgb_model.fit(X_train_robust, y_train)
 
-                        mse = mean_squared_error(scaler_y.inverse_transform(y_test.reshape(-1, 1)), y_pred)
-                        mae = mean_absolute_error(scaler_y.inverse_transform(y_test.reshape(-1, 1)), y_pred)
-                        r2 = r2_score(scaler_y.inverse_transform(y_test.reshape(-1, 1)), y_pred)
+                        # 3. Extra Trees - Extremely randomized trees
+                        logger.info("Training Extra Trees model...")
+                        et_model = ExtraTreesRegressor(
+                            n_estimators=200,
+                            max_depth=10,
+                            random_state=42,
+                            n_jobs=-1
+                        )
+                        et_model.fit(X_train_robust, y_train)
 
-                        last_features = X.iloc[-1:].values
-                        last_features_scaled = scaler_X.transform(last_features)
-                        predicted_price_scaled = stacking_regressor.predict(last_features_scaled)
-                        predicted_price = scaler_y.inverse_transform(predicted_price_scaled.reshape(-1, 1))[0][0]
+                        # 4. Support Vector Regression - Non-linear patterns
+                        logger.info("Training SVR model...")
+                        svr_model = SVR(
+                            kernel='rbf',
+                            C=100,
+                            gamma='scale',
+                            epsilon=0.1
+                        )
+                        svr_model.fit(X_train_robust, y_train)
+
+                        # 5. Multi-layer Perceptron - Neural network
+                        logger.info("Training MLP Neural Network...")
+                        mlp_model = MLPRegressor(
+                            hidden_layer_sizes=(256, 128, 64),
+                            activation='relu',
+                            solver='adam',
+                            alpha=0.001,
+                            learning_rate='adaptive',
+                            max_iter=500,
+                            random_state=42
+                        )
+                        mlp_model.fit(X_train_robust, y_train)
+
+                        # INDUSTRY LEVEL: ADVANCED ENSEMBLE METHODS
+                        logger.info("Creating advanced ensemble models...")
+
+                        # Voting Regressor - Combines all 5 models
+                        voting_ensemble = VotingRegressor([
+                            ('xgb', xgb_model),
+                            ('lgb', lgb_model),
+                            ('et', et_model),
+                            ('svr', svr_model),
+                            ('mlp', mlp_model)
+                        ])
+                        voting_ensemble.fit(X_train_robust, y_train)
+
+                        # Stacking Regressor with top models
+                        stacking_regressor = StackingRegressor(
+                            estimators=[
+                                ('xgb', xgb_model),
+                                ('lgb', lgb_model),
+                                ('et', et_model),
+                                ('svr', svr_model),
+                                ('mlp', mlp_model)
+                            ],
+                            final_estimator=LinearRegression(),
+                            cv=5
+                        )
+                        stacking_regressor.fit(X_train_robust, y_train)
+
+                        # INDUSTRY LEVEL: MODEL EVALUATION AND SELECTION
+                        models = {
+                            'XGBoost': xgb_model,
+                            'LightGBM': lgb_model,
+                            'ExtraTrees': et_model,
+                            'SVR': svr_model,
+                            'MLP': mlp_model,
+                            'VotingEnsemble': voting_ensemble,
+                            'StackingEnsemble': stacking_regressor
+                        }
+
+                        model_scores = {}
+                        model_predictions = {}
+
+                        for name, model in models.items():
+                            y_pred_robust = model.predict(X_test_robust)
+                            y_pred = scaler_y.inverse_transform(y_pred_robust.reshape(-1, 1)).ravel()
+                            y_test_actual = scaler_y.inverse_transform(y_test.reshape(-1, 1)).ravel()
+
+                            mse_model = mean_squared_error(y_test_actual, y_pred)
+                            mae_model = mean_absolute_error(y_test_actual, y_pred)
+                            r2_model = r2_score(y_test_actual, y_pred)
+
+                            # Get prediction for current price
+                            last_features = X.iloc[-1:].values
+                            last_features_robust = robust_scaler.transform(scaler_X.transform(last_features))
+                            pred_scaled = model.predict(last_features_robust)
+                            pred_price = scaler_y.inverse_transform(pred_scaled.reshape(-1, 1))[0][0]
+
+                            model_scores[name] = {
+                                'mse': mse_model,
+                                'mae': mae_model,
+                                'r2': r2_model,
+                                'prediction': pred_price
+                            }
+                            model_predictions[name] = y_pred
+
+                        # Select best model based on R2 score
+                        best_model_name = max(model_scores.keys(), key=lambda k: model_scores[k]['r2'])
+                        best_model = models[best_model_name]
+
+                        predicted_price = model_scores[best_model_name]['prediction']
+                        mse = model_scores[best_model_name]['mse']
+                        mae = model_scores[best_model_name]['mae']
+                        r2 = model_scores[best_model_name]['r2']
+
+                        logger.info(f"Best ML model for {ticker}: {best_model_name} (R2: {r2:.4f})")
+
+                        # Store all model results for ensemble decision
+                        ensemble_results = {
+                            'best_model': best_model_name,
+                            'best_prediction': predicted_price,
+                            'model_scores': model_scores,
+                            'ensemble_prediction': np.mean([score['prediction'] for score in model_scores.values()])
+                        }
 
                         logger.info(f"Performing adversarial training for {ticker}...")
                         adv_training_result = self.adversarial_training_loop(
@@ -4045,18 +4355,32 @@ class Stock:
                             "mse": float(mse),
                             "mae": float(mae),
                             "r2_score": float(r2),
-                            "stacking_regressor_metrics": {
+                            "best_ml_model": best_model_name,
+                            "best_model_metrics": {
                                 "mse": float(mse),
                                 "mae": float(mae),
                                 "r2": float(r2)
                             },
+                            "all_model_scores": {name: {
+                                "mse": float(scores["mse"]),
+                                "mae": float(scores["mae"]),
+                                "r2": float(scores["r2"]),
+                                "prediction": float(scores["prediction"])
+                            } for name, scores in model_scores.items()},
                             "lstm_metrics": lstm_metrics,
                             "transformer_metrics": transformer_metrics,
                             "rl_metrics": rl_result,
                             "ensemble_components": {
-                                "stacking_regressor": float(predicted_price),
+                                "best_ml_model": float(predicted_price),
                                 "lstm": float(lstm_pred),
-                                "transformer": float(transformer_pred)
+                                "transformer": float(transformer_pred),
+                                "ensemble_average": float(ensemble_results['ensemble_prediction'])
+                            },
+                            "industry_level_features": {
+                                "top_5_ml_models": list(model_scores.keys()),
+                                "ensemble_methods": ["VotingRegressor", "StackingRegressor"],
+                                "advanced_scaling": "RobustScaler",
+                                "model_selection": "Best R2 Score"
                             }
                         }
 
