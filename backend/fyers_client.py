@@ -269,10 +269,14 @@ class FyersWebSocketClient:
     async def connect(self):
         """Connect to Fyers WebSocket"""
         try:
+            if not self.client_id or not self.access_token:
+                logger.error("Missing Fyers credentials for WebSocket connection")
+                return False
+
             headers = {
                 "Authorization": f"{self.client_id}:{self.access_token}"
             }
-            
+
             self.websocket = await websockets.connect(
                 self.ws_url,
                 extra_headers=headers,

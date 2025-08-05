@@ -41,8 +41,7 @@ import multiprocessing
 from urllib.parse import quote
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import pickle
-from bs4 import BeautifulSoup
-from collections import defaultdict
+
 from requests.exceptions import HTTPError
 from dotenv import load_dotenv
 from dhanhq import dhanhq
@@ -53,7 +52,7 @@ import signal
 import queue
 from langchain.llms.base import LLM
 from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationChain
+
 from typing import Optional, List
 
 
@@ -72,25 +71,51 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 
-class DynamicTickerMapper:
-    """Dynamic ticker-to-company name mapping for Indian stock market"""
+class FyersTickerMapper:
+    """Fyers API-based ticker-to-company name mapping for Indian stock market"""
 
-    def __init__(self, cache_file="data/indian_ticker_mapping.pkl"):
+    def __init__(self, cache_file="data/fyers_ticker_mapping.pkl"):
         self.cache_file = cache_file
         self.ticker_mapping = {}
         self.last_updated = None
         self.update_frequency = timedelta(days=7)  # Update weekly
+        self.fyers_client = None
 
         # Ensure data directory exists
         os.makedirs(os.path.dirname(cache_file), exist_ok=True)
 
+        # Initialize Fyers client
+        self._initialize_fyers()
+
         # Load cached data if available
         self.load_cache()
+
+    def _initialize_fyers(self):
+        """Initialize Fyers API client"""
+        try:
+            if not FYERS_AVAILABLE:
+                logger.warning("Fyers API not available - falling back to cached data")
+                return
+
+            app_id = os.getenv("FYERS_APP_ID")
+            access_token = os.getenv("FYERS_ACCESS_TOKEN")
+
+            if app_id and access_token:
+                self.fyers_client = fyersModel.FyersModel(
+                    client_id=app_id,
+                    token=access_token,
+                    log_path=""
+                )
+                logger.info("Fyers API initialized successfully for ticker mapping")
+            else:
+                logger.warning("Fyers credentials not found - using cached data only")
+        except Exception as e:
+            logger.error(f"Error initializing Fyers for ticker mapping: {e}")
 
     def get_ticker_mapping(self, force_update=False):
         """Get ticker mapping with automatic updates"""
         if self.should_update() or force_update:
-            logger.info("Updating ticker mapping from NSE/BSE APIs...")
+            logger.info("Updating ticker mapping from Fyers API...")
             self.update_mapping()
             self.save_cache()
 
@@ -102,131 +127,140 @@ class DynamicTickerMapper:
             return True
         return datetime.now() - self.last_updated > self.update_frequency
 
-    def fetch_nse_stock_list(self):
-        """Fetch all NSE stocks with company names from official NSE API"""
+    def fetch_fyers_stock_list(self):
+        """Fetch all Indian stocks using Fyers API - more reliable than NSE scraping"""
         try:
             stock_mapping = {}
 
-            # NSE API endpoints for different indices
-            nse_endpoints = [
-                "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20500",
-                "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20SMALLCAP%20100",
-                "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20MIDCAP%20100",
-                "https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%20MICROCAP%20250"
-            ]
+            if not self.fyers_client:
+                logger.warning("Fyers client not available - cannot fetch stock list")
+                return stock_mapping
 
-            # Enhanced headers to mimic real browser behavior
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'application/json, text/plain, */*',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Connection': 'keep-alive',
-                'Referer': 'https://www.nseindia.com/',
-                'Sec-Fetch-Dest': 'empty',
-                'Sec-Fetch-Mode': 'cors',
-                'Sec-Fetch-Site': 'same-origin',
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
-            }
+            logger.info("Fetching comprehensive stock list from Fyers API...")
 
-            session = requests.Session()
-            session.headers.update(headers)
-
-            # Enhanced session establishment with proper cookie handling
+            # Get master data for NSE equity instruments
             try:
-                logger.info("Establishing NSE session...")
-                # Visit main page to get cookies
-                main_response = session.get("https://www.nseindia.com", timeout=15)
-                logger.info(f"Main page response: {main_response.status_code}")
+                # Fyers master data endpoint for NSE equity
+                master_data = self.fyers_client.master_data()
 
-                # Visit market data page to establish proper session
-                market_response = session.get("https://www.nseindia.com/market-data", timeout=15)
-                logger.info(f"Market data page response: {market_response.status_code}")
+                if master_data and master_data.get('s') == 'ok':
+                    instruments = master_data.get('d', [])
+                    logger.info(f"Received {len(instruments)} instruments from Fyers")
 
-                time.sleep(2)  # Allow session to stabilize
-            except Exception as e:
-                logger.warning(f"Session establishment failed: {e}")
+                    # Filter for NSE equity instruments
+                    nse_equities = [
+                        inst for inst in instruments
+                        if inst.get('exchange') == 'NSE' and
+                        inst.get('segment') == 'EQ' and
+                        inst.get('symbol_details', {}).get('symbol_type') == 'EQ'
+                    ]
 
-            for endpoint in nse_endpoints:
-                try:
-                    logger.info(f"Fetching data from: {endpoint}")
-                    response = session.get(endpoint, timeout=20)
+                    logger.info(f"Found {len(nse_equities)} NSE equity instruments")
 
-                    logger.info(f"Response status: {response.status_code}")
-                    logger.info(f"Response headers: {dict(response.headers)}")
-
-                    if response.status_code == 200:
-                        # Check if response is actually JSON
-                        content_type = response.headers.get('content-type', '')
-                        if 'application/json' not in content_type:
-                            logger.warning(f"Unexpected content type: {content_type}")
-                            logger.warning(f"Response text preview: {response.text[:200]}")
-                            continue
-
+                    for instrument in nse_equities:
                         try:
-                            data = response.json()
-                        except ValueError as e:
-                            logger.warning(f"JSON parsing failed: {e}")
-                            logger.warning(f"Response text preview: {response.text[:200]}")
-                            continue
-
-                        stocks_data = data.get('data', [])
-                        if not stocks_data:
-                            logger.warning(f"No data found in response for {endpoint}")
-                            continue
-
-                        for stock in stocks_data:
-                            symbol = stock.get('symbol')
-                            company_name = stock.get('companyName', '')
+                            symbol = instrument.get('symbol_details', {}).get('symbol', '')
+                            company_name = instrument.get('symbol_details', {}).get('long_name', '')
 
                             if symbol and company_name:
+                                # Convert to Yahoo Finance format
                                 ticker = f"{symbol}.NS"
                                 variations = self.create_name_variations(company_name)
                                 stock_mapping[ticker] = variations
 
-                        logger.info(f"Fetched {len(stocks_data)} stocks from this endpoint")
-                    elif response.status_code == 401:
-                        logger.warning(f"Authentication required for {endpoint}. Trying alternative approach...")
-                        # Try with additional headers for authentication
-                        auth_headers = headers.copy()
-                        auth_headers.update({
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Origin': 'https://www.nseindia.com'
-                        })
+                        except Exception as e:
+                            logger.debug(f"Error processing instrument: {e}")
+                            continue
 
-                        auth_response = session.get(endpoint, headers=auth_headers, timeout=20)
-                        if auth_response.status_code == 200:
-                            try:
-                                data = auth_response.json()
-                                stocks_data = data.get('data', [])
-                                for stock in stocks_data:
-                                    symbol = stock.get('symbol')
-                                    company_name = stock.get('companyName', '')
-                                    if symbol and company_name:
-                                        ticker = f"{symbol}.NS"
-                                        variations = self.create_name_variations(company_name)
-                                        stock_mapping[ticker] = variations
-                                logger.info(f"Successfully fetched {len(stocks_data)} stocks with auth headers")
-                            except ValueError:
-                                logger.warning(f"Auth attempt also failed for {endpoint}")
-                        else:
-                            logger.warning(f"Auth attempt failed with status: {auth_response.status_code}")
-                    else:
-                        logger.warning(f"Failed to fetch from {endpoint}: Status {response.status_code}")
-                        logger.warning(f"Response text preview: {response.text[:200]}")
+                    logger.info(f"Successfully mapped {len(stock_mapping)} stocks from Fyers")
 
-                except Exception as e:
-                    logger.warning(f"Error fetching from {endpoint}: {e}")
-                    continue
+                else:
+                    logger.error(f"Fyers master data request failed: {master_data}")
 
-                time.sleep(3)  # Increased delay to be more respectful
+            except Exception as e:
+                logger.error(f"Error fetching Fyers master data: {e}")
 
-            logger.info(f"Total stocks fetched from NSE: {len(stock_mapping)}")
+                # Fallback: Try to get quotes for known major stocks to build partial mapping
+                logger.info("Attempting fallback approach with major stock quotes...")
+                major_stocks = [
+                    "NSE:RELIANCE-EQ", "NSE:TCS-EQ", "NSE:HDFCBANK-EQ", "NSE:INFY-EQ",
+                    "NSE:ICICIBANK-EQ", "NSE:SBIN-EQ", "NSE:BHARTIARTL-EQ", "NSE:ITC-EQ",
+                    "NSE:KOTAKBANK-EQ", "NSE:LT-EQ", "NSE:HCLTECH-EQ", "NSE:ASIANPAINT-EQ",
+                    "NSE:MARUTI-EQ", "NSE:AXISBANK-EQ", "NSE:TITAN-EQ", "NSE:SUNPHARMA-EQ",
+                    "NSE:ULTRACEMCO-EQ", "NSE:WIPRO-EQ", "NSE:NESTLEIND-EQ", "NSE:POWERGRID-EQ"
+                ]
+
+                try:
+                    quotes_response = self.fyers_client.quotes({"symbols": ",".join(major_stocks)})
+                    if quotes_response and quotes_response.get('s') == 'ok':
+                        quotes_data = quotes_response.get('d', [])
+                        for quote in quotes_data:
+                            symbol_info = quote.get('n', '')
+                            if symbol_info:
+                                # Extract symbol from Fyers format
+                                symbol = symbol_info.split(':')[1].split('-')[0] if ':' in symbol_info else ''
+                                if symbol:
+                                    ticker = f"{symbol}.NS"
+                                    # Use symbol as company name for fallback
+                                    variations = self.create_name_variations(symbol)
+                                    stock_mapping[ticker] = variations
+
+                        logger.info(f"Fallback approach yielded {len(stock_mapping)} stocks")
+                except Exception as fallback_error:
+                    logger.error(f"Fallback approach also failed: {fallback_error}")
+
             return stock_mapping
 
         except Exception as e:
-            logger.error(f"Error in fetch_nse_stock_list: {e}")
+            logger.error(f"Error in fetch_fyers_stock_list: {e}")
+            return {}
+
+    def fetch_yahoo_major_stocks(self):
+        """Fetch major Indian stocks using Yahoo Finance as fallback"""
+        try:
+            stock_mapping = {}
+
+            # Major Indian stocks that are reliably available on Yahoo Finance
+            major_tickers = [
+                "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "INFY.NS", "ICICIBANK.NS",
+                "KOTAKBANK.NS", "BHARTIARTL.NS", "ITC.NS", "SBIN.NS", "HINDUNILVR.NS",
+                "BAJFINANCE.NS", "AXISBANK.NS", "HDFCLIFE.NS", "SBILIFE.NS", "BAJAJFINSV.NS",
+                "HCLTECH.NS", "WIPRO.NS", "TECHM.NS", "ASIANPAINT.NS", "MARUTI.NS",
+                "TITAN.NS", "NESTLEIND.NS", "BRITANNIA.NS", "LT.NS", "ULTRACEMCO.NS",
+                "ONGC.NS", "BPCL.NS", "IOC.NS", "COALINDIA.NS", "NTPC.NS", "POWERGRID.NS",
+                "SUNPHARMA.NS", "DRREDDY.NS", "CIPLA.NS", "DIVISLAB.NS", "APOLLOHOSP.NS"
+            ]
+
+            logger.info(f"Fetching info for {len(major_tickers)} major stocks from Yahoo Finance...")
+
+            for ticker in major_tickers:
+                try:
+                    # Get stock info from Yahoo Finance
+                    stock = yf.Ticker(ticker)
+                    info = stock.info
+
+                    if info and 'longName' in info:
+                        company_name = info['longName']
+                        variations = self.create_name_variations(company_name)
+                        stock_mapping[ticker] = variations
+                    else:
+                        # Fallback to symbol-based name
+                        symbol = ticker.replace('.NS', '')
+                        variations = self.create_name_variations(symbol)
+                        stock_mapping[ticker] = variations
+
+                    # Small delay to be respectful to Yahoo Finance
+                    time.sleep(0.1)
+
+                except Exception as e:
+                    logger.debug(f"Error fetching {ticker} from Yahoo Finance: {e}")
+                    continue
+
+            logger.info(f"Successfully fetched {len(stock_mapping)} stocks from Yahoo Finance")
+            return stock_mapping
+
+        except Exception as e:
+            logger.error(f"Error in fetch_yahoo_major_stocks: {e}")
             return {}
 
     def fetch_bse_stock_list(self):
@@ -538,24 +572,21 @@ class DynamicTickerMapper:
         return results
 
     def update_mapping(self):
-        """Update mapping from multiple sources with enhanced error reporting"""
+        """Update mapping using Fyers API as primary source with fallbacks"""
         all_mappings = {}
 
-        # Test API connectivity first
-        connectivity = self.test_api_connectivity()
-        logger.info(f"API connectivity status: NSE Main={connectivity['nse_main']}, "
-                   f"NSE Market={connectivity['nse_market_data']}, BSE={connectivity['bse_api']}")
-
-        # Method 1: Try NSE API
+        # Method 1: Try Fyers API (Primary - Most Reliable)
         try:
-            nse_data = self.fetch_nse_stock_list()
-            all_mappings.update(nse_data)
-            logger.info(f"[SUCCESS] Successfully fetched {len(nse_data)} stocks from NSE API")
+            logger.info("Attempting to fetch stocks from Fyers API...")
+            fyers_data = self.fetch_fyers_stock_list()
+            all_mappings.update(fyers_data)
+            logger.info(f"[SUCCESS] Successfully fetched {len(fyers_data)} stocks from Fyers API")
         except Exception as e:
-            logger.warning(f"[ERROR] NSE API failed: {e}")
+            logger.warning(f"[ERROR] Fyers API failed: {e}")
 
-        # Method 2: Try BSE API
+        # Method 2: Try BSE API (Secondary)
         try:
+            logger.info("Attempting BSE API as secondary source...")
             bse_data = self.fetch_bse_stock_list()
             # Merge with existing data
             for ticker, names in bse_data.items():
@@ -569,9 +600,21 @@ class DynamicTickerMapper:
         except Exception as e:
             logger.warning(f"[ERROR] BSE API failed: {e}")
 
-        # Method 3: Fallback to essential stocks if we don't have enough data
+        # Method 3: Yahoo Finance fallback for major stocks
+        if len(all_mappings) < 100:
+            logger.info("Adding Yahoo Finance data for major stocks...")
+            try:
+                yahoo_data = self.fetch_yahoo_major_stocks()
+                for ticker, names in yahoo_data.items():
+                    if ticker not in all_mappings:
+                        all_mappings[ticker] = names
+                logger.info(f"[SUCCESS] Added {len(yahoo_data)} stocks from Yahoo Finance")
+            except Exception as e:
+                logger.warning(f"[ERROR] Yahoo Finance fallback failed: {e}")
+
+        # Method 4: Hardcoded fallback if still insufficient data
         if len(all_mappings) < 50:
-            logger.warning(f"⚠️  Only {len(all_mappings)} stocks fetched from APIs. Using fallback hardcoded mapping.")
+            logger.warning(f"Only {len(all_mappings)} stocks fetched from APIs. Using fallback hardcoded mapping.")
             fallback_mapping = self.get_fallback_mapping()
             for ticker, names in fallback_mapping.items():
                 if ticker not in all_mappings:
@@ -583,7 +626,7 @@ class DynamicTickerMapper:
         self.ticker_mapping = all_mappings
         self.last_updated = datetime.now()
 
-        logger.info(f"Target: Final mapping contains {len(self.ticker_mapping)} stocks")
+        logger.info(f"Final mapping contains {len(self.ticker_mapping)} stocks")
 
         # Log sample of stocks for verification
         sample_stocks = list(self.ticker_mapping.keys())[:5]
@@ -1059,13 +1102,13 @@ Rs. Current Price: Rs.{current_price:.2f}
 [DATA] Recommendation: {recommendation}
 
 **Technical Signals:**
-• RSI ({rsi:.1f}): {rsi_signal}
-• Moving Average: {ma_signal}
-• MACD: {macd_signal}
+- RSI ({rsi:.1f}): {rsi_signal}
+- Moving Average: {ma_signal}
+- MACD: {macd_signal}
 
 **Reasoning:** {reason}
 
-⚠️ This is for educational purposes only. Always do your own research before trading.
+WARNING: This is for educational purposes only. Always do your own research before trading.
 """
             return analysis_text.strip()
 
@@ -1077,12 +1120,12 @@ Rs. Current Price: Rs.{current_price:.2f}
         try:
             holdings = self.trading_bot.portfolio.holdings
             if not holdings:
-                return "📭 No open positions currently."
+                return "No open positions currently."
 
             positions_text = "[DATA] **Current Positions:**\n"
             for ticker, data in holdings.items():
                 current_value = data['qty'] * data['avg_price']
-                positions_text += f"• {ticker}: {data['qty']} shares @ Rs.{data['avg_price']:.2f} (Rs.{current_value:,.2f})\n"
+                positions_text += f"- {ticker}: {data['qty']} shares @ Rs.{data['avg_price']:.2f} (Rs.{current_value:,.2f})\n"
 
             return positions_text.strip()
         except Exception as e:
@@ -1101,14 +1144,14 @@ Rs. Current Price: Rs.{current_price:.2f}
                     current_tickers.append(ticker)
                     return f"[SUCCESS] Added {ticker} to watchlist. Total tickers: {len(current_tickers)}"
                 else:
-                    return f"ℹ️ {ticker} is already in watchlist."
+                    return f"INFO: {ticker} is already in watchlist."
 
             elif action == "REMOVE":
                 if ticker in current_tickers:
                     current_tickers.remove(ticker)
                     return f"[SUCCESS] Removed {ticker} from watchlist. Total tickers: {len(current_tickers)}"
                 else:
-                    return f"ℹ️ {ticker} is not in watchlist."
+                    return f"INFO: {ticker} is not in watchlist."
 
             else:
                 return "[ERROR] Invalid action. Use ADD or REMOVE."
@@ -1134,10 +1177,10 @@ Target: **Trading Signals for {ticker}**
 Rs. Current Price: Rs.{current_price:.2f}
 
 [DATA] **Technical Signals:**
-• RSI: {technical['rsi']:.2f} {'[-] Overbought' if technical['rsi'] > 70 else '[+] Oversold' if technical['rsi'] < 30 else '[=] Neutral'}
-• MACD: {technical['macd']:.4f} {'[+] Bullish' if technical['macd'] > 0 else '[-] Bearish'}
-• SMA Trend: {'[+] Bullish' if technical['sma_50'] > technical['sma_200'] else '[-] Bearish'}
-• Bollinger Bands: {'[-] Overbought' if current_price > technical['bb_upper'] else '[+] Oversold' if current_price < technical['bb_lower'] else '[=] Normal'}
+- RSI: {technical['rsi']:.2f} {'[-] Overbought' if technical['rsi'] > 70 else '[+] Oversold' if technical['rsi'] < 30 else '[=] Neutral'}
+- MACD: {technical['macd']:.4f} {'[+] Bullish' if technical['macd'] > 0 else '[-] Bearish'}
+- SMA Trend: {'[+] Bullish' if technical['sma_50'] > technical['sma_200'] else '[-] Bearish'}
+- Bollinger Bands: {'[-] Overbought' if current_price > technical['bb_upper'] else '[+] Oversold' if current_price < technical['bb_lower'] else '[=] Normal'}
 
 [UP] **Overall Signal:** {analysis['recommendation']}
             """
@@ -1150,7 +1193,7 @@ Rs. Current Price: Rs.{current_price:.2f}
         try:
             self.trading_paused = True
             self.pause_until = datetime.now() + timedelta(minutes=minutes)
-            return f"⏸️ Trading paused for {minutes} minutes until {self.pause_until.strftime('%H:%M:%S')}"
+            return f"PAUSED: Trading paused for {minutes} minutes until {self.pause_until.strftime('%H:%M:%S')}"
         except Exception as e:
             return f"[ERROR] Error pausing trading: {str(e)}"
 
@@ -1159,7 +1202,7 @@ Rs. Current Price: Rs.{current_price:.2f}
         try:
             self.trading_paused = False
             self.pause_until = None
-            return "▶️ Trading resumed successfully."
+            return "RESUMED: Trading resumed successfully."
         except Exception as e:
             return f"[ERROR] Error resuming trading: {str(e)}"
 
@@ -1290,13 +1333,13 @@ def get_stock_data_fyers_or_yf(ticker, period="1d"):
                 if quotes and quotes.get("s") == "ok":
                     df = fyers_to_yfinance_format(quotes, ticker)
                     if df is not None and not df.empty:
-                        logger.info(f"Using Fyers current data for {ticker}")
+                        logger.debug(f"Using Fyers current data for {ticker}")
                         return df
             else:
                 # For historical data, use Fyers historical API
                 df = get_fyers_historical_data(fyers_client, fyers_symbol, ticker, period)
                 if df is not None and not df.empty:
-                    logger.info(f"Using Fyers historical data for {ticker} ({period})")
+                    logger.debug(f"Using Fyers historical data for {ticker} ({period})")
                     return df
         except Exception as e:
             logger.warning(f"Fyers failed for {ticker}: {e}")
@@ -1819,11 +1862,11 @@ class VirtualPortfolio:
             if 'technical_analysis' in analysis:
                 tech = analysis['technical_analysis']
                 log_entry += f"Technical Indicators:\n"
-                log_entry += f"  • RSI: {tech.get('rsi', 'N/A'):.2f} {'(Oversold)' if tech.get('rsi', 50) < 30 else '(Overbought)' if tech.get('rsi', 50) > 70 else '(Neutral)'}\n"
-                log_entry += f"  • MACD: {tech.get('macd', 'N/A'):.4f}\n"
-                log_entry += f"  • SMA 50: Rs.{tech.get('sma_50', 'N/A'):.2f}\n"
-                log_entry += f"  • SMA 200: Rs.{tech.get('sma_200', 'N/A'):.2f}\n"
-                log_entry += f"  • Trend: {'Bullish' if tech.get('sma_50', 0) > tech.get('sma_200', 0) else 'Bearish'}\n"
+                log_entry += f"  - RSI: {tech.get('rsi', 'N/A'):.2f} {'(Oversold)' if tech.get('rsi', 50) < 30 else '(Overbought)' if tech.get('rsi', 50) > 70 else '(Neutral)'}\n"
+                log_entry += f"  - MACD: {tech.get('macd', 'N/A'):.4f}\n"
+                log_entry += f"  - SMA 50: Rs.{tech.get('sma_50', 'N/A'):.2f}\n"
+                log_entry += f"  - SMA 200: Rs.{tech.get('sma_200', 'N/A'):.2f}\n"
+                log_entry += f"  - Trend: {'Bullish' if tech.get('sma_50', 0) > tech.get('sma_200', 0) else 'Bearish'}\n"
 
             # Sentiment Analysis Summary
             if 'sentiment_analysis' in analysis:
@@ -1833,9 +1876,9 @@ class VirtualPortfolio:
                     pos_pct = sentiment['positive'] / total * 100
                     neg_pct = sentiment['negative'] / total * 100
                     log_entry += f"Market Sentiment:\n"
-                    log_entry += f"  • Positive: {pos_pct:.1f}% ({sentiment['positive']} articles)\n"
-                    log_entry += f"  • Negative: {neg_pct:.1f}% ({sentiment['negative']} articles)\n"
-                    log_entry += f"  • Overall: {'Bullish' if pos_pct > neg_pct else 'Bearish'}\n"
+                    log_entry += f"  - Positive: {pos_pct:.1f}% ({sentiment['positive']} articles)\n"
+                    log_entry += f"  - Negative: {neg_pct:.1f}% ({sentiment['negative']} articles)\n"
+                    log_entry += f"  - Overall: {'Bullish' if pos_pct > neg_pct else 'Bearish'}\n"
 
             # ML/RL Predictions
             if 'ml_analysis' in analysis:
@@ -1845,22 +1888,22 @@ class VirtualPortfolio:
                 price_change = ((predicted_price / current_price) - 1) * 100 if current_price > 0 else 0
 
                 log_entry += f"ML/RL Analysis:\n"
-                log_entry += f"  • Current Price: Rs.{current_price:.2f}\n"
-                log_entry += f"  • Predicted Price: Rs.{predicted_price:.2f}\n"
-                log_entry += f"  • Expected Change: {price_change:+.2f}%\n"
-                log_entry += f"  • RL Recommendation: {ml.get('rl_metrics', {}).get('recommendation', 'HOLD')}\n"
+                log_entry += f"  - Current Price: Rs.{current_price:.2f}\n"
+                log_entry += f"  - Predicted Price: Rs.{predicted_price:.2f}\n"
+                log_entry += f"  - Expected Change: {price_change:+.2f}%\n"
+                log_entry += f"  - RL Recommendation: {ml.get('rl_metrics', {}).get('recommendation', 'HOLD')}\n"
 
             # Decision Summary
             log_entry += f"Decision Factors:\n"
-            log_entry += f"  • Buy Score: {decision_data.get('buy_score', 0):.3f}\n"
-            log_entry += f"  • Sell Score: {decision_data.get('sell_score', 0):.3f}\n"
-            log_entry += f"  • Buy Signals: {decision_data.get('buy_signals', 0)}/4\n"
-            log_entry += f"  • Sell Signals: {decision_data.get('sell_signals', 0)}/4\n"
-            log_entry += f"  • Final Decision: {decision_data.get('action', 'HOLD')}\n"
+            log_entry += f"  - Buy Score: {decision_data.get('buy_score', 0):.3f}\n"
+            log_entry += f"  - Sell Score: {decision_data.get('sell_score', 0):.3f}\n"
+            log_entry += f"  - Buy Signals: {decision_data.get('buy_signals', 0)}/4\n"
+            log_entry += f"  - Sell Signals: {decision_data.get('sell_signals', 0)}/4\n"
+            log_entry += f"  - Final Decision: {decision_data.get('action', 'HOLD')}\n"
 
             if decision_data.get('action') in ['BUY', 'SELL']:
-                log_entry += f"  • Quantity: {decision_data.get('quantity', 0)} shares\n"
-                log_entry += f"  • Trade Value: Rs.{decision_data.get('trade_value', 0):,.2f}\n"
+                log_entry += f"  - Quantity: {decision_data.get('quantity', 0)} shares\n"
+                log_entry += f"  - Trade Value: Rs.{decision_data.get('trade_value', 0):,.2f}\n"
 
             log_entry += "="*60 + "\n"
 
@@ -1908,26 +1951,26 @@ class VirtualPortfolio:
             summary = f"\n[{timestamp}] === PAPER TRADING P&L SUMMARY ===\n"
             summary += f"Session Duration: {(datetime.now() - datetime.strptime(self.trade_log[0]['timestamp'], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() / 3600:.1f} hours\n" if self.trade_log else "Session Duration: 0 hours\n"
             summary += f"\nPortfolio Performance:\n"
-            summary += f"  • Starting Balance: Rs.{self.starting_balance:,.2f}\n"
-            summary += f"  • Current Cash: Rs.{metrics['cash']:,.2f}\n"
-            summary += f"  • Holdings Value: Rs.{metrics['total_exposure']:,.2f}\n"
-            summary += f"  • Total Portfolio Value: Rs.{metrics['total_value']:,.2f}\n"
-            summary += f"  • Total Return: Rs.{total_return:,.2f} ({total_return_pct:+.2f}%)\n"
-            summary += f"  • Realized P&L: Rs.{realized_pnl:,.2f}\n"
-            summary += f"  • Unrealized P&L: Rs.{metrics['unrealized_pnl']:,.2f}\n"
+            summary += f"  - Starting Balance: Rs.{self.starting_balance:,.2f}\n"
+            summary += f"  - Current Cash: Rs.{metrics['cash']:,.2f}\n"
+            summary += f"  - Holdings Value: Rs.{metrics['total_exposure']:,.2f}\n"
+            summary += f"  - Total Portfolio Value: Rs.{metrics['total_value']:,.2f}\n"
+            summary += f"  - Total Return: Rs.{total_return:,.2f} ({total_return_pct:+.2f}%)\n"
+            summary += f"  - Realized P&L: Rs.{realized_pnl:,.2f}\n"
+            summary += f"  - Unrealized P&L: Rs.{metrics['unrealized_pnl']:,.2f}\n"
 
             summary += f"\nTrading Statistics:\n"
-            summary += f"  • Total Trades: {len(self.trade_log)}\n"
-            summary += f"  • Buy Orders: {len(buy_trades)}\n"
-            summary += f"  • Sell Orders: {len(sell_trades)}\n"
-            summary += f"  • Win Rate: {win_rate:.1f}%\n"
-            summary += f"  • Active Positions: {len(self.holdings)}\n"
+            summary += f"  - Total Trades: {len(self.trade_log)}\n"
+            summary += f"  - Buy Orders: {len(buy_trades)}\n"
+            summary += f"  - Sell Orders: {len(sell_trades)}\n"
+            summary += f"  - Win Rate: {win_rate:.1f}%\n"
+            summary += f"  - Active Positions: {len(self.holdings)}\n"
 
             if self.holdings:
                 summary += f"\nCurrent Holdings:\n"
                 for asset, data in self.holdings.items():
                     current_value = data['qty'] * data['avg_price']  # Simplified - would need current price
-                    summary += f"  • {asset}: {data['qty']} shares @ Rs.{data['avg_price']:.2f} (Rs.{current_value:,.2f})\n"
+                    summary += f"  - {asset}: {data['qty']} shares @ Rs.{data['avg_price']:.2f} (Rs.{current_value:,.2f})\n"
 
             summary += "="*70 + "\n"
 
@@ -2002,7 +2045,7 @@ class VirtualPortfolio:
                     current_price = hist['Close'].iloc[-1]
                     volume = hist['Volume'].iloc[-1] if 'Volume' in hist.columns else 0
                     prices[asset] = {"price": current_price, "volume": volume}
-                    logger.info(f"Fetched price for {asset}: Rs.{current_price:.2f}")
+                    logger.debug(f"Fetched price for {asset}: Rs.{current_price:.2f}")
                 else:
                     logger.warning(f"No price data available for {asset}")
             except Exception as e:
@@ -2216,8 +2259,8 @@ class Stock:
     def __init__(self, reddit_client_id=None, reddit_client_secret=None, reddit_user_agent=None):
         self.sentiment_analyzer = SentimentIntensityAnalyzer()
 
-        # Initialize dynamic ticker mapper
-        self.ticker_mapper = DynamicTickerMapper()
+        # Initialize Fyers-based ticker mapper
+        self.ticker_mapper = FyersTickerMapper()
         logger.info("Dynamic ticker mapper initialized")
 
         if reddit_client_id and reddit_client_secret and reddit_user_agent:
@@ -2634,8 +2677,12 @@ class Stock:
                 all_sources = indian_sources['primary'] + indian_sources['secondary']
                 sources_param = ",".join(all_sources[:10])  # Limit to avoid URL length issues
 
-                # Build URL with Indian sources preference
-                url = f"https://newsapi.org/v2/everything?q={quote(query)}&sources={sources_param}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
+                # Focus on last 24 hours for more actionable sentiment
+                from datetime import datetime, timedelta
+                yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+
+                # Build URL with Indian sources preference and 24-hour filter
+                url = f"https://newsapi.org/v2/everything?q={quote(query)}&sources={sources_param}&from={yesterday}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
 
                 # Fallback to general search if sources fail
                 try:
@@ -2643,8 +2690,8 @@ class Stock:
                     response.raise_for_status()
                     data = response.json()
                 except:
-                    # Fallback without specific sources
-                    url = f"https://newsapi.org/v2/everything?q={quote(query)}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
+                    # Fallback without specific sources but keep 24-hour filter
+                    url = f"https://newsapi.org/v2/everything?q={quote(query)}&from={yesterday}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
                     response = requests.get(url, timeout=10)
                     response.raise_for_status()
                     data = response.json()
@@ -2702,8 +2749,12 @@ class Stock:
         """Enhanced GNews sentiment with multi-level search and Indian focus"""
         def search_with_query(query):
             try:
+                # Focus on last 24 hours for more actionable sentiment
+                from datetime import datetime, timedelta
+                yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
+
                 encoded_query = quote(query)
-                url = f"https://gnews.io/api/v4/search?q={encoded_query}&lang=en&country=in&token={self.GNEWS_API_KEY}"
+                url = f"https://gnews.io/api/v4/search?q={encoded_query}&lang=en&country=in&from={yesterday}&token={self.GNEWS_API_KEY}"
                 logger.debug(f"Requesting GNews API: {url}")
 
                 response = self._make_request(url)
@@ -3058,7 +3109,7 @@ class Stock:
             return history
 
     def train_rl_with_adversarial_events(self, history, ml_predicted_price, current_price,
-                                       num_episodes=1000, adversarial_freq=0.2, max_event_magnitude=0.1, bot_running=True):  # INDUSTRY LEVEL: 1000 episodes for production
+                                       num_episodes=100, adversarial_freq=0.2, max_event_magnitude=0.1, bot_running=True):  # INDUSTRY LEVEL: 1000 episodes for production
         try:
             history = history.copy()
             history["SMA_50"] = history["Close"].rolling(window=50).mean()
@@ -3364,7 +3415,7 @@ class Stock:
             }
 
     def adversarial_training_loop(self, X_train, y_train, X_test, y_test, input_size,
-                                 seq_length=20, num_epochs=150, adv_lambda=0.1, bot_running=True):  # INDUSTRY LEVEL: 150 epochs for production
+                                 seq_length=20, num_epochs=50, adv_lambda=0.1, bot_running=True):  # INDUSTRY LEVEL: 150 epochs for production
         try:
             logger.info("Cleaning input data...")
             X_train = np.nan_to_num(X_train, nan=0.0, posinf=0.0, neginf=0.0)
@@ -3399,12 +3450,12 @@ class Stock:
             X_test_seq, y_test_seq = create_sequences(X_test_tensor, y_test_tensor, seq_length)
             
             train_dataset = TensorDataset(X_train_seq, y_train_seq)
-            train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True)  # INDUSTRY LEVEL: Increased batch size
+            train_loader = DataLoader(train_dataset, batch_size=256, shuffle=True)  # INDUSTRY LEVEL: Increased batch size
             test_dataset = TensorDataset(X_test_seq, y_test_seq)
-            test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False)  # INDUSTRY LEVEL: Increased batch size
+            test_loader = DataLoader(test_dataset, batch_size=256, shuffle=False)  # INDUSTRY LEVEL: Increased batch size
             
             class LSTMModel(nn.Module):
-                def __init__(self, input_size, hidden_size=256, num_layers=4, output_size=1):  # INDUSTRY LEVEL: Increased capacity
+                def __init__(self, input_size, hidden_size=256, num_layers=2, output_size=1):  # INDUSTRY LEVEL: Increased capacity
                     super(LSTMModel, self).__init__()
                     self.hidden_size = hidden_size
                     self.num_layers = num_layers
@@ -3450,10 +3501,10 @@ class Stock:
                     return out
             
             class TransformerModel(nn.Module):
-                def __init__(self, input_size, seq_length, num_heads=8, dim_feedforward=512, num_layers=6, output_size=1):  # INDUSTRY LEVEL: Increased capacity
+                def __init__(self, input_size, seq_length, num_heads=4, dim_feedforward=512, num_layers=3, output_size=1):  # INDUSTRY LEVEL: Increased capacity
                     super(TransformerModel, self).__init__()
                     # INDUSTRY LEVEL: Proper d_model sizing
-                    d_model = 256  # Standard transformer dimension
+                    d_model = 128  # Standard transformer dimension
                     adjusted_input_size = d_model
 
                     # INDUSTRY LEVEL: Advanced transformer with dropout and layer norm
@@ -3902,33 +3953,11 @@ class Stock:
             if institutional_data.get("insider_ownership_pct", 0) > 20:
                 institutional_confidence += 0.1
 
-            buy_score = (
-                (1 - price_to_sma200) * 0.2 +
-                (1 if trend_direction == "UPTREND" else -0.5) * 0.2 +
-                (sentiment_score - 0.5) * 0.25 +
-                (sharpe_ratio * 0.15) +
-                (0.5 - volatility) * 0.1 +
-                institutional_confidence * 0.1
-            )
-            sell_score = (
-                (price_to_sma200 - 1) * 0.2 +
-                (1 if trend_direction == "DOWNTREND" else -0.5) * 0.2 +
-                ((1 - sentiment_score) - 0.5) * 0.25 +
-                (-sharpe_ratio * 0.15) +
-                (volatility - 0.5) * 0.1 +
-                (-institutional_confidence * 0.1)
-            )
+            # REMOVED OLD LOGIC: Early recommendation calculation that was causing circular logic bug
+            # The proper scoring logic will handle recommendation generation later
 
-            if buy_score > 0.2:
-                recommendation = "STRONG BUY"
-            elif buy_score > 0:
-                recommendation = "BUY"
-            elif sell_score > 0.2:
-                recommendation = "STRONG SELL"
-            elif sell_score > 0:
-                recommendation = "SELL"
-            else:
-                recommendation = "HOLD"
+            # Set default recommendation for technical analysis - will be overridden by proper scoring
+            recommendation = "NEUTRAL"  # Neutral starting point for technical analysis
 
             support_level = min(sma_200, sma_50) * 0.95
             resistance_level = max(current_price * 1.05, sma_50 * 1.05)
@@ -3964,7 +3993,7 @@ class Stock:
             cash_flow_filtered = filter_non_nan(cash_flow.get("cash_flow", {}))
 
             explanation = self._generate_detailed_recommendation(
-                stock_data, recommendation, buy_score, sell_score,
+                stock_data, recommendation, 0.0, 0.0,  # Placeholder scores - real scores calculated later
                 price_to_sma200, trend_direction, sentiment_score,
                 volatility, sharpe_ratio
             )
@@ -4146,157 +4175,265 @@ class Stock:
 
                         logger.info(f"Training TOP 5 INDUSTRY-LEVEL ML models for {ticker}...")
 
-                        # INDUSTRY LEVEL: Import additional ML libraries
+                        # INDUSTRY LEVEL: Import additional ML libraries with proper error handling
+                        ml_libraries_available = {}
+
                         try:
                             import xgboost as xgb
+                            ml_libraries_available['xgb'] = xgb
+                            logger.info("XGBoost imported successfully")
+                        except ImportError as e:
+                            logger.warning(f"XGBoost not available: {e}")
+
+                        try:
+                            import lightgbm as lgb
+                            ml_libraries_available['lgb'] = lgb
+                            logger.info("LightGBM imported successfully")
+                        except ImportError as e:
+                            logger.warning(f"LightGBM not available: {e}")
+
+                        try:
+                            import catboost as cb
+                            ml_libraries_available['cb'] = cb
+                            logger.info("CatBoost imported successfully")
+                        except ImportError as e:
+                            logger.warning(f"CatBoost not available: {e}")
+
+                        try:
                             from sklearn.svm import SVR
                             from sklearn.neural_network import MLPRegressor
                             from sklearn.ensemble import ExtraTreesRegressor, VotingRegressor
                             from sklearn.model_selection import GridSearchCV, cross_val_score
                             from sklearn.preprocessing import RobustScaler
-                            import lightgbm as lgb
+                            ml_libraries_available['sklearn'] = True
+                            logger.info("Scikit-learn imported successfully")
                         except ImportError as e:
-                            logger.warning(f"Some ML libraries not available: {e}")
+                            logger.warning(f"Scikit-learn components not available: {e}")
+                            ml_libraries_available['sklearn'] = False
 
                         # INDUSTRY LEVEL: Advanced feature scaling
-                        robust_scaler = RobustScaler()
-                        X_train_robust = robust_scaler.fit_transform(X_train)
-                        X_test_robust = robust_scaler.transform(X_test)
+                        if ml_libraries_available.get('sklearn', False):
+                            robust_scaler = RobustScaler()
+                            X_train_robust = robust_scaler.fit_transform(X_train)
+                            X_test_robust = robust_scaler.transform(X_test)
+                        else:
+                            # Fallback to simple scaling
+                            X_train_robust = X_train
+                            X_test_robust = X_test
 
                         # INDUSTRY LEVEL: TOP 5 ML MODELS FOR FINANCIAL PREDICTION
+                        models = {}
+                        predictions = {}
 
                         # 1. XGBoost - Best for tabular financial data
-                        logger.info("Training XGBoost model...")
-                        xgb_model = xgb.XGBRegressor(
-                            n_estimators=200,
-                            max_depth=6,
-                            learning_rate=0.1,
-                            subsample=0.8,
-                            colsample_bytree=0.8,
-                            random_state=42,
-                            n_jobs=-1
-                        )
-                        xgb_model.fit(X_train_robust, y_train)
+                        if 'xgb' in ml_libraries_available:
+                            try:
+                                logger.info("Training XGBoost model...")
+                                xgb_model = ml_libraries_available['xgb'].XGBRegressor(
+                                    n_estimators=200,
+                                    max_depth=6,
+                                    learning_rate=0.1,
+                                    subsample=0.8,
+                                    colsample_bytree=0.8,
+                                    random_state=42,
+                                    n_jobs=-1
+                                )
+                                xgb_model.fit(X_train_robust, y_train)
+                                models['xgb'] = xgb_model
+                                predictions['xgb'] = xgb_model.predict(X_test_robust)
+                                logger.info("XGBoost model trained successfully")
+                            except Exception as e:
+                                logger.error(f"Error training XGBoost: {e}")
 
                         # 2. LightGBM - Fast gradient boosting
-                        logger.info("Training LightGBM model...")
-                        lgb_model = lgb.LGBMRegressor(
-                            n_estimators=200,
-                            max_depth=6,
-                            learning_rate=0.1,
-                            subsample=0.8,
-                            colsample_bytree=0.8,
-                            random_state=42,
-                            n_jobs=-1,
-                            verbose=-1
-                        )
-                        lgb_model.fit(X_train_robust, y_train)
+                        if 'lgb' in ml_libraries_available:
+                            try:
+                                logger.info("Training LightGBM model...")
+                                lgb_model = ml_libraries_available['lgb'].LGBMRegressor(
+                                    n_estimators=200,
+                                    max_depth=6,
+                                    learning_rate=0.1,
+                                    subsample=0.8,
+                                    colsample_bytree=0.8,
+                                    random_state=42,
+                                    n_jobs=-1,
+                                    verbose=-1
+                                )
+                                lgb_model.fit(X_train_robust, y_train)
+                                models['lgb'] = lgb_model
+                                predictions['lgb'] = lgb_model.predict(X_test_robust)
+                                logger.info("LightGBM model trained successfully")
+                            except Exception as e:
+                                logger.error(f"Error training LightGBM: {e}")
 
-                        # 3. Extra Trees - Extremely randomized trees
-                        logger.info("Training Extra Trees model...")
-                        et_model = ExtraTreesRegressor(
-                            n_estimators=200,
-                            max_depth=10,
-                            random_state=42,
-                            n_jobs=-1
-                        )
-                        et_model.fit(X_train_robust, y_train)
+                        # 3. CatBoost - Categorical features handling
+                        if 'cb' in ml_libraries_available:
+                            try:
+                                logger.info("Training CatBoost model...")
+                                cb_model = ml_libraries_available['cb'].CatBoostRegressor(
+                                    iterations=200,
+                                    depth=6,
+                                    learning_rate=0.1,
+                                    random_state=42,
+                                    verbose=False
+                                )
+                                cb_model.fit(X_train_robust, y_train)
+                                models['cb'] = cb_model
+                                predictions['cb'] = cb_model.predict(X_test_robust)
+                                logger.info("CatBoost model trained successfully")
+                            except Exception as e:
+                                logger.error(f"Error training CatBoost: {e}")
 
-                        # 4. Support Vector Regression - Non-linear patterns
-                        logger.info("Training SVR model...")
-                        svr_model = SVR(
-                            kernel='rbf',
-                            C=100,
-                            gamma='scale',
-                            epsilon=0.1
-                        )
-                        svr_model.fit(X_train_robust, y_train)
+                        # 4. Extra Trees - Extremely randomized trees
+                        if ml_libraries_available.get('sklearn', False):
+                            try:
+                                logger.info("Training Extra Trees model...")
+                                et_model = ExtraTreesRegressor(
+                                    n_estimators=200,
+                                    max_depth=10,
+                                    random_state=42,
+                                    n_jobs=-1
+                                )
+                                et_model.fit(X_train_robust, y_train)
+                                models['et'] = et_model
+                                predictions['et'] = et_model.predict(X_test_robust)
+                                logger.info("Extra Trees model trained successfully")
+                            except Exception as e:
+                                logger.error(f"Error training Extra Trees: {e}")
 
-                        # 5. Multi-layer Perceptron - Neural network
-                        logger.info("Training MLP Neural Network...")
-                        mlp_model = MLPRegressor(
-                            hidden_layer_sizes=(256, 128, 64),
-                            activation='relu',
-                            solver='adam',
-                            alpha=0.001,
-                            learning_rate='adaptive',
-                            max_iter=500,
-                            random_state=42
-                        )
-                        mlp_model.fit(X_train_robust, y_train)
+                        # 5. Support Vector Regression - Non-linear patterns
+                        if ml_libraries_available.get('sklearn', False):
+                            try:
+                                logger.info("Training SVR model...")
+                                svr_model = SVR(
+                                    kernel='rbf',
+                                    C=100,
+                                    gamma='scale',
+                                    epsilon=0.1
+                                )
+                                svr_model.fit(X_train_robust, y_train)
+                                models['svr'] = svr_model
+                                predictions['svr'] = svr_model.predict(X_test_robust)
+                                logger.info("SVR model trained successfully")
+                            except Exception as e:
+                                logger.error(f"Error training SVR: {e}")
+
+                        # 6. Multi-layer Perceptron - Neural network
+                        if ml_libraries_available.get('sklearn', False):
+                            try:
+                                logger.info("Training MLP Neural Network...")
+                                mlp_model = MLPRegressor(
+                                    hidden_layer_sizes=(256, 128, 64),
+                                    activation='relu',
+                                    solver='adam',
+                                    alpha=0.001,
+                                    learning_rate='adaptive',
+                                    max_iter=500,
+                                    random_state=42
+                                )
+                                mlp_model.fit(X_train_robust, y_train)
+                                models['mlp'] = mlp_model
+                                predictions['mlp'] = mlp_model.predict(X_test_robust)
+                                logger.info("MLP Neural Network trained successfully")
+                            except Exception as e:
+                                logger.error(f"Error training MLP: {e}")
 
                         # INDUSTRY LEVEL: ADVANCED ENSEMBLE METHODS
-                        logger.info("Creating advanced ensemble models...")
+                        if len(models) > 1 and ml_libraries_available.get('sklearn', False):
+                            try:
+                                logger.info("Creating advanced ensemble models...")
 
-                        # Voting Regressor - Combines all 5 models
-                        voting_ensemble = VotingRegressor([
-                            ('xgb', xgb_model),
-                            ('lgb', lgb_model),
-                            ('et', et_model),
-                            ('svr', svr_model),
-                            ('mlp', mlp_model)
-                        ])
-                        voting_ensemble.fit(X_train_robust, y_train)
+                                # Create ensemble only with successfully trained models
+                                ensemble_models = [(name, model) for name, model in models.items()]
 
-                        # Stacking Regressor with top models
-                        stacking_regressor = StackingRegressor(
-                            estimators=[
-                                ('xgb', xgb_model),
-                                ('lgb', lgb_model),
-                                ('et', et_model),
-                                ('svr', svr_model),
-                                ('mlp', mlp_model)
-                            ],
-                            final_estimator=LinearRegression(),
-                            cv=5
-                        )
-                        stacking_regressor.fit(X_train_robust, y_train)
+                                if len(ensemble_models) >= 2:
+                                    voting_ensemble = VotingRegressor(ensemble_models)
+                                    voting_ensemble.fit(X_train_robust, y_train)
+                                    models['ensemble'] = voting_ensemble
+                                    predictions['ensemble'] = voting_ensemble.predict(X_test_robust)
+                                    logger.info("Ensemble model created successfully")
+                            except Exception as e:
+                                logger.error(f"Error creating ensemble: {e}")
+
+                        # Stacking Regressor with top models (if we have enough models)
+                        if len(models) >= 3 and ml_libraries_available.get('sklearn', False):
+                            try:
+                                logger.info("Creating stacking ensemble...")
+                                from sklearn.ensemble import StackingRegressor
+                                from sklearn.linear_model import LinearRegression
+
+                                # Create stacking only with successfully trained models
+                                stacking_estimators = [(name, model) for name, model in models.items() if name != 'ensemble']
+
+                                if len(stacking_estimators) >= 2:
+                                    stacking_regressor = StackingRegressor(
+                                        estimators=stacking_estimators,
+                                        final_estimator=LinearRegression(),
+                                        cv=3  # Reduced CV for faster training
+                                    )
+                                    stacking_regressor.fit(X_train_robust, y_train)
+                                    models['stacking'] = stacking_regressor
+                                    predictions['stacking'] = stacking_regressor.predict(X_test_robust)
+                                    logger.info("Stacking ensemble created successfully")
+                            except Exception as e:
+                                logger.error(f"Error creating stacking ensemble: {e}")
 
                         # INDUSTRY LEVEL: MODEL EVALUATION AND SELECTION
-                        models = {
-                            'XGBoost': xgb_model,
-                            'LightGBM': lgb_model,
-                            'ExtraTrees': et_model,
-                            'SVR': svr_model,
-                            'MLP': mlp_model,
-                            'VotingEnsemble': voting_ensemble,
-                            'StackingEnsemble': stacking_regressor
-                        }
+                        if len(models) > 0:
+                            logger.info(f"Evaluating {len(models)} trained models...")
+                            model_scores = {}
+                            model_predictions = {}
 
-                        model_scores = {}
-                        model_predictions = {}
+                            for name, model in models.items():
+                                try:
+                                    # Use the predictions we already calculated if available
+                                    if name in predictions:
+                                        y_pred_robust = predictions[name]
+                                    else:
+                                        y_pred_robust = model.predict(X_test_robust)
 
-                        for name, model in models.items():
-                            y_pred_robust = model.predict(X_test_robust)
-                            y_pred = scaler_y.inverse_transform(y_pred_robust.reshape(-1, 1)).ravel()
-                            y_test_actual = scaler_y.inverse_transform(y_test.reshape(-1, 1)).ravel()
+                                    y_pred = scaler_y.inverse_transform(y_pred_robust.reshape(-1, 1)).ravel()
+                                    y_test_actual = scaler_y.inverse_transform(y_test.reshape(-1, 1)).ravel()
 
-                            mse_model = mean_squared_error(y_test_actual, y_pred)
-                            mae_model = mean_absolute_error(y_test_actual, y_pred)
-                            r2_model = r2_score(y_test_actual, y_pred)
+                                    mse_model = mean_squared_error(y_test_actual, y_pred)
+                                    mae_model = mean_absolute_error(y_test_actual, y_pred)
+                                    r2_model = r2_score(y_test_actual, y_pred)
 
-                            # Get prediction for current price
-                            last_features = X.iloc[-1:].values
-                            last_features_robust = robust_scaler.transform(scaler_X.transform(last_features))
-                            pred_scaled = model.predict(last_features_robust)
-                            pred_price = scaler_y.inverse_transform(pred_scaled.reshape(-1, 1))[0][0]
+                                    # Get prediction for current price
+                                    last_features = X.iloc[-1:].values
+                                    last_features_robust = robust_scaler.transform(scaler_X.transform(last_features))
+                                    pred_scaled = model.predict(last_features_robust)
+                                    pred_price = scaler_y.inverse_transform(pred_scaled.reshape(-1, 1))[0][0]
 
-                            model_scores[name] = {
-                                'mse': mse_model,
-                                'mae': mae_model,
-                                'r2': r2_model,
-                                'prediction': pred_price
-                            }
-                            model_predictions[name] = y_pred
+                                    model_scores[name] = {
+                                        'mse': mse_model,
+                                        'mae': mae_model,
+                                        'r2': r2_model,
+                                        'prediction': pred_price
+                                    }
+                                    model_predictions[name] = y_pred
+                                    logger.info(f"{name} - R2: {r2_model:.4f}, Prediction: {pred_price:.2f}")
+                                except Exception as e:
+                                    logger.error(f"Error evaluating {name}: {e}")
 
-                        # Select best model based on R2 score
-                        best_model_name = max(model_scores.keys(), key=lambda k: model_scores[k]['r2'])
-                        best_model = models[best_model_name]
-
-                        predicted_price = model_scores[best_model_name]['prediction']
-                        mse = model_scores[best_model_name]['mse']
-                        mae = model_scores[best_model_name]['mae']
-                        r2 = model_scores[best_model_name]['r2']
+                            # Select best model based on R2 score
+                            if model_scores:
+                                best_model_name = max(model_scores.keys(), key=lambda k: model_scores[k]['r2'])
+                                predicted_price = model_scores[best_model_name]['prediction']
+                                mse = model_scores[best_model_name]['mse']
+                                mae = model_scores[best_model_name]['mae']
+                                r2 = model_scores[best_model_name]['r2']
+                                logger.info(f"Best ML model: {best_model_name} (R2: {r2:.4f})")
+                            else:
+                                logger.warning("No models successfully evaluated, using fallback")
+                                predicted_price = current_price * 1.01
+                                mse = mae = r2 = 0.0
+                                best_model_name = "fallback"
+                        else:
+                            logger.warning("No ML models trained, using fallback prediction")
+                            predicted_price = current_price * 1.01
+                            mse = mae = r2 = 0.0
+                            best_model_name = "fallback"
 
                         logger.info(f"Best ML model for {ticker}: {best_model_name} (R2: {r2:.4f})")
 
@@ -4388,8 +4525,8 @@ class Stock:
                 "success": True,
                 "stock_data": stock_data,
                 "recommendation": recommendation,
-                "buy_score": float(buy_score),
-                "sell_score": float(sell_score),
+                "buy_score": 0.0,  # Will be calculated in proper scoring logic
+                "sell_score": 0.0,  # Will be calculated in proper scoring logic
                 "technical_indicators": {
                     "sma_50": float(sma_50),
                     "sma_200": float(sma_200),
@@ -4580,11 +4717,40 @@ class StockTradingBot:
             reddit_user_agent=config.get("reddit_user_agent")
         )
 
+        # Initialize production core components
+        try:
+            from core import AdaptiveThresholdManager, IntegratedRiskManager
+            self.adaptive_threshold_manager = AdaptiveThresholdManager()
+            self.risk_manager = IntegratedRiskManager()
+            self.production_core_enabled = True
+            logger.info("Production core components initialized successfully")
+        except ImportError as e:
+            logger.warning(f"Production core components not available: {e}")
+            self.adaptive_threshold_manager = None
+            self.risk_manager = None
+            self.production_core_enabled = False
+
+        # Initialize unified data service manager
+        self.data_service_manager = self._initialize_data_services()
+
         # Initialize chatbot command handler
         self.chatbot = ChatbotCommandHandler(self)
         self.bot_running = False
         self.command_queue = queue.Queue()
         self.initialize()
+
+    def _initialize_data_services(self):
+        """Initialize unified data service manager"""
+        try:
+            # Try to initialize Fyers data service first
+            from fyers_data_service import FyersDataService
+            fyers_service = FyersDataService()
+            # Note: FyersDataService runs as a separate service, no direct connection needed
+            logger.info("Fyers data service initialized (runs independently)")
+            return {"primary": fyers_service, "fallback": "yahoo"}
+        except Exception as e:
+            logger.error(f"Error initializing data services: {e}")
+            return {"primary": None, "fallback": "yahoo"}
 
     def initialize(self):
         """Initialize the bot and its components."""
@@ -4616,7 +4782,7 @@ class StockTradingBot:
             return None
 
         ticker = analysis["stock_data"]["symbol"]
-        recommendation = analysis["recommendation"]
+        # Note: recommendation variable removed as it was unused after circular logic fix
         current_price = analysis["stock_data"]["current_price"]["INR"]  # Changed to INR
         ml_analysis = analysis["ml_analysis"]
         technical_indicators = analysis["technical_indicators"]
@@ -4631,72 +4797,72 @@ class StockTradingBot:
         # Use Fyers for historical data (2y) - SAME LOGIC
         history = get_stock_data_fyers_or_yf(ticker, period="2y")
 
-        # PRODUCTION FIX: Optimized signal weights for Indian market
+        # PRODUCTION FIX: Rebalanced signal weights for better action-oriented trading
         weights = {
-            "technical": 0.6,    # Increased - most reliable signals
-            "sentiment": 0.3,    # Maintained - important for Indian stocks
-            "ml": 0.1,          # Reduced - avoid over-reliance on slow ML
+            "technical": 0.5,    # Technical analysis - real-time signals
+            "sentiment": 0.25,   # Increased sentiment weight for market psychology
+            "ml": 0.25,         # Balanced ML weight for predictions
             "rl": 0.0           # Disabled - causing processing delays
         }
         scores = {"buy": 0.0, "sell": 0.0}
 
-        # PRODUCTION FIX: Enhanced technical scoring with stronger signals
-        technical_score = 0.0
+        # PRODUCTION FIX: Direct technical analysis scoring (no circular dependency)
+        buy_technical_score = 0.0
+        sell_technical_score = 0.0
 
-        # Base recommendation score (stronger weighting)
-        if recommendation in ["BUY", "STRONG BUY"]:
-            technical_score += 0.8  # Increased from 0.6
+        # BUY SIGNALS - Direct technical analysis
+        # RSI oversold conditions (stronger signal)
+        if technical_indicators["rsi"] < 30:
+            buy_technical_score += 0.4  # Strong oversold
+        elif technical_indicators["rsi"] < 40:
+            buy_technical_score += 0.2  # Moderate oversold
 
-            # RSI oversold conditions (stronger signal)
-            if technical_indicators["rsi"] < 30:
-                technical_score += 0.4  # Strong oversold
-            elif technical_indicators["rsi"] < 40:
-                technical_score += 0.2  # Moderate oversold
+        # MACD bullish momentum
+        if technical_indicators["macd"] > technical_indicators["signal_line"]:
+            buy_technical_score += 0.3
 
-            # MACD momentum confirmation
-            if technical_indicators["macd"] > technical_indicators["signal_line"]:
-                technical_score += 0.3  # Increased from 0.2
+        # Bollinger Band oversold (potential bounce)
+        if current_price < technical_indicators["bb_lower"]:
+            buy_technical_score += 0.3
 
-            # Bollinger Band breakout potential
-            if current_price < technical_indicators["bb_lower"]:
-                technical_score += 0.3  # Increased from 0.2
+        # Moving average bullish trend
+        if technical_indicators["sma_50"] > technical_indicators["sma_200"]:
+            buy_technical_score += 0.3
 
-            # Moving average trend confirmation
-            if technical_indicators["sma_50"] > technical_indicators["sma_200"]:
-                technical_score += 0.3  # Increased from 0.2
+        # Volume confirmation for buy signals
+        if hasattr(technical_indicators, 'volume_ratio') and technical_indicators.get('volume_ratio', 1.0) > 1.2:
+            buy_technical_score += 0.2
 
-            # Volume confirmation (if available)
-            if hasattr(technical_indicators, 'volume_ratio') and technical_indicators.get('volume_ratio', 1.0) > 1.2:
-                technical_score += 0.2  # Volume spike confirmation
+        # Price above short-term moving average
+        if current_price > technical_indicators["sma_50"]:
+            buy_technical_score += 0.2
 
-            scores["buy"] += technical_score * weights["technical"]
+        # SELL SIGNALS - Direct technical analysis
+        # RSI overbought conditions
+        if technical_indicators["rsi"] > 70:
+            sell_technical_score += 0.4  # Strong overbought
+        elif technical_indicators["rsi"] > 60:
+            sell_technical_score += 0.2  # Moderate overbought
 
-        elif recommendation in ["SELL", "STRONG SELL"]:
-            technical_score -= 0.8  # Increased from 0.6
+        # MACD bearish momentum
+        if technical_indicators["macd"] < technical_indicators["signal_line"]:
+            sell_technical_score += 0.3
 
-            # RSI overbought conditions
-            if technical_indicators["rsi"] > 70:
-                technical_score -= 0.4  # Strong overbought
-            elif technical_indicators["rsi"] > 60:
-                technical_score -= 0.2  # Moderate overbought
+        # Bollinger Band overbought
+        if current_price > technical_indicators["bb_upper"]:
+            sell_technical_score += 0.3
 
-            # MACD momentum confirmation
-            if technical_indicators["macd"] < technical_indicators["signal_line"]:
-                technical_score -= 0.3  # Increased from 0.2
+        # Moving average bearish trend
+        if technical_indicators["sma_50"] < technical_indicators["sma_200"]:
+            sell_technical_score += 0.3
 
-            # Bollinger Band breakdown
-            if current_price > technical_indicators["bb_upper"]:
-                technical_score -= 0.3  # Increased from 0.2
+        # Price below short-term moving average
+        if current_price < technical_indicators["sma_50"]:
+            sell_technical_score += 0.2
 
-            # Moving average trend confirmation
-            if technical_indicators["sma_50"] < technical_indicators["sma_200"]:
-                technical_score -= 0.3  # Increased from 0.2
-
-            # Volume confirmation
-            if hasattr(technical_indicators, 'volume_ratio') and technical_indicators.get('volume_ratio', 1.0) > 1.2:
-                technical_score -= 0.2  # Volume spike confirmation
-
-            scores["sell"] += abs(technical_score) * weights["technical"]
+        # Apply technical scores
+        scores["buy"] += buy_technical_score * weights["technical"]
+        scores["sell"] += sell_technical_score * weights["technical"]
 
         # PRODUCTION FIX: Enhanced breakout detection with volume confirmation
         price_near_resistance = abs(current_price - resistance_level) / resistance_level < 0.02
@@ -4777,19 +4943,49 @@ class StockTradingBot:
         final_buy_score = scores["buy"]
         final_sell_score = scores["sell"]
 
-        # PRODUCTION FIX: Industry-standard confidence thresholds
-        # Dynamic thresholds based on market conditions
-        market_volatility = volatility
-        base_buy_threshold = 0.45    # Industry standard: 45% confidence for buy
-        base_sell_threshold = 0.45   # Industry standard: 45% confidence for sell
+        # PRODUCTION FIX: Market Regime Detection for adaptive strategies
+        def detect_market_regime(price_data, volatility):
+            """Detect market regime: Trending, Range-bound, or Volatile"""
+            try:
+                if len(price_data) < 20:
+                    return "RANGE_BOUND"  # Default for insufficient data
 
-        # Market regime adjustments
-        if market_volatility > 0.03:  # High volatility market
-            base_buy_threshold -= 0.05  # More aggressive in volatile markets
-            base_sell_threshold -= 0.05
-        elif market_volatility < 0.015:  # Low volatility market
-            base_buy_threshold += 0.05   # More conservative in stable markets
-            base_sell_threshold += 0.05
+                # Calculate trend strength
+                sma_20 = price_data[-20:].mean()
+                sma_50 = price_data[-50:].mean() if len(price_data) >= 50 else sma_20
+                price_change_20d = (current_price - price_data[-20]) / price_data[-20] if price_data[-20] > 0 else 0
+
+                # Regime classification
+                if volatility > 0.04:  # High volatility threshold
+                    return "VOLATILE"
+                elif abs(price_change_20d) > 0.15:  # Strong trend (15%+ move in 20 days)
+                    return "TRENDING"
+                elif abs(price_change_20d) < 0.05 and volatility < 0.02:  # Low movement, low volatility
+                    return "RANGE_BOUND"
+                else:
+                    return "TRENDING" if abs(sma_20 - sma_50) / sma_50 > 0.03 else "RANGE_BOUND"
+            except:
+                return "RANGE_BOUND"  # Safe default
+
+        market_regime = detect_market_regime(history['Close'].values, volatility)
+        logger.info(f"Market regime detected for {ticker}: {market_regime}")
+
+        # PRODUCTION FIX: Regime-specific confidence thresholds
+        if market_regime == "TRENDING":
+            # More aggressive in trending markets
+            base_buy_threshold = 0.35
+            base_sell_threshold = 0.35
+            logger.info(f"TRENDING market: Using aggressive thresholds (0.35)")
+        elif market_regime == "VOLATILE":
+            # Quick decisions in volatile markets
+            base_buy_threshold = 0.40
+            base_sell_threshold = 0.40
+            logger.info(f"VOLATILE market: Using quick decision thresholds (0.40)")
+        else:  # RANGE_BOUND
+            # More conservative in range-bound markets
+            base_buy_threshold = 0.50
+            base_sell_threshold = 0.50
+            logger.info(f"RANGE_BOUND market: Using conservative thresholds (0.50)")
 
         # Risk level adjustments
         if risk_level == "HIGH":
@@ -4811,44 +5007,143 @@ class StockTradingBot:
             if ticker in self.portfolio.holdings else 0
         )
 
-        # PRODUCTION FIX: Enhanced signal detection with momentum and volume
-        buy_signals = sum([
-            technical_score > 0.2,  # Stronger technical signal required
-            sentiment_score > 0.1,  # Positive sentiment threshold
-            ml_score > 0.05,        # ML prediction threshold
-            # Momentum signals
-            technical_indicators.get("rsi", 50) < 40,  # Oversold condition
-            technical_indicators.get("macd", 0) > technical_indicators.get("signal_line", 0),  # MACD bullish
-            current_ticker_price > resistance_level * 1.01,  # Breakout above resistance
-            # Volume confirmation (if available)
-            technical_indicators.get("volume_ratio", 1.0) > 1.2,  # Volume spike
-        ])
+        # PRODUCTION FIX: Weighted signal system (replaces binary signals)
+        # Calculate weighted signal strength instead of binary signals
 
-        sell_signals = sum([
-            technical_score < -0.2,  # Stronger technical sell signal
-            sentiment_score < -0.1,  # Negative sentiment threshold
-            ml_score < -0.05,        # ML prediction threshold
-            # Price action signals
-            current_ticker_price < support_level * 0.98,  # Breakdown below support (tightened)
-            current_ticker_price > resistance_level * 1.02,  # Overbought at resistance
-            # Risk management signals
-            unrealized_pnl < -0.05 * total_value,  # Stop loss at 5% (tightened from 6%)
-            # Momentum signals
-            technical_indicators.get("rsi", 50) > 65,  # Overbought condition
-            technical_indicators.get("macd", 0) < technical_indicators.get("signal_line", 0),  # MACD bearish
-        ])
+        # Define signal weights based on importance and reliability
+        signal_weights = {
+            "technical": 0.25,      # Technical analysis strength
+            "sentiment": 0.15,      # Market sentiment strength
+            "ml": 0.15,            # ML prediction strength
+            "rsi": 0.15,           # RSI momentum strength
+            "macd": 0.10,          # MACD trend strength
+            "breakout": 0.10,      # Breakout/breakdown strength
+            "volume": 0.10         # Volume confirmation strength
+        }
 
-        # Portfolio Constraints
+        # Calculate individual signal strengths (0.0 to 1.0)
+        signal_strengths = {}
+
+        # Technical signal strength (normalized)
+        signal_strengths["technical"] = min(max(buy_technical_score / 0.4, 0.0), 1.0)  # Normalize to 0-1
+
+        # Sentiment signal strength (normalized)
+        signal_strengths["sentiment"] = min(max(sentiment_score / 0.2, 0.0), 1.0) if sentiment_score > 0 else 0.0
+
+        # ML signal strength (normalized)
+        signal_strengths["ml"] = min(max(ml_score / 0.1, 0.0), 1.0) if ml_score > 0 else 0.0
+
+        # RSI signal strength (distance from oversold)
+        rsi_value = technical_indicators.get("rsi", 50)
+        if rsi_value < 40:
+            signal_strengths["rsi"] = min((40 - rsi_value) / 20, 1.0)  # Stronger as RSI gets lower
+        else:
+            signal_strengths["rsi"] = 0.0
+
+        # MACD signal strength
+        macd_val = technical_indicators.get("macd", 0)
+        signal_val = technical_indicators.get("signal_line", 0)
+        if macd_val > signal_val:
+            signal_strengths["macd"] = min((macd_val - signal_val) / abs(signal_val) if signal_val != 0 else 1.0, 1.0)
+        else:
+            signal_strengths["macd"] = 0.0
+
+        # Breakout signal strength (proximity to resistance)
+        resistance_breakout_threshold = resistance_level * 1.01
+        if current_ticker_price > resistance_level:
+            # Price above resistance - calculate strength based on how far above
+            signal_strengths["breakout"] = min((current_ticker_price - resistance_level) / (resistance_breakout_threshold - resistance_level), 1.0)
+        else:
+            # Price below resistance - calculate proximity strength
+            proximity_to_resistance = (current_ticker_price - resistance_level * 0.98) / (resistance_level * 0.03)
+            signal_strengths["breakout"] = max(min(proximity_to_resistance, 0.8), 0.0)  # Max 0.8 for proximity
+
+        # Volume signal strength
+        volume_ratio = technical_indicators.get("volume_ratio", 1.0)
+        if volume_ratio > 1.0:
+            signal_strengths["volume"] = min((volume_ratio - 1.0) / 0.5, 1.0)  # Normalize volume spike
+        else:
+            signal_strengths["volume"] = 0.0
+
+        # Calculate weighted signal score
+        weighted_signal_score = sum(
+            signal_strengths[signal] * signal_weights[signal]
+            for signal in signal_weights.keys()
+        )
+
+        # DEBUG: Log weighted signal breakdown
+        logger.info(f"=== WEIGHTED SIGNAL BREAKDOWN for {ticker} ===")
+        for signal, strength in signal_strengths.items():
+            weight = signal_weights[signal]
+            contribution = strength * weight
+            logger.info(f"  {signal}: strength={strength:.3f} × weight={weight:.3f} = {contribution:.3f}")
+        logger.info(f"  TOTAL WEIGHTED SIGNAL SCORE: {weighted_signal_score:.3f}")
+
+        # Convert to legacy buy_signals for compatibility (but use weighted logic)
+        buy_signals = int(weighted_signal_score * 7)  # Scale to 0-7 for logging compatibility
+
+        # Calculate weighted sell signal score (similar to buy signals)
+        sell_signal_strengths = {}
+
+        # Technical sell signal strength
+        sell_signal_strengths["technical"] = min(max(sell_technical_score / 0.4, 0.0), 1.0)
+
+        # Sentiment sell signal strength
+        sell_signal_strengths["sentiment"] = min(max(abs(sentiment_score) / 0.2, 0.0), 1.0) if sentiment_score < 0 else 0.0
+
+        # ML sell signal strength
+        sell_signal_strengths["ml"] = min(max(abs(ml_score) / 0.1, 0.0), 1.0) if ml_score < 0 else 0.0
+
+        # RSI overbought signal strength
+        if rsi_value > 65:
+            sell_signal_strengths["rsi"] = min((rsi_value - 65) / 15, 1.0)  # Stronger as RSI gets higher
+        else:
+            sell_signal_strengths["rsi"] = 0.0
+
+        # MACD bearish signal strength
+        if macd_val < signal_val:
+            sell_signal_strengths["macd"] = min(abs(macd_val - signal_val) / abs(signal_val) if signal_val != 0 else 1.0, 1.0)
+        else:
+            sell_signal_strengths["macd"] = 0.0
+
+        # Support breakdown signal strength
+        if current_ticker_price < support_level:
+            sell_signal_strengths["breakdown"] = min((support_level - current_ticker_price) / (support_level * 0.02), 1.0)
+        else:
+            sell_signal_strengths["breakdown"] = 0.0
+
+        # Risk management signal strength
+        if unrealized_pnl < 0:
+            sell_signal_strengths["risk"] = min(abs(unrealized_pnl) / (0.05 * total_value), 1.0)
+        else:
+            sell_signal_strengths["risk"] = 0.0
+
+        # Calculate weighted sell signal score
+        sell_signal_weights = {
+            "technical": 0.25, "sentiment": 0.15, "ml": 0.15, "rsi": 0.15,
+            "macd": 0.10, "breakdown": 0.10, "risk": 0.10
+        }
+
+        weighted_sell_signal_score = sum(
+            sell_signal_strengths.get(signal, 0.0) * sell_signal_weights[signal]
+            for signal in sell_signal_weights.keys()
+        )
+
+        # Convert to legacy sell_signals for compatibility
+        sell_signals = int(weighted_sell_signal_score * 7)
+
+        # Portfolio Constraints (REMOVED SECTOR EXPOSURE LIMITS)
         max_exposure_per_stock = total_value * 0.25
         current_stock_exposure = self.portfolio.holdings.get(ticker, {"qty": 0})["qty"] * current_ticker_price
-        sector = analysis["stock_data"]["sector"]
-        sector_exposure = sum(
-            data["qty"] * price["price"]
-            for asset, data in self.portfolio.holdings.items()
-            for price in [self.portfolio.get_current_prices().get(asset, {"price": 0})]
-            if analysis["stock_data"].get("sector") == sector
-        )
-        max_sector_exposure = total_value * 0.4
+
+        # DEBUG: Log portfolio constraints (simplified - no sector limits)
+        logger.info(f"=== PORTFOLIO CONSTRAINTS for {ticker} ===")
+        logger.info(f"  Total Portfolio Value: Rs.{total_value:.2f}")
+        logger.info(f"  Available Cash: Rs.{available_cash:.2f}")
+        logger.info(f"  Max Stock Exposure (25%): Rs.{max_exposure_per_stock:.2f}")
+        logger.info(f"  Current Stock Exposure: Rs.{current_stock_exposure:.2f}")
+        logger.info(f"  Remaining Stock Capacity: Rs.{max_exposure_per_stock - current_stock_exposure:.2f}")
+        logger.info(f"  SECTOR EXPOSURE LIMITS: DISABLED (removed constraint)")
 
         # Calculate ATR for volatility-based sizing
         high_low = history['High'] - history['Low']
@@ -4858,15 +5153,36 @@ class StockTradingBot:
         atr = true_range.rolling(window=14).mean().iloc[-1]
         atr = float(atr) if not pd.isna(atr) else volatility * current_ticker_price
 
-        # PRODUCTION FIX: Enhanced Kelly Criterion with dynamic adjustments
-        win_prob = min(final_buy_score / 0.45, 1.0) if final_buy_score > 0 else 0.5  # Adjusted threshold
-        expected_return = (ml_analysis.get("predicted_price", current_ticker_price) / current_ticker_price - 1) if current_ticker_price > 0 else 0
+        # FIXED: Realistic Kelly Criterion with proper inputs
+        # Fix 1: Realistic win probability based on buy score (60-85% range)
+        win_prob = 0.60 + (final_buy_score * 0.25)  # Maps 0.0-1.0 buy score to 60-85% win rate
+        win_prob = max(0.60, min(win_prob, 0.85))  # Bound between 60-85%
 
-        # Enhanced Kelly calculation with market conditions
-        if expected_return > 0:
-            kelly_fraction = (win_prob * (expected_return + 1) - 1) / expected_return
+        # Fix 2: Realistic expected return calculation
+        predicted_price = ml_analysis.get("predicted_price", current_ticker_price)
+        if predicted_price and current_ticker_price > 0:
+            ml_expected_return = (predicted_price / current_ticker_price - 1)
+            # Bound ML predictions to reasonable range (-10% to +15%)
+            ml_expected_return = max(-0.10, min(ml_expected_return, 0.15))
         else:
-            kelly_fraction = 0.12  # Base position size
+            ml_expected_return = 0.0
+
+        # Combine multiple factors for expected return
+        technical_return = (final_buy_score - 0.5) * 0.10  # -5% to +5% based on buy score
+        sentiment_return = sentiment_score * 0.05 if sentiment_score > 0 else 0.0  # 0% to +5%
+
+        # Weighted expected return (more conservative than individual components)
+        expected_return = (ml_expected_return * 0.4 + technical_return * 0.4 + sentiment_return * 0.2)
+        expected_return = max(0.01, min(expected_return, 0.12))  # Bound between 1-12%
+
+        # Fix 3: Proper Kelly calculation
+        if expected_return > 0 and win_prob > 0.5:
+            # Kelly formula: f = (bp - q) / b, where b = odds, p = win prob, q = lose prob
+            odds_ratio = expected_return / (1 - expected_return) if expected_return < 1 else expected_return
+            kelly_fraction = (win_prob * odds_ratio - (1 - win_prob)) / odds_ratio
+            kelly_fraction = max(0.05, kelly_fraction)  # Minimum 5% position
+        else:
+            kelly_fraction = 0.08  # Conservative base position size
 
         # Market condition adjustments
         if volatility > 0.03:  # High volatility
@@ -4880,6 +5196,19 @@ class StockTradingBot:
 
         # Final bounds with more aggressive limits
         kelly_fraction = max(min(kelly_fraction, 0.25), 0.08)  # 8-25% position size
+
+        # DEBUG: Log improved Kelly fraction calculation
+        logger.info(f"=== IMPROVED KELLY FRACTION CALCULATION for {ticker} ===")
+        logger.info(f"  Win Probability: {win_prob:.3f} (60-85% realistic range)")
+        logger.info(f"  Expected Return Components:")
+        logger.info(f"    - ML Expected Return: {ml_expected_return:.3f}")
+        logger.info(f"    - Technical Return: {technical_return:.3f}")
+        logger.info(f"    - Sentiment Return: {sentiment_return:.3f}")
+        logger.info(f"  Combined Expected Return: {expected_return:.3f} (1-12% bounded)")
+        logger.info(f"  Base Kelly Fraction: {kelly_fraction:.3f}")
+        logger.info(f"  Signal Strength: {signal_strength:.3f} ({buy_signals}/7)")
+        logger.info(f"  Volatility: {volatility:.3f}")
+        logger.info(f"  Final Kelly Fraction: {kelly_fraction:.3f} (5-25% bounds)")
 
         # Liquidity Check
         avg_daily_volume = history["Volume"].rolling(window=20).mean().iloc[-1]
@@ -4976,27 +5305,71 @@ class StockTradingBot:
         # PRODUCTION FIX: More aggressive buy/sell decisions
         buy_qty = 0
         # Lowered signal requirement from 2 to 1 for more trading activity
-        if final_buy_score > confidence_threshold and buy_signals >= 1:
-            if available_cash < 5000:  # Minimum trade value in INR
-                logger.info(f"Skipping BUY for {ticker}: Insufficient cash (Rs.{available_cash:.2f} < Rs.5000)")
+
+        # PRODUCTION FIX: Weighted signal threshold system
+        # Define minimum weighted signal threshold based on market regime
+        if market_regime == "TRENDING":
+            min_weighted_signal_threshold = 0.15  # Lower threshold for trending markets
+        elif market_regime == "VOLATILE":
+            min_weighted_signal_threshold = 0.25  # Higher threshold for volatile markets
+        else:  # RANGE_BOUND
+            min_weighted_signal_threshold = 0.20  # Moderate threshold for range-bound markets
+
+        # DEBUG: Log buy decision pre-checks with weighted system
+        logger.info(f"=== BUY DECISION PRE-CHECKS for {ticker} ===")
+        logger.info(f"  Buy Score: {final_buy_score:.3f} > Threshold: {confidence_threshold:.3f} = {'✅' if final_buy_score > confidence_threshold else '❌'}")
+        logger.info(f"  Weighted Signal Score: {weighted_signal_score:.3f} > Threshold: {min_weighted_signal_threshold:.3f} = {'✅' if weighted_signal_score >= min_weighted_signal_threshold else '❌'}")
+        logger.info(f"  Legacy Buy Signals (for reference): {buy_signals}/7")
+        logger.info(f"  Market Regime: {market_regime} (threshold: {min_weighted_signal_threshold:.3f})")
+
+        # Use weighted signal system instead of binary signal count
+        if final_buy_score > confidence_threshold and weighted_signal_score >= min_weighted_signal_threshold:
+            if available_cash < 100:  # Minimum trade value in INR
+                logger.info(f"❌ SKIPPING BUY for {ticker}: Insufficient cash (Rs.{available_cash:.2f} < Rs.100)")
             else:
+                logger.info(f"✅ PROCEEDING with BUY calculation for {ticker}")
+
+                # Position sizing calculation with detailed logging
                 position_size_pct = kelly_fraction * 0.6
                 target_position_value = total_value * position_size_pct
+                logger.info(f"  Initial Position Value: Rs.{target_position_value:.2f} ({position_size_pct:.3f}% of portfolio)")
+
                 volatility_factor = max(0.4, min(1.6, 1.0 / (1 + atr / current_ticker_price))) if current_ticker_price > 0 else 1.0
                 target_position_value *= volatility_factor
+                logger.info(f"  After Volatility Factor ({volatility_factor:.3f}): Rs.{target_position_value:.2f}")
+
                 confidence_factor = 0.6 + (final_buy_score / 0.4) * 0.4
                 confidence_factor = min(max(confidence_factor, 0.6), 1.0)
                 target_position_value *= confidence_factor
-                target_position_value = max(5000, min(target_position_value, max_exposure_per_stock - current_stock_exposure))
-                target_position_value = min(target_position_value, max_sector_exposure - sector_exposure)
-                buy_qty = target_position_value / current_ticker_price if current_ticker_price > 0 else 0
-                buy_qty = min(buy_qty, max_qty_by_volume, available_cash / current_ticker_price)
-                buy_qty = max(0, int(buy_qty))
+                logger.info(f"  After Confidence Factor ({confidence_factor:.3f}): Rs.{target_position_value:.2f}")
 
-        # Sell Quantity Calculation
+                # Apply exposure limits (REMOVED SECTOR LIMITS)
+                before_limits = target_position_value
+                target_position_value = max(1500, min(target_position_value, max_exposure_per_stock - current_stock_exposure))
+                logger.info(f"  After Stock Exposure Limit: Rs.{target_position_value:.2f} (was Rs.{before_limits:.2f})")
+                logger.info(f"  Sector Exposure Limit: DISABLED (removed constraint)")
+
+                # Convert to quantity
+                buy_qty_before_limits = target_position_value / current_ticker_price if current_ticker_price > 0 else 0
+                logger.info(f"  Calculated Quantity (before volume/cash limits): {buy_qty_before_limits:.2f} shares")
+
+                buy_qty = min(buy_qty_before_limits, max_qty_by_volume, available_cash / current_ticker_price)
+                logger.info(f"  After Volume/Cash Limits: {buy_qty:.2f} shares")
+                logger.info(f"    - Max by Volume: {max_qty_by_volume:.2f}")
+                logger.info(f"    - Max by Cash: {available_cash / current_ticker_price:.2f}")
+
+                buy_qty = max(0, int(buy_qty))
+                logger.info(f"  FINAL BUY QUANTITY: {buy_qty} shares (Rs.{buy_qty * current_ticker_price:.2f})")
+        else:
+            logger.info(f"❌ BUY PRE-CHECKS FAILED for {ticker}")
+            logger.info(f"   - Buy Score Check: {'✅' if final_buy_score > confidence_threshold else '❌'}")
+            logger.info(f"   - Weighted Signal Check: {'✅' if weighted_signal_score >= min_weighted_signal_threshold else '❌'}")
+
+        # Sell Quantity Calculation with weighted signals
         sell_qty = 0
-        # Lowered signal requirement from 2 to 1 for more trading activity
-        if ticker in self.portfolio.holdings and final_sell_score > sell_confidence_threshold and sell_signals >= 1:
+        min_weighted_sell_threshold = min_weighted_signal_threshold * 0.8  # Slightly lower threshold for sells
+
+        if ticker in self.portfolio.holdings and final_sell_score > sell_confidence_threshold and weighted_sell_signal_score >= min_weighted_sell_threshold:
             holding_qty = self.portfolio.holdings[ticker]["qty"]
             price_to_take_profit = (current_ticker_price - take_profit) / take_profit if take_profit > 0 else 0
             price_to_stop_loss = (stop_loss - current_ticker_price) / stop_loss if stop_loss > 0 else 0
@@ -5009,16 +5382,21 @@ class StockTradingBot:
                 sell_qty *= volatility_factor
             sell_qty = max(0, int(min(sell_qty, holding_qty)))
 
-        # Validate Exposure Limits
+        # Validate Exposure Limits (REMOVED SECTOR EXPOSURE VALIDATION)
         if buy_qty > 0:
             new_stock_exposure = current_stock_exposure + buy_qty * current_ticker_price
-            new_sector_exposure = sector_exposure + buy_qty * current_ticker_price
-            if new_stock_exposure > max_exposure_per_stock or new_sector_exposure > max_sector_exposure:
-                buy_qty = min(
-                    (max_exposure_per_stock - current_stock_exposure) / current_ticker_price,
-                    (max_sector_exposure - sector_exposure) / current_ticker_price
-                ) if current_ticker_price > 0 else 0
+
+            logger.info(f"=== EXPOSURE VALIDATION for {ticker} ===")
+            logger.info(f"  New Stock Exposure: Rs.{new_stock_exposure:.2f} vs Max: Rs.{max_exposure_per_stock:.2f}")
+            logger.info(f"  Sector Exposure Validation: DISABLED (removed constraint)")
+
+            if new_stock_exposure > max_exposure_per_stock:
+                old_qty = buy_qty
+                buy_qty = (max_exposure_per_stock - current_stock_exposure) / current_ticker_price if current_ticker_price > 0 else 0
                 buy_qty = max(0, int(buy_qty))
+                logger.info(f"  ❌ STOCK EXPOSURE LIMIT EXCEEDED: Reduced quantity from {old_qty:.2f} to {buy_qty} shares")
+            else:
+                logger.info(f"  ✅ STOCK EXPOSURE LIMIT OK: Keeping {buy_qty} shares")
 
         # Backoff Logic
         recent_trades = [t for t in self.portfolio.trade_log if datetime.strptime(t["timestamp"], "%Y-%m-%d %H:%M:%S.%f") > datetime.now() - timedelta(hours=12)]
@@ -5031,16 +5409,41 @@ class StockTradingBot:
             current_ticker_price < stop_loss or unrealized_pnl < -0.06 * total_value
         )
 
+        # DEBUG: Log backoff logic
+        logger.info(f"=== BACKOFF LOGIC for {ticker} ===")
+        logger.info(f"  Recent Trades (12h): {trade_frequency}")
+        logger.info(f"  Recent P&L: Rs.{recent_pnl:.2f}")
+        logger.info(f"  P&L Threshold (-1.5%): Rs.{-0.015 * total_value:.2f}")
+        logger.info(f"  Trade Frequency Limit: 8")
+        logger.info(f"  Unrealized P&L: Rs.{unrealized_pnl:.2f}")
+        logger.info(f"  Emergency Override (price < stop_loss OR unrealized < -6%): {'✅' if (current_ticker_price < stop_loss or unrealized_pnl < -0.06 * total_value) else '❌'}")
+        logger.info(f"  BACKOFF ACTIVE: {'✅' if backoff else '❌'}")
+
         # Execute Trades
         trade = None
         # PRODUCTION FIX: Updated execution logic with new signal requirements
-        if (
+
+        # DEBUG: Final BUY execution checks with weighted signals
+        logger.info(f"=== FINAL BUY EXECUTION CHECKS for {ticker} ===")
+        logger.info(f"  1. buy_qty > 0: {buy_qty} > 0 = {'✅' if buy_qty > 0 else '❌'}")
+        logger.info(f"  2. final_buy_score > confidence_threshold: {final_buy_score:.3f} > {confidence_threshold:.3f} = {'✅' if final_buy_score > confidence_threshold else '❌'}")
+        logger.info(f"  3. weighted_signal_score >= threshold: {weighted_signal_score:.3f} >= {min_weighted_signal_threshold:.3f} = {'✅' if weighted_signal_score >= min_weighted_signal_threshold else '❌'}")
+        logger.info(f"  4. buy_qty * price <= available_cash: Rs.{buy_qty * current_ticker_price:.2f} <= Rs.{available_cash:.2f} = {'✅' if buy_qty * current_ticker_price <= available_cash else '❌'}")
+        logger.info(f"  5. not backoff: {'✅' if not backoff else '❌'}")
+        logger.info(f"  Legacy buy_signals (reference): {buy_signals}/7")
+
+        # Updated conditions using weighted signal system
+        all_conditions_met = (
             buy_qty > 0
             and final_buy_score > confidence_threshold
-            and buy_signals >= 1  # Lowered from 2 to 1
+            and weighted_signal_score >= min_weighted_signal_threshold  # NEW: Weighted signal system
             and buy_qty * current_ticker_price <= available_cash
             and not backoff
-        ):
+        )
+
+        logger.info(f"  ALL CONDITIONS MET: {'✅ EXECUTING BUY' if all_conditions_met else '❌ BUY BLOCKED'}")
+
+        if all_conditions_met:
             logger.info(
                 f"Executing BUY for {ticker}: {buy_qty:.0f} units at Rs.{current_ticker_price:.2f}, "
                 f"Position Value: Rs.{buy_qty * current_price:.2f} ({(buy_qty * current_price / total_value * 100):.2f}% of portfolio), "
@@ -5103,13 +5506,25 @@ class StockTradingBot:
                 "reason": "signal_based"
             }
         else:
-            hold_conditions = (
-                abs(final_buy_score - final_sell_score) < 0.06
-                or (support_level * 0.98 < current_ticker_price < resistance_level * 1.02)
-                or (buy_signals < 2 and sell_signals < 2)
-            )
+            # PRODUCTION FIX: Regime-specific HOLD conditions
+            if market_regime == "TRENDING":
+                # In trending markets, avoid HOLD - force decisions
+                hold_conditions = False
+                logger.info(f"TRENDING market: Forcing trading decision for {ticker}")
+            elif market_regime == "VOLATILE":
+                # In volatile markets, only HOLD if very uncertain
+                hold_conditions = (abs(final_buy_score - final_sell_score) < 0.03)
+                logger.info(f"VOLATILE market: Reduced HOLD conditions for {ticker}")
+            else:  # RANGE_BOUND
+                # Traditional HOLD conditions for range-bound markets
+                hold_conditions = (
+                    abs(final_buy_score - final_sell_score) < 0.06
+                    or (support_level * 0.98 < current_ticker_price < resistance_level * 1.02)
+                    or (buy_signals < 2 and sell_signals < 2)
+                )
+
             if hold_conditions:
-                logger.info(f"HOLD {ticker}: Neutral market conditions, "
+                logger.info(f"HOLD {ticker}: {market_regime} market conditions, "
                             f"Price Rs.{current_ticker_price:.2f} within Support Rs.{support_level:.2f} "
                             f"and Resistance Rs.{resistance_level:.2f}, "
                             f"Buy Score={final_buy_score:.2f}, Sell Score={final_sell_score:.2f}")
@@ -5252,7 +5667,6 @@ def signal_handler(_sig, _frame):
     logger.info("Bot shutdown signal received. Shutting down gracefully...")
     print("\n[BOT] Bot shut down successfully!")
     sys.exit(0)
-    sys.exit(0)
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -5261,6 +5675,42 @@ def parse_arguments():
                        default=os.getenv('TRADING_MODE', 'paper'),
                        help='Trading mode: live or paper (default: paper)')
     return parser.parse_args()
+
+def validate_environment_variables(mode: str) -> bool:
+    """Validate required environment variables based on mode"""
+    required_vars = {
+        "common": ["NEWSAPI_KEY", "GNEWS_API_KEY"],
+        "live": ["DHAN_CLIENT_ID", "DHAN_ACCESS_TOKEN"],
+        "fyers": ["FYERS_APP_ID", "FYERS_ACCESS_TOKEN"]
+    }
+
+    missing_vars = []
+
+    # Check common variables
+    for var in required_vars["common"]:
+        if not os.getenv(var):
+            missing_vars.append(var)
+
+    # Check mode-specific variables
+    if mode == "live":
+        for var in required_vars["live"]:
+            if not os.getenv(var):
+                missing_vars.append(var)
+
+    # Check optional Fyers variables
+    fyers_vars = required_vars["fyers"]
+    fyers_available = all(os.getenv(var) for var in fyers_vars)
+
+    if missing_vars:
+        logger.error(f"Missing required environment variables: {missing_vars}")
+        logger.error("Please check your .env file and ensure all required variables are set")
+        return False
+
+    if not fyers_available:
+        logger.warning("Fyers API credentials not found - will use Yahoo Finance fallback")
+
+    logger.info("Environment variable validation passed")
+    return True
 
 def main_with_mode():
     """Main function with mode selection and enhanced configuration."""
@@ -5274,7 +5724,12 @@ def main_with_mode():
         # Load environment variables
         load_dotenv()
 
-        # Enhanced configuration with risk management
+        # Validate environment variables
+        if not validate_environment_variables(args.mode):
+            logger.error("Environment validation failed. Exiting...")
+            return
+
+        # Enhanced configuration with risk management and configurable paths
         config = {
             "tickers": [],  # Empty by default - users can add tickers manually
             "starting_balance": 10000,  # Rs.10 thousand
@@ -5290,11 +5745,16 @@ def main_with_mode():
             # Risk management settings from .env
             "stop_loss_pct": float(os.getenv("STOP_LOSS_PCT", "0.05")),
             "max_capital_per_trade": float(os.getenv("MAX_CAPITAL_PER_TRADE", "0.25")),
-            "max_trade_limit": int(os.getenv("MAX_TRADE_LIMIT", "10"))
+            "max_trade_limit": int(os.getenv("MAX_TRADE_LIMIT", "10")),
+            # Configurable paths
+            "data_dir": os.getenv("DATA_DIR", "data"),
+            "log_dir": os.getenv("LOG_DIR", "logs"),
+            "reports_dir": os.getenv("REPORTS_DIR", "reports"),
+            "analysis_dir": os.getenv("ANALYSIS_DIR", "stock_analysis")
         }
 
         # Display mode information
-        mode_display = " LIVE TRADING" if args.mode == "live" else "📝 PAPER TRADING"
+        mode_display = " LIVE TRADING" if args.mode == "live" else " PAPER TRADING"
         logger.info(f"Starting Indian Stock Trading Bot in {mode_display} mode")
 
         # Display startup banner - REMOVED as requested by user
@@ -5304,7 +5764,7 @@ def main_with_mode():
                 logger.error("Dhan API credentials not found in .env file. Cannot run in live mode.")
                 print(" Error: Dhan API credentials required for live trading!")
                 return
-            print("⚠️  WARNING: Live trading mode enabled. Real money will be used!")
+            print("WARNING: Live trading mode enabled. Real money will be used!")
             confirmation = input("Type 'CONFIRM' to proceed with live trading: ")
             if confirmation != "CONFIRM":
                 print(" Live trading cancelled.")

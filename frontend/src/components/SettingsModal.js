@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -367,6 +368,12 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
       </ModalContent>
     </ModalOverlay>
   );
+};
+
+SettingsModal.propTypes = {
+  settings: PropTypes.object,
+  onSave: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired
 };
 
 export default SettingsModal;

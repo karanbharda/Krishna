@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -96,15 +97,15 @@ const TimePeriodButtons = styled.div`
 const TimePeriodButton = styled.button`
   padding: 6px 12px;
   border: 1px solid #ddd;
-  background: ${props => props.active ? '#f39c12' : 'white'};
-  color: ${props => props.active ? 'white' : '#666'};
+  background: ${props => props.$active ? '#f39c12' : 'white'};
+  color: ${props => props.$active ? 'white' : '#666'};
   border-radius: 4px;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${props => props.active ? '#e67e22' : '#f8f9fa'};
+    background: ${props => props.$active ? '#e67e22' : '#f8f9fa'};
     border-color: #f39c12;
   }
 
@@ -129,7 +130,7 @@ const PortfolioValue = styled.div`
 const PortfolioChange = styled.span`
   font-size: 16px;
   font-weight: 500;
-  color: ${props => props.positive ? '#27ae60' : '#e74c3c'};
+  color: ${props => props.$positive ? '#27ae60' : '#e74c3c'};
 `;
 
 const PortfolioTimestamp = styled.div`
@@ -138,25 +139,7 @@ const PortfolioTimestamp = styled.div`
   margin-top: 5px;
 `;
 
-const ChartTypeSelector = styled.select`
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background: white;
-  color: #333;
-  font-size: 14px;
-  cursor: pointer;
-  outline: none;
 
-  &:focus {
-    border-color: #3498db;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-  }
-
-  option {
-    padding: 8px;
-  }
-`;
 
 const ActivitySection = styled.div`
   background: #f8f9fa;
@@ -333,33 +316,26 @@ const Dashboard = ({ botData }) => {
   const generatePortfolioChartData = () => {
     const startingBalance = botData.portfolio.startingBalance || 10000;
     const currentValue = botData.portfolio.totalValue || startingBalance;
-    const tradeLog = botData.portfolio.tradeLog || [];
 
     // Generate time series data based on selected period
     const generateTimeSeriesData = () => {
       const labels = [];
       const values = [];
       let daysToShow = 30;
-      let dateFormat = 'en-IN';
-      let timeUnit = 'day';
 
       // Determine period based on timePeriod state
       switch (timePeriod) {
         case '1D':
           daysToShow = 1;
-          timeUnit = 'hour';
           break;
         case '1M':
           daysToShow = 30;
-          timeUnit = 'day';
           break;
         case '1Y':
           daysToShow = 365;
-          timeUnit = 'month';
           break;
         case 'All':
           daysToShow = 730; // 2 years
-          timeUnit = 'month';
           break;
         default:
           daysToShow = 30;
@@ -638,7 +614,7 @@ const Dashboard = ({ botData }) => {
               {['1D', '1M', '1Y', 'All'].map(period => (
                 <TimePeriodButton
                   key={period}
-                  active={timePeriod === period}
+                  $active={timePeriod === period}
                   onClick={() => setTimePeriod(period)}
                 >
                   {period}
@@ -649,7 +625,7 @@ const Dashboard = ({ botData }) => {
           <PortfolioValueDisplay>
             <PortfolioValue>
               ₹ {metrics.totalValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              <PortfolioChange positive={metrics.unrealizedPnL >= 0}>
+              <PortfolioChange $positive={metrics.unrealizedPnL >= 0}>
                 {metrics.unrealizedPnL >= 0 ? ' +' : ' '}
                 {((metrics.unrealizedPnL / (metrics.totalValue - metrics.unrealizedPnL)) * 100).toFixed(2)}%
               </PortfolioChange>
@@ -733,6 +709,12 @@ const Dashboard = ({ botData }) => {
       </ActivitySection>
     </DashboardContainer>
   );
+};
+
+Dashboard.propTypes = {
+  botData: PropTypes.shape({
+    portfolio: PropTypes.object.isRequired
+  }).isRequired
 };
 
 export default Dashboard;

@@ -2,3 +2,303 @@
 Starting Balance: Rs.10,000.00
 ================================================================================
 
+
+[2025-08-04 13:48:01] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 262.7 hours
+
+Portfolio Performance:
+  • Starting Balance: Rs.10,000.00
+  • Current Cash: Rs.6,003.09
+  • Holdings Value: Rs.4,025.37
+  • Total Portfolio Value: Rs.10,028.46
+  • Total Return: Rs.28.46 (+0.28%)
+  • Realized P&L: Rs.0.00
+  • Unrealized P&L: Rs.28.46
+
+Trading Statistics:
+  • Total Trades: 2
+  • Buy Orders: 2
+  • Sell Orders: 0
+  • Win Rate: 0.0%
+  • Active Positions: 2
+
+Current Holdings:
+  • HDFCBANK.NS: 1 shares @ Rs.2015.70 (Rs.2,015.70)
+  • SUZLON.NS: 31 shares @ Rs.63.91 (Rs.1,981.21)
+======================================================================
+
+[2025-08-04 13:52:08] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 262.7 hours
+
+Portfolio Performance:
+  • Starting Balance: Rs.10,000.00
+  • Current Cash: Rs.6,003.09
+  • Holdings Value: Rs.4,022.84
+  • Total Portfolio Value: Rs.10,025.93
+  • Total Return: Rs.25.93 (+0.26%)
+  • Realized P&L: Rs.0.00
+  • Unrealized P&L: Rs.25.93
+
+Trading Statistics:
+  • Total Trades: 2
+  • Buy Orders: 2
+  • Sell Orders: 0
+  • Win Rate: 0.0%
+  • Active Positions: 2
+
+Current Holdings:
+  • HDFCBANK.NS: 1 shares @ Rs.2015.70 (Rs.2,015.70)
+  • SUZLON.NS: 31 shares @ Rs.63.91 (Rs.1,981.21)
+======================================================================
+
+[2025-08-04 13:52:42] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 262.7 hours
+
+Portfolio Performance:
+  • Starting Balance: Rs.10,000.00
+  • Current Cash: Rs.6,003.09
+  • Holdings Value: Rs.4,022.32
+  • Total Portfolio Value: Rs.10,025.41
+  • Total Return: Rs.25.41 (+0.25%)
+  • Realized P&L: Rs.0.00
+  • Unrealized P&L: Rs.25.41
+
+Trading Statistics:
+  • Total Trades: 2
+  • Buy Orders: 2
+  • Sell Orders: 0
+  • Win Rate: 0.0%
+  • Active Positions: 2
+
+Current Holdings:
+  • HDFCBANK.NS: 1 shares @ Rs.2015.70 (Rs.2,015.70)
+  • SUZLON.NS: 31 shares @ Rs.63.91 (Rs.1,981.21)
+======================================================================
+
+[2025-08-04 13:57:36] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 262.8 hours
+
+Portfolio Performance:
+  • Starting Balance: Rs.10,000.00
+  • Current Cash: Rs.6,003.09
+  • Holdings Value: Rs.4,021.12
+  • Total Portfolio Value: Rs.10,024.21
+  • Total Return: Rs.24.21 (+0.24%)
+  • Realized P&L: Rs.0.00
+  • Unrealized P&L: Rs.24.21
+
+Trading Statistics:
+  • Total Trades: 2
+  • Buy Orders: 2
+  • Sell Orders: 0
+  • Win Rate: 0.0%
+  • Active Positions: 2
+
+Current Holdings:
+  • HDFCBANK.NS: 1 shares @ Rs.2015.70 (Rs.2,015.70)
+  • SUZLON.NS: 31 shares @ Rs.63.91 (Rs.1,981.21)
+======================================================================
+
+[2025-08-04 14:08:21] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 263.0 hours
+
+Portfolio Performance:
+  - Starting Balance: Rs.10,000.00
+  - Current Cash: Rs.6,003.09
+  - Holdings Value: Rs.4,021.07
+  - Total Portfolio Value: Rs.10,024.16
+  - Total Return: Rs.24.16 (+0.24%)
+  - Realized P&L: Rs.0.00
+  - Unrealized P&L: Rs.24.16
+
+Trading Statistics:
+  - Total Trades: 2
+  - Buy Orders: 2
+  - Sell Orders: 0
+  - Win Rate: 0.0%
+  - Active Positions: 2
+
+Current Holdings:
+  - HDFCBANK.NS: 1 shares @ Rs.2015.70 (Rs.2,015.70)
+  - SUZLON.NS: 31 shares @ Rs.63.91 (Rs.1,981.21)
+======================================================================
+
+[2025-08-04 14:17:55] === STRATEGY ANALYSIS: SBIN.NS ===
+Market Sentiment:
+  • Positive: 47.8% (11 articles)
+  • Negative: 8.7% (2 articles)
+  • Overall: Bullish
+ML/RL Analysis:
+  • Current Price: Rs.792.70
+  • Predicted Price: Rs.781.87
+  • Expected Change: -1.37%
+  • RL Recommendation: HOLD
+Decision Factors:
+  • Buy Score: 0.000
+  • Sell Score: 0.660
+  • Buy Signals: 1/4
+  • Sell Signals: 2/4
+  • Final Decision: HOLD
+============================================================
+
+[2025-08-04 14:59:38] === STRATEGY ANALYSIS: TATASTEEL.NS ===
+Market Sentiment:
+  - Positive: 50.0% (15 articles)
+  - Negative: 23.3% (7 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.159.28
+  - Predicted Price: Rs.155.88
+  - Expected Change: -2.13%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.000
+  - Sell Score: 0.660
+  - Buy Signals: 0/4
+  - Sell Signals: 2/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-04 16:35:44] === STRATEGY ANALYSIS: BPCL.NS ===
+Market Sentiment:
+  - Positive: 50.0% (6 articles)
+  - Negative: 25.0% (3 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.317.85
+  - Predicted Price: Rs.318.28
+  - Expected Change: +0.13%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.000
+  - Sell Score: 0.550
+  - Buy Signals: 1/4
+  - Sell Signals: 2/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-04 16:59:24] === STRATEGY ANALYSIS: IOC.NS ===
+Market Sentiment:
+  - Positive: 35.0% (7 articles)
+  - Negative: 55.0% (11 articles)
+  - Overall: Bearish
+ML/RL Analysis:
+  - Current Price: Rs.142.38
+  - Predicted Price: Rs.140.07
+  - Expected Change: -1.62%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.000
+  - Sell Score: 0.600
+  - Buy Signals: 1/4
+  - Sell Signals: 3/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-04 16:59:26] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 265.9 hours
+
+Portfolio Performance:
+  - Starting Balance: Rs.10,000.00
+  - Current Cash: Rs.6,003.09
+  - Holdings Value: Rs.4,007.00
+  - Total Portfolio Value: Rs.10,010.09
+  - Total Return: Rs.10.09 (+0.10%)
+  - Realized P&L: Rs.0.00
+  - Unrealized P&L: Rs.10.09
+
+Trading Statistics:
+  - Total Trades: 2
+  - Buy Orders: 2
+  - Sell Orders: 0
+  - Win Rate: 0.0%
+  - Active Positions: 2
+
+Current Holdings:
+  - HDFCBANK.NS: 1 shares @ Rs.2015.70 (Rs.2,015.70)
+  - SUZLON.NS: 31 shares @ Rs.63.91 (Rs.1,981.21)
+======================================================================
+
+[2025-08-04 17:30:03] === STRATEGY ANALYSIS: BPCL.NS ===
+Market Sentiment:
+  - Positive: 50.0% (6 articles)
+  - Negative: 25.0% (3 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.317.85
+  - Predicted Price: Rs.316.11
+  - Expected Change: -0.55%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.000
+  - Sell Score: 0.550
+  - Buy Signals: 1/4
+  - Sell Signals: 2/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-04 18:05:47] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 267.0 hours
+
+Portfolio Performance:
+  - Starting Balance: Rs.10,000.00
+  - Current Cash: Rs.6,003.09
+  - Holdings Value: Rs.4,007.00
+  - Total Portfolio Value: Rs.10,010.09
+  - Total Return: Rs.10.09 (+0.10%)
+  - Realized P&L: Rs.0.00
+  - Unrealized P&L: Rs.10.09
+
+Trading Statistics:
+  - Total Trades: 2
+  - Buy Orders: 2
+  - Sell Orders: 0
+  - Win Rate: 0.0%
+  - Active Positions: 2
+
+Current Holdings:
+  - HDFCBANK.NS: 1 shares @ Rs.2015.70 (Rs.2,015.70)
+  - SUZLON.NS: 31 shares @ Rs.63.91 (Rs.1,981.21)
+======================================================================
+
+[2025-08-04 18:06:12] === STRATEGY ANALYSIS: IOC.NS ===
+Market Sentiment:
+  - Positive: 30.0% (6 articles)
+  - Negative: 60.0% (12 articles)
+  - Overall: Bearish
+ML/RL Analysis:
+  - Current Price: Rs.142.38
+  - Predicted Price: Rs.140.31
+  - Expected Change: -1.46%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.000
+  - Sell Score: 0.650
+  - Buy Signals: 1/4
+  - Sell Signals: 3/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-04 18:06:14] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 267.0 hours
+
+Portfolio Performance:
+  - Starting Balance: Rs.10,000.00
+  - Current Cash: Rs.6,003.09
+  - Holdings Value: Rs.4,007.00
+  - Total Portfolio Value: Rs.10,010.09
+  - Total Return: Rs.10.09 (+0.10%)
+  - Realized P&L: Rs.0.00
+  - Unrealized P&L: Rs.10.09
+
+Trading Statistics:
+  - Total Trades: 2
+  - Buy Orders: 2
+  - Sell Orders: 0
+  - Win Rate: 0.0%
+  - Active Positions: 2
+
+Current Holdings:
+  - HDFCBANK.NS: 1 shares @ Rs.2015.70 (Rs.2,015.70)
+  - SUZLON.NS: 31 shares @ Rs.63.91 (Rs.1,981.21)
+======================================================================

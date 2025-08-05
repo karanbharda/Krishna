@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled, { keyframes } from 'styled-components';
+import PropTypes from 'prop-types';
 
 const pulse = keyframes`
   0% { opacity: 1; }
@@ -47,11 +48,11 @@ const StatusDot = styled.div`
   border-radius: 50%;
   background: ${props => {
     if (props.mode === 'live') {
-      return props.connected ? '#4caf50' : '#f44336';
+      return props.$connected ? '#4caf50' : '#f44336';
     }
     return '#2196f3';
   }};
-  animation: ${props => props.mode === 'live' && props.connected ? pulse : 'none'} 2s infinite;
+  animation: ${props => props.mode === 'live' && props.$connected ? pulse : 'none'} 2s infinite;
 `;
 
 const StatusIndicator = styled.div`
@@ -65,8 +66,8 @@ const BotStatusDot = styled.div`
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: ${props => props.active ? '#27ae60' : '#e74c3c'};
-  animation: ${props => props.active ? pulse : 'none'} 2s infinite;
+  background: ${props => props.$active ? '#27ae60' : '#e74c3c'};
+  animation: ${props => props.$active ? pulse : 'none'} 2s infinite;
 `;
 
 const SettingsButton = styled.button`
@@ -97,7 +98,7 @@ const TabNavigation = styled.div`
 
 const TabButton = styled.button`
   flex: 1;
-  background: ${props => props.active ? '#3498db' : 'transparent'};
+  background: ${props => props.$active ? '#3498db' : 'transparent'};
   border: none;
   padding: 12px 20px;
   border-radius: 8px;
@@ -108,8 +109,8 @@ const TabButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: ${props => props.active ? 'white' : '#7f8c8d'};
-  box-shadow: ${props => props.active ? '0 2px 8px rgba(52, 152, 219, 0.3)' : 'none'};
+  color: ${props => props.$active ? 'white' : '#7f8c8d'};
+  box-shadow: ${props => props.$active ? '0 2px 8px rgba(52, 152, 219, 0.3)' : 'none'};
 
   &:hover:not(.active) {
     background: #ecf0f1;
@@ -189,7 +190,7 @@ const Header = ({ botData, activeTab, onTabChange, onOpenSettings, liveStatus })
             <ModeIndicator mode={liveStatus.mode}>
               <StatusDot
                 mode={liveStatus.mode}
-                connected={liveStatus.dhan_connected || liveStatus.mode === 'paper'}
+                $connected={liveStatus.dhan_connected || liveStatus.mode === 'paper'}
               />
               <span>
                 {liveStatus.mode === 'live' ? 'Live Trading' : 'Paper Trading'}
@@ -203,7 +204,7 @@ const Header = ({ botData, activeTab, onTabChange, onOpenSettings, liveStatus })
           )}
 
           <StatusIndicator>
-            <BotStatusDot active={botData.isRunning} />
+            <BotStatusDot $active={botData.isRunning} />
             <span>{botData.isRunning ? 'Active' : 'Inactive'}</span>
           </StatusIndicator>
 
@@ -221,7 +222,7 @@ const Header = ({ botData, activeTab, onTabChange, onOpenSettings, liveStatus })
         {tabs.map(tab => (
           <TabButton
             key={tab.id}
-            active={activeTab === tab.id}
+            $active={activeTab === tab.id}
             onClick={() => onTabChange(tab.id)}
           >
             <i className={tab.icon}></i>
@@ -231,6 +232,20 @@ const Header = ({ botData, activeTab, onTabChange, onOpenSettings, liveStatus })
       </TabNavigation>
     </>
   );
+};
+
+Header.propTypes = {
+  botData: PropTypes.shape({
+    isRunning: PropTypes.bool.isRequired
+  }).isRequired,
+  activeTab: PropTypes.string.isRequired,
+  onTabChange: PropTypes.func.isRequired,
+  onOpenSettings: PropTypes.func.isRequired,
+  liveStatus: PropTypes.shape({
+    mode: PropTypes.string,
+    dhan_connected: PropTypes.bool,
+    market_status: PropTypes.string
+  })
 };
 
 export default Header;

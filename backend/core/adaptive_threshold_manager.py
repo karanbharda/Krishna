@@ -117,90 +117,103 @@ class AdaptiveThresholdManager:
         
     async def get_adaptive_thresholds(self, market_context: MarketContext, symbol: str = None) -> AdaptiveThresholds:
         """Get adaptive thresholds based on market context"""
-        
-        logger.debug(f"Calculating adaptive thresholds for regime: {market_context.regime}")
-        
-        # Start with base thresholds
-        thresholds = self.base_thresholds.copy()
-        adjustments = {}
-        reasoning_parts = []
-        
-        # Apply market regime adjustments
-        regime_adj = self.regime_adjustments.get(market_context.regime, {})
-        for key, multiplier in regime_adj.items():
-            if key in thresholds:
-                old_value = thresholds[key]
-                thresholds[key] *= multiplier
-                adjustments[f'regime_{key}'] = multiplier
-                reasoning_parts.append(f"{market_context.regime.value}: {key} {old_value:.3f} -> {thresholds[key]:.3f}")
-        
-        # Apply time-of-day adjustments
-        time_adj = self.time_adjustments.get(market_context.time_of_day, {})
-        for key, multiplier in time_adj.items():
-            if key in thresholds:
-                old_value = thresholds[key]
-                thresholds[key] *= multiplier
-                adjustments[f'time_{key}'] = multiplier
-                reasoning_parts.append(f"{market_context.time_of_day}: {key} {old_value:.3f} -> {thresholds[key]:.3f}")
-        
-        # Apply volatility-based adjustments
-        volatility_adj = self._calculate_volatility_adjustments(market_context.volatility_percentile)
-        for key, multiplier in volatility_adj.items():
-            if key in thresholds:
-                old_value = thresholds[key]
-                thresholds[key] *= multiplier
-                adjustments[f'volatility_{key}'] = multiplier
-                reasoning_parts.append(f"Volatility {market_context.volatility_percentile:.1f}%: {key} {old_value:.3f} -> {thresholds[key]:.3f}")
-        
-        # Apply trend strength adjustments
-        trend_adj = self._calculate_trend_adjustments(market_context.trend_strength)
-        for key, multiplier in trend_adj.items():
-            if key in thresholds:
-                old_value = thresholds[key]
-                thresholds[key] *= multiplier
-                adjustments[f'trend_{key}'] = multiplier
-                reasoning_parts.append(f"Trend {market_context.trend_strength:.2f}: {key} {old_value:.3f} -> {thresholds[key]:.3f}")
-        
-        # Apply market stress adjustments
-        stress_adj = self._calculate_stress_adjustments(market_context.market_stress_level)
-        for key, multiplier in stress_adj.items():
-            if key in thresholds:
-                old_value = thresholds[key]
-                thresholds[key] *= multiplier
-                adjustments[f'stress_{key}'] = multiplier
-                reasoning_parts.append(f"Stress {market_context.market_stress_level:.2f}: {key} {old_value:.3f} -> {thresholds[key]:.3f}")
-        
-        # Ensure thresholds are within reasonable bounds
-        thresholds = self._apply_threshold_bounds(thresholds)
-        
-        # Create adaptive thresholds object
-        adaptive_thresholds = AdaptiveThresholds(
-            buy_threshold=thresholds['buy_threshold'],
-            sell_threshold=thresholds['sell_threshold'],
-            confidence_minimum=thresholds['confidence_minimum'],
-            position_size_multiplier=thresholds['position_size_multiplier'],
-            reasoning=" | ".join(reasoning_parts) if reasoning_parts else "No adjustments applied",
-            base_thresholds=self.base_thresholds.copy(),
-            adjustments=adjustments
-        )
-        
-        # Store adaptation history
-        self.adaptation_history.append({
-            'timestamp': datetime.now(),
-            'market_context': market_context,
-            'thresholds': thresholds,
-            'symbol': symbol
-        })
-        
-        # Keep only last 100 adaptations
-        if len(self.adaptation_history) > 100:
-            self.adaptation_history = self.adaptation_history[-100:]
-        
-        logger.info(f"Adaptive thresholds: BUY={adaptive_thresholds.buy_threshold:.3f}, "
-                   f"SELL={adaptive_thresholds.sell_threshold:.3f}, "
-                   f"CONF={adaptive_thresholds.confidence_minimum:.3f}")
-        
-        return adaptive_thresholds
+        try:
+            logger.debug(f"Calculating adaptive thresholds for regime: {market_context.regime}")
+
+            # Start with base thresholds
+            thresholds = self.base_thresholds.copy()
+            adjustments = {}
+            reasoning_parts = []
+
+            # Apply market regime adjustments
+            regime_adj = self.regime_adjustments.get(market_context.regime, {})
+            for key, multiplier in regime_adj.items():
+                if key in thresholds:
+                    old_value = thresholds[key]
+                    thresholds[key] *= multiplier
+                    adjustments[f'regime_{key}'] = multiplier
+                    reasoning_parts.append(f"{market_context.regime.value}: {key} {old_value:.3f} -> {thresholds[key]:.3f}")
+
+            # Apply time-of-day adjustments
+            time_adj = self.time_adjustments.get(market_context.time_of_day, {})
+            for key, multiplier in time_adj.items():
+                if key in thresholds:
+                    old_value = thresholds[key]
+                    thresholds[key] *= multiplier
+                    adjustments[f'time_{key}'] = multiplier
+                    reasoning_parts.append(f"{market_context.time_of_day}: {key} {old_value:.3f} -> {thresholds[key]:.3f}")
+
+            # Apply volatility-based adjustments
+            volatility_adj = self._calculate_volatility_adjustments(market_context.volatility_percentile)
+            for key, multiplier in volatility_adj.items():
+                if key in thresholds:
+                    old_value = thresholds[key]
+                    thresholds[key] *= multiplier
+                    adjustments[f'volatility_{key}'] = multiplier
+                    reasoning_parts.append(f"Volatility {market_context.volatility_percentile:.1f}%: {key} {old_value:.3f} -> {thresholds[key]:.3f}")
+
+            # Apply trend strength adjustments
+            trend_adj = self._calculate_trend_adjustments(market_context.trend_strength)
+            for key, multiplier in trend_adj.items():
+                if key in thresholds:
+                    old_value = thresholds[key]
+                    thresholds[key] *= multiplier
+                    adjustments[f'trend_{key}'] = multiplier
+                    reasoning_parts.append(f"Trend {market_context.trend_strength:.2f}: {key} {old_value:.3f} -> {thresholds[key]:.3f}")
+
+            # Apply market stress adjustments
+            stress_adj = self._calculate_stress_adjustments(market_context.market_stress_level)
+            for key, multiplier in stress_adj.items():
+                if key in thresholds:
+                    old_value = thresholds[key]
+                    thresholds[key] *= multiplier
+                    adjustments[f'stress_{key}'] = multiplier
+                    reasoning_parts.append(f"Stress {market_context.market_stress_level:.2f}: {key} {old_value:.3f} -> {thresholds[key]:.3f}")
+
+            # Ensure thresholds are within reasonable bounds
+            thresholds = self._apply_threshold_bounds(thresholds)
+
+            # Create adaptive thresholds object
+            adaptive_thresholds = AdaptiveThresholds(
+                buy_threshold=thresholds['buy_threshold'],
+                sell_threshold=thresholds['sell_threshold'],
+                confidence_minimum=thresholds['confidence_minimum'],
+                position_size_multiplier=thresholds['position_size_multiplier'],
+                reasoning=" | ".join(reasoning_parts) if reasoning_parts else "No adjustments applied",
+                base_thresholds=self.base_thresholds.copy(),
+                adjustments=adjustments
+            )
+
+            # Store adaptation history
+            self.adaptation_history.append({
+                'timestamp': datetime.now(),
+                'market_context': market_context,
+                'thresholds': thresholds,
+                'symbol': symbol
+            })
+
+            # Keep only last 100 adaptations
+            if len(self.adaptation_history) > 100:
+                self.adaptation_history = self.adaptation_history[-100:]
+
+            logger.info(f"Adaptive thresholds: BUY={adaptive_thresholds.buy_threshold:.3f}, "
+                       f"SELL={adaptive_thresholds.sell_threshold:.3f}, "
+                       f"CONF={adaptive_thresholds.confidence_minimum:.3f}")
+
+            return adaptive_thresholds
+
+        except Exception as e:
+            logger.error(f"Error calculating adaptive thresholds: {e}")
+            # Return safe default thresholds
+            return AdaptiveThresholds(
+                buy_threshold=self.base_thresholds['buy_threshold'],
+                sell_threshold=self.base_thresholds['sell_threshold'],
+                confidence_minimum=self.base_thresholds['confidence_minimum'],
+                position_size_multiplier=self.base_thresholds['position_size_multiplier'],
+                reasoning=f"Error in calculation, using defaults: {str(e)}",
+                base_thresholds=self.base_thresholds.copy(),
+                adjustments={}
+            )
     
     def _calculate_volatility_adjustments(self, volatility_percentile: float) -> Dict[str, float]:
         """Calculate adjustments based on volatility percentile"""

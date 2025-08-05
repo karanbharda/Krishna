@@ -2473,8 +2473,8 @@ class StockTradingBot:
 def main():
     config = {
         "tickers": [],  # Empty by default - users can add tickers manually
-        "starting_balance": 1000000,  # Default starting balance in INR
-        "current_portfolio_value": 1000000,  # Initial portfolio value
+        "starting_balance": 10000,  # Standardized starting balance in INR (Rs.10K)
+        "current_portfolio_value": 10000,  # Initial portfolio value
         "current_pnl": 0,  # Initial PnL
         "mode": "paper",
         "dhan_client_id": os.getenv("DHAN_CLIENT_ID"),

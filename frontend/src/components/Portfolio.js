@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
 import { formatCurrency, apiService } from '../services/apiService';
 
 const PortfolioContainer = styled.div`
@@ -139,42 +140,49 @@ const StatusBadge = styled.span`
   }};
 `;
 
-const PortfolioSummary = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-  margin-bottom: 20px;
-  padding: 20px;
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-  border-radius: 10px;
-  border: 1px solid #dee2e6;
-`;
-
-const SummaryCard = styled.div`
-  text-align: center;
-  padding: 15px;
+const PerformanceCard = styled.div`
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid ${props => props.borderColor || '#3498db'};
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 
-  h4 {
-    margin: 0 0 10px 0;
-    color: #2c3e50;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .title {
     font-size: 0.9rem;
+    color: #7f8c8d;
+    margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    font-weight: 600;
   }
 
-  .value {
-    font-size: 1.4rem;
+  .main-value {
+    font-size: 1.8rem;
     font-weight: bold;
     color: ${props => props.valueColor || '#2c3e50'};
+    margin-bottom: 5px;
   }
 
-  .percentage {
+  .sub-value {
     font-size: 0.9rem;
-    margin-top: 5px;
-    font-weight: 500;
+    color: #95a5a6;
+    margin-bottom: 8px;
+  }
+
+  .change {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: ${props => {
+    if (props.changeColor === 'positive') return '#27ae60';
+    if (props.changeColor === 'negative') return '#e74c3c';
+    return '#7f8c8d';
+  }};
   }
 `;
 
@@ -185,44 +193,8 @@ const PerformanceSection = styled.div`
   margin-bottom: 30px;
 `;
 
-const PerformanceCard = styled.div`
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  border-left: 4px solid ${props => props.borderColor || '#3498db'};
-
-  .title {
-    font-size: 0.9rem;
-    color: #7f8c8d;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 10px;
-    font-weight: 600;
-  }
-
-  .main-value {
-    font-size: 2rem;
-    font-weight: bold;
-    color: ${props => props.valueColor || '#2c3e50'};
-    margin-bottom: 5px;
-  }
-
-  .sub-value {
-    font-size: 1rem;
-    color: ${props => props.subColor || '#7f8c8d'};
-    font-weight: 500;
-  }
-
-  .change {
-    font-size: 0.9rem;
-    margin-top: 8px;
-    padding: 4px 8px;
-    border-radius: 4px;
-    background: ${props => props.changeColor === 'positive' ? '#d4edda' : props.changeColor === 'negative' ? '#f8d7da' : '#e2e3e5'};
-    color: ${props => props.changeColor === 'positive' ? '#155724' : props.changeColor === 'negative' ? '#721c24' : '#6c757d'};
-    display: inline-block;
-  }
+const HoldingsSection = styled.div`
+  margin-bottom: 30px;
 `;
 
 const LastUpdateTime = styled.div`
@@ -262,7 +234,7 @@ const WatchlistControls = styled.div`
   gap: 10px;
   margin-bottom: 20px;
 
-  @media (max-width: 768px) {
+  @media(max-width: 768px) {
     flex-direction: column;
   }
 `;
@@ -305,7 +277,7 @@ const WatchlistGrid = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 10px;
 
-  @media (max-width: 768px) {
+  @media(max-width: 768px) {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
 `;
@@ -402,15 +374,18 @@ const UploadStatus = styled.div`
   background: ${props =>
     props.status.includes('✅') ? '#d4edda' :
       props.status.includes('❌') ? '#f8d7da' :
-        '#e2e3e5'};
+        '#e2e3e5'
+  };
   color: ${props =>
     props.status.includes('✅') ? '#155724' :
       props.status.includes('❌') ? '#721c24' :
-        '#6c757d'};
+        '#6c757d'
+  };
   border: 1px solid ${props =>
     props.status.includes('✅') ? '#c3e6cb' :
       props.status.includes('❌') ? '#f5c6cb' :
-        '#d1ecf1'};
+        '#d1ecf1'
+  };
 `;
 
 const UploadInstructions = styled.div`
@@ -566,7 +541,7 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
       });
 
       if (errors.length > 0 && tickers.length === 0) {
-        setUploadStatus(`❌ No valid tickers found. Errors: ${errors.slice(0, 3).join(', ')}`);
+        setUploadStatus(`❌ No valid tickers found.Errors: ${errors.slice(0, 3).join(', ')} `);
         setUploadLoading(false);
         return;
       }
@@ -584,7 +559,7 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
         const result = await apiService.bulkUpdateWatchlist(tickers, 'ADD');
 
         // Update the status based on API response
-        setUploadStatus(`✅ ${result.message}`);
+        setUploadStatus(`✅ ${result.message} `);
 
         // Log details for debugging
         if (result.failed_tickers.length > 0) {
@@ -631,9 +606,7 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
   const totalValue = portfolioData.total_value || portfolioData.totalValue || 0;
   const cash = portfolioData.cash || 0;
   const cashPercentage = portfolioData.cash_percentage || 0;
-  const totalInvested = portfolioData.total_invested || 0;
-  const investedPercentage = portfolioData.invested_percentage || 0;
-  const currentHoldingsValue = portfolioData.current_holdings_value || 0;
+
   const unrealizedPnL = portfolioData.unrealized_pnl || portfolioData.unrealizedPnL || 0;
   const unrealizedPnLPct = portfolioData.unrealized_pnl_pct || 0;
   const realizedPnL = portfolioData.realized_pnl || portfolioData.realizedPnL || 0;
@@ -642,8 +615,7 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
   const totalReturnPct = portfolioData.total_return_pct || 0;
   const profitLoss = portfolioData.profit_loss || totalReturn || 0;
   const profitLossPct = portfolioData.profit_loss_pct || totalReturnPct || 0;
-  const initialBalance = portfolioData.initial_balance || portfolioData.startingBalance || 10000;
-  const tradesTotal = portfolioData.trades_today || 0;
+
   // const portfolioPerformance = botData.portfolio.performance || [];
 
   return (
@@ -862,7 +834,7 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
                 <RemoveButton
                   onClick={() => handleRemoveTicker(ticker)}
                   disabled={loading}
-                  title={`Remove ${ticker}`}
+                  title={`Remove ${ticker} `}
                 >
                   ×
                 </RemoveButton>
@@ -873,6 +845,17 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
       </Section>
     </PortfolioContainer>
   );
+};
+
+Portfolio.propTypes = {
+  botData: PropTypes.shape({
+    portfolio: PropTypes.object.isRequired,
+    config: PropTypes.shape({
+      tickers: PropTypes.array.isRequired
+    }).isRequired
+  }).isRequired,
+  onAddTicker: PropTypes.func.isRequired,
+  onRemoveTicker: PropTypes.func.isRequired
 };
 
 export default Portfolio;

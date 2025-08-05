@@ -1,0 +1,1038 @@
+
+[20250804_141750] Analysis for SBIN.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for STATE BANK OF INDIA (SBIN.NS): STRONG SELL
+Current Price: Rs.792.70
+
+Buy Score: -0.323, Sell Score: 0.423
+
+Bearish Factors:
+- Price is above the 200-day SMA, suggesting potential overvaluation.
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0080 (higher values indicate higher risk)
+- Sector: Financial Services
+- Industry: Banks - Regional
+
+Prediction Days: 30
+Current Price (USD): 9.05
+Predicted Price (USD): 781.8737458265505
+Predicted Change (%): 8539.49
+Confidence Score: -0.23629889864371512
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 5.795459550213171
+  Average Reward: -78962.14616086232
+  Average Events/Episode: 56.408
+  Actions Distribution:
+    hold: 0.0538
+    buy: 0.9355
+    sell: 0.0108
+  RL Epoch Logs:
+    Episode 10: Reward = -4307795.52, Avg Reward = -1752583.58, Events = 58
+    Episode 20: Reward = -1059294.11, Avg Reward = 196871.47, Events = 56
+    Episode 30: Reward = 4885123.59, Avg Reward = 813127.45, Events = 55
+    Episode 40: Reward = -1156301.36, Avg Reward = 1323517.57, Events = 53
+    Episode 50: Reward = 2171690.66, Avg Reward = -1046993.27, Events = 55
+    Episode 60: Reward = 43041.87, Avg Reward = 47490.08, Events = 60
+    Episode 70: Reward = -1294296.84, Avg Reward = 456288.60, Events = 60
+    Episode 80: Reward = -6424092.66, Avg Reward = -1635736.42, Events = 66
+    Episode 90: Reward = -4575196.44, Avg Reward = -1057405.77, Events = 59
+    Episode 100: Reward = -439806.80, Avg Reward = 787830.26, Events = 51
+    Episode 110: Reward = 1401146.16, Avg Reward = 1235657.33, Events = 56
+    Episode 120: Reward = 1415035.28, Avg Reward = 228459.21, Events = 47
+    Episode 130: Reward = 1262125.27, Avg Reward = -597809.67, Events = 53
+    Episode 140: Reward = 516408.03, Avg Reward = 992007.87, Events = 55
+    Episode 150: Reward = 316309.28, Avg Reward = -276493.93, Events = 51
+    Episode 160: Reward = 711006.43, Avg Reward = 767169.66, Events = 53
+    Episode 170: Reward = 2454176.69, Avg Reward = -594281.17, Events = 68
+    Episode 180: Reward = 201283.01, Avg Reward = -301935.82, Events = 55
+    Episode 190: Reward = 1342395.69, Avg Reward = -369138.20, Events = 58
+    Episode 200: Reward = -3157601.41, Avg Reward = -448604.94, Events = 55
+    Episode 210: Reward = 863266.19, Avg Reward = 171036.38, Events = 60
+    Episode 220: Reward = 2073624.82, Avg Reward = 212875.70, Events = 65
+    Episode 230: Reward = -2110316.36, Avg Reward = -225221.28, Events = 60
+    Episode 240: Reward = -1614433.10, Avg Reward = -124764.13, Events = 51
+    Episode 250: Reward = -922659.37, Avg Reward = -389686.49, Events = 56
+    Episode 260: Reward = 775177.58, Avg Reward = 14608.03, Events = 55
+    Episode 270: Reward = -2380619.10, Avg Reward = -345122.48, Events = 63
+    Episode 280: Reward = 879605.34, Avg Reward = 738593.39, Events = 54
+    Episode 290: Reward = 1580226.59, Avg Reward = 565060.13, Events = 70
+    Episode 300: Reward = 658674.55, Avg Reward = -5540.52, Events = 50
+    Episode 310: Reward = 1347248.66, Avg Reward = -715998.18, Events = 63
+    Episode 320: Reward = 825305.02, Avg Reward = -7641.23, Events = 46
+    Episode 330: Reward = -5100940.03, Avg Reward = -406268.08, Events = 53
+    Episode 340: Reward = 2079949.06, Avg Reward = 284464.33, Events = 58
+    Episode 350: Reward = 1001727.16, Avg Reward = 1241333.28, Events = 46
+    Episode 360: Reward = 864151.75, Avg Reward = -811601.23, Events = 49
+    Episode 370: Reward = -4815041.14, Avg Reward = -217449.09, Events = 45
+    Episode 380: Reward = 480631.07, Avg Reward = -745722.23, Events = 52
+    Episode 390: Reward = -2843856.37, Avg Reward = -262765.92, Events = 45
+    Episode 400: Reward = 1851808.76, Avg Reward = 820794.80, Events = 61
+    Episode 410: Reward = 1427448.87, Avg Reward = 663998.69, Events = 54
+    Episode 420: Reward = 1335256.99, Avg Reward = 233714.83, Events = 61
+    Episode 430: Reward = 513229.14, Avg Reward = -372733.03, Events = 54
+    Episode 440: Reward = 1659641.58, Avg Reward = -666482.33, Events = 64
+    Episode 450: Reward = 392102.80, Avg Reward = 497655.85, Events = 54
+    Episode 460: Reward = -158184.65, Avg Reward = 617321.12, Events = 60
+    Episode 470: Reward = 485139.01, Avg Reward = 424639.63, Events = 56
+    Episode 480: Reward = -2106.95, Avg Reward = 119109.08, Events = 51
+    Episode 490: Reward = 31008.82, Avg Reward = 214026.13, Events = 63
+    Episode 500: Reward = -44828.67, Avg Reward = 273082.11, Events = 62
+    Episode 510: Reward = -99984.81, Avg Reward = -36495.95, Events = 58
+    Episode 520: Reward = -2420712.92, Avg Reward = 227763.21, Events = 52
+    Episode 530: Reward = 775402.01, Avg Reward = -170850.84, Events = 59
+    Episode 540: Reward = -7717316.27, Avg Reward = -806365.16, Events = 52
+    Episode 550: Reward = 870721.84, Avg Reward = -847094.33, Events = 62
+    Episode 560: Reward = -576862.53, Avg Reward = 24445.43, Events = 48
+    Episode 570: Reward = -1049512.22, Avg Reward = 615691.16, Events = 49
+    Episode 580: Reward = 946690.21, Avg Reward = 515070.70, Events = 51
+    Episode 590: Reward = -1493953.09, Avg Reward = 870226.97, Events = 56
+    Episode 600: Reward = -576916.93, Avg Reward = -415091.08, Events = 52
+    Episode 610: Reward = 788340.89, Avg Reward = -298119.04, Events = 57
+    Episode 620: Reward = 1972111.23, Avg Reward = -66130.84, Events = 58
+    Episode 630: Reward = -4130959.67, Avg Reward = -236880.25, Events = 66
+    Episode 640: Reward = -477825.67, Avg Reward = -1203316.49, Events = 52
+    Episode 650: Reward = 1727073.61, Avg Reward = -131182.31, Events = 50
+    Episode 660: Reward = -4376331.61, Avg Reward = -576842.69, Events = 61
+    Episode 670: Reward = 155877.46, Avg Reward = -298395.42, Events = 54
+    Episode 680: Reward = -121875.61, Avg Reward = -412210.35, Events = 50
+    Episode 690: Reward = 45505.45, Avg Reward = 100348.51, Events = 64
+    Episode 700: Reward = 938345.33, Avg Reward = 243990.65, Events = 49
+    Episode 710: Reward = -7636418.84, Avg Reward = -428260.28, Events = 61
+    Episode 720: Reward = 411186.38, Avg Reward = -1139973.99, Events = 57
+    Episode 730: Reward = 449108.31, Avg Reward = 501415.67, Events = 59
+    Episode 740: Reward = -272401.55, Avg Reward = -270334.81, Events = 49
+    Episode 750: Reward = -260494.24, Avg Reward = 70865.58, Events = 55
+    Episode 760: Reward = 116937.60, Avg Reward = -1267082.62, Events = 54
+    Episode 770: Reward = 1894650.32, Avg Reward = -399352.02, Events = 50
+    Episode 780: Reward = -156138.20, Avg Reward = -623223.86, Events = 53
+    Episode 790: Reward = 2067966.40, Avg Reward = -8586.15, Events = 53
+    Episode 800: Reward = -150633.49, Avg Reward = 48598.99, Events = 55
+    Episode 810: Reward = -236148.69, Avg Reward = -461399.50, Events = 45
+    Episode 820: Reward = 1878218.91, Avg Reward = 67606.44, Events = 62
+    Episode 830: Reward = 2562323.81, Avg Reward = -401903.05, Events = 64
+    Episode 840: Reward = -76509.58, Avg Reward = 124966.37, Events = 56
+    Episode 850: Reward = -144554.81, Avg Reward = -228406.50, Events = 59
+    Episode 860: Reward = 1065092.48, Avg Reward = 298697.19, Events = 55
+    Episode 870: Reward = 594486.89, Avg Reward = -604138.00, Events = 52
+    Episode 880: Reward = 490709.10, Avg Reward = -571518.12, Events = 53
+    Episode 890: Reward = 1585326.54, Avg Reward = 481994.40, Events = 65
+    Episode 900: Reward = -939911.71, Avg Reward = -419334.31, Events = 66
+    Episode 910: Reward = -524035.47, Avg Reward = 469745.02, Events = 58
+    Episode 920: Reward = 866001.09, Avg Reward = -314806.77, Events = 62
+    Episode 930: Reward = 821679.93, Avg Reward = 18009.18, Events = 56
+    Episode 940: Reward = -318075.18, Avg Reward = -85888.96, Events = 46
+    Episode 950: Reward = -2428191.05, Avg Reward = -3441.26, Events = 52
+    Episode 960: Reward = -1361245.24, Avg Reward = -768190.15, Events = 47
+    Episode 970: Reward = -1471830.53, Avg Reward = 361690.64, Events = 57
+    Episode 980: Reward = -56529.15, Avg Reward = 2378.79, Events = 55
+    Episode 990: Reward = 834434.01, Avg Reward = 53320.07, Events = 59
+    Episode 1000: Reward = -510396.53, Avg Reward = -60978.46, Events = 59
+
+[20250804_145934] Analysis for TATASTEEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for TATA STEEL LIMITED (TATASTEEL.NS): STRONG SELL
+Current Price: Rs.159.28
+
+Buy Score: -0.265, Sell Score: 0.365
+
+Bearish Factors:
+- Price is above the 200-day SMA, suggesting potential overvaluation.
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0161 (higher values indicate higher risk)
+- Sector: Basic Materials
+- Industry: Steel
+
+Prediction Days: 30
+Current Price (USD): 1.82
+Predicted Price (USD): 155.8795623779297
+Predicted Change (%): 8464.81
+Confidence Score: -0.05304234532177787
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 3.7879218184982597
+  Average Reward: 93087.46875
+  Average Events/Episode: 62.346666666666664
+  Actions Distribution:
+    hold: 0.1873
+    buy: 0.2349
+    sell: 0.5778
+  RL Epoch Logs:
+    Episode 10: Reward = 152333.89, Avg Reward = 25786.59, Events = 61
+    Episode 20: Reward = 885998.25, Avg Reward = 439096.41, Events = 59
+    Episode 30: Reward = 563051.81, Avg Reward = 175225.84, Events = 54
+    Episode 40: Reward = -173139.34, Avg Reward = -389155.47, Events = 59
+    Episode 50: Reward = -207791.98, Avg Reward = 314654.59, Events = 69
+    Episode 60: Reward = -33462.25, Avg Reward = 187690.53, Events = 52
+    Episode 70: Reward = -853113.56, Avg Reward = 142778.83, Events = 67
+    Episode 80: Reward = -834672.81, Avg Reward = -88446.38, Events = 52
+    Episode 90: Reward = 401739.16, Avg Reward = 209118.94, Events = 58
+    Episode 100: Reward = 153193.58, Avg Reward = -7617.57, Events = 55
+    Episode 110: Reward = 451742.00, Avg Reward = 154077.53, Events = 57
+    Episode 120: Reward = -1116750.00, Avg Reward = -53644.06, Events = 64
+    Episode 130: Reward = 87096.52, Avg Reward = 321642.69, Events = 58
+    Episode 140: Reward = -478515.94, Avg Reward = 160066.30, Events = 57
+    Episode 150: Reward = 578996.25, Avg Reward = 43341.50, Events = 66
+    Episode 160: Reward = 56425.85, Avg Reward = 345082.19, Events = 61
+    Episode 170: Reward = -176820.50, Avg Reward = -14776.54, Events = 62
+    Episode 180: Reward = 48254.92, Avg Reward = -39490.76, Events = 71
+    Episode 190: Reward = -761777.31, Avg Reward = 200192.92, Events = 68
+    Episode 200: Reward = 331723.78, Avg Reward = 72428.15, Events = 55
+    Episode 210: Reward = 145866.48, Avg Reward = 204037.78, Events = 63
+    Episode 220: Reward = -1040.67, Avg Reward = -28866.71, Events = 63
+    Episode 230: Reward = -61443.82, Avg Reward = 79671.53, Events = 69
+    Episode 240: Reward = 460015.84, Avg Reward = 142854.67, Events = 72
+    Episode 250: Reward = -29271.86, Avg Reward = 157027.78, Events = 62
+    Episode 260: Reward = 321420.66, Avg Reward = 327428.22, Events = 54
+    Episode 270: Reward = 206944.52, Avg Reward = -320665.56, Events = 69
+    Episode 280: Reward = -722501.75, Avg Reward = -267553.44, Events = 73
+    Episode 290: Reward = 338405.66, Avg Reward = 231216.28, Events = 67
+    Episode 300: Reward = 228025.50, Avg Reward = 69421.15, Events = 78
+
+[20250804_163539] Analysis for BPCL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT PETROLEUM CORP  LT (BPCL.NS): STRONG SELL
+Current Price: Rs.317.85
+
+Buy Score: -0.209, Sell Score: 0.309
+
+Bearish Factors:
+- Price is above the 200-day SMA, suggesting potential overvaluation.
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0155 (higher values indicate higher risk)
+- Sector: Energy
+- Industry: Oil & Gas Refining & Marketing
+
+Prediction Days: 30
+Current Price (USD): 3.62
+Predicted Price (USD): 318.2764786060063
+Predicted Change (%): 8692.17
+Confidence Score: -0.021738090696768575
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.022655905748441
+  Average Reward: -34581.689888273526
+  Average Events/Episode: 74.39666666666666
+  Actions Distribution:
+    hold: 0.9652
+    buy: 0.0294
+    sell: 0.0053
+  RL Epoch Logs:
+    Episode 10: Reward = -1670888.19, Avg Reward = 303200.67, Events = 67
+    Episode 20: Reward = -3270225.49, Avg Reward = -649621.78, Events = 77
+    Episode 30: Reward = 1493219.48, Avg Reward = 44209.48, Events = 77
+    Episode 40: Reward = -828071.13, Avg Reward = -48836.14, Events = 75
+    Episode 50: Reward = 625912.29, Avg Reward = 635018.32, Events = 73
+    Episode 60: Reward = -2728789.67, Avg Reward = -71640.66, Events = 64
+    Episode 70: Reward = -2322312.80, Avg Reward = 93394.49, Events = 82
+    Episode 80: Reward = 876246.37, Avg Reward = 77230.43, Events = 62
+    Episode 90: Reward = -106330.63, Avg Reward = -476588.34, Events = 68
+    Episode 100: Reward = 321036.38, Avg Reward = 45288.50, Events = 73
+    Episode 110: Reward = 298952.06, Avg Reward = -159624.71, Events = 70
+    Episode 120: Reward = -96979.12, Avg Reward = 133631.91, Events = 75
+    Episode 130: Reward = -56973.10, Avg Reward = 24694.60, Events = 68
+    Episode 140: Reward = 223111.73, Avg Reward = 175298.41, Events = 73
+    Episode 150: Reward = 663573.16, Avg Reward = 151159.40, Events = 78
+    Episode 160: Reward = -119274.63, Avg Reward = -49701.99, Events = 63
+    Episode 170: Reward = -103146.66, Avg Reward = -51402.65, Events = 74
+    Episode 180: Reward = 26629.21, Avg Reward = 130834.30, Events = 86
+    Episode 190: Reward = -360544.86, Avg Reward = -287342.36, Events = 70
+    Episode 200: Reward = -659969.02, Avg Reward = -149837.45, Events = 89
+    Episode 210: Reward = -292749.22, Avg Reward = -164387.52, Events = 80
+    Episode 220: Reward = -116452.80, Avg Reward = -62024.45, Events = 78
+    Episode 230: Reward = -683189.54, Avg Reward = -57307.67, Events = 80
+    Episode 240: Reward = -107827.05, Avg Reward = -271659.18, Events = 68
+    Episode 250: Reward = 445851.52, Avg Reward = 70849.74, Events = 80
+    Episode 260: Reward = 426143.28, Avg Reward = 163807.30, Events = 61
+    Episode 270: Reward = -94223.65, Avg Reward = -428757.37, Events = 90
+    Episode 280: Reward = 425216.61, Avg Reward = 117005.87, Events = 88
+    Episode 290: Reward = -210187.29, Avg Reward = -120982.57, Events = 70
+    Episode 300: Reward = -113222.57, Avg Reward = -153359.30, Events = 71
+
+[20250804_165919] Analysis for IOC.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for INDIAN OIL CORP LTD (IOC.NS): STRONG SELL
+Current Price: Rs.142.38
+
+Buy Score: -0.231, Sell Score: 0.331
+
+Bearish Factors:
+- Price is above the 200-day SMA, suggesting potential overvaluation.
+- Negative market sentiment from news and social media.
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0143 (higher values indicate higher risk)
+- Sector: Energy
+- Industry: Oil & Gas Refining & Marketing
+
+Prediction Days: 30
+Current Price (USD): 1.62
+Predicted Price (USD): 140.07318037235044
+Predicted Change (%): 8546.49
+Confidence Score: 0.012350132349941312
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 2.017220950703995
+  Average Reward: -39151.52597337869
+  Average Events/Episode: 74.83333333333333
+  Actions Distribution:
+    hold: 0.0107
+    buy: 0.9679
+    sell: 0.0214
+  RL Epoch Logs:
+    Episode 10: Reward = 330279.97, Avg Reward = 65534.57, Events = 78
+    Episode 20: Reward = -241759.86, Avg Reward = -43743.57, Events = 96
+    Episode 30: Reward = 727941.95, Avg Reward = 200482.38, Events = 83
+    Episode 40: Reward = 593153.78, Avg Reward = -371226.75, Events = 62
+    Episode 50: Reward = 169004.93, Avg Reward = -166437.84, Events = 81
+    Episode 60: Reward = -610969.72, Avg Reward = -279971.54, Events = 77
+    Episode 70: Reward = -628010.65, Avg Reward = -37.29, Events = 66
+    Episode 80: Reward = -190852.20, Avg Reward = -116805.38, Events = 69
+    Episode 90: Reward = 77574.59, Avg Reward = -61333.74, Events = 68
+    Episode 100: Reward = 1318886.90, Avg Reward = 402441.85, Events = 79
+    Episode 110: Reward = -28596.88, Avg Reward = 24543.40, Events = 84
+    Episode 120: Reward = 102050.00, Avg Reward = -176097.31, Events = 78
+    Episode 130: Reward = 1046671.04, Avg Reward = -9531.62, Events = 85
+    Episode 140: Reward = -243567.14, Avg Reward = -111419.38, Events = 72
+    Episode 150: Reward = -999778.78, Avg Reward = -85660.80, Events = 77
+    Episode 160: Reward = -507048.74, Avg Reward = 57617.97, Events = 61
+    Episode 170: Reward = -1113534.50, Avg Reward = -39654.52, Events = 88
+    Episode 180: Reward = 604800.93, Avg Reward = -105628.44, Events = 81
+    Episode 190: Reward = -119049.55, Avg Reward = 305644.01, Events = 67
+    Episode 200: Reward = -260760.12, Avg Reward = 5855.35, Events = 75
+    Episode 210: Reward = 602932.27, Avg Reward = -25580.22, Events = 73
+    Episode 220: Reward = -512.73, Avg Reward = -169577.57, Events = 77
+    Episode 230: Reward = -485652.81, Avg Reward = 151564.23, Events = 65
+    Episode 240: Reward = 60006.48, Avg Reward = -364560.92, Events = 77
+    Episode 250: Reward = -7627.93, Avg Reward = -60763.14, Events = 70
+    Episode 260: Reward = 395206.36, Avg Reward = 151116.30, Events = 65
+    Episode 270: Reward = -153874.35, Avg Reward = -88183.31, Events = 72
+    Episode 280: Reward = -563546.68, Avg Reward = -73688.29, Events = 66
+    Episode 290: Reward = 315382.63, Avg Reward = -88.77, Events = 74
+    Episode 300: Reward = 37668.79, Avg Reward = -189355.44, Events = 69
+
+[20250804_172958] Analysis for BPCL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT PETROLEUM CORP  LT (BPCL.NS): STRONG SELL
+Current Price: Rs.317.85
+
+Buy Score: -0.209, Sell Score: 0.309
+
+Bearish Factors:
+- Price is above the 200-day SMA, suggesting potential overvaluation.
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0155 (higher values indicate higher risk)
+- Sector: Energy
+- Industry: Oil & Gas Refining & Marketing
+
+Prediction Days: 30
+Current Price (USD): 3.63
+Predicted Price (USD): 316.11028451331276
+Predicted Change (%): 8608.27
+Confidence Score: -0.05530836422831609
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.9632383654207224
+  Average Reward: -84995.44252851911
+  Average Events/Episode: 74.53666666666666
+  Actions Distribution:
+    hold: 0.9011
+    buy: 0.0882
+    sell: 0.0107
+  RL Epoch Logs:
+    Episode 10: Reward = 354988.66, Avg Reward = -394150.94, Events = 67
+    Episode 20: Reward = -1495417.65, Avg Reward = -53283.11, Events = 88
+    Episode 30: Reward = -614010.29, Avg Reward = 427331.68, Events = 66
+    Episode 40: Reward = 69489.12, Avg Reward = -122267.95, Events = 80
+    Episode 50: Reward = 2576481.95, Avg Reward = 763974.01, Events = 64
+    Episode 60: Reward = -374081.85, Avg Reward = -34149.94, Events = 75
+    Episode 70: Reward = 296843.28, Avg Reward = -208539.11, Events = 66
+    Episode 80: Reward = -1276037.64, Avg Reward = 9836.57, Events = 70
+    Episode 90: Reward = 897918.21, Avg Reward = -809105.50, Events = 74
+    Episode 100: Reward = -819478.24, Avg Reward = -284609.17, Events = 67
+    Episode 110: Reward = -741745.41, Avg Reward = -89985.97, Events = 73
+    Episode 120: Reward = 55042.47, Avg Reward = -167938.25, Events = 70
+    Episode 130: Reward = -413261.43, Avg Reward = -376417.59, Events = 79
+    Episode 140: Reward = -569917.64, Avg Reward = -52583.47, Events = 74
+    Episode 150: Reward = -54436.92, Avg Reward = 108807.07, Events = 71
+    Episode 160: Reward = -182371.10, Avg Reward = -29403.12, Events = 78
+    Episode 170: Reward = -931300.95, Avg Reward = -295543.70, Events = 83
+    Episode 180: Reward = -605732.36, Avg Reward = -155402.63, Events = 65
+    Episode 190: Reward = -105569.82, Avg Reward = -138015.14, Events = 80
+    Episode 200: Reward = -102809.86, Avg Reward = -10048.94, Events = 92
+    Episode 210: Reward = 193132.53, Avg Reward = -117094.30, Events = 58
+    Episode 220: Reward = -18305.98, Avg Reward = 40154.60, Events = 83
+    Episode 230: Reward = -80488.20, Avg Reward = 223328.29, Events = 78
+    Episode 240: Reward = -133022.87, Avg Reward = -334203.04, Events = 87
+    Episode 250: Reward = 507430.01, Avg Reward = 39751.49, Events = 75
+    Episode 260: Reward = -964425.77, Avg Reward = -200441.71, Events = 82
+    Episode 270: Reward = 936049.03, Avg Reward = 337406.15, Events = 75
+    Episode 280: Reward = 1065026.80, Avg Reward = -183694.31, Events = 74
+    Episode 290: Reward = 321298.50, Avg Reward = -202381.94, Events = 84
+    Episode 300: Reward = -127338.78, Avg Reward = -241193.30, Events = 68
+
+[20250804_180608] Analysis for IOC.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for INDIAN OIL CORP LTD (IOC.NS): STRONG SELL
+Current Price: Rs.142.38
+
+Buy Score: -0.244, Sell Score: 0.344
+
+Bearish Factors:
+- Price is above the 200-day SMA, suggesting potential overvaluation.
+- Negative market sentiment from news and social media.
+- Negative risk-adjusted return (Sharpe Ratio).
+
+Risk Assessment:
+- Volatility: 0.0143 (higher values indicate higher risk)
+- Sector: Energy
+- Industry: Oil & Gas Refining & Marketing
+
+Prediction Days: 30
+Current Price (USD): 1.62
+Predicted Price (USD): 140.30518262863237
+Predicted Change (%): 8560.81
+Confidence Score: -0.0291044463999508
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.098
+  Average Reward: 11094.373012010166
+  Average Events/Episode: 74.33666666666667
+  Actions Distribution:
+    hold: 0.0107
+    buy: 0.9866
+    sell: 0.0027
+  RL Epoch Logs:
+    Episode 10: Reward = 961388.19, Avg Reward = 104094.89, Events = 69
+    Episode 20: Reward = 397061.05, Avg Reward = 122129.65, Events = 79
+    Episode 30: Reward = 461497.22, Avg Reward = -50998.05, Events = 81
+    Episode 40: Reward = 766402.18, Avg Reward = 95344.80, Events = 95
+    Episode 50: Reward = -140782.15, Avg Reward = -206044.70, Events = 75
+    Episode 60: Reward = -13102.21, Avg Reward = -40603.99, Events = 75
+    Episode 70: Reward = -879438.42, Avg Reward = 42069.18, Events = 73
+    Episode 80: Reward = -813735.35, Avg Reward = 171662.56, Events = 80
+    Episode 90: Reward = -87678.51, Avg Reward = -82609.04, Events = 64
+    Episode 100: Reward = -178696.63, Avg Reward = 181709.38, Events = 75
+    Episode 110: Reward = -74580.52, Avg Reward = 20862.46, Events = 85
+    Episode 120: Reward = -117503.46, Avg Reward = -146473.55, Events = 77
+    Episode 130: Reward = -257932.42, Avg Reward = 952.76, Events = 75
+    Episode 140: Reward = 1432732.90, Avg Reward = 263215.41, Events = 79
+    Episode 150: Reward = -1521550.59, Avg Reward = -72214.02, Events = 77
+    Episode 160: Reward = 170796.12, Avg Reward = 122993.04, Events = 68
+    Episode 170: Reward = -229909.07, Avg Reward = -166592.75, Events = 63
+    Episode 180: Reward = -886984.88, Avg Reward = -7304.41, Events = 70
+    Episode 190: Reward = -157940.86, Avg Reward = 32879.05, Events = 74
+    Episode 200: Reward = -108350.55, Avg Reward = 45469.57, Events = 78
+    Episode 210: Reward = 230018.95, Avg Reward = 126442.13, Events = 67
+    Episode 220: Reward = -5619.78, Avg Reward = -146477.05, Events = 65
+    Episode 230: Reward = 410420.96, Avg Reward = -48326.08, Events = 78
+    Episode 240: Reward = 5226.86, Avg Reward = -143463.17, Events = 65
+    Episode 250: Reward = -33102.35, Avg Reward = 170311.62, Events = 68
+    Episode 260: Reward = -8618.41, Avg Reward = 834.84, Events = 78
+    Episode 270: Reward = -5409.43, Avg Reward = 7342.09, Events = 83
+    Episode 280: Reward = 204474.44, Avg Reward = -62850.31, Events = 81
+    Episode 290: Reward = -14929.18, Avg Reward = -45111.13, Events = 79
+    Episode 300: Reward = -11374.85, Avg Reward = 43586.00, Events = 93
+
+[20250805_150754] Analysis for SBIN.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for STATE BANK OF INDIA (SBIN.NS): NEUTRAL
+Current Price: Rs.800.35
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0080 (higher values indicate higher risk)
+- Sector: Financial Services
+- Industry: Banks - Regional
+
+Prediction Days: 30
+Current Price (USD): 9.11
+Predicted Price (USD): 785.5403456493727
+Predicted Change (%): 8522.84
+Confidence Score: -0.045854767263381335
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -3.3406276548154707
+  Average Reward: 705600.9420128267
+  Average Events/Episode: 145.07
+  Actions Distribution:
+    hold: 0.7493
+    buy: 0.2326
+    sell: 0.0181
+  RL Epoch Logs:
+    Episode 10: Reward = -11393170.58, Avg Reward = 1238489.04, Events = 146
+    Episode 20: Reward = 11504614.36, Avg Reward = 1274956.65, Events = 154
+    Episode 30: Reward = -13997978.20, Avg Reward = -298496.56, Events = 151
+    Episode 40: Reward = 8188789.37, Avg Reward = 1184858.47, Events = 152
+    Episode 50: Reward = 8743288.02, Avg Reward = 3224994.46, Events = 136
+    Episode 60: Reward = -5450477.69, Avg Reward = 3845008.87, Events = 144
+    Episode 70: Reward = 5783577.24, Avg Reward = -7741669.01, Events = 146
+    Episode 80: Reward = 9562231.22, Avg Reward = -327271.05, Events = 139
+    Episode 90: Reward = 2706996.74, Avg Reward = 2256790.00, Events = 154
+    Episode 100: Reward = 2768866.35, Avg Reward = 2398348.55, Events = 133
+
+[20250805_151905] Analysis for JSWSTEEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for JSW STEEL LIMITED (JSWSTEEL.NS): NEUTRAL
+Current Price: Rs.1054.40
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0102 (higher values indicate higher risk)
+- Sector: Basic Materials
+- Industry: Steel
+
+Prediction Days: 30
+Current Price (USD): 12.01
+Predicted Price (USD): 1039.544432062364
+Predicted Change (%): 8555.66
+Confidence Score: -0.010577335917747677
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 4.194470705578016
+  Average Reward: 940848.2357141292
+  Average Events/Episode: 145.23
+  Actions Distribution:
+    hold: 0.7051
+    buy: 0.2812
+    sell: 0.0137
+  RL Epoch Logs:
+    Episode 10: Reward = -16691200.20, Avg Reward = -1633743.60, Events = 137
+    Episode 20: Reward = 9519425.94, Avg Reward = -3283149.74, Events = 130
+    Episode 30: Reward = -22396810.07, Avg Reward = -135965.44, Events = 133
+    Episode 40: Reward = -1846027.89, Avg Reward = 6131024.18, Events = 141
+    Episode 50: Reward = 10449487.85, Avg Reward = 168087.85, Events = 168
+    Episode 60: Reward = 8651642.49, Avg Reward = 486649.42, Events = 146
+    Episode 70: Reward = 10713614.19, Avg Reward = 6252641.92, Events = 156
+    Episode 80: Reward = -26993925.34, Avg Reward = -1916182.71, Events = 159
+    Episode 90: Reward = 6746318.45, Avg Reward = 2222952.08, Events = 143
+    Episode 100: Reward = -3966071.23, Avg Reward = 1116168.39, Events = 155
+
+[20250805_153038] Analysis for TATASTEEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for TATA STEEL LIMITED (TATASTEEL.NS): NEUTRAL
+Current Price: Rs.159.76
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0161 (higher values indicate higher risk)
+- Sector: Basic Materials
+- Industry: Steel
+
+Prediction Days: 30
+Current Price (USD): 1.82
+Predicted Price (USD): 156.6786212655123
+Predicted Change (%): 8508.72
+Confidence Score: -0.03105192587310257
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 1.3572953648376715
+  Average Reward: -728.9633779354411
+  Average Events/Episode: 149.25
+  Actions Distribution:
+    hold: 0.2243
+    buy: 0.7716
+    sell: 0.0041
+  RL Epoch Logs:
+    Episode 10: Reward = -1420171.51, Avg Reward = -52660.17, Events = 141
+    Episode 20: Reward = 4322209.31, Avg Reward = 708065.86, Events = 154
+    Episode 30: Reward = -1653595.25, Avg Reward = -719812.48, Events = 162
+    Episode 40: Reward = -706072.50, Avg Reward = -522595.30, Events = 146
+    Episode 50: Reward = -1006198.87, Avg Reward = -1006.84, Events = 159
+    Episode 60: Reward = -541988.63, Avg Reward = -849018.96, Events = 153
+    Episode 70: Reward = 335688.22, Avg Reward = 18441.34, Events = 149
+    Episode 80: Reward = 864297.45, Avg Reward = 704541.93, Events = 142
+    Episode 90: Reward = 305755.73, Avg Reward = 388060.82, Events = 147
+    Episode 100: Reward = 328296.55, Avg Reward = 318694.16, Events = 170
+
+[20250805_154543] Analysis for BPCL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT PETROLEUM CORP  LT (BPCL.NS): NEUTRAL
+Current Price: Rs.314.90
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0152 (higher values indicate higher risk)
+- Sector: Energy
+- Industry: Oil & Gas Refining & Marketing
+
+Prediction Days: 30
+Current Price (USD): 3.59
+Predicted Price (USD): 314.08341610596557
+Predicted Change (%): 8648.84
+Confidence Score: -0.018310455079490362
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.22499999999999998
+  Average Reward: -443515.7542633874
+  Average Events/Episode: 151.49
+  Actions Distribution:
+    hold: 0.6502
+    buy: 0.3405
+    sell: 0.0093
+  RL Epoch Logs:
+    Episode 10: Reward = 3187255.46, Avg Reward = -524257.36, Events = 133
+    Episode 20: Reward = -2909803.90, Avg Reward = 316411.61, Events = 144
+    Episode 30: Reward = 2437149.37, Avg Reward = -1048209.24, Events = 146
+    Episode 40: Reward = -327149.55, Avg Reward = -1864048.51, Events = 153
+    Episode 50: Reward = -577515.10, Avg Reward = -577062.68, Events = 153
+    Episode 60: Reward = -245222.36, Avg Reward = 8564.14, Events = 153
+    Episode 70: Reward = -525728.24, Avg Reward = 90469.30, Events = 171
+    Episode 80: Reward = -479185.87, Avg Reward = -104986.41, Events = 168
+    Episode 90: Reward = -103344.92, Avg Reward = -63563.70, Events = 149
+    Episode 100: Reward = -171609.05, Avg Reward = -668474.70, Events = 167
+
+[20250805_155021] Analysis for JSWSTEEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for JSW STEEL LIMITED (JSWSTEEL.NS): NEUTRAL
+Current Price: Rs.1053.40
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0102 (higher values indicate higher risk)
+- Sector: Basic Materials
+- Industry: Steel
+
+Prediction Days: 30
+Current Price (USD): 12.0
+Predicted Price (USD): 1038.9442156504508
+Predicted Change (%): 8557.87
+Confidence Score: -0.032670162085244314
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 12.10888547747748
+  Average Reward: 1530430.3458137137
+  Average Events/Episode: 151.05
+  Actions Distribution:
+    hold: 0.2764
+    buy: 0.7196
+    sell: 0.0040
+  RL Epoch Logs:
+    Episode 10: Reward = -16693025.47, Avg Reward = -3125277.70, Events = 130
+    Episode 20: Reward = 8342847.06, Avg Reward = 5984912.36, Events = 140
+    Episode 30: Reward = 12825189.88, Avg Reward = -256898.41, Events = 160
+    Episode 40: Reward = 17415766.39, Avg Reward = 5536484.75, Events = 153
+    Episode 50: Reward = 10928635.57, Avg Reward = 4902823.80, Events = 166
+    Episode 60: Reward = 11909006.48, Avg Reward = 2046754.69, Events = 157
+    Episode 70: Reward = 19465686.96, Avg Reward = -3107168.16, Events = 161
+    Episode 80: Reward = 10995001.28, Avg Reward = 2011281.96, Events = 169
+    Episode 90: Reward = 8504900.07, Avg Reward = 471962.71, Events = 146
+    Episode 100: Reward = -15046700.27, Avg Reward = 839427.45, Events = 167
+
+[20250805_161023] Analysis for JSWSTEEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for JSW STEEL LIMITED (JSWSTEEL.NS): NEUTRAL
+Current Price: Rs.1053.40
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0102 (higher values indicate higher risk)
+- Sector: Basic Materials
+- Industry: Steel
+
+Prediction Days: 30
+Current Price (USD): 12.0
+Predicted Price (USD): 1046.8764845929231
+Predicted Change (%): 8623.97
+Confidence Score: -0.016832968472292542
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 12.05100112880871
+  Average Reward: 2707578.6839940753
+  Average Events/Episode: 151.08
+  Actions Distribution:
+    hold: 0.3578
+    buy: 0.3725
+    sell: 0.2697
+  RL Epoch Logs:
+    Episode 10: Reward = 11754422.55, Avg Reward = 1684068.77, Events = 153
+    Episode 20: Reward = -21187634.55, Avg Reward = -1784852.06, Events = 141
+    Episode 30: Reward = 12749397.78, Avg Reward = 12165665.55, Events = 167
+    Episode 40: Reward = 12474232.35, Avg Reward = 3470571.23, Events = 145
+    Episode 50: Reward = 14118626.30, Avg Reward = 8805477.23, Events = 124
+    Episode 60: Reward = -6614428.27, Avg Reward = 601381.44, Events = 160
+    Episode 70: Reward = -9758212.59, Avg Reward = -5337995.53, Events = 172
+    Episode 80: Reward = 10068775.29, Avg Reward = 2144966.04, Events = 159
+    Episode 90: Reward = 10086857.46, Avg Reward = 2500546.91, Events = 142
+    Episode 100: Reward = 8927254.06, Avg Reward = 2825957.25, Events = 149
+
+[20250805_163500] Analysis for JSWSTEEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for JSW STEEL LIMITED (JSWSTEEL.NS): NEUTRAL
+Current Price: Rs.1053.40
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0102 (higher values indicate higher risk)
+- Sector: Basic Materials
+- Industry: Steel
+
+Prediction Days: 30
+Current Price (USD): 12.0
+Predicted Price (USD): 1044.1287382144926
+Predicted Change (%): 8601.07
+Confidence Score: -0.01499218846975614
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 11.444241055334512
+  Average Reward: 3427747.660642471
+  Average Events/Episode: 150.05
+  Actions Distribution:
+    hold: 0.6222
+    buy: 0.3431
+    sell: 0.0347
+  RL Epoch Logs:
+    Episode 10: Reward = 4361290.80, Avg Reward = 9672425.40, Events = 138
+    Episode 20: Reward = 8336990.23, Avg Reward = 759660.43, Events = 159
+    Episode 30: Reward = 16154106.13, Avg Reward = 10147804.55, Events = 145
+    Episode 40: Reward = 20067983.44, Avg Reward = 8310340.44, Events = 172
+    Episode 50: Reward = -14866157.15, Avg Reward = 3711209.95, Events = 150
+    Episode 60: Reward = 4116636.59, Avg Reward = 2390479.31, Events = 159
+    Episode 70: Reward = -18219141.27, Avg Reward = -2890493.06, Events = 141
+    Episode 80: Reward = -12591672.23, Avg Reward = -957213.60, Events = 149
+    Episode 90: Reward = 5940618.16, Avg Reward = 3072863.98, Events = 129
+    Episode 100: Reward = -7476980.06, Avg Reward = 60399.22, Events = 162
+
+[20250805_163528] Analysis for JSWSTEEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for JSW STEEL LIMITED (JSWSTEEL.NS): NEUTRAL
+Current Price: Rs.1053.40
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0102 (higher values indicate higher risk)
+- Sector: Basic Materials
+- Industry: Steel
+
+Prediction Days: 30
+Current Price (USD): 12.0
+Predicted Price (USD): 1035.4974803311786
+Predicted Change (%): 8529.15
+Confidence Score: 0.001634467394049488
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 26.840211637925936
+  Average Reward: 2847449.737578535
+  Average Events/Episode: 149.92
+  Actions Distribution:
+    hold: 0.3952
+    buy: 0.4980
+    sell: 0.1068
+  RL Epoch Logs:
+    Episode 10: Reward = -807811.22, Avg Reward = 713762.33, Events = 154
+    Episode 20: Reward = 16370364.04, Avg Reward = 513591.66, Events = 161
+    Episode 30: Reward = 20757513.61, Avg Reward = -4186414.64, Events = 146
+    Episode 40: Reward = 12363603.88, Avg Reward = 4964053.72, Events = 155
+    Episode 50: Reward = 18835552.61, Avg Reward = 5295444.46, Events = 166
+    Episode 60: Reward = 19025632.69, Avg Reward = 8422263.78, Events = 156
+    Episode 70: Reward = 20410751.90, Avg Reward = 2974491.53, Events = 142
+    Episode 80: Reward = 3965870.52, Avg Reward = 830405.67, Events = 151
+    Episode 90: Reward = 11290950.41, Avg Reward = 6477961.63, Events = 153
+    Episode 100: Reward = 10509051.59, Avg Reward = 2468937.25, Events = 158
+
+[20250805_165248] Analysis for JSWSTEEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for JSW STEEL LIMITED (JSWSTEEL.NS): NEUTRAL
+Current Price: Rs.1053.40
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0102 (higher values indicate higher risk)
+- Sector: Basic Materials
+- Industry: Steel
+
+Prediction Days: 30
+Current Price (USD): 12.0
+Predicted Price (USD): 1040.5216622351884
+Predicted Change (%): 8571.01
+Confidence Score: -0.05513771032566339
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 16.327998623162376
+  Average Reward: 3547764.1401169244
+  Average Events/Episode: 149.21
+  Actions Distribution:
+    hold: 0.5007
+    buy: 0.4499
+    sell: 0.0494
+  RL Epoch Logs:
+    Episode 10: Reward = 13912576.99, Avg Reward = 8364973.35, Events = 122
+    Episode 20: Reward = 8473875.08, Avg Reward = 5372386.45, Events = 134
+    Episode 30: Reward = 14726080.42, Avg Reward = 6161508.27, Events = 171
+    Episode 40: Reward = -10532001.25, Avg Reward = 2819620.15, Events = 149
+    Episode 50: Reward = 11206827.49, Avg Reward = 6595069.19, Events = 148
+    Episode 60: Reward = 14661794.60, Avg Reward = 5039793.78, Events = 173
+    Episode 70: Reward = 10000353.07, Avg Reward = 216814.85, Events = 158
+    Episode 80: Reward = -19815429.70, Avg Reward = -10819550.48, Events = 164
+    Episode 90: Reward = 10603780.91, Avg Reward = 5299034.36, Events = 159
+    Episode 100: Reward = 10304069.45, Avg Reward = 6427991.48, Events = 155
+
+[20250805_170428] Analysis for TATASTEEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for TATA STEEL LIMITED (TATASTEEL.NS): NEUTRAL
+Current Price: Rs.159.62
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0161 (higher values indicate higher risk)
+- Sector: Basic Materials
+- Industry: Steel
+
+Prediction Days: 30
+Current Price (USD): 1.82
+Predicted Price (USD): 157.63879131688233
+Predicted Change (%): 8561.47
+Confidence Score: -0.007355940869830935
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 7.256678354998571
+  Average Reward: 174435.11638268147
+  Average Events/Episode: 148.64
+  Actions Distribution:
+    hold: 0.6275
+    buy: 0.2991
+    sell: 0.0734
+  RL Epoch Logs:
+    Episode 10: Reward = 1913081.00, Avg Reward = -432517.88, Events = 159
+    Episode 20: Reward = 156436.41, Avg Reward = 868876.08, Events = 147
+    Episode 30: Reward = -8870.70, Avg Reward = 296951.06, Events = 139
+    Episode 40: Reward = -2349325.20, Avg Reward = 153836.56, Events = 157
+    Episode 50: Reward = 521506.40, Avg Reward = 224087.30, Events = 154
+    Episode 60: Reward = 1289996.80, Avg Reward = 829811.26, Events = 148
+    Episode 70: Reward = 3498226.20, Avg Reward = 1444767.40, Events = 148
+    Episode 80: Reward = -1898733.59, Avg Reward = -1216079.59, Events = 152
+    Episode 90: Reward = -143730.12, Avg Reward = -946977.66, Events = 142
+    Episode 100: Reward = 2865593.18, Avg Reward = 521596.63, Events = 158
+
+[20250805_172750] Analysis for SBIN.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for STATE BANK OF INDIA (SBIN.NS): NEUTRAL
+Current Price: Rs.800.60
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0080 (higher values indicate higher risk)
+- Sector: Financial Services
+- Industry: Banks - Regional
+
+Prediction Days: 30
+Current Price (USD): 9.12
+Predicted Price (USD): 787.3306548152974
+Predicted Change (%): 8533.01
+Confidence Score: -0.06370284465289289
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: SELL
+  Performance (%): -41.086965662215206
+  Average Reward: -1219260.248871644
+  Average Events/Episode: 147.9
+  Actions Distribution:
+    hold: 0.2256
+    buy: 0.3899
+    sell: 0.3845
+  RL Epoch Logs:
+    Episode 10: Reward = -22035843.06, Avg Reward = -3562341.41, Events = 164
+    Episode 20: Reward = -5040895.49, Avg Reward = -6344003.66, Events = 128
+    Episode 30: Reward = -9224195.94, Avg Reward = 2701775.12, Events = 156
+    Episode 40: Reward = 1418907.94, Avg Reward = -5360237.17, Events = 156
+    Episode 50: Reward = 8069765.11, Avg Reward = 767683.58, Events = 156
+    Episode 60: Reward = 7706093.18, Avg Reward = -1741208.05, Events = 157
+    Episode 70: Reward = 8241027.21, Avg Reward = 3103203.16, Events = 132
+    Episode 80: Reward = 4546913.74, Avg Reward = -1801291.20, Events = 151
+    Episode 90: Reward = 6470861.40, Avg Reward = 3700015.15, Events = 154
+    Episode 100: Reward = -1099843.96, Avg Reward = -3656198.01, Events = 142
+
+[20250805_173918] Analysis for BPCL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT PETROLEUM CORP  LT (BPCL.NS): NEUTRAL
+Current Price: Rs.315.10
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0152 (higher values indicate higher risk)
+- Sector: Energy
+- Industry: Oil & Gas Refining & Marketing
+
+Prediction Days: 30
+Current Price (USD): 3.59
+Predicted Price (USD): 315.195272788708
+Predicted Change (%): 8679.81
+Confidence Score: -0.02682546112014239
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -1.510682350445888
+  Average Reward: -402804.2582543335
+  Average Events/Episode: 151.42
+  Actions Distribution:
+    hold: 0.5728
+    buy: 0.4166
+    sell: 0.0107
+  RL Epoch Logs:
+    Episode 10: Reward = -354795.11, Avg Reward = -25416.70, Events = 166
+    Episode 20: Reward = -3193889.55, Avg Reward = 2172474.45, Events = 153
+    Episode 30: Reward = -12316908.18, Avg Reward = -1214175.94, Events = 144
+    Episode 40: Reward = -6635762.52, Avg Reward = -2327944.09, Events = 152
+    Episode 50: Reward = 2004178.05, Avg Reward = 293837.49, Events = 162
+    Episode 60: Reward = -14250498.06, Avg Reward = -1127954.60, Events = 164
+    Episode 70: Reward = -1440857.23, Avg Reward = -61005.45, Events = 140
+    Episode 80: Reward = -285057.11, Avg Reward = -796926.58, Events = 143
+    Episode 90: Reward = -1928715.98, Avg Reward = -260365.73, Events = 168
+    Episode 100: Reward = -1325155.19, Avg Reward = -680565.44, Events = 167

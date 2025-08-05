@@ -1,5 +1,5 @@
 {
-    "cash": 6003.09,
+    "cash": 4949.6900000000005,
     "holdings": {
         "HDFCBANK.NS": {
             "qty": 1,
@@ -8,9 +8,13 @@
         "SUZLON.NS": {
             "qty": 31,
             "avg_price": 63.91
+        },
+        "JSWSTEEL.NS": {
+            "qty": 1,
+            "avg_price": 1053.4
         }
     },
     "starting_balance": 10000,
     "realized_pnl": 0,
-    "unrealized_pnl": -59.82
+    "unrealized_pnl": 9.329999999999899
 }

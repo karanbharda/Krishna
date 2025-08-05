@@ -78,10 +78,21 @@ class DecisionAuditTrail:
         self.performance_outcomes = []
         self.analytics_cache = {}
         self.last_analytics_update = None
-        
-        # Load recent decisions on startup
-        asyncio.create_task(self._load_recent_decisions())
-    
+
+        # Critical Fix: Don't create async tasks in constructor
+        self._initialization_complete = False
+
+    async def initialize(self) -> None:
+        """Critical Fix: Proper async initialization"""
+        if not self._initialization_complete:
+            try:
+                await self._load_recent_decisions()
+                self._initialization_complete = True
+                logger.info("Decision audit trail initialized successfully")
+            except Exception as e:
+                logger.error(f"Error initializing decision audit trail: {e}")
+                raise
+
     async def log_decision(self, decision_data: Dict[str, Any]) -> str:
         """Log a complete trading decision"""
         

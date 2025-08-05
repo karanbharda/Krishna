@@ -16,14 +16,21 @@ from dataclasses import dataclass, asdict
 from enum import Enum
 import numpy as np
 
-# Import our components
+# Critical Fix: Lazy imports to prevent circular dependencies
 import sys
 import os
+from typing import TYPE_CHECKING
+
+# Add path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from llama_integration import LlamaReasoningEngine, TradingContext, LlamaResponse
-from fyers_client import FyersAPIClient
-from mcp_server.tools.market_analysis_tool import MarketAnalysisTool
+# Critical Fix: Use TYPE_CHECKING for type hints only
+if TYPE_CHECKING:
+    from llama_integration import LlamaReasoningEngine, TradingContext, LlamaResponse
+    from fyers_client import FyersAPIClient
+    from mcp_server.tools.market_analysis_tool import MarketAnalysisTool
+
+# Runtime imports will be done lazily in methods
 
 logger = logging.getLogger(__name__)
 
@@ -89,10 +96,10 @@ class TradingAgent:
         self.agent_id = config.get("agent_id", "trading_agent_001")
         self.state = AgentState.IDLE
         
-        # Initialize components
-        self.llama_engine = None
-        self.fyers_client = None
-        self.market_analyzer = None
+        # Critical Fix: Initialize components with lazy loading
+        self._llama_engine = None
+        self._fyers_client = None
+        self._market_analyzer = None
         
         # Agent memory and learning
         self.memory = AgentMemory(
@@ -116,7 +123,40 @@ class TradingAgent:
         self.min_confidence = config.get("min_confidence", 0.7)
         
         logger.info(f"Trading Agent {self.agent_id} initialized")
-    
+
+    def _get_llama_engine(self):
+        """Critical Fix: Lazy import to prevent circular dependencies"""
+        if self._llama_engine is None:
+            try:
+                from llama_integration import LlamaReasoningEngine
+                self._llama_engine = LlamaReasoningEngine(self.config.get("llama", {}))
+            except ImportError as e:
+                logger.error(f"Failed to import LlamaReasoningEngine: {e}")
+                self._llama_engine = False
+        return self._llama_engine if self._llama_engine is not False else None
+
+    def _get_fyers_client(self):
+        """Critical Fix: Lazy import to prevent circular dependencies"""
+        if self._fyers_client is None:
+            try:
+                from fyers_client import FyersAPIClient
+                self._fyers_client = FyersAPIClient(self.config.get("fyers", {}))
+            except ImportError as e:
+                logger.error(f"Failed to import FyersAPIClient: {e}")
+                self._fyers_client = False
+        return self._fyers_client if self._fyers_client is not False else None
+
+    def _get_market_analyzer(self):
+        """Critical Fix: Lazy import to prevent circular dependencies"""
+        if self._market_analyzer is None:
+            try:
+                from mcp_server.tools.market_analysis_tool import MarketAnalysisTool
+                self._market_analyzer = MarketAnalysisTool(self.config)
+            except ImportError as e:
+                logger.error(f"Failed to import MarketAnalysisTool: {e}")
+                self._market_analyzer = False
+        return self._market_analyzer if self._market_analyzer is not False else None
+
     async def initialize(self):
         """Initialize agent components"""
         try:
@@ -159,14 +199,30 @@ class TradingAgent:
             
             # Step 3: AI Reasoning
             self.state = AgentState.DECIDING
-            trading_context = TradingContext(
-                symbol=symbol,
-                current_price=market_data["current_price"],
-                technical_signals=technical_analysis,
-                market_data=market_data,
-                portfolio_context=await self._get_portfolio_context(),
-                risk_parameters=self._get_risk_parameters()
-            )
+
+            # Runtime import to avoid circular dependency
+            try:
+                from llama_integration import TradingContext
+            except ImportError:
+                logger.error("TradingContext not available - using fallback")
+                # Create a simple dict as fallback
+                trading_context = {
+                    "symbol": symbol,
+                    "current_price": market_data["current_price"],
+                    "technical_signals": technical_analysis,
+                    "market_data": market_data,
+                    "portfolio_context": await self._get_portfolio_context(),
+                    "risk_parameters": self._get_risk_parameters()
+                }
+            else:
+                trading_context = TradingContext(
+                    symbol=symbol,
+                    current_price=market_data["current_price"],
+                    technical_signals=technical_analysis,
+                    market_data=market_data,
+                    portfolio_context=await self._get_portfolio_context(),
+                    risk_parameters=self._get_risk_parameters()
+                )
             
             # Get AI decision
             async with self.llama_engine:
@@ -299,7 +355,7 @@ class TradingAgent:
             "position_correlation_limit": 0.7
         }
     
-    async def _assess_trade_risk(self, context: TradingContext, ai_decision: LlamaResponse) -> Dict[str, Any]:
+    async def _assess_trade_risk(self, context: "TradingContext", ai_decision: "LlamaResponse") -> Dict[str, Any]:
         """Assess comprehensive trade risk"""
         try:
             # Prepare risk assessment data
@@ -375,7 +431,7 @@ class TradingAgent:
         except Exception:
             return 0.5  # Medium correlation risk as default
     
-    def _calculate_position_size(self, risk_assessment: Dict[str, Any], context: TradingContext) -> float:
+    def _calculate_position_size(self, risk_assessment: Dict[str, Any], context: "TradingContext") -> float:
         """Calculate optimal position size using Kelly Criterion and risk management"""
         try:
             # Get risk metrics
@@ -407,8 +463,8 @@ class TradingAgent:
             logger.error(f"Position sizing error: {e}")
             return 0.05  # Conservative 5% default
     
-    def _synthesize_trading_signal(self, symbol: str, context: TradingContext, 
-                                 ai_decision: LlamaResponse, risk_assessment: Dict[str, Any], 
+    def _synthesize_trading_signal(self, symbol: str, context: "TradingContext",
+                                 ai_decision: "LlamaResponse", risk_assessment: Dict[str, Any],
                                  position_size: float) -> TradingSignal:
         """Synthesize final trading signal from all analysis"""
         try:
@@ -474,7 +530,7 @@ class TradingAgent:
                 metadata={"error": str(e)}
             )
     
-    async def _update_agent_memory(self, signal: TradingSignal, context: TradingContext):
+    async def _update_agent_memory(self, signal: TradingSignal, context: "TradingContext"):
         """Update agent memory for continuous learning"""
         try:
             # Store decision pattern

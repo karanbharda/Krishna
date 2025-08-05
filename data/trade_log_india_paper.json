@@ -14,5 +14,13 @@
         "price": 63.91,
         "mode": "paper",
         "timestamp": "2025-07-25 11:11:12.910563"
+    },
+    {
+        "asset": "JSWSTEEL.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 1053.4,
+        "mode": "paper",
+        "timestamp": "2025-08-05 16:52:50.396957"
     }
 ]

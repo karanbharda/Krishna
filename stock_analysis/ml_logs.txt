@@ -4148,3 +4148,70 @@ Reinforcement Learning Results:
     Episode 80: Reward = 3819602.58, Avg Reward = 2106794.60, Events = 97
     Episode 90: Reward = 2217529.86, Avg Reward = 2333519.56, Events = 87
     Episode 100: Reward = 2815270.51, Avg Reward = 1488551.56, Events = 74
+
+[20250805_135220] Analysis for IOC.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for INDIAN OIL CORP LTD (IOC.NS): NEUTRAL
+Current Price: Rs.140.90
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0139 (higher values indicate higher risk)
+- Sector: Energy
+- Industry: Oil & Gas Refining & Marketing
+
+Prediction Days: 30
+Current Price (USD): 1.6
+Predicted Price (USD): 141.76488089592732
+Predicted Change (%): 8760.31
+Confidence Score: -0.03177832959356963
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -1.05175874750207
+  Average Reward: -78758.55641411786
+  Average Events/Episode: 122.62333333333333
+  Actions Distribution:
+    hold: 0.0016
+    buy: 0.0065
+    sell: 0.9918
+  RL Epoch Logs:
+    Episode 10: Reward = -1640515.52, Avg Reward = -341848.77, Events = 119
+    Episode 20: Reward = -1011621.06, Avg Reward = -663646.10, Events = 142
+    Episode 30: Reward = -5864614.86, Avg Reward = -1528141.78, Events = 131
+    Episode 40: Reward = 1462863.06, Avg Reward = 224083.22, Events = 119
+    Episode 50: Reward = 814274.54, Avg Reward = -13557.60, Events = 127
+    Episode 60: Reward = -4752.00, Avg Reward = -32412.07, Events = 103
+    Episode 70: Reward = 0.00, Avg Reward = -16791.64, Events = 136
+    Episode 80: Reward = -606.00, Avg Reward = -52763.98, Events = 125
+    Episode 90: Reward = 537.00, Avg Reward = 41687.84, Events = 126
+    Episode 100: Reward = -1221.00, Avg Reward = -41201.27, Events = 124
+    Episode 110: Reward = 316.00, Avg Reward = -19576.62, Events = 111
+    Episode 120: Reward = 4180.00, Avg Reward = -313672.45, Events = 106
+    Episode 130: Reward = 43252.01, Avg Reward = 4978.16, Events = 122
+    Episode 140: Reward = -155760.42, Avg Reward = 44490.58, Events = 126
+    Episode 150: Reward = -267942.02, Avg Reward = 55847.36, Events = 137
+    Episode 160: Reward = 504.00, Avg Reward = 109089.43, Events = 103
+    Episode 170: Reward = 85892.18, Avg Reward = 21289.56, Events = 116
+    Episode 180: Reward = 568534.14, Avg Reward = 150636.35, Events = 128
+    Episode 190: Reward = -36204.13, Avg Reward = 65610.49, Events = 119
+    Episode 200: Reward = 325729.12, Avg Reward = -22702.00, Events = 127
+    Episode 210: Reward = -487979.47, Avg Reward = -321349.56, Events = 110
+    Episode 220: Reward = 207487.59, Avg Reward = 2961.62, Events = 115
+    Episode 230: Reward = -5283.83, Avg Reward = 89498.55, Events = 139
+    Episode 240: Reward = 2637.00, Avg Reward = 70960.74, Events = 125
+    Episode 250: Reward = 8136.50, Avg Reward = 116367.79, Events = 122
+    Episode 260: Reward = -306482.96, Avg Reward = -59979.81, Events = 128
+    Episode 270: Reward = -235250.57, Avg Reward = -716.60, Events = 124
+    Episode 280: Reward = -1116.80, Avg Reward = -83055.63, Events = 126
+    Episode 290: Reward = 3569.80, Avg Reward = 14679.12, Events = 126
+    Episode 300: Reward = -4444.00, Avg Reward = 136478.38, Events = 119

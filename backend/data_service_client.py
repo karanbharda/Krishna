@@ -6,6 +6,7 @@ Provides clean interface for trading bot to get market data
 import asyncio
 import logging
 import requests
+import threading
 import time
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
@@ -13,9 +14,13 @@ import json
 
 logger = logging.getLogger(__name__)
 
+class DataServiceError(Exception):
+    """Custom exception for data service errors"""
+    pass
+
 class DataServiceClient:
     """Client to connect to Fyers Data Service"""
-    
+
     def __init__(self, base_url: str = "http://127.0.0.1:8001"):
         self.base_url = base_url.rstrip('/')
         self.session = requests.Session()
@@ -23,13 +28,49 @@ class DataServiceClient:
         self.last_health_check = None
         self.health_check_interval = 30  # seconds
         self.is_healthy = False
-        
-        # Cache settings
+
+        # Critical Fix: Safe handling of global constants
+        try:
+            from web_backend import CACHE_TTL_SECONDS
+            cache_ttl_default = CACHE_TTL_SECONDS
+        except ImportError:
+            cache_ttl_default = 5  # Safe fallback
+
+        # Advanced Optimization: Enhanced caching with TTL and size limits
         self.cache = {}
-        self.cache_ttl = 5  # seconds
-        
+        self.cache_ttl = cache_ttl_default
+        self.max_cache_size = 1000  # Prevent memory bloat
+        self.cache_hits = 0
+        self.cache_misses = 0
+
+        # Architectural Fix: Thread-safe health checking
+        self._health_check_lock = threading.Lock()
+        self._health_check_in_progress = False
+
         logger.info(f"Data Service Client initialized for {self.base_url}")
-    
+
+    def _manage_cache_size(self) -> None:
+        """Advanced Optimization: Manage cache size to prevent memory bloat"""
+        if len(self.cache) > self.max_cache_size:
+            # Remove oldest entries (simple LRU)
+            sorted_cache = sorted(self.cache.items(), key=lambda x: x[1][1])
+            items_to_remove = len(self.cache) - self.max_cache_size + 100  # Remove extra for efficiency
+            for i in range(items_to_remove):
+                del self.cache[sorted_cache[i][0]]
+            logger.debug(f"Cache cleanup: removed {items_to_remove} old entries")
+
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """Advanced Optimization: Get cache performance statistics"""
+        total_requests = self.cache_hits + self.cache_misses
+        hit_rate = (self.cache_hits / total_requests * 100) if total_requests > 0 else 0
+        return {
+            "cache_size": len(self.cache),
+            "cache_hits": self.cache_hits,
+            "cache_misses": self.cache_misses,
+            "hit_rate_percent": round(hit_rate, 2),
+            "max_cache_size": self.max_cache_size
+        }
+
     def health_check(self) -> bool:
         """Check if data service is healthy"""
         try:
@@ -50,6 +91,10 @@ class DataServiceClient:
             logger.warning(f"Health check failed: {e}")
             self.is_healthy = False
             return False
+        finally:
+            # Architectural Fix: Ensure lock is always released
+            with self._health_check_lock:
+                self._health_check_in_progress = False
     
     def should_check_health(self) -> bool:
         """Check if we should perform health check"""
@@ -59,25 +104,25 @@ class DataServiceClient:
         elapsed = (datetime.now() - self.last_health_check).total_seconds()
         return elapsed > self.health_check_interval
     
-    def get_symbol_data(self, symbol: str) -> Optional[Dict[str, Any]]:
+    def get_symbol_data(self, symbol: str) -> Dict[str, Any]:
         """Get data for a specific symbol"""
-        # Check health periodically
-        if self.should_check_health():
-            self.health_check()
-        
-        if not self.is_healthy:
-            logger.warning("Data service is not healthy, attempting to reconnect")
-            if not self.health_check():
-                return None
-        
-        # Check cache first
-        cache_key = f"symbol_{symbol}"
-        if cache_key in self.cache:
-            cached_data, timestamp = self.cache[cache_key]
-            if (datetime.now() - timestamp).total_seconds() < self.cache_ttl:
-                return cached_data
-        
         try:
+            # Check health periodically
+            if self.should_check_health():
+                self.health_check()
+
+            if not self.is_healthy:
+                logger.warning("Data service is not healthy, attempting to reconnect")
+                if not self.health_check():
+                    raise DataServiceError("Data service is not healthy and reconnection failed")
+
+            # Check cache first
+            cache_key = f"symbol_{symbol}"
+            if cache_key in self.cache:
+                cached_data, timestamp = self.cache[cache_key]
+                if (datetime.now() - timestamp).total_seconds() < self.cache_ttl:
+                    return cached_data
+
             response = self.session.get(f"{self.base_url}/data/{symbol}")
             if response.status_code == 200:
                 data = response.json()
@@ -85,15 +130,15 @@ class DataServiceClient:
                 self.cache[cache_key] = (data, datetime.now())
                 return data
             elif response.status_code == 404:
-                logger.warning(f"Symbol {symbol} not found in data service")
-                return None
+                raise DataServiceError(f"Symbol {symbol} not found in data service")
             else:
-                logger.error(f"Error getting data for {symbol}: {response.status_code}")
-                return None
-                
+                raise DataServiceError(f"HTTP error {response.status_code} getting data for {symbol}")
+
+        except DataServiceError:
+            raise  # Re-raise our custom exceptions
         except Exception as e:
-            logger.error(f"Error fetching data for {symbol}: {e}")
-            return None
+            logger.error(f"Unexpected error fetching data for {symbol}: {e}")
+            raise DataServiceError(f"Unexpected error: {str(e)}")
     
     def get_all_data(self) -> Dict[str, Any]:
         """Get all available market data"""

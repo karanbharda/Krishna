@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
 import { formatCurrency, formatPercentage } from '../services/apiService';
 
 const SidebarContainer = styled.div`
@@ -242,7 +243,7 @@ const Sidebar = ({ botData, onStartBot, onStopBot, onRefresh }) => {
           <MetricCard>
             <MetricLabel>Total Return</MetricLabel>
             <MetricValue>{formatCurrency(metrics.totalReturn)}</MetricValue>
-            <MetricChange positive={metrics.returnPercentage >= 0}>
+            <MetricChange $positive={metrics.returnPercentage >= 0}>
               {formatPercentage(metrics.returnPercentage)}
             </MetricChange>
           </MetricCard>
@@ -275,6 +276,17 @@ const Sidebar = ({ botData, onStartBot, onStopBot, onRefresh }) => {
       </SidebarSection>
     </SidebarContainer>
   );
+};
+
+Sidebar.propTypes = {
+  botData: PropTypes.shape({
+    portfolio: PropTypes.object.isRequired,
+    config: PropTypes.object.isRequired,
+    isRunning: PropTypes.bool.isRequired
+  }).isRequired,
+  onStartBot: PropTypes.func.isRequired,
+  onStopBot: PropTypes.func.isRequired,
+  onRefresh: PropTypes.func.isRequired
 };
 
 export default Sidebar;

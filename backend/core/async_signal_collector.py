@@ -6,7 +6,7 @@ Parallel processing for faster signal collection
 import asyncio
 import logging
 import time
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Callable, Union, Tuple
 from datetime import datetime
 from dataclasses import dataclass
 import traceback
@@ -37,13 +37,30 @@ class SignalCollectionResult:
 class AsyncSignalCollector:
     """Production-level parallel signal collector"""
     
-    def __init__(self, timeout_per_signal: float = 3.0):
+    def __init__(self, timeout_per_signal: float = 3.0, max_concurrent_signals: int = 10):
         self.timeout_per_signal = timeout_per_signal
+        self.max_concurrent_signals = max_concurrent_signals
         self.signal_sources = {}
         self.performance_history = []
+        # Security: Initialize semaphore safely to prevent race conditions
+        self.semaphore = None
+        self._semaphore_initialized = False
         
-    def register_signal_source(self, name: str, collector_func, weight: float = 1.0):
-        """Register a signal collection function"""
+    def register_signal_source(self, name: str, collector_func: Callable[[str, Dict[str, Any]], Union[Dict[str, Any], Any]], weight: float = 1.0) -> None:
+        """
+        Register a signal collection function
+
+        Code Quality: Comprehensive documentation
+
+        Args:
+            name: Unique identifier for the signal source
+            collector_func: Function that collects signal data (sync or async)
+            weight: Relative importance of this signal (0.0 to 1.0)
+
+        Note:
+            collector_func should accept (symbol: str, context: Dict) and return
+            Dict with keys: strength, confidence, data
+        """
         self.signal_sources[name] = {
             'func': collector_func,
             'weight': weight,
@@ -51,11 +68,20 @@ class AsyncSignalCollector:
             'avg_time': 1.0
         }
         
+    async def _ensure_semaphore_initialized(self):
+        """Safely initialize semaphore in async context"""
+        if not self._semaphore_initialized:
+            self.semaphore = asyncio.Semaphore(self.max_concurrent_signals)
+            self._semaphore_initialized = True
+
     async def collect_signals_parallel(self, symbol: str, context: Dict[str, Any]) -> SignalCollectionResult:
         """Collect all signals in parallel with timeout protection"""
+        # Security: Ensure semaphore is properly initialized
+        await self._ensure_semaphore_initialized()
+
         start_time = time.time()
         collection_timestamp = datetime.now()
-        
+
         logger.info(f"Starting parallel signal collection for {symbol}")
         
         # Create tasks for parallel execution
@@ -128,37 +154,39 @@ class AsyncSignalCollector:
         return result
     
     async def _collect_signal_with_timeout(self, source_name: str, collector_func, symbol: str, context: Dict[str, Any]) -> Signal:
-        """Collect individual signal with timeout protection"""
+        """Collect individual signal with timeout protection and concurrency control"""
         start_time = time.time()
-        
+
+        # Use semaphore to limit concurrent signal collection
         try:
-            # Apply timeout to signal collection
-            signal_data = await asyncio.wait_for(
-                self._safe_signal_collection(collector_func, symbol, context),
-                timeout=self.timeout_per_signal
-            )
-            
-            processing_time = time.time() - start_time
-            
-            # Create signal object
-            signal = Signal(
-                name=source_name,
-                strength=signal_data.get('strength', 0.0),
-                confidence=signal_data.get('confidence', 0.5),
-                data=signal_data.get('data', {}),
-                timestamp=datetime.now(),
-                processing_time=processing_time,
-                quality_score=0.0  # Will be calculated later
-            )
-            
-            logger.debug(f"Signal {source_name} collected successfully in {processing_time:.2f}s")
-            return signal
-            
+            async with self.semaphore:
+                # Apply timeout to signal collection
+                signal_data = await asyncio.wait_for(
+                    self._safe_signal_collection(collector_func, symbol, context),
+                    timeout=self.timeout_per_signal
+                )
+
+                processing_time = time.time() - start_time
+
+                # Create signal object
+                signal = Signal(
+                    name=source_name,
+                    strength=signal_data.get('strength', 0.0),
+                    confidence=signal_data.get('confidence', 0.5),
+                    data=signal_data.get('data', {}),
+                    timestamp=datetime.now(),
+                    processing_time=processing_time,
+                    quality_score=0.0  # Will be calculated later
+                )
+
+                logger.info(f"Signal {source_name} collected successfully in {processing_time:.2f}s")
+                return signal
+
         except asyncio.TimeoutError:
             processing_time = time.time() - start_time
             logger.warning(f"Signal {source_name} timed out after {self.timeout_per_signal}s")
             return self._create_neutral_signal(source_name, f"Timeout after {self.timeout_per_signal}s")
-            
+
         except Exception as e:
             processing_time = time.time() - start_time
             logger.error(f"Signal {source_name} failed: {e}")
@@ -172,14 +200,15 @@ class AsyncSignalCollector:
             if asyncio.iscoroutinefunction(collector_func):
                 return await collector_func(symbol, context)
             else:
-                # Run sync function in thread pool to avoid blocking
+                # Priority 2: Robust event loop handling for sync functions
                 try:
                     loop = asyncio.get_running_loop()
+                    return await loop.run_in_executor(None, collector_func, symbol, context)
                 except RuntimeError:
-                    # No running event loop, create a new one
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                return await loop.run_in_executor(None, collector_func, symbol, context)
+                    # No running event loop - this should not happen in async context
+                    logger.warning(f"No running event loop for sync function {collector_func.__name__}")
+                    # Execute synchronously as fallback (not ideal but safe)
+                    return collector_func(symbol, context)
         except Exception as e:
             raise e
     

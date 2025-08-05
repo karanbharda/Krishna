@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
 
 const ChatContainer = styled.div`
   display: flex;
@@ -43,7 +44,7 @@ const CommandHelp = styled.div`
   border-radius: 8px;
   margin-bottom: 15px;
   border: 1px solid #e9ecef;
-  display: ${props => props.show ? 'block' : 'none'};
+  display: ${props => props.$show ? 'block' : 'none'};
 
   h4 {
     color: #2c3e50;
@@ -255,7 +256,7 @@ const ChatAssistant = ({ messages, onSendMessage }) => {
         </HelpButton>
       </ChatHeader>
 
-      <CommandHelp show={showHelp}>
+      <CommandHelp $show={showHelp}>
         <h4>Available Commands:</h4>
         <CommandsGrid>
           <CommandGroup>
@@ -331,6 +332,11 @@ const ChatAssistant = ({ messages, onSendMessage }) => {
       </ChatInputContainer>
     </ChatContainer>
   );
+};
+
+ChatAssistant.propTypes = {
+  messages: PropTypes.array.isRequired,
+  onSendMessage: PropTypes.func.isRequired
 };
 
 export default ChatAssistant;

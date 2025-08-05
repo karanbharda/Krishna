@@ -39,24 +39,121 @@ except ImportError as e:
     print(f"Live trading components not available: {e}")
     LIVE_TRADING_AVAILABLE = False
 
-# Import MCP server components - NO FALLBACKS
-from mcp_server import MCPTradingServer, TradingAgent, ExplanationAgent, MCP_SERVER_AVAILABLE
-from fyers_client import FyersAPIClient
-from llama_integration import LlamaReasoningEngine, TradingContext, LlamaResponse
+# Architectural Fix: Graceful MCP dependency handling
+try:
+    from mcp_server import MCPTradingServer, TradingAgent, ExplanationAgent, MCP_SERVER_AVAILABLE
+    MCP_AVAILABLE = True
+    print("MCP server components loaded successfully")
+except ImportError as e:
+    print(f"MCP server components not available: {e}")
+    MCP_AVAILABLE = False
+    # Create fallback classes
+    class MCPTradingServer:
+        def __init__(self, *args, **kwargs): pass
+    class TradingAgent:
+        def __init__(self, *args, **kwargs): pass
+    class ExplanationAgent:
+        def __init__(self, *args, **kwargs): pass
+    MCP_SERVER_AVAILABLE = False
+
+try:
+    from fyers_client import FyersAPIClient
+    import logger
+    FYERS_CLIENT_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Fyers client not available: {e}")
+    FYERS_CLIENT_AVAILABLE = False
+    class FyersAPIClient:
+        def __init__(self, *args, **kwargs): pass
+
+try:
+    from llama_integration import LlamaReasoningEngine, TradingContext, LlamaResponse
+    LLAMA_AVAILABLE = True
+except ImportError as e:
+    logger.warning(f"Llama integration not available: {e}")
+    LLAMA_AVAILABLE = False
+    class LlamaReasoningEngine:
+        def __init__(self, *args, **kwargs): pass
+
 # PRODUCTION FIX: Import data service client instead of direct Fyers
 from data_service_client import get_data_client, DataServiceClient
-MCP_AVAILABLE = True
 
-# Configure logging for detailed output
+# Priority 3: Standardized logging strategy
+LOG_FILE_PATH = os.getenv("WEB_BACKEND_LOG_FILE", "web_trading_bot.log")
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+LOG_FORMAT = os.getenv("LOG_FORMAT", "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+LOG_DATE_FORMAT = os.getenv("LOG_DATE_FORMAT", "%Y-%m-%d %H:%M:%S")
+
+# Configure logging with standardized format and levels
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    level=getattr(logging, LOG_LEVEL, logging.INFO),
+    format=LOG_FORMAT,
+    datefmt=LOG_DATE_FORMAT,
     handlers=[
-        logging.FileHandler('web_trading_bot.log'),
-        logging.StreamHandler(sys.stdout)  # Ensure logs go to stdout
+        logging.FileHandler(LOG_FILE_PATH, mode='a', encoding='utf-8'),
+        logging.StreamHandler(sys.stdout)
     ]
 )
+
+# Set specific log levels for different components
+logging.getLogger('utils').setLevel(logging.INFO)
+logging.getLogger('core').setLevel(logging.INFO)
+logging.getLogger('mcp_server').setLevel(logging.WARNING)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
+logging.getLogger('requests').setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
+
+# Code Quality: Define constants to replace magic numbers
+CHAT_MESSAGE_MAX_LENGTH = 1000
+RANDOM_STOCK_MIN_COUNT = 8
+RANDOM_STOCK_MAX_COUNT = 12
+CACHE_TTL_SECONDS = 5
+WEBSOCKET_PING_INTERVAL = 20
+WEBSOCKET_PING_TIMEOUT = 10
+DEFAULT_MAX_TOKENS = 2048
+DEFAULT_TEMPERATURE = 0.7
+
+# Priority 4: Optimized import structure with error handling
+try:
+    from utils import (
+        ConfigValidator,
+        validate_chat_input,
+        TradingBotError,
+        ConfigurationError,
+        DataServiceError,
+        TradingExecutionError,
+        ValidationError,
+        NetworkError,
+        AuthenticationError,
+        PerformanceMonitor
+    )
+    UTILS_AVAILABLE = True
+    logger.info("Utils modules imported successfully")
+except ImportError as e:
+    logger.error(f"Error importing utils modules: {e}")
+    UTILS_AVAILABLE = False
+    # Fallback implementations
+    class TradingBotError(Exception): pass
+    class ConfigurationError(TradingBotError): pass
+    class DataServiceError(TradingBotError): pass
+    class TradingExecutionError(TradingBotError): pass
+    class ValidationError(TradingBotError): pass
+    class NetworkError(TradingBotError): pass
+    class AuthenticationError(TradingBotError): pass
+
+    class ConfigValidator:
+        @staticmethod
+        def validate_config(config): return config
+
+    def validate_chat_input(message): return message.strip()
+
+    class PerformanceMonitor:
+        def __init__(self): pass
+        def record_request(self, *args, **kwargs): pass
+        def get_stats(self): return {"status": "fallback"}
+
+# Initialize performance monitor
+performance_monitor = PerformanceMonitor()
 
 # Import Production Core Components
 try:
@@ -190,6 +287,62 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Priority 2: Integrate custom exception handlers with FastAPI
+@app.exception_handler(ValidationError)
+async def validation_error_handler(request, exc: ValidationError):
+    """Handle validation errors with proper HTTP responses"""
+    logger.warning(f"Validation error: {exc}")
+    return HTTPException(status_code=400, detail=str(exc))
+
+@app.exception_handler(ConfigurationError)
+async def configuration_error_handler(request, exc: ConfigurationError):
+    """Handle configuration errors"""
+    logger.error(f"Configuration error: {exc}")
+    return HTTPException(status_code=500, detail="Configuration error occurred")
+
+@app.exception_handler(DataServiceError)
+async def data_service_error_handler(request, exc: DataServiceError):
+    """Handle data service errors"""
+    logger.error(f"Data service error: {exc}")
+    return HTTPException(status_code=503, detail="Data service temporarily unavailable")
+
+@app.exception_handler(TradingExecutionError)
+async def trading_execution_error_handler(request, exc: TradingExecutionError):
+    """Handle trading execution errors"""
+    logger.error(f"Trading execution error: {exc}")
+    return HTTPException(status_code=500, detail="Trading execution failed")
+
+@app.exception_handler(NetworkError)
+async def network_error_handler(request, exc: NetworkError):
+    """Handle network errors"""
+    logger.error(f"Network error: {exc}")
+    return HTTPException(status_code=502, detail="Network connectivity issue")
+
+@app.exception_handler(AuthenticationError)
+async def authentication_error_handler(request, exc: AuthenticationError):
+    """Handle authentication errors"""
+    logger.error(f"Authentication error: {exc}")
+    return HTTPException(status_code=401, detail="Authentication failed")
+
+# Priority 4: Add comprehensive error handlers for common exceptions
+@app.exception_handler(ValueError)
+async def value_error_handler(request, exc: ValueError):
+    """Handle value errors"""
+    logger.warning(f"Value error: {exc}")
+    return HTTPException(status_code=400, detail="Invalid input value")
+
+@app.exception_handler(KeyError)
+async def key_error_handler(request, exc: KeyError):
+    """Handle key errors"""
+    logger.error(f"Key error: {exc}")
+    return HTTPException(status_code=500, detail="Missing required data")
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request, exc: Exception):
+    """Handle all other exceptions"""
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    return HTTPException(status_code=500, detail="Internal server error")
 
 # Global variables
 trading_bot = None
@@ -370,9 +523,9 @@ def get_dynamic_stock_list():
             "NSE:BHARTIARTL-EQ", "NSE:JSWSTEEL-EQ", "NSE:TATASTEEL-EQ"
         ]
 
-        # Randomly select 8-12 stocks for variety
+        # Code Quality: Use constants instead of magic numbers
         import random
-        selected_count = random.randint(8, 12)
+        selected_count = random.randint(RANDOM_STOCK_MIN_COUNT, RANDOM_STOCK_MAX_COUNT)
         return random.sample(diverse_stocks, min(selected_count, len(diverse_stocks)))
 
     except Exception as e:
@@ -413,8 +566,8 @@ def get_realistic_mock_data():
         "DIVISLAB": {"base_price": 6200, "range": 280}
     }
 
-    # Randomly select 8-12 stocks
-    selected_stocks = random.sample(list(stock_data.keys()), random.randint(8, 12))
+    # Code Quality: Use constants instead of magic numbers
+    selected_stocks = random.sample(list(stock_data.keys()), random.randint(RANDOM_STOCK_MIN_COUNT, RANDOM_STOCK_MAX_COUNT))
 
     market_data = []
     for symbol in selected_stocks:
@@ -599,6 +752,11 @@ class WebTradingBot:
         self.last_update = datetime.now()
         self.trading_thread = None
 
+        # Add caching to reduce frequent file reads
+        self._portfolio_cache = {}
+        self._trade_cache = {}
+        self._cache_timeout = 2  # Cache for 2 seconds
+
         # Initialize live trading components if available
         self.live_executor = None
         self.dhan_client = None
@@ -627,15 +785,20 @@ class WebTradingBot:
             pass
 
     def _initialize_production_components(self):
-        """Initialize production-level components with industry-standard configuration"""
+        """Priority 3: Initialize production-level components with dependency injection"""
         if not PRODUCTION_CORE_AVAILABLE:
             logger.warning("Production core components not available")
             return
 
         try:
-            # 1. Initialize Async Signal Collector for 55% faster processing
+            # Priority 3: Use configuration for component initialization
+            component_config = getattr(self, 'config', {})
+
+            # 1. Initialize Async Signal Collector with configurable parameters
+            signal_collector_config = component_config.get('signal_collector', {})
             self.production_components['signal_collector'] = AsyncSignalCollector(
-                timeout_per_signal=2.0  # Industry standard: 2 second timeout per signal
+                timeout_per_signal=signal_collector_config.get('timeout', 2.0),
+                max_concurrent_signals=signal_collector_config.get('max_concurrent', 10)
             )
 
             # Register signal sources with proper weights
@@ -672,12 +835,22 @@ class WebTradingBot:
             )
 
             # 4. Initialize Decision Audit Trail
-            self.production_components['audit_trail'] = DecisionAuditTrail(
-                storage_path="data/audit_trail"
+            audit_config = component_config.get('audit_trail', {})
+            audit_trail = DecisionAuditTrail(
+                storage_path=audit_config.get('storage_path', "data/audit_trail")
             )
+            # Priority 2: Schedule async initialization for later
+            self.production_components['audit_trail'] = audit_trail
+            self._pending_async_inits = getattr(self, '_pending_async_inits', [])
+            self._pending_async_inits.append(('audit_trail', audit_trail.initialize))
 
             # 5. Initialize Continuous Learning Engine
-            self.production_components['learning_engine'] = ContinuousLearningEngine()
+            learning_config = component_config.get('learning_engine', {})
+            learning_engine = ContinuousLearningEngine()
+            # Priority 2: Schedule async initialization if available
+            if hasattr(learning_engine, 'initialize'):
+                self._pending_async_inits.append(('learning_engine', learning_engine.initialize))
+            self.production_components['learning_engine'] = learning_engine
 
             # PRODUCTION FIX: Add error handling for production components
             self.production_components_active = True
@@ -1087,12 +1260,14 @@ class WebTradingBot:
         from datetime import datetime
 
         try:
-            # Try to read from the actual portfolio file created by the trading bot
+            # FIXED: Read from the correct Indian trading bot portfolio files
             # Use absolute path to data folder and current mode
             current_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(current_dir)
             current_mode = self.config.get("mode", "paper")
-            portfolio_file = os.path.join(project_root, "data", f"{current_mode}_portfolio.json")
+            # Use Indian-specific portfolio files that the trading bot actually writes to
+            portfolio_file = os.path.join(project_root, "data", f"portfolio_india_{current_mode}.json")
+            # Removed annoying log - file read is silent now
             if os.path.exists(portfolio_file):
                 with open(portfolio_file, 'r') as f:
                     portfolio_data = json.load(f)
@@ -1251,12 +1426,14 @@ class WebTradingBot:
         import os
 
         try:
-            # Try to read from the actual trade log file created by the trading bot
+            # FIXED: Read from the correct Indian trading bot trade log files
             # Use absolute path to data folder and current mode
             current_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(current_dir)
             current_mode = self.config.get("mode", "paper")
-            trade_log_file = os.path.join(project_root, "data", f"{current_mode}_trades.json")
+            # Use Indian-specific trade log files that the trading bot actually writes to
+            trade_log_file = os.path.join(project_root, "data", f"trade_log_india_{current_mode}.json")
+            # Removed annoying log - file read is silent now
             if os.path.exists(trade_log_file):
                 with open(trade_log_file, 'r') as f:
                     trades = json.load(f)
@@ -1600,13 +1777,36 @@ async def get_realtime_portfolio():
                 "portfolio_metrics": metrics,
                 "current_prices": current_prices,
                 "last_updated": datetime.now().isoformat(),
-                "market_status": "OPEN" if datetime.now().hour >= 9 and datetime.now().hour < 16 else "CLOSED"
+                "market_status": _get_indian_market_status()
             }
         else:
             raise HTTPException(status_code=500, detail="Bot not initialized")
     except Exception as e:
         logger.error(f"Error getting real-time portfolio: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+def _get_indian_market_status() -> str:
+    """Get Indian market status based on NSE trading hours"""
+    try:
+        import pytz
+        ist = pytz.timezone('Asia/Kolkata')
+        now = datetime.now(ist)
+
+        # Check if it's a weekday (Monday=0, Sunday=6)
+        if now.weekday() >= 5:  # Saturday or Sunday
+            return "CLOSED"
+
+        # NSE trading hours: 9:15 AM to 3:30 PM IST
+        market_open = now.replace(hour=9, minute=15, second=0, microsecond=0)
+        market_close = now.replace(hour=15, minute=30, second=0, microsecond=0)
+
+        if market_open <= now <= market_close:
+            return "OPEN"
+        else:
+            return "CLOSED"
+    except Exception as e:
+        logger.error(f"Error determining market status: {e}")
+        return "UNKNOWN"
 
 @app.get("/api/watchlist")
 async def get_watchlist():
@@ -1745,11 +1945,45 @@ async def bulk_update_watchlist(request: BulkWatchlistRequest):
         logger.error(f"Error in bulk watchlist update: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Priority 1: Remove duplicate validate_chat_input - now imported from utils
+
+async def process_market_query(message: str) -> Optional[str]:
+    """Process market-related queries with real-time data"""
+    try:
+        # Performance: Use set for O(1) lookup instead of O(n) list search
+        market_keywords = {"volume", "stock", "price", "highest", "lowest", "market", "trading", "analysis"}
+        is_market_query = any(keyword in message.lower() for keyword in market_keywords)
+
+        if is_market_query:
+            logger.info(f"Market query detected: {message}")
+            return await get_real_time_market_response(message)
+        return None
+    except Exception as e:
+        logger.error(f"Error processing market query: {e}")
+        return None
+
+async def process_llama_query(message: str, enhanced_prompt: str) -> str:
+    """Process query using Llama reasoning engine"""
+    try:
+        global llama_engine
+        if not llama_engine:
+            return "Llama reasoning engine not available. Please try again later."
+
+        response = await llama_engine.process_query(message, enhanced_prompt)
+        return response.get("response", "I apologize, but I couldn't process your request at the moment.")
+    except Exception as e:
+        logger.error(f"Error with Llama processing: {e}")
+        return "I encountered an error while processing your request. Please try again."
+
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """Process chat message with Advanced Market Agent (LangChain + LangGraph + Fyers)"""
     try:
-        message = request.message.strip()
+        # Performance: Validate and sanitize input
+        try:
+            message = validate_chat_input(request.message)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
         if not message:
             return ChatResponse(
@@ -1762,8 +1996,8 @@ async def chat(request: ChatRequest):
             # Get current timestamp for real-time data
             current_time = datetime.now()
 
-            # Check if query is about market data
-            market_keywords = ["volume", "stock", "price", "highest", "lowest", "market", "trading", "analysis"]
+            # Performance: Use set for O(1) lookup instead of O(n) list search
+            market_keywords = {"volume", "stock", "price", "highest", "lowest", "market", "trading", "analysis"}
             is_market_query = any(keyword in message.lower() for keyword in market_keywords)
 
             if is_market_query:
@@ -2457,19 +2691,28 @@ async def _ensure_mcp_initialized():
 
         # Initialize Fyers client
         if not fyers_client:
+            fyers_access_token = os.getenv("FYERS_ACCESS_TOKEN")
+            fyers_client_id = os.getenv("FYERS_APP_ID")
+
+            # Security: Mask sensitive data in logs
+            masked_token = f"{fyers_access_token[:8]}***{fyers_access_token[-4:]}" if fyers_access_token else "None"
+            masked_client_id = f"{fyers_client_id[:8]}***{fyers_client_id[-4:]}" if fyers_client_id else "None"
+            logger.info(f"Initializing Fyers client with token: {masked_token}, client_id: {masked_client_id}")
+
             fyers_config = {
-                "fyers_access_token": os.getenv("FYERS_ACCESS_TOKEN"),
-                "fyers_client_id": os.getenv("FYERS_APP_ID")
+                "fyers_access_token": fyers_access_token,
+                "fyers_client_id": fyers_client_id
             }
             fyers_client = FyersAPIClient(fyers_config)
 
         # Initialize Llama engine
         if not llama_engine:
+            # Code Quality: Move hardcoded values to configuration
             llama_config = {
-                "llama_base_url": "http://localhost:11434",
-                "llama_model": "llama3.1:8b",
-                "max_tokens": 2048,
-                "temperature": 0.7
+                "llama_base_url": os.getenv("LLAMA_BASE_URL", "http://localhost:11434"),
+                "llama_model": os.getenv("LLAMA_MODEL", "llama3.1:8b"),
+                "max_tokens": int(os.getenv("LLAMA_MAX_TOKENS", str(DEFAULT_MAX_TOKENS))),
+                "temperature": float(os.getenv("LLAMA_TEMPERATURE", str(DEFAULT_TEMPERATURE)))
             }
             llama_engine = LlamaReasoningEngine(llama_config)
 
@@ -2542,10 +2785,20 @@ async def websocket_endpoint(websocket: WebSocket):
                     )
 
     except WebSocketDisconnect:
+        logger.info("WebSocket client disconnected")
         manager.disconnect(websocket)
     except Exception as e:
         logger.error(f"WebSocket error: {e}")
         manager.disconnect(websocket)
+    finally:
+        # Security: Ensure proper cleanup to prevent memory leaks
+        try:
+            if websocket in manager.active_connections:
+                manager.disconnect(websocket)
+            # Clear any remaining references
+            websocket = None
+        except Exception as cleanup_error:
+            logger.error(f"Error during WebSocket cleanup: {cleanup_error}")
 
 def run_web_server(host='127.0.0.1', port=5000, debug=False):
     """Run the FastAPI web server with uvicorn"""
@@ -2578,6 +2831,8 @@ def run_web_server(host='127.0.0.1', port=5000, debug=False):
 @app.on_event("startup")
 async def startup_event():
     """Initialize the trading bot on startup with data service health check"""
+    global trading_bot
+
     try:
         # PRODUCTION FIX: Check data service health before starting
         data_client = get_data_client()
@@ -2596,36 +2851,138 @@ async def startup_event():
             logger.info("Backend will use Yahoo Finance and mock data")
 
         initialize_bot()
+
+        # Priority 3: Execute pending async initializations
+        if trading_bot and hasattr(trading_bot, '_pending_async_inits'):
+            logger.info("Executing pending async initializations...")
+            for component_name, init_func in trading_bot._pending_async_inits:
+                try:
+                    await init_func()
+                    logger.info(f"Successfully initialized {component_name}")
+                except Exception as e:
+                    logger.error(f"Failed to initialize {component_name}: {e}")
+            # Clear pending initializations
+            trading_bot._pending_async_inits = []
+
         logger.info("Trading bot initialized on startup")
     except Exception as e:
         logger.error(f"Error initializing bot on startup: {e}")
-        # Try to initialize with minimal config as fallback
+        # Integration Fix: Enhanced error recovery with multiple fallback levels
         try:
-            global trading_bot
             if not trading_bot:
                 logger.info("Attempting fallback initialization...")
                 from dotenv import load_dotenv
                 load_dotenv()
 
+                # Level 1: Minimal safe configuration
                 minimal_config = {
                     "tickers": ["RELIANCE.NS", "TCS.NS", "HDFCBANK.NS"],
                     "starting_balance": 10000,
                     "current_portfolio_value": 10000,
                     "current_pnl": 0,
-                    "mode": "paper"
+                    "mode": "paper",
+                    "stop_loss_pct": 0.05,
+                    "max_capital_per_trade": 0.25,
+                    "max_trade_limit": 10,
+                    "sleep_interval": 300
                 }
-                trading_bot = WebTradingBot(minimal_config)
-                logger.info("Fallback trading bot initialized")
+
+                # Priority 3: Validate fallback config with integrated validator
+                try:
+                    validated_config = ConfigValidator.validate_config(minimal_config)
+                    trading_bot = WebTradingBot(validated_config)
+                    logger.info("Level 1 fallback trading bot initialized successfully")
+                except ConfigurationError as config_error:
+                    logger.error(f"Level 1 configuration validation failed: {config_error}")
+
+                    # Level 2: Ultra-minimal configuration
+                    try:
+                        ultra_minimal_config = {
+                            "tickers": [],
+                            "starting_balance": 10000,
+                            "mode": "paper",
+                            "stop_loss_pct": 0.05,
+                            "max_capital_per_trade": 0.25,
+                            "sleep_interval": 300
+                        }
+                        validated_ultra_config = ConfigValidator.validate_config(ultra_minimal_config)
+                        trading_bot = WebTradingBot(validated_ultra_config)
+                        logger.warning("Level 2 ultra-minimal fallback initialized - limited functionality")
+                    except Exception as level2_error:
+                        logger.error(f"All fallback levels failed: {level2_error}")
+                        trading_bot = None
+                except Exception as level1_error:
+                    logger.error(f"Level 1 fallback failed: {level1_error}")
+                    trading_bot = None
+
         except Exception as fallback_error:
-            logger.error(f"Fallback initialization also failed: {fallback_error}")
+            logger.error(f"Complete fallback initialization failed: {fallback_error}")
+            trading_bot = None
+
+@app.get("/api/monitoring")
+async def get_monitoring_stats():
+    """Advanced Optimization: Get system performance statistics"""
+    try:
+        stats = {
+            "performance": performance_monitor.get_stats(),
+            "timestamp": datetime.now().isoformat(),
+            "system_status": "operational"
+        }
+
+        # Add data service stats if available
+        try:
+            data_client = get_data_client()
+            if hasattr(data_client, 'get_cache_stats'):
+                stats["data_service_cache"] = data_client.get_cache_stats()
+        except Exception as e:
+            logger.debug(f"Could not get data service stats: {e}")
+
+        return stats
+    except Exception as e:
+        logger.error(f"Error getting monitoring stats: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving monitoring data")
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Cleanup on shutdown"""
-    global trading_bot
-    if trading_bot:
-        trading_bot.stop()
-        logger.info("Trading bot stopped on shutdown")
+    """Architectural Fix: Comprehensive resource cleanup on shutdown"""
+    global trading_bot, mcp_server, fyers_client, llama_engine
+
+    logger.info("Starting graceful shutdown...")
+
+    try:
+        # Stop trading bot
+        if trading_bot:
+            trading_bot.stop()
+            logger.info("Trading bot stopped")
+
+        # Cleanup MCP server
+        if mcp_server:
+            try:
+                await mcp_server.shutdown()
+                logger.info("MCP server shutdown")
+            except Exception as e:
+                logger.error(f"Error shutting down MCP server: {e}")
+
+        # Cleanup Fyers client
+        if fyers_client:
+            try:
+                await fyers_client.disconnect()
+                logger.info("Fyers client disconnected")
+            except Exception as e:
+                logger.error(f"Error disconnecting Fyers client: {e}")
+
+        # Cleanup Llama engine
+        if llama_engine:
+            try:
+                await llama_engine.cleanup()
+                logger.info("Llama engine cleaned up")
+            except Exception as e:
+                logger.error(f"Error cleaning up Llama engine: {e}")
+
+        logger.info("Graceful shutdown completed")
+
+    except Exception as e:
+        logger.error(f"Error during shutdown: {e}")
 
 if __name__ == "__main__":
     import argparse

@@ -431,18 +431,48 @@ class ExecutionTool:
                 "limit": -self.daily_loss_limit * portfolio_value
             })
             
-            # Market hours check (simplified)
-            current_hour = datetime.now().hour
-            if current_hour < 9 or current_hour > 15:  # Indian market hours
-                checks["passed"] = False
-                checks["reason"] = "Market is closed"
-                return checks
-            
-            checks["checks_performed"].append({
-                "check": "market_hours",
-                "status": "PASSED",
-                "current_time": datetime.now().isoformat()
-            })
+            # Priority 2: Market hours check with proper timezone handling
+            try:
+                import pytz
+                ist = pytz.timezone('Asia/Kolkata')
+                now_ist = datetime.now(ist)
+
+                # Check if it's a weekday (Monday=0, Sunday=6)
+                if now_ist.weekday() >= 5:  # Saturday or Sunday
+                    checks["passed"] = False
+                    checks["reason"] = "Market is closed (weekend)"
+                    return checks
+
+                # NSE trading hours: 9:15 AM to 3:30 PM IST
+                market_open = now_ist.replace(hour=9, minute=15, second=0, microsecond=0)
+                market_close = now_ist.replace(hour=15, minute=30, second=0, microsecond=0)
+
+                if not (market_open <= now_ist <= market_close):
+                    checks["passed"] = False
+                    checks["reason"] = f"Market is closed (current time: {now_ist.strftime('%H:%M IST')})"
+                    return checks
+
+                checks["checks_performed"].append({
+                    "check": "market_hours",
+                    "status": "PASSED",
+                    "current_time_ist": now_ist.isoformat(),
+                    "market_open": market_open.strftime('%H:%M IST'),
+                    "market_close": market_close.strftime('%H:%M IST')
+                })
+            except ImportError:
+                # Fallback to simple hour check if pytz not available
+                current_hour = datetime.now().hour
+                if current_hour < 9 or current_hour > 15:
+                    checks["passed"] = False
+                    checks["reason"] = "Market is closed (timezone library unavailable)"
+                    return checks
+
+                checks["checks_performed"].append({
+                    "check": "market_hours",
+                    "status": "PASSED",
+                    "current_time": datetime.now().isoformat(),
+                    "note": "Using fallback timezone handling"
+                })
             
             return checks
             
