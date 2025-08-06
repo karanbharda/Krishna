@@ -2059,22 +2059,32 @@ class TradingExecutor:
         self.mode = config.get("mode", "paper")
         self.dhanhq = portfolio.api  # Use the dhanhq client from VirtualPortfolio
         self.stop_loss_pct = float(config.get("stop_loss_pct", 0.05))
-        self.max_capital_per_trade = float(config.get("max_capital_per_trade", 0.25))
+        self.max_capital_per_trade = float(config.get("max_capital_per_trade", 0.40))  # Increased from 25% to 40%
         self.max_trade_limit = int(config.get("max_trade_limit", 10))
 
     def execute_trade(self, action, ticker, qty, price, stop_loss=None, take_profit=None):
         try:
-            # Apply risk management rules
+            # Apply risk management rules with detailed logging
             portfolio_value = self.portfolio.get_value({ticker: {"price": price}})
             max_trade_value = portfolio_value * self.max_capital_per_trade
             trade_value = qty * price
 
+            logger.info(f"=== CAPITAL LIMITS CHECK for {ticker} ===")
+            logger.info(f"  Portfolio Value: Rs.{portfolio_value:.2f}")
+            logger.info(f"  Max Capital Per Trade: {self.max_capital_per_trade:.1%}")
+            logger.info(f"  Max Trade Value: Rs.{max_trade_value:.2f}")
+            logger.info(f"  Requested Trade Value: Rs.{trade_value:.2f}")
+
             # Check if trade exceeds maximum capital per trade
             if trade_value > max_trade_value:
-                adjusted_qty = int(max_trade_value / price)
+                adjusted_qty = max(1, int(max_trade_value / price))  # Ensure minimum 1 share
                 if adjusted_qty < qty:
                     logger.warning(f"Reducing trade size from {qty} to {adjusted_qty} due to capital limits")
                     qty = adjusted_qty
+                else:
+                    logger.info(f"  Capital limits OK: Trade within limits")
+            else:
+                logger.info(f"  Capital limits OK: Trade within limits")
 
             # If quantity becomes 0 or negative, don't execute the trade
             if qty <= 0:
@@ -2297,10 +2307,66 @@ class Stock:
         query_parts = [f'"{name}"' for name in company_names[:3]]
         return " OR ".join(query_parts)
 
+    def get_sector_keywords(self, ticker, company_names):
+        """Get sector-specific keywords dynamically for any Indian stock"""
+        sector_keywords = {
+            # Banking & Financial
+            'banking': ['loan growth', 'NPA', 'credit growth', 'interest rates', 'deposits'],
+            'financial': ['lending', 'credit', 'banking', 'finance', 'loan'],
+
+            # Oil & Gas
+            'petroleum': ['refinery', 'crude oil', 'fuel prices', 'margins', 'downstream'],
+            'oil': ['crude', 'refining', 'petrochemicals', 'fuel', 'energy'],
+            'gas': ['natural gas', 'LNG', 'pipeline', 'exploration', 'upstream'],
+
+            # IT & Technology
+            'technology': ['software', 'IT services', 'digital', 'cloud', 'automation'],
+            'software': ['tech', 'IT', 'digital transformation', 'cloud computing'],
+            'infotech': ['software', 'technology', 'IT services', 'consulting'],
+
+            # Pharma & Healthcare
+            'pharma': ['drug', 'medicine', 'FDA approval', 'clinical trials', 'healthcare'],
+            'healthcare': ['medical', 'hospital', 'treatment', 'pharmaceutical'],
+
+            # Auto & Manufacturing
+            'auto': ['vehicle sales', 'automobile', 'EV', 'electric vehicle', 'manufacturing'],
+            'steel': ['iron ore', 'steel prices', 'infrastructure', 'construction'],
+            'cement': ['construction', 'infrastructure', 'real estate', 'housing'],
+
+            # Telecom
+            'telecom': ['5G', 'spectrum', 'mobile', 'broadband', 'network'],
+            'communication': ['telecom', 'mobile services', 'data', 'connectivity'],
+
+            # FMCG & Consumer
+            'consumer': ['FMCG', 'rural demand', 'urban consumption', 'brand'],
+            'fmcg': ['consumer goods', 'rural market', 'distribution', 'brand'],
+
+            # Power & Utilities
+            'power': ['electricity', 'renewable energy', 'solar', 'wind', 'grid'],
+            'energy': ['power generation', 'renewable', 'electricity', 'utilities'],
+
+            # Real Estate
+            'realty': ['real estate', 'property', 'housing', 'construction', 'land'],
+            'housing': ['real estate', 'property development', 'residential', 'commercial']
+        }
+
+        # Detect sector from company names and ticker
+        detected_keywords = []
+        search_text = f"{ticker} {' '.join(company_names)}".lower()
+
+        for sector, keywords in sector_keywords.items():
+            if sector in search_text:
+                detected_keywords.extend(keywords[:3])  # Top 3 keywords per sector
+
+        return detected_keywords[:5]  # Limit to 5 most relevant keywords
+
     def build_multi_level_search_queries(self, ticker):
         """Build multiple search query levels for fallback strategy"""
         company_names = self.get_company_names(ticker)
         clean_ticker = ticker.replace(".NS", "").replace(".BO", "")
+
+        # Get dynamic sector keywords
+        sector_keywords = self.get_sector_keywords(ticker, company_names)
 
         search_levels = []
 
@@ -2314,7 +2380,7 @@ class Stock:
                 "priority": "high"
             })
 
-        # Level 2: Company names with financial context
+        # Level 2: Company names with financial context + sector-specific terms
         if company_names:
             contextual_queries = []
             for name in company_names[:2]:
@@ -2324,7 +2390,12 @@ class Stock:
                     f'"{name}" earnings',
                     f'"{name}" financial'
                 ])
-            contextual_query = " OR ".join(contextual_queries[:4])
+
+                # Add dynamic sector-specific terms for ANY Indian stock (limit to 2)
+                for keyword in sector_keywords[:2]:
+                    contextual_queries.append(f'"{name}" {keyword}')
+
+            contextual_query = " OR ".join(contextual_queries[:5])  # Limit to 5 to avoid URL length issues
             search_levels.append({
                 "level": 2,
                 "query": contextual_query,
@@ -2352,9 +2423,28 @@ class Stock:
                 "priority": "low"
             })
 
-        # Level 5: Basic ticker (fallback)
+        # Level 5: Earnings and analyst sentiment (NEW)
+        if company_names:
+            earnings_queries = []
+            for name in company_names[:2]:
+                earnings_queries.extend([
+                    f'"{name}" earnings beat',
+                    f'"{name}" analyst upgrade',
+                    f'"{name}" target price',
+                    f'"{name}" buy rating',
+                    f'"{name}" quarterly results'
+                ])
+            earnings_query = " OR ".join(earnings_queries[:5])
+            search_levels.append({
+                "level": 5,
+                "query": earnings_query,
+                "description": "Earnings and analyst sentiment",
+                "priority": "medium"
+            })
+
+        # Level 6: Basic ticker (fallback)
         search_levels.append({
-            "level": 5,
+            "level": 6,
             "query": clean_ticker,
             "description": "Basic ticker fallback",
             "priority": "low"
@@ -2574,34 +2664,12 @@ class Stock:
         else:
             return data
 
-    def get_indian_news_sources(self):
-        """Get dynamic list of Indian financial news sources"""
-        return {
-            'primary': [
-                'economictimes.indiatimes.com',
-                'moneycontrol.com',
-                'business-standard.com',
-                'livemint.com'
-            ],
-            'secondary': [
-                'financialexpress.com',
-                'zeebiz.com',
-                'cnbctv18.com',
-                'businesstoday.in'
-            ],
-            'regional': [
-                'thehindubusinessline.com',
-                'deccanherald.com',
-                'indianexpress.com',
-                'timesofindia.indiatimes.com'
-            ],
-            'specialized': [
-                'capitalmarket.com',
-                'equitymaster.com',
-                'investmentguruindia.com',
-                'stockguru.com'
-            ]
-        }
+    def get_simple_news_sources(self):
+        """Get focused news sources to avoid rate limits"""
+        return [
+            'economictimes.indiatimes.com', 'moneycontrol.com',
+            'business-standard.com', 'reuters.com', 'bloomberg.com'
+        ]
 
     def build_source_specific_query(self, ticker, source_type='primary'):
         """Build search queries optimized for specific Indian news sources"""
@@ -2632,6 +2700,33 @@ class Stock:
 
         # Fallback to basic query
         return clean_ticker
+
+    def build_simple_market_query(self, ticker):
+        """Build simple, focused query to avoid rate limits"""
+        company_names = self.get_company_names(ticker)
+        clean_ticker = ticker.replace(".NS", "").replace(".BO", "")
+
+        # Simple company-focused query
+        if company_names:
+            return f'"{company_names[0]}" (stock OR shares OR earnings OR results)'
+        else:
+            return f'{clean_ticker} stock India'
+
+    def get_market_context_multiplier(self):
+        """Get dynamic market context multiplier based on current market conditions"""
+        try:
+            from datetime import datetime
+            current_hour = datetime.now().hour
+
+            # Higher weight during market hours (9 AM to 4 PM IST)
+            if 9 <= current_hour <= 16:
+                return 1.3  # 30% higher weight during market hours
+            elif 7 <= current_hour <= 9 or 16 <= current_hour <= 18:
+                return 1.1  # 10% higher weight during pre/post market
+            else:
+                return 1.0  # Normal weight during off-market hours
+        except:
+            return 1.0  # Default multiplier if calculation fails
 
     def multi_level_search(self, ticker, search_function, max_levels=3):
         """Execute multi-level search strategy with fallback"""
@@ -2669,13 +2764,12 @@ class Stock:
         return total_articles >= 2  # Minimum threshold for meaningful results
 
     def newsapi_sentiment(self, ticker):
-        """Enhanced NewsAPI sentiment with multi-level search and Indian sources"""
+        """Comprehensive NewsAPI sentiment with global and Indian sources covering all market factors"""
         def search_with_query(query):
             try:
-                # Get Indian news sources dynamically
-                indian_sources = self.get_indian_news_sources()
-                all_sources = indian_sources['primary'] + indian_sources['secondary']
-                sources_param = ",".join(all_sources[:10])  # Limit to avoid URL length issues
+                # Get simple news sources to avoid rate limits
+                selected_sources = self.get_simple_news_sources()
+                sources_param = ",".join(selected_sources[:5])  # Limit to 5 sources to avoid rate limits
 
                 # Focus on last 24 hours for more actionable sentiment
                 from datetime import datetime, timedelta
@@ -2684,6 +2778,18 @@ class Stock:
                 # Build URL with Indian sources preference and 24-hour filter
                 url = f"https://newsapi.org/v2/everything?q={quote(query)}&sources={sources_param}&from={yesterday}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
 
+                # Check URL length to avoid 400 errors (NewsAPI has ~2000 char limit)
+                if len(url) > 1800:
+                    logger.warning(f"URL too long ({len(url)} chars), using simplified query")
+                    # Use first company name only for very long queries
+                    company_names = self.get_company_names(ticker.replace('.NS', ''))
+                    simple_query = f'"{company_names[0]}" stock' if company_names else ticker.replace('.NS', '')
+                    url = f"https://newsapi.org/v2/everything?q={quote(simple_query)}&from={yesterday}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
+
+                # Add delay to avoid rate limits
+                import time
+                time.sleep(1.5)  # 1.5 second delay between requests to avoid 429 errors
+
                 # Fallback to general search if sources fail
                 try:
                     response = requests.get(url, timeout=10)
@@ -2691,8 +2797,13 @@ class Stock:
                     data = response.json()
                 except:
                     # Fallback without specific sources but keep 24-hour filter
-                    url = f"https://newsapi.org/v2/everything?q={quote(query)}&from={yesterday}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
-                    response = requests.get(url, timeout=10)
+                    fallback_url = f"https://newsapi.org/v2/everything?q={quote(query)}&from={yesterday}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
+                    # Check fallback URL length too
+                    if len(fallback_url) > 1800:
+                        company_names = self.get_company_names(ticker.replace('.NS', ''))
+                        simple_query = f'"{company_names[0]}" stock' if company_names else ticker.replace('.NS', '')
+                        fallback_url = f"https://newsapi.org/v2/everything?q={quote(simple_query)}&from={yesterday}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
+                    response = requests.get(fallback_url, timeout=10)
                     response.raise_for_status()
                     data = response.json()
 
@@ -2709,29 +2820,51 @@ class Stock:
                         description = article.get("description", "") or article.get("content", "")[:200]
                         if description:
                             sentiment = self.sentiment_analyzer.polarity_scores(description)
+
+                            # ENHANCED: Weight earnings/analyst news higher
+                            weight = 1.0
+                            earnings_keywords = ['earnings', 'quarterly', 'results', 'beat', 'miss', 'guidance',
+                                               'analyst', 'upgrade', 'downgrade', 'target', 'rating']
+                            if any(keyword in description.lower() for keyword in earnings_keywords):
+                                weight = 2.0  # Double weight for earnings/analyst news
+
                             if sentiment["compound"] > 0.1:
-                                sentiments["positive"] += 1
+                                sentiments["positive"] += weight
                             elif sentiment["compound"] < -0.1:
-                                sentiments["negative"] += 1
+                                sentiments["negative"] += weight
                             else:
-                                sentiments["neutral"] += 1
+                                sentiments["neutral"] += weight
 
                 return sentiments
 
+            except requests.exceptions.HTTPError as e:
+                if "429" in str(e):
+                    logger.warning(f"NewsAPI rate limit hit for query '{query[:50]}...': {e}")
+                    logger.info("Skipping this query to avoid further rate limits")
+                else:
+                    logger.warning(f"NewsAPI HTTP error for query '{query[:50]}...': {e}")
+                return {"positive": 0, "negative": 0, "neutral": 0}
             except Exception as e:
                 logger.warning(f"NewsAPI search failed for query '{query[:50]}...': {e}")
                 return {"positive": 0, "negative": 0, "neutral": 0}
 
         try:
-            # Use multi-level search strategy
-            logger.info(f"Starting multi-level NewsAPI search for {ticker}")
-            result = self.multi_level_search(ticker, search_with_query, max_levels=3)
+            # Use simple, efficient search strategy to avoid rate limits
+            logger.info(f"Starting simple NewsAPI search for {ticker}")
 
-            # If multi-level search fails, try basic search as final fallback
+            # Single focused query to avoid rate limits
+            basic_query = self.build_search_query(ticker)
+            result = search_with_query(basic_query)
+
+            # If basic search fails, try one fallback
             if not self.has_meaningful_results(result):
-                logger.info(f"Multi-level search failed, trying basic search for {ticker}")
-                basic_query = self.build_search_query(ticker)
-                result = search_with_query(basic_query)
+                logger.info(f"Basic search failed, trying company name search for {ticker}")
+                company_names = self.get_company_names(ticker.replace('.NS', ''))
+                if company_names:
+                    fallback_query = f'"{company_names[0]}" stock'
+                    result = search_with_query(fallback_query)
+                else:
+                    result = {"positive": 0, "negative": 0, "neutral": 0}
 
             return result
 
@@ -2746,7 +2879,7 @@ class Stock:
         return response
 
     def gnews_sentiment(self, ticker):
-        """Enhanced GNews sentiment with multi-level search and Indian focus"""
+        """Comprehensive GNews sentiment with global market factors and Indian focus"""
         def search_with_query(query):
             try:
                 # Focus on last 24 hours for more actionable sentiment
@@ -2774,12 +2907,20 @@ class Stock:
 
                     if content.strip():
                         sentiment = self.sentiment_analyzer.polarity_scores(content)
+
+                        # ENHANCED: Weight earnings/analyst news higher
+                        weight = 1.0
+                        earnings_keywords = ['earnings', 'quarterly', 'results', 'beat', 'miss', 'guidance',
+                                           'analyst', 'upgrade', 'downgrade', 'target', 'rating']
+                        if any(keyword in content.lower() for keyword in earnings_keywords):
+                            weight = 2.0  # Double weight for earnings/analyst news
+
                         if sentiment["compound"] > 0.1:
-                            sentiments["positive"] += 1
+                            sentiments["positive"] += weight
                         elif sentiment["compound"] < -0.1:
-                            sentiments["negative"] += 1
+                            sentiments["negative"] += weight
                         else:
-                            sentiments["neutral"] += 1
+                            sentiments["neutral"] += weight
 
                 return sentiments
 
@@ -2845,24 +2986,73 @@ class Stock:
                 description = article.get("description", "")
                 if description:
                     sentiment = self.sentiment_analyzer.polarity_scores(description)
+
+                    # ENHANCED: Weight earnings/analyst news higher
+                    weight = 1.0
+                    earnings_keywords = ['earnings', 'quarterly', 'results', 'beat', 'miss', 'guidance',
+                                       'analyst', 'upgrade', 'downgrade', 'target', 'rating']
+                    if any(keyword in description.lower() for keyword in earnings_keywords):
+                        weight = 2.0  # Double weight for earnings/analyst news
+
                     if sentiment["compound"] > 0.1:
-                        sentiments["positive"] += 1
+                        sentiments["positive"] += weight
                     elif sentiment["compound"] < -0.1:
-                        sentiments["negative"] += 1
+                        sentiments["negative"] += weight
                     else:
-                        sentiments["neutral"] += 1
+                        sentiments["neutral"] += weight
             return sentiments
         except Exception as e:
             logger.error(f"Error fetching Google News sentiment: {e}")
             return {"positive": 0, "negative": 0, "neutral": 0}
 
     def fetch_combined_sentiment(self, ticker):
+        """Comprehensive market sentiment analysis covering all factors affecting stock prices"""
         try:
+            logger.info(f"Starting comprehensive sentiment analysis for {ticker}")
+
+            # Get sentiment from all sources with enhanced coverage
             newsapi_sentiment = self.newsapi_sentiment(ticker)
             gnews_sentiment = self.gnews_sentiment(ticker)
             reddit_sentiment = self.reddit_sentiment(ticker)
             google_sentiment = self.google_news_sentiment(ticker)
 
+            # ENHANCED: Dynamic weighted sentiment aggregation based on market impact
+            # Higher weights for sources with better global and financial coverage
+            weights = {
+                "newsapi": 3.0,      # Highest weight - comprehensive global financial coverage
+                "gnews": 2.5,        # High weight - good global and Indian coverage
+                "google_news": 2.0,  # High weight - broad market coverage
+                "reddit": 1.2        # Medium weight - social sentiment indicator
+            }
+
+            # Add market context weighting based on current market conditions
+            market_context_multiplier = self.get_market_context_multiplier()
+            for source in weights:
+                weights[source] *= market_context_multiplier
+
+            # Calculate weighted sentiment scores
+            weighted_positive = (
+                newsapi_sentiment["positive"] * weights["newsapi"] +
+                gnews_sentiment["positive"] * weights["gnews"] +
+                reddit_sentiment["positive"] * weights["reddit"] +
+                google_sentiment["positive"] * weights["google_news"]
+            )
+
+            weighted_negative = (
+                newsapi_sentiment["negative"] * weights["newsapi"] +
+                gnews_sentiment["negative"] * weights["gnews"] +
+                reddit_sentiment["negative"] * weights["reddit"] +
+                google_sentiment["negative"] * weights["google_news"]
+            )
+
+            weighted_neutral = (
+                newsapi_sentiment["neutral"] * weights["newsapi"] +
+                gnews_sentiment["neutral"] * weights["gnews"] +
+                reddit_sentiment["neutral"] * weights["reddit"] +
+                google_sentiment["neutral"] * weights["google_news"]
+            )
+
+            # Traditional aggregation (for backward compatibility)
             aggregated = {
                 "positive": (newsapi_sentiment["positive"] + gnews_sentiment["positive"] +
                             reddit_sentiment["positive"] + google_sentiment["positive"]),
@@ -2872,21 +3062,67 @@ class Stock:
                            reddit_sentiment["neutral"] + google_sentiment["neutral"])
             }
 
+            # NEW: Comprehensive weighted aggregation with market context
+            weighted_aggregated = {
+                "positive": weighted_positive,
+                "negative": weighted_negative,
+                "neutral": weighted_neutral,
+                "total_weight": sum(weights.values())
+            }
+
+            # Calculate sentiment confidence score based on source agreement
+            total_sentiment = weighted_positive + weighted_negative + weighted_neutral
+            if total_sentiment > 0:
+                sentiment_confidence = max(weighted_positive, weighted_negative, weighted_neutral) / total_sentiment
+            else:
+                sentiment_confidence = 0.0
+
+            # Add comprehensive market sentiment breakdown
+            comprehensive_analysis = {
+                "sentiment_strength": {
+                    "bullish": weighted_positive / sum(weights.values()) if sum(weights.values()) > 0 else 0,
+                    "bearish": weighted_negative / sum(weights.values()) if sum(weights.values()) > 0 else 0,
+                    "neutral": weighted_neutral / sum(weights.values()) if sum(weights.values()) > 0 else 0
+                },
+                "confidence_score": sentiment_confidence,
+                "market_context_applied": market_context_multiplier,
+                "sources_coverage": {
+                    "global_financial": "newsapi" in weights,
+                    "indian_focus": "gnews" in weights,
+                    "broad_market": "google_news" in weights,
+                    "social_sentiment": "reddit" in weights
+                }
+            }
+
             return {
                 "newsapi": newsapi_sentiment,
                 "gnews": gnews_sentiment,
                 "reddit": reddit_sentiment,
                 "google_news": google_sentiment,
-                "aggregated": aggregated
+                "aggregated": aggregated,
+                "weighted_aggregated": weighted_aggregated,
+                "comprehensive_analysis": comprehensive_analysis  # NEW: Detailed market sentiment analysis
             }
         except Exception as e:
-            logger.error(f"Error fetching combined sentiment: {e}")
+            logger.error(f"Error fetching comprehensive sentiment: {e}")
             return {
                 "newsapi": {"positive": 0, "negative": 0, "neutral": 0},
                 "gnews": {"positive": 0, "negative": 0, "neutral": 0},
                 "reddit": {"positive": 0, "negative": 0, "neutral": 0},
                 "google_news": {"positive": 0, "negative": 0, "neutral": 0},
-                "aggregated": {"positive": 0, "negative": 0, "neutral": 0}
+                "aggregated": {"positive": 0, "negative": 0, "neutral": 0},
+                "weighted_aggregated": {"positive": 0, "negative": 0, "neutral": 0, "total_weight": 8.7},
+                "comprehensive_analysis": {
+                    "sentiment_strength": {"bullish": 0, "bearish": 0, "neutral": 0},
+                    "confidence_score": 0.0,
+                    "market_context_applied": 1.0,
+                    "sources_coverage": {
+                        "global_financial": False,
+                        "indian_focus": False,
+                        "broad_market": False,
+                        "social_sentiment": False
+                    }
+                }
             }
 
     def _generate_detailed_recommendation(self, stock_data, recommendation, buy_score, sell_score,
@@ -3879,9 +4115,18 @@ class Stock:
             logger.info(f"Fetching sentiment for {ticker}...")
             sentiment_data = self.fetch_combined_sentiment(ticker)
 
-            sentiment = sentiment_data["aggregated"]
-            total_sentiment = sentiment["positive"] + sentiment["negative"] + sentiment["neutral"]
-            sentiment_score = sentiment["positive"] / total_sentiment if total_sentiment > 0 else 0.5
+            # ENHANCED: Use weighted sentiment for better accuracy
+            if "weighted_aggregated" in sentiment_data and sentiment_data["weighted_aggregated"]["total_weight"] > 0:
+                sentiment = sentiment_data["weighted_aggregated"]
+                total_sentiment = sentiment["positive"] + sentiment["negative"] + sentiment["neutral"]
+                sentiment_score = sentiment["positive"] / total_sentiment if total_sentiment > 0 else 0.5
+                logger.debug(f"Using weighted sentiment score: {sentiment_score:.3f}")
+            else:
+                # Fallback to regular aggregation
+                sentiment = sentiment_data["aggregated"]
+                total_sentiment = sentiment["positive"] + sentiment["negative"] + sentiment["neutral"]
+                sentiment_score = sentiment["positive"] / total_sentiment if total_sentiment > 0 else 0.5
+                logger.debug(f"Using regular sentiment score: {sentiment_score:.3f}")
 
             price_to_sma200 = current_price / sma_200 if sma_200 > 0 else 1
             # price_to_sma50 calculated but not used in current logic
@@ -4886,32 +5131,49 @@ class StockTradingBot:
         elif technical_indicators.get("rsi", 50) > 75:  # Extremely overbought
             scores["sell"] += 0.2 * weights["technical"]
 
-        # PRODUCTION FIX: Enhanced sentiment scoring for Indian market
+        # ENHANCED: Use weighted sentiment for better accuracy
         sentiment_score = 0.0
-        aggregated = sentiment_data["aggregated"]
-        total_sentiment = aggregated["positive"] + aggregated["negative"] + aggregated["neutral"]
 
-        if total_sentiment > 0:
-            positive_ratio = aggregated["positive"] / total_sentiment
-            negative_ratio = aggregated["negative"] / total_sentiment
+        # Try weighted aggregation first (NEW), fallback to regular aggregation
+        if "weighted_aggregated" in sentiment_data and sentiment_data["weighted_aggregated"]["total_weight"] > 0:
+            weighted = sentiment_data["weighted_aggregated"]
+            total_weighted = weighted["positive"] + weighted["negative"] + weighted["neutral"]
 
-            # Enhanced sentiment calculation with stronger signals
-            if positive_ratio > 0.6:  # Strong positive sentiment
-                sentiment_score = 0.8 + (positive_ratio - 0.6) * 2  # Scale up strong sentiment
-            elif positive_ratio > 0.5:  # Moderate positive sentiment
-                sentiment_score = (positive_ratio - 0.5) * 4  # Amplify moderate sentiment
-            elif negative_ratio > 0.6:  # Strong negative sentiment
-                sentiment_score = -(0.8 + (negative_ratio - 0.6) * 2)
-            elif negative_ratio > 0.5:  # Moderate negative sentiment
-                sentiment_score = -((negative_ratio - 0.5) * 4)
+            if total_weighted > 0:
+                positive_ratio = weighted["positive"] / total_weighted
+                negative_ratio = weighted["negative"] / total_weighted
+                logger.debug(f"Using WEIGHTED sentiment - Positive: {positive_ratio:.3f}, Negative: {negative_ratio:.3f}")
             else:
-                sentiment_score = 0  # Neutral sentiment
+                positive_ratio = negative_ratio = 0
+        else:
+            # Fallback to regular aggregation
+            aggregated = sentiment_data["aggregated"]
+            total_sentiment = aggregated["positive"] + aggregated["negative"] + aggregated["neutral"]
 
-            # Apply sentiment score
-            if sentiment_score > 0:
-                scores["buy"] += sentiment_score * weights["sentiment"]
-            elif sentiment_score < 0:
-                scores["sell"] += abs(sentiment_score) * weights["sentiment"]
+            if total_sentiment > 0:
+                positive_ratio = aggregated["positive"] / total_sentiment
+                negative_ratio = aggregated["negative"] / total_sentiment
+                logger.debug(f"Using REGULAR sentiment - Positive: {positive_ratio:.3f}, Negative: {negative_ratio:.3f}")
+            else:
+                positive_ratio = negative_ratio = 0
+
+        # Enhanced sentiment calculation with stronger signals (same logic, better input)
+        if positive_ratio > 0.6:  # Strong positive sentiment
+            sentiment_score = 0.8 + (positive_ratio - 0.6) * 2  # Scale up strong sentiment
+        elif positive_ratio > 0.5:  # Moderate positive sentiment
+            sentiment_score = (positive_ratio - 0.5) * 4  # Amplify moderate sentiment
+        elif negative_ratio > 0.6:  # Strong negative sentiment
+            sentiment_score = -(0.8 + (negative_ratio - 0.6) * 2)
+        elif negative_ratio > 0.5:  # Moderate negative sentiment
+            sentiment_score = -((negative_ratio - 0.5) * 4)
+        else:
+            sentiment_score = 0  # Neutral sentiment
+
+        # Apply sentiment score
+        if sentiment_score > 0:
+            scores["buy"] += sentiment_score * weights["sentiment"]
+        elif sentiment_score < 0:
+            scores["sell"] += abs(sentiment_score) * weights["sentiment"]
 
         # PRODUCTION FIX: Simplified and faster ML scoring
         ml_score = 0.0
@@ -4970,22 +5232,22 @@ class StockTradingBot:
         market_regime = detect_market_regime(history['Close'].values, volatility)
         logger.info(f"Market regime detected for {ticker}: {market_regime}")
 
-        # PRODUCTION FIX: Regime-specific confidence thresholds
+        # PRODUCTION FIX: More aggressive regime-specific confidence thresholds
         if market_regime == "TRENDING":
-            # More aggressive in trending markets
-            base_buy_threshold = 0.35
-            base_sell_threshold = 0.35
-            logger.info(f"TRENDING market: Using aggressive thresholds (0.35)")
+            # Aggressive in trending markets
+            base_buy_threshold = 0.25
+            base_sell_threshold = 0.30
+            logger.info(f"TRENDING market: Using aggressive thresholds (0.25)")
         elif market_regime == "VOLATILE":
             # Quick decisions in volatile markets
-            base_buy_threshold = 0.40
-            base_sell_threshold = 0.40
-            logger.info(f"VOLATILE market: Using quick decision thresholds (0.40)")
+            base_buy_threshold = 0.30
+            base_sell_threshold = 0.35
+            logger.info(f"VOLATILE market: Using quick decision thresholds (0.30)")
         else:  # RANGE_BOUND
-            # More conservative in range-bound markets
-            base_buy_threshold = 0.50
-            base_sell_threshold = 0.50
-            logger.info(f"RANGE_BOUND market: Using conservative thresholds (0.50)")
+            # Less conservative in range-bound markets (was 0.50, now 0.35)
+            base_buy_threshold = 0.35
+            base_sell_threshold = 0.40
+            logger.info(f"RANGE_BOUND market: Using moderate thresholds (0.35)")
 
         # Risk level adjustments
         if risk_level == "HIGH":
@@ -5175,14 +5437,14 @@ class StockTradingBot:
         expected_return = (ml_expected_return * 0.4 + technical_return * 0.4 + sentiment_return * 0.2)
         expected_return = max(0.01, min(expected_return, 0.12))  # Bound between 1-12%
 
-        # Fix 3: Proper Kelly calculation
+        # Fix 3: More aggressive Kelly calculation
         if expected_return > 0 and win_prob > 0.5:
             # Kelly formula: f = (bp - q) / b, where b = odds, p = win prob, q = lose prob
             odds_ratio = expected_return / (1 - expected_return) if expected_return < 1 else expected_return
             kelly_fraction = (win_prob * odds_ratio - (1 - win_prob)) / odds_ratio
-            kelly_fraction = max(0.05, kelly_fraction)  # Minimum 5% position
+            kelly_fraction = max(0.10, kelly_fraction)  # Minimum 10% position (increased from 5%)
         else:
-            kelly_fraction = 0.08  # Conservative base position size
+            kelly_fraction = 0.15  # More aggressive base position size (increased from 8%)
 
         # Market condition adjustments
         if volatility > 0.03:  # High volatility
@@ -5195,7 +5457,7 @@ class StockTradingBot:
         kelly_fraction *= (0.8 + 0.4 * signal_strength)  # Scale by signal strength
 
         # Final bounds with more aggressive limits
-        kelly_fraction = max(min(kelly_fraction, 0.25), 0.08)  # 8-25% position size
+        kelly_fraction = max(min(kelly_fraction, 0.35), 0.12)  # 12-35% position size (increased from 8-25%)
 
         # DEBUG: Log improved Kelly fraction calculation
         logger.info(f"=== IMPROVED KELLY FRACTION CALCULATION for {ticker} ===")
@@ -5317,20 +5579,20 @@ class StockTradingBot:
 
         # DEBUG: Log buy decision pre-checks with weighted system
         logger.info(f"=== BUY DECISION PRE-CHECKS for {ticker} ===")
-        logger.info(f"  Buy Score: {final_buy_score:.3f} > Threshold: {confidence_threshold:.3f} = {'✅' if final_buy_score > confidence_threshold else '❌'}")
-        logger.info(f"  Weighted Signal Score: {weighted_signal_score:.3f} > Threshold: {min_weighted_signal_threshold:.3f} = {'✅' if weighted_signal_score >= min_weighted_signal_threshold else '❌'}")
+        logger.info(f"  Buy Score: {final_buy_score:.3f} > Threshold: {confidence_threshold:.3f} = {'PASS' if final_buy_score > confidence_threshold else 'FAIL'}")
+        logger.info(f"  Weighted Signal Score: {weighted_signal_score:.3f} > Threshold: {min_weighted_signal_threshold:.3f} = {'PASS' if weighted_signal_score >= min_weighted_signal_threshold else 'FAIL'}")
         logger.info(f"  Legacy Buy Signals (for reference): {buy_signals}/7")
         logger.info(f"  Market Regime: {market_regime} (threshold: {min_weighted_signal_threshold:.3f})")
 
-        # Use weighted signal system instead of binary signal count
-        if final_buy_score > confidence_threshold and weighted_signal_score >= min_weighted_signal_threshold:
+        # Use more flexible signal system - either condition can trigger buy
+        if final_buy_score > confidence_threshold or weighted_signal_score >= min_weighted_signal_threshold:
             if available_cash < 100:  # Minimum trade value in INR
-                logger.info(f"❌ SKIPPING BUY for {ticker}: Insufficient cash (Rs.{available_cash:.2f} < Rs.100)")
+                logger.info(f"[SKIP] SKIPPING BUY for {ticker}: Insufficient cash (Rs.{available_cash:.2f} < Rs.100)")
             else:
-                logger.info(f"✅ PROCEEDING with BUY calculation for {ticker}")
+                logger.info(f"[BUY] PROCEEDING with BUY calculation for {ticker}")
 
-                # Position sizing calculation with detailed logging
-                position_size_pct = kelly_fraction * 0.6
+                # Position sizing calculation with detailed logging - More aggressive
+                position_size_pct = kelly_fraction * 1.2  # Increased from 0.6 to 1.2 for more aggressive trading
                 target_position_value = total_value * position_size_pct
                 logger.info(f"  Initial Position Value: Rs.{target_position_value:.2f} ({position_size_pct:.3f}% of portfolio)")
 
@@ -5343,9 +5605,9 @@ class StockTradingBot:
                 target_position_value *= confidence_factor
                 logger.info(f"  After Confidence Factor ({confidence_factor:.3f}): Rs.{target_position_value:.2f}")
 
-                # Apply exposure limits (REMOVED SECTOR LIMITS)
+                # Apply exposure limits (REMOVED SECTOR LIMITS) - Very aggressive minimum
                 before_limits = target_position_value
-                target_position_value = max(1500, min(target_position_value, max_exposure_per_stock - current_stock_exposure))
+                target_position_value = max(200, min(target_position_value, max_exposure_per_stock - current_stock_exposure))
                 logger.info(f"  After Stock Exposure Limit: Rs.{target_position_value:.2f} (was Rs.{before_limits:.2f})")
                 logger.info(f"  Sector Exposure Limit: DISABLED (removed constraint)")
 
@@ -5358,12 +5620,18 @@ class StockTradingBot:
                 logger.info(f"    - Max by Volume: {max_qty_by_volume:.2f}")
                 logger.info(f"    - Max by Cash: {available_cash / current_ticker_price:.2f}")
 
-                buy_qty = max(0, int(buy_qty))
+                # AGGRESSIVE FIX: Ensure minimum 1 share if we have enough cash
+                if buy_qty < 1 and available_cash >= current_ticker_price:
+                    buy_qty = 1  # Force minimum 1 share if we can afford it
+                    logger.info(f"  FORCED MINIMUM: Set to 1 share (Rs.{current_ticker_price:.2f}) - conditions met")
+                else:
+                    # Use ceiling instead of truncation to avoid 0 quantity for small positions
+                    buy_qty = max(1, int(buy_qty + 0.5)) if buy_qty > 0.1 else 0  # Round up, minimum 1 share if > 0.1
                 logger.info(f"  FINAL BUY QUANTITY: {buy_qty} shares (Rs.{buy_qty * current_ticker_price:.2f})")
         else:
-            logger.info(f"❌ BUY PRE-CHECKS FAILED for {ticker}")
-            logger.info(f"   - Buy Score Check: {'✅' if final_buy_score > confidence_threshold else '❌'}")
-            logger.info(f"   - Weighted Signal Check: {'✅' if weighted_signal_score >= min_weighted_signal_threshold else '❌'}")
+            logger.info(f"[SKIP] BUY PRE-CHECKS FAILED for {ticker}")
+            logger.info(f"   - Buy Score Check: {'PASS' if final_buy_score > confidence_threshold else 'FAIL'}")
+            logger.info(f"   - Weighted Signal Check: {'PASS' if weighted_signal_score >= min_weighted_signal_threshold else 'FAIL'}")
 
         # Sell Quantity Calculation with weighted signals
         sell_qty = 0
@@ -5393,10 +5661,10 @@ class StockTradingBot:
             if new_stock_exposure > max_exposure_per_stock:
                 old_qty = buy_qty
                 buy_qty = (max_exposure_per_stock - current_stock_exposure) / current_ticker_price if current_ticker_price > 0 else 0
-                buy_qty = max(0, int(buy_qty))
-                logger.info(f"  ❌ STOCK EXPOSURE LIMIT EXCEEDED: Reduced quantity from {old_qty:.2f} to {buy_qty} shares")
+                buy_qty = max(1, int(buy_qty + 0.5)) if buy_qty > 0.1 else 0  # Round up, minimum 1 share
+                logger.info(f"  [LIMIT] STOCK EXPOSURE LIMIT EXCEEDED: Reduced quantity from {old_qty:.2f} to {buy_qty} shares")
             else:
-                logger.info(f"  ✅ STOCK EXPOSURE LIMIT OK: Keeping {buy_qty} shares")
+                logger.info(f"  [OK] STOCK EXPOSURE LIMIT OK: Keeping {buy_qty} shares")
 
         # Backoff Logic
         recent_trades = [t for t in self.portfolio.trade_log if datetime.strptime(t["timestamp"], "%Y-%m-%d %H:%M:%S.%f") > datetime.now() - timedelta(hours=12)]
@@ -5416,8 +5684,8 @@ class StockTradingBot:
         logger.info(f"  P&L Threshold (-1.5%): Rs.{-0.015 * total_value:.2f}")
         logger.info(f"  Trade Frequency Limit: 8")
         logger.info(f"  Unrealized P&L: Rs.{unrealized_pnl:.2f}")
-        logger.info(f"  Emergency Override (price < stop_loss OR unrealized < -6%): {'✅' if (current_ticker_price < stop_loss or unrealized_pnl < -0.06 * total_value) else '❌'}")
-        logger.info(f"  BACKOFF ACTIVE: {'✅' if backoff else '❌'}")
+        logger.info(f"  Emergency Override (price < stop_loss OR unrealized < -6%): {'YES' if (current_ticker_price < stop_loss or unrealized_pnl < -0.06 * total_value) else 'NO'}")
+        logger.info(f"  BACKOFF ACTIVE: {'YES' if backoff else 'NO'}")
 
         # Execute Trades
         trade = None
@@ -5425,23 +5693,22 @@ class StockTradingBot:
 
         # DEBUG: Final BUY execution checks with weighted signals
         logger.info(f"=== FINAL BUY EXECUTION CHECKS for {ticker} ===")
-        logger.info(f"  1. buy_qty > 0: {buy_qty} > 0 = {'✅' if buy_qty > 0 else '❌'}")
-        logger.info(f"  2. final_buy_score > confidence_threshold: {final_buy_score:.3f} > {confidence_threshold:.3f} = {'✅' if final_buy_score > confidence_threshold else '❌'}")
-        logger.info(f"  3. weighted_signal_score >= threshold: {weighted_signal_score:.3f} >= {min_weighted_signal_threshold:.3f} = {'✅' if weighted_signal_score >= min_weighted_signal_threshold else '❌'}")
-        logger.info(f"  4. buy_qty * price <= available_cash: Rs.{buy_qty * current_ticker_price:.2f} <= Rs.{available_cash:.2f} = {'✅' if buy_qty * current_ticker_price <= available_cash else '❌'}")
-        logger.info(f"  5. not backoff: {'✅' if not backoff else '❌'}")
+        logger.info(f"  1. buy_qty > 0: {buy_qty} > 0 = {'PASS' if buy_qty > 0 else 'FAIL'}")
+        logger.info(f"  2. final_buy_score > confidence_threshold: {final_buy_score:.3f} > {confidence_threshold:.3f} = {'PASS' if final_buy_score > confidence_threshold else 'FAIL'}")
+        logger.info(f"  3. weighted_signal_score >= threshold: {weighted_signal_score:.3f} >= {min_weighted_signal_threshold:.3f} = {'PASS' if weighted_signal_score >= min_weighted_signal_threshold else 'FAIL'}")
+        logger.info(f"  4. buy_qty * price <= available_cash: Rs.{buy_qty * current_ticker_price:.2f} <= Rs.{available_cash:.2f} = {'PASS' if buy_qty * current_ticker_price <= available_cash else 'FAIL'}")
+        logger.info(f"  5. not backoff: {'PASS' if not backoff else 'FAIL'}")
         logger.info(f"  Legacy buy_signals (reference): {buy_signals}/7")
 
-        # Updated conditions using weighted signal system
+        # Simplified conditions - removed overly restrictive checks
         all_conditions_met = (
             buy_qty > 0
-            and final_buy_score > confidence_threshold
-            and weighted_signal_score >= min_weighted_signal_threshold  # NEW: Weighted signal system
+            and (final_buy_score > confidence_threshold or weighted_signal_score >= min_weighted_signal_threshold)  # Either condition can pass
             and buy_qty * current_ticker_price <= available_cash
             and not backoff
         )
 
-        logger.info(f"  ALL CONDITIONS MET: {'✅ EXECUTING BUY' if all_conditions_met else '❌ BUY BLOCKED'}")
+        logger.info(f"  ALL CONDITIONS MET: {'[EXECUTING BUY]' if all_conditions_met else '[BUY BLOCKED]'}")
 
         if all_conditions_met:
             logger.info(

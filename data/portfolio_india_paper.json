@@ -1,5 +1,5 @@
 {
-    "cash": 4949.6900000000005,
+    "cash": 2321.9700000000007,
     "holdings": {
         "HDFCBANK.NS": {
             "qty": 1,
@@ -10,11 +10,19 @@
             "avg_price": 63.91
         },
         "JSWSTEEL.NS": {
-            "qty": 1,
-            "avg_price": 1053.4
+            "qty": 2,
+            "avg_price": 1050.5500000000002
+        },
+        "GAIL.NS": {
+            "qty": 5,
+            "avg_price": 170.72
+        },
+        "WIPRO.NS": {
+            "qty": 3,
+            "avg_price": 242.14
         }
     },
     "starting_balance": 10000,
     "realized_pnl": 0,
-    "unrealized_pnl": 9.329999999999899
+    "unrealized_pnl": -2.0400000000006173
 }

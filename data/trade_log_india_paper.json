@@ -22,5 +22,29 @@
         "price": 1053.4,
         "mode": "paper",
         "timestamp": "2025-08-05 16:52:50.396957"
+    },
+    {
+        "asset": "JSWSTEEL.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 1047.7,
+        "mode": "paper",
+        "timestamp": "2025-08-06 11:16:05.679391"
+    },
+    {
+        "asset": "GAIL.NS",
+        "action": "buy",
+        "qty": 5,
+        "price": 170.72,
+        "mode": "paper",
+        "timestamp": "2025-08-06 13:13:58.159026"
+    },
+    {
+        "asset": "WIPRO.NS",
+        "action": "buy",
+        "qty": 3,
+        "price": 242.14,
+        "mode": "paper",
+        "timestamp": "2025-08-06 13:24:24.080697"
     }
 ]

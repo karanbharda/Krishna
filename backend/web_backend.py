@@ -58,10 +58,9 @@ except ImportError as e:
 
 try:
     from fyers_client import FyersAPIClient
-    import logger
     FYERS_CLIENT_AVAILABLE = True
 except ImportError as e:
-    logger.warning(f"Fyers client not available: {e}")
+    print(f"Fyers client not available: {e}")
     FYERS_CLIENT_AVAILABLE = False
     class FyersAPIClient:
         def __init__(self, *args, **kwargs): pass
