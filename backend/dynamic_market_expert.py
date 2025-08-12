@@ -10,6 +10,10 @@ import logging
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 
+# Set up logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 # Import from main trading bot
 try:
     from testindia import LlamaLLM

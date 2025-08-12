@@ -3104,3 +3104,191 @@ Reinforcement Learning Results:
     Episode 80: Reward = 13392491.05, Avg Reward = 856093.78, Events = 96
     Episode 90: Reward = -8176965.12, Avg Reward = 2772437.96, Events = 107
     Episode 100: Reward = -3230507.10, Avg Reward = 560663.95, Events = 107
+
+[20250812_134734] Analysis for BDL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT DYNAMICS LIMITED (BDL.NS): NEUTRAL
+Current Price: Rs.1487.30
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0179 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Aerospace & Defense
+
+Prediction Days: 30
+Current Price (USD): 16.98
+Predicted Price (USD): 1490.0673181907875
+Predicted Change (%): 8675.43
+Confidence Score: -0.16716648543264934
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: SELL
+  Performance (%): -41.10248954465073
+  Average Reward: 2299472.0099591473
+  Average Events/Episode: 127.57
+  Actions Distribution:
+    hold: 0.5063
+    buy: 0.3088
+    sell: 0.1850
+  RL Epoch Logs:
+    Episode 10: Reward = 26070902.37, Avg Reward = 7877028.97, Events = 131
+    Episode 20: Reward = -3895189.33, Avg Reward = -1091552.26, Events = 113
+    Episode 30: Reward = -7219629.96, Avg Reward = -2919098.81, Events = 132
+    Episode 40: Reward = 17046841.10, Avg Reward = 8934428.31, Events = 118
+    Episode 50: Reward = -8017112.18, Avg Reward = 4367934.73, Events = 150
+    Episode 60: Reward = -16701171.35, Avg Reward = -5010453.22, Events = 129
+    Episode 70: Reward = -667417.71, Avg Reward = 4738404.97, Events = 120
+    Episode 80: Reward = 15025629.54, Avg Reward = 350204.38, Events = 125
+    Episode 90: Reward = -4358461.41, Avg Reward = 5197360.84, Events = 118
+    Episode 100: Reward = -1247661.32, Avg Reward = 550462.18, Events = 131
+
+[20250812_135848] Analysis for BDL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT DYNAMICS LIMITED (BDL.NS): NEUTRAL
+Current Price: Rs.1492.10
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0179 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Aerospace & Defense
+
+Prediction Days: 30
+Current Price (USD): 17.03
+Predicted Price (USD): 1500.4661635663967
+Predicted Change (%): 8710.72
+Confidence Score: -0.23577068334816653
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: SELL
+  Performance (%): -10.891945383757484
+  Average Reward: 1437388.1792330057
+  Average Events/Episode: 127.99
+  Actions Distribution:
+    hold: 0.2542
+    buy: 0.0401
+    sell: 0.7057
+  RL Epoch Logs:
+    Episode 10: Reward = -10504521.43, Avg Reward = 6659051.80, Events = 121
+    Episode 20: Reward = 29245169.31, Avg Reward = -3387423.85, Events = 125
+    Episode 30: Reward = 15333867.92, Avg Reward = 5398844.98, Events = 128
+    Episode 40: Reward = 3052226.28, Avg Reward = -6008133.46, Events = 119
+    Episode 50: Reward = 2826876.34, Avg Reward = 2177710.55, Events = 109
+    Episode 60: Reward = -1912296.43, Avg Reward = 2311400.66, Events = 123
+    Episode 70: Reward = 13545146.77, Avg Reward = -193987.43, Events = 128
+    Episode 80: Reward = -10288595.79, Avg Reward = 1058683.60, Events = 137
+    Episode 90: Reward = -2240329.52, Avg Reward = 3500544.39, Events = 110
+    Episode 100: Reward = -10172449.05, Avg Reward = 2857190.56, Events = 122
+
+[20250812_160018] Analysis for HDFCBANK.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for HDFC BANK LTD (HDFCBANK.NS): NEUTRAL
+Current Price: Rs.1969.90
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0082 (higher values indicate higher risk)
+- Sector: Financial Services
+- Industry: Banks - Regional
+
+Prediction Days: 30
+Current Price (USD): 22.46
+Predicted Price (USD): 1983.8996299325436
+Predicted Change (%): 8733.03
+Confidence Score: -0.02071560321084398
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: SELL
+  Performance (%): -33.21743200768819
+  Average Reward: 948205.1754529661
+  Average Events/Episode: 151.41
+  Actions Distribution:
+    hold: 0.4232
+    buy: 0.1615
+    sell: 0.4152
+  RL Epoch Logs:
+    Episode 10: Reward = 7987495.74, Avg Reward = 2457004.65, Events = 152
+    Episode 20: Reward = 9506160.79, Avg Reward = 798197.31, Events = 135
+    Episode 30: Reward = 7758422.55, Avg Reward = -1207276.06, Events = 170
+    Episode 40: Reward = 3514701.22, Avg Reward = 3257495.60, Events = 161
+    Episode 50: Reward = 8934028.13, Avg Reward = 199590.68, Events = 156
+    Episode 60: Reward = 13992738.26, Avg Reward = 1625007.19, Events = 155
+    Episode 70: Reward = -18053309.65, Avg Reward = -375067.60, Events = 151
+    Episode 80: Reward = -769521.91, Avg Reward = -683450.08, Events = 131
+    Episode 90: Reward = -4626655.14, Avg Reward = 4817966.28, Events = 158
+    Episode 100: Reward = 2983062.09, Avg Reward = -1407416.22, Events = 136
+
+[20250812_161250] Analysis for HDFCBANK.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for HDFC BANK LTD (HDFCBANK.NS): NEUTRAL
+Current Price: Rs.1969.90
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0082 (higher values indicate higher risk)
+- Sector: Financial Services
+- Industry: Banks - Regional
+
+Prediction Days: 30
+Current Price (USD): 22.46
+Predicted Price (USD): 1964.6432925411748
+Predicted Change (%): 8647.30
+Confidence Score: 0.0047552009371386594
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 24.736467869058878
+  Average Reward: 4657327.373363716
+  Average Events/Episode: 148.32
+  Actions Distribution:
+    hold: 0.5234
+    buy: 0.1202
+    sell: 0.3565
+  RL Epoch Logs:
+    Episode 10: Reward = -6289185.48, Avg Reward = 7986786.38, Events = 160
+    Episode 20: Reward = 1781927.93, Avg Reward = 12353029.32, Events = 135
+    Episode 30: Reward = 11784518.80, Avg Reward = 8525.22, Events = 137
+    Episode 40: Reward = 21984554.37, Avg Reward = 7203719.48, Events = 140
+    Episode 50: Reward = 3985800.26, Avg Reward = 3309779.14, Events = 139
+    Episode 60: Reward = 24758640.31, Avg Reward = 3016126.54, Events = 144
+    Episode 70: Reward = 13083311.87, Avg Reward = 9440458.38, Events = 146
+    Episode 80: Reward = 3038038.53, Avg Reward = -3088864.24, Events = 147
+    Episode 90: Reward = -6734559.50, Avg Reward = -535085.60, Events = 136
+    Episode 100: Reward = -3172071.38, Avg Reward = 6878799.12, Events = 151

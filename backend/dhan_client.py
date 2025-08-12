@@ -89,7 +89,9 @@ class DhanAPIClient:
     def get_funds(self) -> Dict:
         """Get account funds and margin information"""
         try:
-            return self._make_request('GET', '/v2/fundlimit')
+            response = self._make_request('GET', '/v2/fundlimit')
+            logger.info(f"Dhan Account Funds Response: {json.dumps(response, indent=2)}")
+            return response
         except Exception as e:
             logger.error(f"Failed to get funds: {e}")
             return {"availabelBalance": 0, "sodLimit": 0}

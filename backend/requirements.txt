@@ -19,6 +19,17 @@ xgboost>=1.7.0
 torch>=2.0.0
 gymnasium>=0.29.0
 
+# Database and Storage
+SQLAlchemy>=2.0.0
+alembic>=1.12.0
+aiosqlite>=0.19.0
+langgraph>=0.0.15
+
+# Development and Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+
 # Sentiment Analysis and News
 vaderSentiment>=3.3.2
 praw>=7.7.0

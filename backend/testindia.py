@@ -48,6 +48,19 @@ from dhanhq import dhanhq
 import argparse
 import sys
 import signal
+import queue
+import logging.handlers
+from typing import Dict, List, Optional, Union, Any
+
+# Set up logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# Technical Analysis imports
+from ta.trend import SMAIndicator, EMAIndicator, MACD
+from ta.momentum import RSIIndicator
+from ta.volume import VolumeWeightedAveragePrice
+from ta.volatility import AverageTrueRange
 # threading removed - not used in current implementation
 import queue
 from langchain.llms.base import LLM
@@ -5272,28 +5285,50 @@ class StockTradingBot:
         # PRODUCTION FIX: Weighted signal system (replaces binary signals)
         # Calculate weighted signal strength instead of binary signals
 
-        # Define signal weights based on importance and reliability
+        # Enhanced signal weights with focus on technical reliability
         signal_weights = {
-            "technical": 0.25,      # Technical analysis strength
-            "sentiment": 0.15,      # Market sentiment strength
-            "ml": 0.15,            # ML prediction strength
-            "rsi": 0.15,           # RSI momentum strength
-            "macd": 0.10,          # MACD trend strength
-            "breakout": 0.10,      # Breakout/breakdown strength
-            "volume": 0.10         # Volume confirmation strength
+            "technical": 0.35,      # Increased weight for technical analysis
+            "sentiment": 0.10,      # Reduced sentiment weight
+            "ml": 0.15,            # ML prediction strength maintained
+            "rsi": 0.15,           # RSI momentum strength maintained
+            "macd": 0.15,          # Increased MACD trend importance
+            "breakout": 0.05,      # Reduced breakout weight
+            "volume": 0.05         # Reduced volume weight for buy-only strategy
         }
 
         # Calculate individual signal strengths (0.0 to 1.0)
         signal_strengths = {}
 
-        # Technical signal strength (normalized)
-        signal_strengths["technical"] = min(max(buy_technical_score / 0.4, 0.0), 1.0)  # Normalize to 0-1
+        # Get moving averages from technical indicators
+        ma_20 = technical_indicators.get("SMA_20", current_ticker_price)
+        ma_50 = technical_indicators.get("SMA_50", current_ticker_price)
+        
+        # Get volume data
+        volume_data = history.get("Volume", pd.Series())
+        volume_sma = volume_data.rolling(window=20).mean().iloc[-1] if not volume_data.empty else None
+        current_volume = volume_data.iloc[-1] if not volume_data.empty else None
 
-        # Sentiment signal strength (normalized)
-        signal_strengths["sentiment"] = min(max(sentiment_score / 0.2, 0.0), 1.0) if sentiment_score > 0 else 0.0
+        # Enhanced technical signal strength with multiple confirmations
+        technical_signals = {
+            'trend': 1.0 if current_ticker_price > ma_20 > ma_50 else 0.5 if current_ticker_price > ma_20 else 0.0,
+            'momentum': 1.0 if rsi_value > 40 and rsi_value < 60 else 0.5 if rsi_value > 30 else 0.0,
+            'volume': 1.0 if volume_sma and current_volume > volume_sma * 1.5 else 0.5 if volume_sma and current_volume > volume_sma else 0.0,
+            'pattern': 1.0 if support_level and current_ticker_price > support_level * 1.02 else 0.0
+        }
+        signal_strengths["technical"] = sum(technical_signals.values()) / len(technical_signals)
 
-        # ML signal strength (normalized)
-        signal_strengths["ml"] = min(max(ml_score / 0.1, 0.0), 1.0) if ml_score > 0 else 0.0
+        # Enhanced sentiment signal strength with market context
+        base_sentiment = min(max(sentiment_score / 0.2, 0.0), 1.0) if sentiment_score > 0 else 0.0
+        market_context_multiplier = 1.2 if market_regime == "TRENDING" else 0.8 if market_regime == "VOLATILE" else 1.0
+        signal_strengths["sentiment"] = base_sentiment * market_context_multiplier
+
+        # Enhanced ML signal strength with confidence weighting
+        if ml_score > 0:
+            base_ml_score = min(max(ml_score / 0.1, 0.0), 1.0)
+            prediction_accuracy = ml_analysis.get("accuracy", 0.6)  # Default to 60% if not available
+            signal_strengths["ml"] = base_ml_score * prediction_accuracy
+        else:
+            signal_strengths["ml"] = 0.0
 
         # RSI signal strength (distance from oversold)
         rsi_value = technical_indicators.get("rsi", 50)
@@ -5424,8 +5459,10 @@ class StockTradingBot:
         predicted_price = ml_analysis.get("predicted_price", current_ticker_price)
         if predicted_price and current_ticker_price > 0:
             ml_expected_return = (predicted_price / current_ticker_price - 1)
-            # Bound ML predictions to reasonable range (-10% to +15%)
-            ml_expected_return = max(-0.10, min(ml_expected_return, 0.15))
+            # Enhanced ML prediction validation
+            historical_volatility = history['Close'].pct_change().std() * np.sqrt(252)  # Annualized volatility
+            max_expected_return = min(0.20, historical_volatility * 2)  # Cap at 20% or 2x historical volatility
+            ml_expected_return = max(0.0, min(ml_expected_return, max_expected_return))  # Only allow positive returns for buy-only strategy
         else:
             ml_expected_return = 0.0
 
@@ -5570,10 +5607,19 @@ class StockTradingBot:
 
         # PRODUCTION FIX: Weighted signal threshold system
         # Define minimum weighted signal threshold based on market regime
-        if market_regime == "TRENDING":
-            min_weighted_signal_threshold = 0.15  # Lower threshold for trending markets
-        elif market_regime == "VOLATILE":
-            min_weighted_signal_threshold = 0.25  # Higher threshold for volatile markets
+        # Enhanced market regime detection
+        if market_regime == "STRONG_UPTREND":
+            min_weighted_signal_threshold = 0.12  # Most aggressive in strong uptrends
+        elif market_regime == "WEAK_UPTREND":
+            min_weighted_signal_threshold = 0.15  # Moderately aggressive in weak uptrends
+        elif market_regime == "STRONG_DOWNTREND":
+            min_weighted_signal_threshold = 0.30  # Most conservative in strong downtrends
+        elif market_regime == "WEAK_DOWNTREND":
+            min_weighted_signal_threshold = 0.25  # Moderately conservative in weak downtrends
+        elif market_regime == "HIGH_VOLATILITY":
+            min_weighted_signal_threshold = 0.28  # Conservative in highly volatile markets
+        elif market_regime == "LOW_VOLATILITY":
+            min_weighted_signal_threshold = 0.18  # More opportunities in low volatility
         else:  # RANGE_BOUND
             min_weighted_signal_threshold = 0.20  # Moderate threshold for range-bound markets
 
@@ -5591,10 +5637,19 @@ class StockTradingBot:
             else:
                 logger.info(f"[BUY] PROCEEDING with BUY calculation for {ticker}")
 
-                # Position sizing calculation with detailed logging - More aggressive
-                position_size_pct = kelly_fraction * 1.2  # Increased from 0.6 to 1.2 for more aggressive trading
+                # Position sizing calculation with adaptive Kelly fraction
+                # Adjust Kelly fraction based on market conditions and volatility
+                market_condition_factor = {
+                    "TRENDING": 0.9,    # More aggressive in trending markets
+                    "VOLATILE": 0.6,    # More conservative in volatile markets
+                    "RANGE_BOUND": 0.8  # Moderate in range-bound markets
+                }.get(market_regime, 0.7)
+                
+                volatility_adjustment = max(0.6, min(1.0, 1.0 / (1 + volatility)))
+                position_size_pct = kelly_fraction * market_condition_factor * volatility_adjustment
                 target_position_value = total_value * position_size_pct
                 logger.info(f"  Initial Position Value: Rs.{target_position_value:.2f} ({position_size_pct:.3f}% of portfolio)")
+                logger.info(f"  Kelly Adjustments - Market: {market_condition_factor:.2f}, Volatility: {volatility_adjustment:.2f}")
 
                 volatility_factor = max(0.4, min(1.6, 1.0 / (1 + atr / current_ticker_price))) if current_ticker_price > 0 else 1.0
                 target_position_value *= volatility_factor
@@ -5700,10 +5755,20 @@ class StockTradingBot:
         logger.info(f"  5. not backoff: {'PASS' if not backoff else 'FAIL'}")
         logger.info(f"  Legacy buy_signals (reference): {buy_signals}/7")
 
-        # Simplified conditions - removed overly restrictive checks
+        # Enhanced buy conditions with stronger validation
         all_conditions_met = (
             buy_qty > 0
-            and (final_buy_score > confidence_threshold or weighted_signal_score >= min_weighted_signal_threshold)  # Either condition can pass
+            and (
+                # Require higher confidence scores
+                final_buy_score > (confidence_threshold * 1.1)  # 10% higher confidence requirement
+                or (weighted_signal_score >= min_weighted_signal_threshold * 1.15)  # 15% higher signal threshold
+            )
+            and (
+                # Additional technical validation
+                analysis.get("technical_indicators", {}).get("RSI", 100) < 65  # Not overbought
+                and buy_signals >= 3  # Require more confirmation signals
+                and analysis.get("technical_indicators", {}).get("MACD", 0) > analysis.get("technical_indicators", {}).get("MACD_Signal", 0)  # MACD confirmation
+            )
             and buy_qty * current_ticker_price <= available_cash
             and not backoff
         )
@@ -5738,39 +5803,20 @@ class StockTradingBot:
                 "signals": buy_signals,
                 "reason": "signal_based"
             }
-        elif (
-            sell_qty > 0
-            and final_sell_score > sell_confidence_threshold
-            and sell_signals >= 1  # Lowered from 2 to 1
-            and ticker in self.portfolio.holdings
-            and not backoff
-        ):
-            logger.info(
-                f"Executing SELL for {ticker}: {sell_qty:.0f} units at Rs.{current_ticker_price:.2f}, "
-                f"Position Value: Rs.{sell_qty * current_price:.2f} ({(sell_qty * current_price / total_value * 100):.2f}% of portfolio), "
-                f"Stop-Loss: Rs.{stop_loss:.2f}, Take-Profit: Rs.{take_profit:.2f}, ATR: Rs.{atr:.2f}"
-            )
-            success_result = self.executor.execute_trade("sell", ticker, sell_qty, current_ticker_price, stop_loss, take_profit)
-
-            # Handle the case where trade execution returns detailed result
-            if isinstance(success_result, dict):
-                success = success_result.get("success", False)
-                actual_qty = success_result.get("qty", sell_qty)
-            else:
-                success = success_result
-                actual_qty = sell_qty if success else 0
-
+        elif False:  # Sell signals disabled
+            # Sell functionality temporarily disabled
+            logger.info(f"SELL signals disabled for {ticker} - holding position")
             trade = {
-                "action": "sell",
+                "action": "hold",
                 "ticker": ticker,
-                "qty": actual_qty,
+                "qty": 0,
                 "price": current_ticker_price,
                 "stop_loss": stop_loss,
                 "take_profit": take_profit,
-                "success": success_result,
-                "confidence_score": final_sell_score,
-                "signals": sell_signals,
-                "reason": "signal_based"
+                "success": True,
+                "confidence_score": 0,
+                "signals": 0,
+                "reason": "sell_disabled"
             }
         else:
             # PRODUCTION FIX: Regime-specific HOLD conditions

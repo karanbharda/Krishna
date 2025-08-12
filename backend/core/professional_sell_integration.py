@@ -45,11 +45,22 @@ class ProfessionalSellIntegration:
         """
         Main integration point for professional sell evaluation
         Returns a decision compatible with existing trading modules
+        All sell signals temporarily disabled.
         """
-        
-        if not self.enable_professional_logic:
-            logger.info("Professional sell logic disabled, using legacy logic")
-            return self._legacy_sell_decision(ticker, current_price, portfolio_holdings, analysis_data)
+        logger.info("Sell signals globally disabled")
+        return {
+            "action": "hold",
+            "ticker": ticker,
+            "qty": 0,
+            "price": current_price,
+            "stop_loss": 0.0,
+            "take_profit": 0.0,
+            "success": True,
+            "confidence_score": 0.0,
+            "signals": 0,
+            "reason": "sell_disabled",
+            "professional_reasoning": "Sell functionality temporarily disabled"
+        }
         
         try:
             # Check if we have a position

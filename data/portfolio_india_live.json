@@ -1,7 +1,7 @@
 {
-    "cash": 1000,
+    "cash": 0,
     "holdings": {},
-    "starting_balance": 1000,
+    "starting_balance": 0,
     "realized_pnl": 0,
     "unrealized_pnl": 0
 }

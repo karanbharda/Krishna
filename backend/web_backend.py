@@ -13,6 +13,16 @@ import threading
 import time
 import traceback
 
+# Set up logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# Configure logging format
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler = logging.StreamHandler()
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
 # Import FastAPI components with fallback handling
 try:
     import uvicorn
@@ -1092,16 +1102,35 @@ class WebTradingBot:
                 logger.error("Dhan credentials not found in config")
                 return False
 
-            # Initialize Dhan client
+            # Initialize Dhan client with credentials from .env
             self.dhan_client = DhanAPIClient(
-                client_id=self.config["dhan_client_id"],
-                access_token=self.config["dhan_access_token"]
+                client_id=os.getenv("DHAN_CLIENT_ID"),
+                access_token=os.getenv("DHAN_ACCESS_TOKEN")
             )
 
-            # Validate connection
+            # Validate connection and sync portfolio
             if not self.dhan_client.validate_connection():
                 logger.error("Failed to validate Dhan API connection")
                 return False
+                
+            # Initialize live executor with Dhan credentials
+            self.live_executor = LiveTradingExecutor(
+                portfolio=self.trading_bot.portfolio,
+                config={
+                    "dhan_client_id": os.getenv("DHAN_CLIENT_ID"),
+                    "dhan_access_token": os.getenv("DHAN_ACCESS_TOKEN"),
+                    "stop_loss_pct": 0.05,
+                    "max_capital_per_trade": 0.25,
+                    "max_trade_limit": 10
+                }
+            )
+            
+            # Sync portfolio with Dhan account
+            if not self.live_executor.sync_portfolio_with_dhan():
+                logger.error("Failed to sync portfolio with Dhan account")
+                return False
+                
+            logger.info("Successfully connected to Dhan account and synced portfolio")
 
             # Initialize live executor
             try:
@@ -1505,6 +1534,34 @@ class WebTradingBot:
 
     async def broadcast_portfolio_update(self):
         """Broadcast portfolio update to all connected WebSocket clients"""
+        try:
+            # Get latest portfolio data from database
+            portfolio_data = self.portfolio_manager.get_portfolio_summary()
+            
+            # Get recent trades
+            recent_trades = self.portfolio_manager.get_recent_trades(limit=10)
+            
+            # Prepare update message
+            update = {
+                "type": "portfolio_update",
+                "data": {
+                    "portfolio": portfolio_data,
+                    "trades": recent_trades,
+                    "timestamp": datetime.now().isoformat()
+                }
+            }
+            
+            # Convert to JSON
+            message = json.dumps(update)
+            
+            # Broadcast to all connected clients
+            if hasattr(self, 'websocket_clients') and self.websocket_clients:
+                await asyncio.gather(
+                    *[client.send_text(message) for client in self.websocket_clients]
+                )
+                
+        except Exception as e:
+            logger.error(f"Error broadcasting portfolio update: {e}")
         try:
             portfolio_metrics = self.get_portfolio_metrics()
             update_data = {

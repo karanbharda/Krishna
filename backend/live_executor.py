@@ -29,6 +29,13 @@ class LiveTradingExecutor:
             access_token=config.get("dhan_access_token")
         )
         
+        # Sync portfolio with Dhan account on initialization
+        if self.portfolio.mode == "live":
+            if not self.sync_portfolio_with_dhan():
+                logger.error("Failed to sync portfolio with Dhan account during initialization")
+            else:
+                logger.info("Successfully synced portfolio with Dhan account")
+        
         # Trading state
         self.pending_orders = {}
         self.executed_orders = {}
@@ -57,9 +64,11 @@ class LiveTradingExecutor:
             # Get account funds
             funds = self.dhan_client.get_funds()
             available_cash = float(funds.get("availabelBalance", 0))
+            logger.info(f"Dhan Account Balance: Rs.{available_cash:.2f}")
             
             # Get current holdings
             holdings = self.dhan_client.get_holdings()
+            logger.info(f"Dhan Holdings: {json.dumps(holdings, indent=2)}")
             
             # Update portfolio cash
             self.portfolio.cash = available_cash
@@ -145,6 +154,50 @@ class LiveTradingExecutor:
     def execute_buy_order(self, symbol: str, signal_data: Dict) -> Dict:
         """Execute a buy order through Dhan API"""
         try:
+            # Get real-time price
+            current_price = self.get_real_time_price(symbol)
+            if not current_price:
+                return {"success": False, "message": "Failed to get current price"}
+            
+            # Calculate position size
+            quantity = self.calculate_position_size(symbol, current_price, signal_data.get("confidence", 0.5))
+            if quantity <= 0:
+                return {"success": False, "message": "Invalid position size"}
+            
+            # Place order through Dhan API
+            order_result = self.dhan_client.place_order(
+                symbol=symbol,
+                quantity=quantity,
+                price=current_price,
+                order_type="LIMIT",
+                transaction_type="BUY"
+            )
+            
+            if order_result.get("success"):
+                # Record trade in database
+                self.portfolio.record_trade(
+                    ticker=symbol,
+                    action="buy",
+                    quantity=quantity,
+                    price=current_price,
+                    stop_loss=signal_data.get("stop_loss"),
+                    take_profit=signal_data.get("take_profit")
+                )
+                
+                return {
+                    "success": True,
+                    "message": "Order executed successfully",
+                    "order_id": order_result.get("order_id"),
+                    "quantity": quantity,
+                    "price": current_price
+                }
+                
+            return {"success": False, "message": order_result.get("message", "Order failed")}
+            
+        except Exception as e:
+            logger.error(f"Error executing buy order: {e}")
+            return {"success": False, "message": str(e)}
+        try:
             # Check daily trade limit
             if self._check_daily_limits():
                 return {"success": False, "message": "Daily trade limit exceeded"}
@@ -207,6 +260,55 @@ class LiveTradingExecutor:
     
     def execute_sell_order(self, symbol: str, signal_data: Dict) -> Dict:
         """Execute a sell order through Dhan API"""
+        try:
+            # Get real-time price
+            current_price = self.get_real_time_price(symbol)
+            if not current_price:
+                return {"success": False, "message": "Failed to get current price"}
+            
+            # Get current holding
+            holding = self.portfolio.get_holding(symbol)
+            if not holding or holding.quantity <= 0:
+                return {"success": False, "message": "No position to sell"}
+                
+            # Calculate profit/loss
+            pnl = (current_price - holding.avg_price) * holding.quantity
+            
+            # Place order through Dhan API
+            order_result = self.dhan_client.place_order(
+                symbol=symbol,
+                quantity=holding.quantity,
+                price=current_price,
+                order_type="LIMIT",
+                transaction_type="SELL"
+            )
+            
+            if order_result.get("success"):
+                # Record trade in database
+                self.portfolio.record_trade(
+                    ticker=symbol,
+                    action="sell",
+                    quantity=holding.quantity,
+                    price=current_price,
+                    pnl=pnl,
+                    stop_loss=signal_data.get("stop_loss"),
+                    take_profit=signal_data.get("take_profit")
+                )
+                
+                return {
+                    "success": True,
+                    "message": "Order executed successfully",
+                    "order_id": order_result.get("order_id"),
+                    "quantity": holding.quantity,
+                    "price": current_price,
+                    "pnl": pnl
+                }
+                
+            return {"success": False, "message": order_result.get("message", "Order failed")}
+            
+        except Exception as e:
+            logger.error(f"Error executing sell order: {e}")
+            return {"success": False, "message": str(e)}
         try:
             # Check if we have holdings
             if symbol not in self.portfolio.holdings:
