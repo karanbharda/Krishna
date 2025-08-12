@@ -1,0 +1,58 @@
+
+[2025-08-08 15:29:09] === SELL SIGNAL EXECUTED ===
+Asset: HFCL.NS
+Action: SELL 1 shares at Rs.72.72
+Trade Value: Rs.72.72
+Portfolio Cash: Rs.1,430.52
+Total Portfolio Value: Rs.9,918.97
+Unrealized P&L: Rs.-74.38
+============================================================
+
+[2025-08-08 15:40:51] === BUY SIGNAL EXECUTED ===
+Asset: NMDC.NS
+Action: BUY 5 shares at Rs.71.07
+Trade Value: Rs.355.35
+Entry Signal: Price Rs.71.07 identified as favorable entry point
+Position Size: 5 shares (3.6% of portfolio)
+Portfolio Cash: Rs.1,075.17
+Total Portfolio Value: Rs.9,919.74
+Unrealized P&L: Rs.-73.61
+============================================================
+
+[2025-08-08 15:41:00] === STRATEGY ANALYSIS: NMDC.NS ===
+Market Sentiment:
+  - Positive: 58.3% (7.0 articles)
+  - Negative: 16.7% (2.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.70.87
+  - Predicted Price: Rs.71.22
+  - Expected Change: +0.49%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.310
+  - Sell Score: 0.150
+  - Buy Signals: 2/4
+  - Sell Signals: 1/4
+  - Final Decision: BUY
+  - Quantity: 5 shares
+  - Trade Value: Rs.355.35
+============================================================
+
+[2025-08-08 15:52:48] === SELL SIGNAL EXECUTED ===
+Asset: NHPC.NS
+Action: SELL 2 shares at Rs.81.78
+Trade Value: Rs.163.56
+Portfolio Cash: Rs.1,238.73
+Total Portfolio Value: Rs.9,919.74
+Unrealized P&L: Rs.-71.05
+============================================================
+
+[2025-08-08 16:04:35] === SELL SIGNAL EXECUTED ===
+Asset: JIOFIN.NS
+Action: SELL 1 shares at Rs.321.15
+Trade Value: Rs.321.15
+Portfolio Cash: Rs.1,559.88
+Total Portfolio Value: Rs.9,919.74
+Unrealized P&L: Rs.-71.70
+============================================================

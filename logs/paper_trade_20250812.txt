@@ -1,0 +1,40 @@
+=== PAPER TRADING SESSION - 2025-08-12 10:58:50 ===
+Starting Balance: Rs.10,000.00
+================================================================================
+
+
+[2025-08-12 11:35:00] === STRATEGY ANALYSIS: JSWSTEEL.NS ===
+Market Sentiment:
+  - Positive: 50.0% (10.0 articles)
+  - Negative: 20.0% (4.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.1054.70
+  - Predicted Price: Rs.1040.87
+  - Expected Change: -1.31%
+  - RL Recommendation: BUY
+Decision Factors:
+  - Buy Score: 0.400
+  - Sell Score: 0.000
+  - Buy Signals: 1/4
+  - Sell Signals: 0/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-12 11:41:43] === STRATEGY ANALYSIS: HDFCBANK.NS ===
+Market Sentiment:
+  - Positive: 18.2% (2.0 articles)
+  - Negative: 36.4% (4.0 articles)
+  - Overall: Bearish
+ML/RL Analysis:
+  - Current Price: Rs.1979.10
+  - Predicted Price: Rs.1963.87
+  - Expected Change: -0.77%
+  - RL Recommendation: BUY
+Decision Factors:
+  - Buy Score: 0.250
+  - Sell Score: 0.150
+  - Buy Signals: 1/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================

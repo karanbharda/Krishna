@@ -46,5 +46,29 @@
         "price": 242.14,
         "mode": "paper",
         "timestamp": "2025-08-06 13:24:24.080697"
+    },
+    {
+        "asset": "BHEL.NS",
+        "action": "buy",
+        "qty": 2,
+        "price": 223.73,
+        "mode": "paper",
+        "timestamp": "2025-08-11 11:15:54.155161"
+    },
+    {
+        "asset": "BDL.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 1540.7,
+        "mode": "paper",
+        "timestamp": "2025-08-11 11:20:57.394571"
+    },
+    {
+        "asset": "SUZLON.NS",
+        "action": "buy",
+        "qty": 5,
+        "price": 63.99,
+        "mode": "paper",
+        "timestamp": "2025-08-11 11:50:00.982770"
     }
 ]

@@ -1882,3 +1882,1225 @@ Reinforcement Learning Results:
     Episode 80: Reward = 13964568.70, Avg Reward = 5375446.34, Events = 129
     Episode 90: Reward = 11708455.14, Avg Reward = 2378203.73, Events = 130
     Episode 100: Reward = 11833405.27, Avg Reward = 1198215.97, Events = 132
+
+[20250811_111548] Analysis for BHEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHEL (BHEL.NS): NEUTRAL
+Current Price: Rs.223.73
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0195 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Specialty Industrial Machinery
+
+Prediction Days: 30
+Current Price (USD): 2.55
+Predicted Price (USD): 222.036865234375
+Predicted Change (%): 8607.33
+Confidence Score: 0.03921782375552674
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: SELL
+  Performance (%): -5.329000180337942
+  Average Reward: 4511.478515625
+  Average Events/Episode: 23.27
+  Actions Distribution:
+    hold: 0.1429
+    buy: 0.7227
+    sell: 0.1345
+  RL Epoch Logs:
+    Episode 10: Reward = 222774.42, Avg Reward = 61995.96, Events = 22
+    Episode 20: Reward = -60830.29, Avg Reward = -6057.28, Events = 18
+    Episode 30: Reward = 136843.83, Avg Reward = 17403.91, Events = 24
+    Episode 40: Reward = 195704.86, Avg Reward = 30079.63, Events = 20
+    Episode 50: Reward = -78354.06, Avg Reward = -77439.83, Events = 20
+    Episode 60: Reward = 167794.92, Avg Reward = -28817.29, Events = 27
+    Episode 70: Reward = 53408.38, Avg Reward = -3130.69, Events = 33
+    Episode 80: Reward = -57007.13, Avg Reward = -14727.63, Events = 20
+    Episode 90: Reward = 62516.69, Avg Reward = 32613.71, Events = 19
+    Episode 100: Reward = 287776.09, Avg Reward = 33194.30, Events = 23
+
+[20250811_111852] Analysis for BEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT ELECTRONICS LTD (BEL.NS): NEUTRAL
+Current Price: Rs.386.40
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0125 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Aerospace & Defense
+
+Prediction Days: 30
+Current Price (USD): 4.41
+Predicted Price (USD): 385.57601758429314
+Predicted Change (%): 8643.22
+Confidence Score: -0.013435192720365752
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 1.6528453508661767
+  Average Reward: -18841.35917981701
+  Average Events/Episode: 24.01
+  Actions Distribution:
+    hold: 0.2295
+    buy: 0.0574
+    sell: 0.7131
+  RL Epoch Logs:
+    Episode 10: Reward = -567657.17, Avg Reward = -24161.32, Events = 29
+    Episode 20: Reward = -342498.89, Avg Reward = -122885.71, Events = 22
+    Episode 30: Reward = -28440.46, Avg Reward = -171690.29, Events = 28
+    Episode 40: Reward = -217011.52, Avg Reward = -22515.33, Events = 21
+    Episode 50: Reward = -459255.70, Avg Reward = 46067.85, Events = 27
+    Episode 60: Reward = -62169.81, Avg Reward = -66588.63, Events = 19
+    Episode 70: Reward = 7450.47, Avg Reward = 167010.17, Events = 16
+    Episode 80: Reward = -121657.18, Avg Reward = 74384.48, Events = 35
+    Episode 90: Reward = 59775.61, Avg Reward = -23524.64, Events = 27
+    Episode 100: Reward = -72288.22, Avg Reward = -44510.15, Events = 24
+
+[20250811_112050] Analysis for BDL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT DYNAMICS LIMITED (BDL.NS): NEUTRAL
+Current Price: Rs.1540.70
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0194 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Aerospace & Defense
+
+Prediction Days: 30
+Current Price (USD): 17.59
+Predicted Price (USD): 1516.7043198473646
+Predicted Change (%): 8522.54
+Confidence Score: -0.035153814057286015
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 5.6697921510109595
+  Average Reward: 208212.94713930011
+  Average Events/Episode: 25.25
+  Actions Distribution:
+    hold: 0.5242
+    buy: 0.2984
+    sell: 0.1774
+  RL Epoch Logs:
+    Episode 10: Reward = -1204026.12, Avg Reward = -140376.30, Events = 22
+    Episode 20: Reward = 1797150.99, Avg Reward = 8645.96, Events = 22
+    Episode 30: Reward = -981398.38, Avg Reward = 490394.47, Events = 19
+    Episode 40: Reward = -1673519.03, Avg Reward = 43451.22, Events = 23
+    Episode 50: Reward = 1449720.22, Avg Reward = 547454.54, Events = 22
+    Episode 60: Reward = 1493774.20, Avg Reward = 325513.07, Events = 28
+    Episode 70: Reward = 1499326.05, Avg Reward = 394456.19, Events = 26
+    Episode 80: Reward = 112347.20, Avg Reward = 232723.47, Events = 32
+    Episode 90: Reward = -686083.47, Avg Reward = -150723.85, Events = 28
+    Episode 100: Reward = 65093.12, Avg Reward = 330590.70, Events = 24
+
+[20250811_112449] Analysis for BHEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHEL (BHEL.NS): NEUTRAL
+Current Price: Rs.223.81
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0195 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Specialty Industrial Machinery
+
+Prediction Days: 30
+Current Price (USD): 2.56
+Predicted Price (USD): 219.30248598591035
+Predicted Change (%): 8466.50
+Confidence Score: -0.05399330282090831
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -3.491242616568197
+  Average Reward: -33210.096319374185
+  Average Events/Episode: 26.57
+  Actions Distribution:
+    hold: 0.2812
+    buy: 0.5078
+    sell: 0.2109
+  RL Epoch Logs:
+    Episode 10: Reward = -223242.81, Avg Reward = 114129.50, Events = 26
+    Episode 20: Reward = 54563.89, Avg Reward = -47737.44, Events = 29
+    Episode 30: Reward = -115597.71, Avg Reward = -24471.29, Events = 23
+    Episode 40: Reward = -315987.04, Avg Reward = -100297.22, Events = 24
+    Episode 50: Reward = 338537.40, Avg Reward = 139442.92, Events = 27
+    Episode 60: Reward = -89934.23, Avg Reward = 99372.33, Events = 22
+    Episode 70: Reward = -224295.58, Avg Reward = -86522.23, Events = 28
+    Episode 80: Reward = 398636.53, Avg Reward = -129017.52, Events = 34
+    Episode 90: Reward = -539848.72, Avg Reward = -152617.13, Events = 27
+    Episode 100: Reward = -324380.33, Avg Reward = -144382.89, Events = 22
+
+[20250811_112802] Analysis for BEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT ELECTRONICS LTD (BEL.NS): NEUTRAL
+Current Price: Rs.386.35
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0125 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Aerospace & Defense
+
+Prediction Days: 30
+Current Price (USD): 4.41
+Predicted Price (USD): 382.03726150278385
+Predicted Change (%): 8562.98
+Confidence Score: -0.05194383873997532
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: SELL
+  Performance (%): -6.83167157997808
+  Average Reward: 230.0246393790259
+  Average Events/Episode: 26.55
+  Actions Distribution:
+    hold: 0.3282
+    buy: 0.2595
+    sell: 0.4122
+  RL Epoch Logs:
+    Episode 10: Reward = 561981.90, Avg Reward = -203149.20, Events = 31
+    Episode 20: Reward = 536056.49, Avg Reward = 90898.46, Events = 31
+    Episode 30: Reward = -649289.42, Avg Reward = 74809.79, Events = 25
+    Episode 40: Reward = -70604.07, Avg Reward = 41371.05, Events = 27
+    Episode 50: Reward = -589765.24, Avg Reward = 49134.15, Events = 25
+    Episode 60: Reward = 194988.61, Avg Reward = -186019.81, Events = 22
+    Episode 70: Reward = -129810.86, Avg Reward = -82184.59, Events = 21
+    Episode 80: Reward = -472157.28, Avg Reward = -28365.42, Events = 24
+    Episode 90: Reward = 97903.03, Avg Reward = 45315.76, Events = 26
+    Episode 100: Reward = -47053.09, Avg Reward = 200490.05, Events = 26
+
+[20250811_113117] Analysis for BDL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT DYNAMICS LIMITED (BDL.NS): NEUTRAL
+Current Price: Rs.1534.10
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0192 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Aerospace & Defense
+
+Prediction Days: 30
+Current Price (USD): 17.52
+Predicted Price (USD): 1509.2875321278127
+Predicted Change (%): 8514.65
+Confidence Score: -0.20693244211070128
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 4.591786866457391
+  Average Reward: -36539.32469209417
+  Average Events/Episode: 26.31
+  Actions Distribution:
+    hold: 0.1343
+    buy: 0.0746
+    sell: 0.7910
+  RL Epoch Logs:
+    Episode 10: Reward = -176248.12, Avg Reward = -782325.82, Events = 28
+    Episode 20: Reward = 2116428.47, Avg Reward = 431315.42, Events = 33
+    Episode 30: Reward = -297864.18, Avg Reward = -435324.42, Events = 28
+    Episode 40: Reward = 806785.30, Avg Reward = -71341.57, Events = 26
+    Episode 50: Reward = -899819.08, Avg Reward = -434664.12, Events = 32
+    Episode 60: Reward = 423519.19, Avg Reward = 306686.24, Events = 23
+    Episode 70: Reward = -1981562.91, Avg Reward = -248345.96, Events = 28
+    Episode 80: Reward = 305222.14, Avg Reward = 735779.58, Events = 32
+    Episode 90: Reward = 401019.43, Avg Reward = -58567.79, Events = 25
+    Episode 100: Reward = 834304.33, Avg Reward = 191395.21, Events = 34
+
+[20250811_113520] Analysis for BHEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHEL (BHEL.NS): NEUTRAL
+Current Price: Rs.223.91
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0195 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Specialty Industrial Machinery
+
+Prediction Days: 30
+Current Price (USD): 2.56
+Predicted Price (USD): 217.2804412841797
+Predicted Change (%): 8387.52
+Confidence Score: 0.06616134733387313
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.05150187268764421
+  Average Reward: -26896.171875
+  Average Events/Episode: 27.73
+  Actions Distribution:
+    hold: 0.2826
+    buy: 0.0507
+    sell: 0.6667
+  RL Epoch Logs:
+    Episode 10: Reward = -433800.47, Avg Reward = -41526.77, Events = 27
+    Episode 20: Reward = -82564.89, Avg Reward = -100365.95, Events = 28
+    Episode 30: Reward = 211207.80, Avg Reward = 50782.99, Events = 28
+    Episode 40: Reward = -95909.38, Avg Reward = -61413.59, Events = 26
+    Episode 50: Reward = 428209.03, Avg Reward = 27568.19, Events = 25
+    Episode 60: Reward = -511646.25, Avg Reward = 32027.43, Events = 31
+    Episode 70: Reward = 459823.50, Avg Reward = 57567.50, Events = 25
+    Episode 80: Reward = 174364.45, Avg Reward = -115129.25, Events = 21
+    Episode 90: Reward = -454967.09, Avg Reward = -130589.40, Events = 33
+    Episode 100: Reward = -110596.59, Avg Reward = 12117.11, Events = 28
+
+[20250811_113850] Analysis for BEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT ELECTRONICS LTD (BEL.NS): NEUTRAL
+Current Price: Rs.384.25
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0124 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Aerospace & Defense
+
+Prediction Days: 30
+Current Price (USD): 4.39
+Predicted Price (USD): 383.77014124077436
+Predicted Change (%): 8641.92
+Confidence Score: -0.06881795598569407
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 2.732512680230691
+  Average Reward: -86426.58367640343
+  Average Events/Episode: 27.91
+  Actions Distribution:
+    hold: 0.3239
+    buy: 0.5070
+    sell: 0.1690
+  RL Epoch Logs:
+    Episode 10: Reward = -784291.86, Avg Reward = -66284.09, Events = 21
+    Episode 20: Reward = 482865.79, Avg Reward = -229203.42, Events = 23
+    Episode 30: Reward = -907434.10, Avg Reward = -191892.02, Events = 30
+    Episode 40: Reward = 654557.86, Avg Reward = -93405.76, Events = 28
+    Episode 50: Reward = 173704.64, Avg Reward = -56094.90, Events = 31
+    Episode 60: Reward = -571624.38, Avg Reward = -25035.91, Events = 29
+    Episode 70: Reward = -151774.09, Avg Reward = 48833.45, Events = 26
+    Episode 80: Reward = 161966.49, Avg Reward = 16986.14, Events = 34
+    Episode 90: Reward = -628745.42, Avg Reward = -262204.59, Events = 28
+    Episode 100: Reward = -1459789.78, Avg Reward = -5964.76, Events = 26
+
+[20250811_114210] Analysis for BDL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT DYNAMICS LIMITED (BDL.NS): NEUTRAL
+Current Price: Rs.1521.50
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0188 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Aerospace & Defense
+
+Prediction Days: 30
+Current Price (USD): 17.38
+Predicted Price (USD): 1524.2392429805843
+Predicted Change (%): 8670.08
+Confidence Score: -0.06255330966090322
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 19.27985397729013
+  Average Reward: 220752.98359800986
+  Average Events/Episode: 28.86
+  Actions Distribution:
+    hold: 0.1655
+    buy: 0.3448
+    sell: 0.4897
+  RL Epoch Logs:
+    Episode 10: Reward = 1687455.98, Avg Reward = 55594.79, Events = 28
+    Episode 20: Reward = 1230824.41, Avg Reward = 339692.83, Events = 21
+    Episode 30: Reward = -1488135.72, Avg Reward = 7601.34, Events = 35
+    Episode 40: Reward = 30357.25, Avg Reward = 34978.79, Events = 30
+    Episode 50: Reward = 266467.06, Avg Reward = 140009.96, Events = 27
+    Episode 60: Reward = -1639766.37, Avg Reward = 783989.54, Events = 29
+    Episode 70: Reward = -718996.86, Avg Reward = 240544.84, Events = 24
+    Episode 80: Reward = -448099.40, Avg Reward = -359935.86, Events = 26
+    Episode 90: Reward = 1696856.65, Avg Reward = -148078.21, Events = 29
+    Episode 100: Reward = 2292780.05, Avg Reward = 1113131.82, Events = 28
+
+[20250811_114616] Analysis for BHEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHEL (BHEL.NS): NEUTRAL
+Current Price: Rs.222.67
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0195 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Specialty Industrial Machinery
+
+Prediction Days: 30
+Current Price (USD): 2.54
+Predicted Price (USD): 220.95267394998123
+Predicted Change (%): 8598.92
+Confidence Score: -0.07987746786786487
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.13982775629000388
+  Average Reward: -75304.91588290283
+  Average Events/Episode: 29.91
+  Actions Distribution:
+    hold: 0.3490
+    buy: 0.0940
+    sell: 0.5570
+  RL Epoch Logs:
+    Episode 10: Reward = -310162.56, Avg Reward = -196183.11, Events = 27
+    Episode 20: Reward = 296816.17, Avg Reward = -108914.01, Events = 31
+    Episode 30: Reward = 16327.30, Avg Reward = -182941.99, Events = 28
+    Episode 40: Reward = 199286.17, Avg Reward = 82900.26, Events = 39
+    Episode 50: Reward = -450449.25, Avg Reward = -200434.70, Events = 26
+    Episode 60: Reward = -278226.52, Avg Reward = -64049.54, Events = 35
+    Episode 70: Reward = 79063.11, Avg Reward = -22809.46, Events = 34
+    Episode 80: Reward = -458747.45, Avg Reward = -101468.45, Events = 27
+    Episode 90: Reward = 134155.51, Avg Reward = 25719.34, Events = 31
+    Episode 100: Reward = -12710.99, Avg Reward = 15132.52, Events = 23
+
+[20250811_114952] Analysis for SUZLON.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for SUZLON ENERGY LIMITED (SUZLON.NS): NEUTRAL
+Current Price: Rs.63.99
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0204 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Specialty Industrial Machinery
+
+Prediction Days: 30
+Current Price (USD): 0.73
+Predicted Price (USD): 65.28577856591501
+Predicted Change (%): 8843.26
+Confidence Score: -0.023823618467661234
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.29060998658010795
+  Average Reward: 22401.490931157172
+  Average Events/Episode: 30.74
+  Actions Distribution:
+    hold: 0.3684
+    buy: 0.1908
+    sell: 0.4408
+  RL Epoch Logs:
+    Episode 10: Reward = -33164.78, Avg Reward = 17370.99, Events = 26
+    Episode 20: Reward = 109907.65, Avg Reward = 81403.15, Events = 39
+    Episode 30: Reward = -93185.01, Avg Reward = 13187.79, Events = 33
+    Episode 40: Reward = 3675.12, Avg Reward = -1435.60, Events = 32
+    Episode 50: Reward = 147483.49, Avg Reward = 56949.47, Events = 25
+    Episode 60: Reward = -66578.42, Avg Reward = -34355.85, Events = 35
+    Episode 70: Reward = 44603.59, Avg Reward = 16803.18, Events = 36
+    Episode 80: Reward = -46245.02, Avg Reward = 44149.37, Events = 31
+    Episode 90: Reward = 14716.09, Avg Reward = 12397.33, Events = 24
+    Episode 100: Reward = 190608.76, Avg Reward = 17545.08, Events = 38
+
+[20250811_115005] Analysis for SUZLON.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for SUZLON ENERGY LIMITED (SUZLON.NS): NEUTRAL
+Current Price: Rs.63.95
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0204 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Specialty Industrial Machinery
+
+Prediction Days: 30
+Current Price (USD): 0.73
+Predicted Price (USD): 64.4322301082891
+Predicted Change (%): 8726.33
+Confidence Score: 0.025867053698302334
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.6573513494004728
+  Average Reward: 19185.278868294663
+  Average Events/Episode: 30.51
+  Actions Distribution:
+    hold: 0.4474
+    buy: 0.3487
+    sell: 0.2039
+  RL Epoch Logs:
+    Episode 10: Reward = 171756.14, Avg Reward = 36443.99, Events = 27
+    Episode 20: Reward = 9388.22, Avg Reward = 46923.18, Events = 37
+    Episode 30: Reward = 56707.63, Avg Reward = 27705.74, Events = 28
+    Episode 40: Reward = -16367.79, Avg Reward = -9417.49, Events = 35
+    Episode 50: Reward = -63040.47, Avg Reward = 11849.13, Events = 32
+    Episode 60: Reward = -70026.26, Avg Reward = -8830.67, Events = 38
+    Episode 70: Reward = -37092.55, Avg Reward = 29073.24, Events = 32
+    Episode 80: Reward = -67299.99, Avg Reward = -3440.57, Events = 41
+    Episode 90: Reward = 26924.34, Avg Reward = 26331.99, Events = 29
+    Episode 100: Reward = 219339.04, Avg Reward = 35214.26, Events = 31
+
+[20250811_115402] Analysis for JSWSTEEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for JSW STEEL LIMITED (JSWSTEEL.NS): NEUTRAL
+Current Price: Rs.1052.50
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0101 (higher values indicate higher risk)
+- Sector: Basic Materials
+- Industry: Steel
+
+Prediction Days: 30
+Current Price (USD): 12.02
+Predicted Price (USD): 1053.1173533244946
+Predicted Change (%): 8661.38
+Confidence Score: -0.26617577528118286
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: SELL
+  Performance (%): -26.077143081431032
+  Average Reward: 24769.04547466703
+  Average Events/Episode: 30.94
+  Actions Distribution:
+    hold: 0.1987
+    buy: 0.3974
+    sell: 0.4038
+  RL Epoch Logs:
+    Episode 10: Reward = 932486.72, Avg Reward = 451046.03, Events = 21
+    Episode 20: Reward = 506349.11, Avg Reward = 708584.65, Events = 21
+    Episode 30: Reward = 575316.09, Avg Reward = 115815.43, Events = 30
+    Episode 40: Reward = -76073.79, Avg Reward = -597309.54, Events = 34
+    Episode 50: Reward = -31464.83, Avg Reward = -345449.82, Events = 35
+    Episode 60: Reward = 1767263.91, Avg Reward = 416304.56, Events = 30
+    Episode 70: Reward = 1378126.69, Avg Reward = 99665.32, Events = 30
+    Episode 80: Reward = -2118979.80, Avg Reward = -1026798.26, Events = 37
+    Episode 90: Reward = 185962.95, Avg Reward = 820633.74, Events = 34
+    Episode 100: Reward = 1566037.77, Avg Reward = -394801.65, Events = 29
+
+[20250811_115403] Analysis for JSWSTEEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for JSW STEEL LIMITED (JSWSTEEL.NS): NEUTRAL
+Current Price: Rs.1052.50
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0101 (higher values indicate higher risk)
+- Sector: Basic Materials
+- Industry: Steel
+
+Prediction Days: 30
+Current Price (USD): 12.02
+Predicted Price (USD): 1054.9003705278758
+Predicted Change (%): 8676.21
+Confidence Score: -0.02880832126658328
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: SELL
+  Performance (%): -26.499134076208197
+  Average Reward: -1397.6287803916587
+  Average Events/Episode: 30.49
+  Actions Distribution:
+    hold: 0.2756
+    buy: 0.4423
+    sell: 0.2821
+  RL Epoch Logs:
+    Episode 10: Reward = 44946.07, Avg Reward = -517107.44, Events = 36
+    Episode 20: Reward = -1102843.43, Avg Reward = 596445.65, Events = 37
+    Episode 30: Reward = 1907372.82, Avg Reward = -11909.99, Events = 30
+    Episode 40: Reward = -813807.20, Avg Reward = -854907.55, Events = 34
+    Episode 50: Reward = 171904.50, Avg Reward = 717587.64, Events = 25
+    Episode 60: Reward = 2293684.90, Avg Reward = 551991.95, Events = 31
+    Episode 70: Reward = -2273240.89, Avg Reward = -669070.79, Events = 30
+    Episode 80: Reward = 364370.37, Avg Reward = -115229.85, Events = 24
+    Episode 90: Reward = 1288206.32, Avg Reward = -134025.00, Events = 31
+    Episode 100: Reward = 1794517.86, Avg Reward = 422249.10, Events = 26
+
+[20250811_115826] Analysis for GAIL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for GAIL (INDIA) LTD (GAIL.NS): NEUTRAL
+Current Price: Rs.170.40
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0126 (higher values indicate higher risk)
+- Sector: Utilities
+- Industry: Utilities - Regulated Gas
+
+Prediction Days: 30
+Current Price (USD): 1.95
+Predicted Price (USD): 170.52110209795148
+Predicted Change (%): 8644.67
+Confidence Score: 0.02071005489044131
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.37273855931877914
+  Average Reward: 49461.673171386945
+  Average Events/Episode: 32.57
+  Actions Distribution:
+    hold: 0.4286
+    buy: 0.4037
+    sell: 0.1677
+  RL Epoch Logs:
+    Episode 10: Reward = 240098.61, Avg Reward = 136152.63, Events = 29
+    Episode 20: Reward = -199253.08, Avg Reward = 114727.03, Events = 35
+    Episode 30: Reward = -205902.04, Avg Reward = -162768.83, Events = 41
+    Episode 40: Reward = 20803.94, Avg Reward = 194847.77, Events = 39
+    Episode 50: Reward = 116477.11, Avg Reward = 46092.47, Events = 32
+    Episode 60: Reward = 230172.70, Avg Reward = -119341.24, Events = 36
+    Episode 70: Reward = 174657.55, Avg Reward = 104328.84, Events = 35
+    Episode 80: Reward = 5645.14, Avg Reward = 26661.56, Events = 28
+    Episode 90: Reward = -252678.57, Avg Reward = -90003.95, Events = 31
+    Episode 100: Reward = -27154.18, Avg Reward = 243920.44, Events = 39
+
+[20250811_115827] Analysis for GAIL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for GAIL (INDIA) LTD (GAIL.NS): NEUTRAL
+Current Price: Rs.170.40
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0126 (higher values indicate higher risk)
+- Sector: Utilities
+- Industry: Utilities - Regulated Gas
+
+Prediction Days: 30
+Current Price (USD): 1.95
+Predicted Price (USD): 173.47987782932503
+Predicted Change (%): 8796.40
+Confidence Score: 0.016983618346985696
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.2855156555776194
+  Average Reward: -10952.873361252821
+  Average Events/Episode: 32.08
+  Actions Distribution:
+    hold: 0.6522
+    buy: 0.1118
+    sell: 0.2360
+  RL Epoch Logs:
+    Episode 10: Reward = -161453.50, Avg Reward = -120646.79, Events = 30
+    Episode 20: Reward = 576547.10, Avg Reward = 12735.55, Events = 27
+    Episode 30: Reward = -290914.59, Avg Reward = -37265.14, Events = 39
+    Episode 40: Reward = -27981.86, Avg Reward = -45019.67, Events = 33
+    Episode 50: Reward = 36960.52, Avg Reward = 57031.69, Events = 22
+    Episode 60: Reward = -270776.03, Avg Reward = -15280.83, Events = 33
+    Episode 70: Reward = 271432.51, Avg Reward = 20338.62, Events = 29
+    Episode 80: Reward = -84538.38, Avg Reward = -68651.94, Events = 35
+    Episode 90: Reward = -416053.18, Avg Reward = 89502.91, Events = 32
+    Episode 100: Reward = 36887.68, Avg Reward = -2273.13, Events = 34
+
+[20250811_120238] Analysis for WIPRO.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for WIPRO LTD (WIPRO.NS): NEUTRAL
+Current Price: Rs.240.44
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0134 (higher values indicate higher risk)
+- Sector: Technology
+- Industry: Information Technology Services
+
+Prediction Days: 30
+Current Price (USD): 2.75
+Predicted Price (USD): 238.59461771571455
+Predicted Change (%): 8576.17
+Confidence Score: -0.1265326181477704
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 2.8456660281724764
+  Average Reward: 32781.49412145646
+  Average Events/Episode: 32.5
+  Actions Distribution:
+    hold: 0.4364
+    buy: 0.0909
+    sell: 0.4727
+  RL Epoch Logs:
+    Episode 10: Reward = -676966.55, Avg Reward = 22284.50, Events = 37
+    Episode 20: Reward = 37649.52, Avg Reward = -32915.90, Events = 27
+    Episode 30: Reward = 427093.28, Avg Reward = 42333.57, Events = 29
+    Episode 40: Reward = 494049.71, Avg Reward = 164336.57, Events = 32
+    Episode 50: Reward = 143600.29, Avg Reward = 67092.69, Events = 37
+    Episode 60: Reward = 388536.83, Avg Reward = 151237.38, Events = 29
+    Episode 70: Reward = 612724.07, Avg Reward = -117250.79, Events = 30
+    Episode 80: Reward = -925660.94, Avg Reward = 146627.04, Events = 34
+    Episode 90: Reward = -141235.80, Avg Reward = -41382.72, Events = 30
+    Episode 100: Reward = 158632.15, Avg Reward = -74547.39, Events = 35
+
+[20250811_120240] Analysis for WIPRO.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for WIPRO LTD (WIPRO.NS): NEUTRAL
+Current Price: Rs.240.47
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0134 (higher values indicate higher risk)
+- Sector: Technology
+- Industry: Information Technology Services
+
+Prediction Days: 30
+Current Price (USD): 2.75
+Predicted Price (USD): 238.805008946002
+Predicted Change (%): 8583.82
+Confidence Score: -0.06338611666667959
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.6266922836331069
+  Average Reward: -7172.131545422161
+  Average Events/Episode: 33.06
+  Actions Distribution:
+    hold: 0.1273
+    buy: 0.3818
+    sell: 0.4909
+  RL Epoch Logs:
+    Episode 10: Reward = -308843.47, Avg Reward = -96934.58, Events = 39
+    Episode 20: Reward = 757332.47, Avg Reward = -68880.53, Events = 35
+    Episode 30: Reward = 64006.13, Avg Reward = 81034.48, Events = 36
+    Episode 40: Reward = -305221.98, Avg Reward = -742.22, Events = 29
+    Episode 50: Reward = 50170.51, Avg Reward = 79652.59, Events = 32
+    Episode 60: Reward = -74700.96, Avg Reward = -35002.14, Events = 28
+    Episode 70: Reward = -1117561.78, Avg Reward = -202184.32, Events = 30
+    Episode 80: Reward = 1045903.50, Avg Reward = 270286.85, Events = 34
+    Episode 90: Reward = 119887.81, Avg Reward = -142126.66, Events = 28
+    Episode 100: Reward = -133624.13, Avg Reward = 43175.21, Events = 35
+
+[20250811_120714] Analysis for BHEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHEL (BHEL.NS): NEUTRAL
+Current Price: Rs.222.28
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0194 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Specialty Industrial Machinery
+
+Prediction Days: 30
+Current Price (USD): 2.54
+Predicted Price (USD): 230.53119650575346
+Predicted Change (%): 8976.03
+Confidence Score: -0.08163728902573886
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -1.7763049000222526
+  Average Reward: 20046.053783505293
+  Average Events/Episode: 35.44
+  Actions Distribution:
+    hold: 0.3077
+    buy: 0.0828
+    sell: 0.6095
+  RL Epoch Logs:
+    Episode 10: Reward = -291484.18, Avg Reward = 39285.06, Events = 28
+    Episode 20: Reward = -111939.91, Avg Reward = -86632.95, Events = 23
+    Episode 30: Reward = -620113.73, Avg Reward = 69647.54, Events = 36
+    Episode 40: Reward = -404309.41, Avg Reward = -147755.70, Events = 50
+    Episode 50: Reward = -256185.61, Avg Reward = -104476.69, Events = 41
+    Episode 60: Reward = -24787.04, Avg Reward = -52792.37, Events = 37
+    Episode 70: Reward = -81048.15, Avg Reward = 164117.22, Events = 37
+    Episode 80: Reward = -382581.99, Avg Reward = 49690.45, Events = 41
+    Episode 90: Reward = -194311.19, Avg Reward = 244610.21, Events = 27
+    Episode 100: Reward = -10071.05, Avg Reward = 24767.76, Events = 40
+
+[20250811_120715] Analysis for BHEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHEL (BHEL.NS): NEUTRAL
+Current Price: Rs.222.29
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0194 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Specialty Industrial Machinery
+
+Prediction Days: 30
+Current Price (USD): 2.54
+Predicted Price (USD): 224.0102719238231
+Predicted Change (%): 8719.30
+Confidence Score: -0.15632004577815706
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -3.1478769422149053
+  Average Reward: -47416.77668393447
+  Average Events/Episode: 33.94
+  Actions Distribution:
+    hold: 0.4260
+    buy: 0.1243
+    sell: 0.4497
+  RL Epoch Logs:
+    Episode 10: Reward = -726861.53, Avg Reward = -151867.02, Events = 33
+    Episode 20: Reward = 224036.41, Avg Reward = -14924.52, Events = 33
+    Episode 30: Reward = -238911.62, Avg Reward = -27125.47, Events = 34
+    Episode 40: Reward = -34862.11, Avg Reward = -131953.13, Events = 24
+    Episode 50: Reward = -462731.23, Avg Reward = -99139.22, Events = 33
+    Episode 60: Reward = 649195.53, Avg Reward = 2726.89, Events = 38
+    Episode 70: Reward = 436368.76, Avg Reward = 43205.04, Events = 38
+    Episode 80: Reward = 1071.28, Avg Reward = -140708.92, Events = 28
+    Episode 90: Reward = 412361.40, Avg Reward = 140456.71, Events = 32
+    Episode 100: Reward = -121116.45, Avg Reward = -94838.12, Events = 31
+
+[20250812_110703] Analysis for BDL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT DYNAMICS LIMITED (BDL.NS): NEUTRAL
+Current Price: Rs.1482.80
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0180 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Aerospace & Defense
+
+Prediction Days: 30
+Current Price (USD): 16.92
+Predicted Price (USD): 1470.1040284393337
+Predicted Change (%): 8588.56
+Confidence Score: 0.0338559605276747
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 43.80279099546804
+  Average Reward: 3228964.0788211944
+  Average Events/Episode: 95.13
+  Actions Distribution:
+    hold: 0.1846
+    buy: 0.3112
+    sell: 0.5041
+  RL Epoch Logs:
+    Episode 10: Reward = -7842753.89, Avg Reward = 8307886.07, Events = 84
+    Episode 20: Reward = 4080852.62, Avg Reward = 2989220.08, Events = 87
+    Episode 30: Reward = 2675049.47, Avg Reward = 2906866.11, Events = 88
+    Episode 40: Reward = 17023882.99, Avg Reward = 6041907.48, Events = 98
+    Episode 50: Reward = -906443.77, Avg Reward = 1240872.73, Events = 113
+    Episode 60: Reward = 14346225.56, Avg Reward = 417269.00, Events = 103
+    Episode 70: Reward = 2977361.93, Avg Reward = 2288718.13, Events = 108
+    Episode 80: Reward = 14922776.77, Avg Reward = 2795158.78, Events = 123
+    Episode 90: Reward = -4445306.76, Avg Reward = -638409.34, Events = 91
+    Episode 100: Reward = 8438055.99, Avg Reward = 5940151.74, Events = 98
+
+[20250812_111400] Analysis for BHEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHEL (BHEL.NS): NEUTRAL
+Current Price: Rs.223.12
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0196 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Specialty Industrial Machinery
+
+Prediction Days: 30
+Current Price (USD): 2.55
+Predicted Price (USD): 218.84650563718571
+Predicted Change (%): 8482.22
+Confidence Score: -0.0035231906676627123
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -3.6822358069072214
+  Average Reward: 176152.04018544487
+  Average Events/Episode: 97.57
+  Actions Distribution:
+    hold: 0.5389
+    buy: 0.1660
+    sell: 0.2951
+  RL Epoch Logs:
+    Episode 10: Reward = -2223267.93, Avg Reward = 499306.79, Events = 94
+    Episode 20: Reward = 379551.79, Avg Reward = 397118.15, Events = 104
+    Episode 30: Reward = -1973079.27, Avg Reward = 286968.90, Events = 90
+    Episode 40: Reward = 810818.12, Avg Reward = 768948.30, Events = 85
+    Episode 50: Reward = -3158655.88, Avg Reward = 229800.84, Events = 94
+    Episode 60: Reward = 749042.51, Avg Reward = 90980.30, Events = 102
+    Episode 70: Reward = 1297573.17, Avg Reward = -438703.11, Events = 89
+    Episode 80: Reward = -921353.50, Avg Reward = -108302.66, Events = 101
+    Episode 90: Reward = 332164.00, Avg Reward = 592362.45, Events = 99
+    Episode 100: Reward = -4505833.23, Avg Reward = -556959.54, Events = 111
+
+[20250812_112042] Analysis for WIPRO.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for WIPRO LTD (WIPRO.NS): NEUTRAL
+Current Price: Rs.243.27
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0136 (higher values indicate higher risk)
+- Sector: Technology
+- Industry: Information Technology Services
+
+Prediction Days: 30
+Current Price (USD): 2.78
+Predicted Price (USD): 237.21131602059918
+Predicted Change (%): 8432.78
+Confidence Score: -0.12076037680204044
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 7.089088849677544
+  Average Reward: 177426.00495728606
+  Average Events/Episode: 98.66
+  Actions Distribution:
+    hold: 0.1414
+    buy: 0.7495
+    sell: 0.1091
+  RL Epoch Logs:
+    Episode 10: Reward = 2174705.19, Avg Reward = 805264.47, Events = 109
+    Episode 20: Reward = 2422199.60, Avg Reward = -114791.29, Events = 100
+    Episode 30: Reward = -100210.66, Avg Reward = -382789.12, Events = 102
+    Episode 40: Reward = -890439.10, Avg Reward = 514256.76, Events = 88
+    Episode 50: Reward = 3753271.05, Avg Reward = 357081.00, Events = 114
+    Episode 60: Reward = -2417691.16, Avg Reward = -198142.92, Events = 88
+    Episode 70: Reward = 860168.28, Avg Reward = 245489.34, Events = 109
+    Episode 80: Reward = -1459761.22, Avg Reward = 158716.63, Events = 92
+    Episode 90: Reward = -119059.17, Avg Reward = -39646.15, Events = 106
+    Episode 100: Reward = 1756175.52, Avg Reward = 428821.34, Events = 115
+
+[20250812_112739] Analysis for GAIL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for GAIL (INDIA) LTD (GAIL.NS): NEUTRAL
+Current Price: Rs.174.26
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0129 (higher values indicate higher risk)
+- Sector: Utilities
+- Industry: Utilities - Regulated Gas
+
+Prediction Days: 30
+Current Price (USD): 1.99
+Predicted Price (USD): 170.35405002199914
+Predicted Change (%): 8460.51
+Confidence Score: -0.026077298808381277
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.20583601571018514
+  Average Reward: 42779.545220828455
+  Average Events/Episode: 100.01
+  Actions Distribution:
+    hold: 0.5199
+    buy: 0.0040
+    sell: 0.4761
+  RL Epoch Logs:
+    Episode 10: Reward = -593854.29, Avg Reward = -485357.42, Events = 95
+    Episode 20: Reward = 443239.77, Avg Reward = -2078.55, Events = 91
+    Episode 30: Reward = 464270.13, Avg Reward = 361314.49, Events = 99
+    Episode 40: Reward = 242031.87, Avg Reward = 154283.43, Events = 110
+    Episode 50: Reward = -6936.55, Avg Reward = 161843.55, Events = 106
+    Episode 60: Reward = -442607.70, Avg Reward = 83915.50, Events = 100
+    Episode 70: Reward = -128297.06, Avg Reward = 13701.98, Events = 91
+    Episode 80: Reward = -237008.60, Avg Reward = 78408.17, Events = 110
+    Episode 90: Reward = 38068.90, Avg Reward = 124921.66, Events = 97
+    Episode 100: Reward = 32.00, Avg Reward = -63157.37, Events = 112
+
+[20250812_113453] Analysis for JSWSTEEL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for JSW STEEL LIMITED (JSWSTEEL.NS): NEUTRAL
+Current Price: Rs.1054.70
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0100 (higher values indicate higher risk)
+- Sector: Basic Materials
+- Industry: Steel
+
+Prediction Days: 30
+Current Price (USD): 12.03
+Predicted Price (USD): 1040.8695696906434
+Predicted Change (%): 8552.28
+Confidence Score: 0.0023997033872334983
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 15.40420256463057
+  Average Reward: 1415867.5024923796
+  Average Events/Episode: 100.49
+  Actions Distribution:
+    hold: 0.5128
+    buy: 0.4479
+    sell: 0.0393
+  RL Epoch Logs:
+    Episode 10: Reward = 3340486.78, Avg Reward = -882467.56, Events = 92
+    Episode 20: Reward = -18699170.75, Avg Reward = -3355664.44, Events = 100
+    Episode 30: Reward = 9105329.96, Avg Reward = 1876113.36, Events = 105
+    Episode 40: Reward = 7175390.06, Avg Reward = 1216940.75, Events = 103
+    Episode 50: Reward = 2981903.28, Avg Reward = 2867126.87, Events = 101
+    Episode 60: Reward = 4401966.13, Avg Reward = 6419356.85, Events = 91
+    Episode 70: Reward = 6860989.67, Avg Reward = -2286401.99, Events = 102
+    Episode 80: Reward = 3696860.31, Avg Reward = 3215096.81, Events = 105
+    Episode 90: Reward = 5642673.91, Avg Reward = 1974773.43, Events = 97
+    Episode 100: Reward = -10317087.41, Avg Reward = 3113800.94, Events = 97
+
+[20250812_114135] Analysis for HDFCBANK.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for HDFC BANK LTD (HDFCBANK.NS): NEUTRAL
+Current Price: Rs.1979.10
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0080 (higher values indicate higher risk)
+- Sector: Financial Services
+- Industry: Banks - Regional
+
+Prediction Days: 30
+Current Price (USD): 22.58
+Predicted Price (USD): 1963.873896495954
+Predicted Change (%): 8597.40
+Confidence Score: -0.03675246675947208
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 34.372798976772174
+  Average Reward: 329849.814302647
+  Average Events/Episode: 103.68
+  Actions Distribution:
+    hold: 0.1417
+    buy: 0.0505
+    sell: 0.8078
+  RL Epoch Logs:
+    Episode 10: Reward = -14942201.05, Avg Reward = 4055418.25, Events = 109
+    Episode 20: Reward = -6111507.54, Avg Reward = -3345007.87, Events = 101
+    Episode 30: Reward = 13565592.21, Avg Reward = 3895581.05, Events = 92
+    Episode 40: Reward = -10166797.72, Avg Reward = -3263041.92, Events = 111
+    Episode 50: Reward = -4437656.87, Avg Reward = 344252.97, Events = 104
+    Episode 60: Reward = -6820426.56, Avg Reward = -461176.23, Events = 108
+    Episode 70: Reward = -6915156.18, Avg Reward = -2116723.80, Events = 93
+    Episode 80: Reward = 13392491.05, Avg Reward = 856093.78, Events = 96
+    Episode 90: Reward = -8176965.12, Avg Reward = 2772437.96, Events = 107
+    Episode 100: Reward = -3230507.10, Avg Reward = 560663.95, Events = 107

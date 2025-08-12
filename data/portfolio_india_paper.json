@@ -1,13 +1,13 @@
 {
-    "cash": 2321.9700000000007,
+    "cash": 13.860000000000639,
     "holdings": {
         "HDFCBANK.NS": {
             "qty": 1,
             "avg_price": 2015.7
         },
         "SUZLON.NS": {
-            "qty": 31,
-            "avg_price": 63.91
+            "qty": 36,
+            "avg_price": 63.92111111111111
         },
         "JSWSTEEL.NS": {
             "qty": 2,
@@ -20,9 +20,17 @@
         "WIPRO.NS": {
             "qty": 3,
             "avg_price": 242.14
+        },
+        "BHEL.NS": {
+            "qty": 2,
+            "avg_price": 223.73
+        },
+        "BDL.NS": {
+            "qty": 1,
+            "avg_price": 1540.7
         }
     },
     "starting_balance": 10000,
     "realized_pnl": 0,
-    "unrealized_pnl": -2.0400000000006173
+    "unrealized_pnl": -61.9700000000004
 }
