@@ -1,7 +1,8 @@
 {
-    "cash": 0,
+    "cash": 1000.0,
     "holdings": {},
-    "starting_balance": 0,
-    "realized_pnl": 0,
-    "unrealized_pnl": 0
+    "starting_balance": 1000.0,
+    "realized_pnl": 0.0,
+    "unrealized_pnl": 0.0,
+    "last_updated": "2025-08-13T14:09:29.340455"
 }

@@ -246,6 +246,16 @@ export const apiService = {
     }
   },
 
+  async syncLivePortfolio() {
+    try {
+      const response = await api.post('/live/sync');
+      return response.data;
+    } catch (error) {
+      console.error('Error syncing live portfolio:', error);
+      throw error;
+    }
+  },
+
   // Health Check
   async healthCheck() {
     try {

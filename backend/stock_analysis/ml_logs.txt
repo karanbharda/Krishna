@@ -3292,3 +3292,50 @@ Reinforcement Learning Results:
     Episode 80: Reward = 3038038.53, Avg Reward = -3088864.24, Events = 147
     Episode 90: Reward = -6734559.50, Avg Reward = -535085.60, Events = 136
     Episode 100: Reward = -3172071.38, Avg Reward = 6878799.12, Events = 151
+
+[20250813_142514] Analysis for KAJARIACER.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for KAJARIA CERAMICS LTD (KAJARIACER.NS): NEUTRAL
+Current Price: Rs.1271.70
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0194 (higher values indicate higher risk)
+- Sector: Industrials
+- Industry: Building Products & Equipment
+
+Prediction Days: 30
+Current Price (USD): 14.54
+Predicted Price (USD): 1256.7182747256809
+Predicted Change (%): 8543.18
+Confidence Score: -0.042682474703193085
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 7.397771129210873
+  Average Reward: 1413083.980622693
+  Average Events/Episode: 133.57
+  Actions Distribution:
+    hold: 0.5066
+    buy: 0.2216
+    sell: 0.2718
+  RL Epoch Logs:
+    Episode 10: Reward = -18105736.66, Avg Reward = 4090341.80, Events = 115
+    Episode 20: Reward = -17256458.62, Avg Reward = 1957329.09, Events = 136
+    Episode 30: Reward = 2163244.13, Avg Reward = -7452549.81, Events = 143
+    Episode 40: Reward = 22192173.71, Avg Reward = 7684050.40, Events = 125
+    Episode 50: Reward = 2127861.38, Avg Reward = 4959092.87, Events = 130
+    Episode 60: Reward = 16591889.77, Avg Reward = 1993931.13, Events = 138
+    Episode 70: Reward = 16327530.41, Avg Reward = -3718171.17, Events = 142
+    Episode 80: Reward = -4919629.13, Avg Reward = 5512099.01, Events = 147
+    Episode 90: Reward = 15483569.94, Avg Reward = 1104624.42, Events = 132
+    Episode 100: Reward = -5284821.09, Avg Reward = -1999907.93, Events = 109

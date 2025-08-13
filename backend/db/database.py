@@ -5,6 +5,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
+from pathlib import Path
 import json
 import os
 import logging
@@ -54,9 +55,19 @@ class Trade(Base):
     trade_metadata = Column(JSON)  # For additional trade data
     portfolio = relationship("Portfolio", back_populates="trades")
 
-def init_db(db_path: str = 'sqlite:///data/trading.db'):
+def _default_db_uri() -> str:
+    # Resolve to project root /data/trading.db regardless of working dir
+    backend_dir = Path(__file__).resolve().parents[1]
+    project_root = backend_dir.parent
+    data_dir = project_root / 'data'
+    data_dir.mkdir(parents=True, exist_ok=True)
+    return f"sqlite:///{(data_dir / 'trading.db').as_posix()}"
+
+
+def init_db(db_path: str | None = None):
     """Initialize the database and create tables"""
-    engine = create_engine(db_path)
+    db_uri = db_path if db_path else _default_db_uri()
+    engine = create_engine(db_uri)
     Base.metadata.create_all(engine)
     return engine
 
@@ -66,7 +77,7 @@ def create_session(engine):
     return Session()
 
 class DatabaseManager:
-    def __init__(self, db_path: str = 'sqlite:///data/trading.db'):
+    def __init__(self, db_path: str | None = None):
         self.engine = init_db(db_path)
         self.Session = sessionmaker(bind=self.engine)
     

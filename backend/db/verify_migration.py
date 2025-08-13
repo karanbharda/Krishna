@@ -2,8 +2,16 @@
 Script to verify migrated data
 """
 import os
+import sys
 from pathlib import Path
-from backend.db.database import DatabaseManager, Portfolio, Holding, Trade
+
+# Fix import paths
+current_dir = os.path.dirname(os.path.abspath(__file__))
+backend_dir = os.path.dirname(current_dir)
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
+from db.database import DatabaseManager, Portfolio, Holding, Trade
 
 def main():
     """Verify migrated data"""

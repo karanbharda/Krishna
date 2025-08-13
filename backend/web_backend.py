@@ -39,14 +39,22 @@ except ImportError as e:
     print("pip install fastapi uvicorn pydantic")
     sys.exit(1)
 
+# Fix import paths permanently
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
 # Import new components for live trading
 try:
     from portfolio_manager import DualPortfolioManager
     from dhan_client import DhanAPIClient
     from live_executor import LiveTradingExecutor
+    from dhan_sync_service import start_sync_service, stop_sync_service, get_sync_service
     LIVE_TRADING_AVAILABLE = True
+    logger.info("✅ Live trading components loaded successfully")
 except ImportError as e:
     print(f"Live trading components not available: {e}")
+    logger.error(f"❌ Live trading import failed: {e}")
     LIVE_TRADING_AVAILABLE = False
 
 # Architectural Fix: Graceful MCP dependency handling
@@ -1190,6 +1198,12 @@ class WebTradingBot:
                     # Return True because we successfully handled the failure by reverting
                     logger.info("Successfully reverted to paper mode after live trading failure")
                     return True
+                # Force an immediate sync from Dhan after switching to live
+                if self.live_executor:
+                    try:
+                        self.live_executor.sync_portfolio_with_dhan()
+                    except Exception as e:
+                        logger.error(f"Post-switch Dhan sync failed: {e}")
             else:
                 # Clear live trading components for paper mode
                 self.live_executor = None
@@ -1288,6 +1302,64 @@ class WebTradingBot:
         from datetime import datetime
 
         try:
+            # Live mode: prefer in-memory portfolio from LiveTradingExecutor (Dhan)
+            if self.config.get("mode", "paper") == "live" and getattr(self, "live_executor", None) and getattr(self.live_executor, "portfolio", None):
+                pf = self.live_executor.portfolio
+                cash = float(getattr(pf, "cash", 0.0))
+                starting_balance = float(getattr(pf, "starting_balance", cash))
+                raw_holdings = getattr(pf, "holdings", {}) or {}
+
+                # Normalize holdings to expected structure {ticker: {qty, avg_price}}
+                holdings = {}
+                for ticker, h in (raw_holdings.items() if isinstance(raw_holdings, dict) else []):
+                    qty = h.get("qty") if "qty" in h else h.get("quantity", h.get("Quantity", 0))
+                    avg_price = h.get("avg_price") if "avg_price" in h else h.get("avgPrice", h.get("avg_cost_price", h.get("avgCostPrice", 0)))
+                    current_price = h.get("current_price", h.get("currentPrice", avg_price))
+                    if qty and avg_price is not None:
+                        holdings[ticker] = {
+                            "qty": float(qty),
+                            "avg_price": float(avg_price),
+                            "currentPrice": float(current_price) if current_price is not None else float(avg_price)
+                        }
+
+                # Compute market value and P&L
+                current_market_value = sum(data["qty"] * data.get("currentPrice", data["avg_price"]) for data in holdings.values())
+                total_exposure = sum(data["qty"] * data["avg_price"] for data in holdings.values())
+                unrealized_pnl = current_market_value - total_exposure
+                total_value = cash + current_market_value
+
+                total_invested = total_exposure
+                cash_percentage = (cash / total_value) * 100 if total_value > 0 else 100
+                invested_percentage = (total_invested / total_value) * 100 if total_value > 0 else 0
+                unrealized_pnl_pct = (unrealized_pnl / total_invested) * 100 if total_invested > 0 else 0
+                realized_pnl = float(getattr(pf, "realized_pnl", 0.0))
+                realized_pnl_pct = (realized_pnl / starting_balance) * 100 if starting_balance > 0 else 0
+                total_return = unrealized_pnl + realized_pnl
+                total_return_pct = (total_return / starting_balance) * 100 if starting_balance > 0 else 0
+
+                return {
+                    "total_value": round(total_value, 2),
+                    "cash": round(cash, 2),
+                    "cash_percentage": round(cash_percentage, 2),
+                    "holdings": holdings,
+                    "total_invested": round(total_invested, 2),
+                    "invested_percentage": round(invested_percentage, 2),
+                    "current_holdings_value": round(current_market_value, 2),
+                    "total_return": round(total_return, 2),
+                    "total_return_pct": round(total_return_pct, 2),
+                    "unrealized_pnl": round(unrealized_pnl, 2),
+                    "unrealized_pnl_pct": round(unrealized_pnl_pct, 2),
+                    "realized_pnl": round(realized_pnl, 2),
+                    "realized_pnl_pct": round(realized_pnl_pct, 2),
+                    "total_exposure": round(total_exposure, 2),
+                    "exposure_ratio": round((total_exposure / total_value) * 100, 2) if total_value > 0 else 0,
+                    "profit_loss": round(total_return, 2),
+                    "profit_loss_pct": round(total_return_pct, 2),
+                    "positions": len(holdings),
+                    "trades_today": 0,
+                    "initial_balance": round(starting_balance, 2)
+                }
+
             # FIXED: Read from the correct Indian trading bot portfolio files
             # Use absolute path to data folder and current mode
             current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1805,8 +1877,30 @@ async def get_trades(limit: int = 10):
 
 @app.get("/api/portfolio/realtime")
 async def get_realtime_portfolio():
-    """Get real-time portfolio updates with current prices"""
+    """Get real-time portfolio updates with current prices and Dhan sync"""
     try:
+        # First, sync with Dhan account if in live mode
+        if trading_bot and trading_bot.config.get("mode") == "live":
+            try:
+                # Force sync with Dhan account to get latest balance
+                if hasattr(trading_bot, 'live_executor') and trading_bot.live_executor:
+                    sync_success = trading_bot.live_executor.sync_portfolio_with_dhan()
+                    if sync_success:
+                        logger.debug("Successfully synced with Dhan account during realtime update")
+                    else:
+                        logger.warning("Failed to sync with Dhan account during realtime update")
+                elif hasattr(trading_bot, 'dhan_client') and trading_bot.dhan_client:
+                    # Fallback: manually sync using dhan_client
+                    funds = trading_bot.dhan_client.get_funds()
+                    if funds:
+                        available_cash = funds.get('availabelBalance', 0.0)
+                        # Update portfolio manager if available
+                        if hasattr(trading_bot, 'portfolio_manager'):
+                            trading_bot.portfolio_manager.update_cash_balance(available_cash)
+                        logger.debug(f"Manually synced cash balance: ₹{available_cash}")
+            except Exception as e:
+                logger.warning(f"Error during Dhan sync in realtime update: {e}")
+
         if trading_bot:
             metrics = trading_bot.get_portfolio_metrics()
 
@@ -2336,11 +2430,20 @@ async def get_live_trading_status():
                         # Get account info
                         profile = trading_bot.dhan_client.get_profile()
                         funds = trading_bot.dhan_client.get_funds()
+                        # Normalize funds keys across variants
+                        def _funds_value(keys, default=0):
+                            for k in keys:
+                                if k in funds and funds.get(k) is not None:
+                                    return funds.get(k)
+                            return default
+
+                        available_cash = _funds_value(["availablecash", "availabelBalance", "availableBalance", "netAvailableMargin", "netAvailableCash"], 0)
+                        sod_limit = _funds_value(["sodlimit", "sodLimit", "openingBalance", "collateralMargin"], 0)
 
                         account_info = {
                             "client_id": profile.get("clientId", ""),
-                            "available_cash": funds.get("availablecash", 0),
-                            "used_margin": funds.get("sodlimit", 0) - funds.get("availablecash", 0)
+                            "available_cash": available_cash,
+                            "used_margin": sod_limit - available_cash
                         }
                 except Exception as e:
                     logger.error(f"Error getting live trading status: {e}")
@@ -2355,13 +2458,64 @@ async def get_live_trading_status():
             }
         else:
             return {
-                "available": True,
-                "mode": "paper",
-                "message": "Currently in paper trading mode"
+                "available": LIVE_TRADING_AVAILABLE,
+                "mode": trading_bot.config.get("mode") if trading_bot else "paper",
+                "dhan_connected": False,
+                "message": "Currently not in live mode"
             }
 
     except Exception as e:
         logger.error(f"Error getting live trading status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/live/sync")
+async def sync_live_portfolio():
+    """Force a Dhan sync and return a brief snapshot"""
+    try:
+        if not trading_bot or trading_bot.config.get("mode") != "live":
+            raise HTTPException(status_code=400, detail="Not in live mode")
+
+        # Use the sync service for immediate sync
+        sync_service = get_sync_service()
+        if sync_service:
+            success = sync_service.sync_once()
+            if not success:
+                raise HTTPException(status_code=502, detail="Failed to sync with Dhan using sync service")
+
+            # Return updated portfolio data
+            portfolio_data = trading_bot.get_portfolio_metrics() if trading_bot else {}
+            return {
+                "success": True,
+                "message": "Portfolio synced successfully",
+                "data": portfolio_data,
+                "last_sync": sync_service.last_sync_time.isoformat() if sync_service.last_sync_time else None,
+                "balance": sync_service.last_known_balance
+            }
+
+        # Fallback to live executor if sync service not available
+        if not trading_bot.live_executor:
+            raise HTTPException(status_code=503, detail="Live executor not initialized")
+        ok = trading_bot.live_executor.sync_portfolio_with_dhan()
+        if not ok:
+            raise HTTPException(status_code=502, detail="Failed to sync with Dhan")
+        pf = trading_bot.live_executor.portfolio
+        holdings_value = 0.0
+        try:
+            if isinstance(pf.holdings, dict):
+                holdings_value = sum(h.get("total_value", 0.0) for h in pf.holdings.values())
+        except Exception:
+            holdings_value = 0.0
+        total_value = float(getattr(pf, "cash", 0.0)) + float(holdings_value)
+        return {
+            "synced": True,
+            "cash": float(getattr(pf, "cash", 0.0)),
+            "holdings_value": float(holdings_value),
+            "total_value": float(total_value)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Live sync error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # ============================================================================
@@ -2921,6 +3075,18 @@ async def startup_event():
             trading_bot._pending_async_inits = []
 
         logger.info("Trading bot initialized on startup")
+
+        # Start Dhan sync service if in live mode
+        if LIVE_TRADING_AVAILABLE and trading_bot and trading_bot.config.get("mode") == "live":
+            try:
+                sync_service = start_sync_service(sync_interval=30)  # Sync every 30 seconds
+                if sync_service:
+                    logger.info("🚀 Dhan real-time sync service started (30s interval)")
+                else:
+                    logger.warning("Failed to start Dhan sync service")
+            except Exception as sync_error:
+                logger.error(f"Error starting Dhan sync service: {sync_error}")
+
     except Exception as e:
         logger.error(f"Error initializing bot on startup: {e}")
         # Integration Fix: Enhanced error recovery with multiple fallback levels
@@ -3006,6 +3172,14 @@ async def shutdown_event():
     logger.info("Starting graceful shutdown...")
 
     try:
+        # Stop Dhan sync service
+        if LIVE_TRADING_AVAILABLE:
+            try:
+                stop_sync_service()
+                logger.info("Dhan sync service stopped")
+            except Exception as e:
+                logger.error(f"Error stopping Dhan sync service: {e}")
+
         # Stop trading bot
         if trading_bot:
             trading_bot.stop()

@@ -92,6 +92,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [liveStatus, setLiveStatus] = useState(null);
+  const [mcpAvailable, setMcpAvailable] = useState(false);
 
   // Initialize app and load data
   useEffect(() => {
@@ -106,6 +107,7 @@ function App() {
       setLoading(true);
       await loadDataFromBackend();
       await loadLiveStatus();
+      await checkMcpStatus();
 
       // Add welcome message if no messages exist
       if (botData.chatMessages.length === 0) {
@@ -156,6 +158,7 @@ function App() {
     try {
       await loadDataFromBackend();
       await loadLiveStatus();
+      await checkMcpStatus();
     } catch (error) {
       console.error('Error refreshing data:', error);
     }
@@ -168,6 +171,15 @@ function App() {
     } catch (error) {
       console.error('Error loading live status:', error);
       setLiveStatus(null);
+    }
+  };
+
+  const checkMcpStatus = async () => {
+    try {
+      const status = await apiService.getMcpStatus();
+      setMcpAvailable(Boolean(status?.mcp_available && status?.server_initialized !== false));
+    } catch (error) {
+      setMcpAvailable(false);
     }
   };
 
@@ -248,7 +260,37 @@ function App() {
       }));
 
       setLoading(true);
-      const response = await apiService.sendChatMessage(message);
+      let response;
+
+      // MCP-aware routing
+      const lower = message.toLowerCase();
+      const isMarketQuery = lower.includes('analyze') || lower.includes('stock') || lower.includes('price');
+      const analyzeCmd = lower.startsWith('/analyze');
+
+      if (mcpAvailable && (isMarketQuery || analyzeCmd)) {
+        if (analyzeCmd) {
+          const parts = message.split(/\s+/);
+          const symbol = parts[1] || 'NSE:RELIANCE-EQ';
+          try {
+            const analysis = await apiService.mcpAnalyzeMarket({
+              symbol,
+              timeframe: '1D',
+              analysis_type: 'comprehensive'
+            });
+            response = {
+              response: `Recommendation: ${analysis.recommendation}\nConfidence: ${(analysis.confidence * 100).toFixed(2)}%\nCurrent: ₹${analysis.current_price?.toFixed?.(2) ?? analysis.current_price}\nTarget: ₹${analysis.target_price?.toFixed?.(2) ?? analysis.target_price}\nStop Loss: ₹${analysis.stop_loss?.toFixed?.(2) ?? analysis.stop_loss}\nReasoning: ${analysis.reasoning || 'N/A'}`,
+              timestamp: new Date().toISOString()
+            };
+          } catch (err) {
+            // Fall back to chat if analysis fails
+            response = await apiService.mcpChat({ message, context: { type: 'market_analysis' } });
+          }
+        } else {
+          response = await apiService.mcpChat({ message, context: { type: 'market_analysis' } });
+        }
+      } else {
+        response = await apiService.sendChatMessage(message);
+      }
 
       // Add bot response
       setBotData(prev => ({
@@ -363,12 +405,7 @@ function App() {
                   onRemoveTicker={removeTicker}
                 />
               } />
-              <Route path="/chat" element={
-                <ChatAssistant
-                  messages={botData.chatMessages}
-                  onSendMessage={sendChatMessage}
-                />
-              } />
+              <Route path="/chat" element={<ChatAssistant messages={botData.chatMessages} onSendMessage={sendChatMessage} />} />
             </Routes>
           </TabContent>
         </MainContent>

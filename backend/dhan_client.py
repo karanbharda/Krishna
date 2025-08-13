@@ -270,12 +270,28 @@ class DhanAPIClient:
         return symbol_mapping.get(symbol.upper(), symbol.upper())
     
     def get_market_status(self) -> Dict:
-        """Get current market status - Note: This endpoint may not exist in Dhan API v2"""
+        """Get current market status using profile endpoint as fallback"""
         try:
-            # Try profile endpoint as a fallback to check API connectivity
+            # Use profile endpoint to check API connectivity since marketstatus doesn't exist in v2
             profile = self._make_request('GET', '/v2/profile')
             # If profile works, assume market is accessible
-            return {"marketStatus": "OPEN" if profile else "UNKNOWN"}
+            if profile:
+                # Check if it's during market hours (9:15 AM to 3:30 PM IST)
+                from datetime import datetime, time
+                import pytz
+
+                ist = pytz.timezone('Asia/Kolkata')
+                now = datetime.now(ist)
+                market_open = time(9, 15)  # 9:15 AM
+                market_close = time(15, 30)  # 3:30 PM
+
+                # Check if it's a weekday and within market hours
+                if now.weekday() < 5 and market_open <= now.time() <= market_close:
+                    return {"marketStatus": "OPEN"}
+                else:
+                    return {"marketStatus": "CLOSED"}
+            else:
+                return {"marketStatus": "UNKNOWN"}
         except Exception as e:
             logger.error(f"Failed to get market status: {e}")
             return {"marketStatus": "UNKNOWN"}

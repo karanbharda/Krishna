@@ -6,11 +6,18 @@ Manages portfolios using SQLite database with LangGraph checkpoint system
 
 import logging
 import os
+import sys
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from copy import deepcopy
 import json
-from backend.db.database import DatabaseManager, Portfolio, Holding, Trade
+
+# Fix import paths permanently
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
+from db.database import DatabaseManager, Portfolio, Holding, Trade
 
 logger = logging.getLogger(__name__)
 
@@ -18,12 +25,14 @@ class DualPortfolioManager:
     """Manages separate portfolios for paper and live trading using SQLite database"""
     
     def __init__(self, data_dir: str = "data"):
-        self.data_dir = data_dir
+        # Normalize to project-root data directory
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.data_dir = os.path.join(project_root, data_dir)
         self.current_mode = "paper"  # Default mode
         self.trade_callbacks = []  # List of callbacks to notify on trade execution
         
         # Initialize database
-        db_path = f'sqlite:///{os.path.join(data_dir, "trading.db")}'
+        db_path = f'sqlite:///{os.path.join(self.data_dir, "trading.db")}'
         self.db = DatabaseManager(db_path)
         
         # Config files (keeping configs in JSON for flexibility)
@@ -37,7 +46,7 @@ class DualPortfolioManager:
         self.config_data = {}
         
         # Ensure data directory exists
-        os.makedirs(data_dir, exist_ok=True)
+        os.makedirs(self.data_dir, exist_ok=True)
         
         # Initialize database and load initial mode
         self._initialize_database()

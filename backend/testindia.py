@@ -50,6 +50,12 @@ import sys
 import signal
 import queue
 import logging.handlers
+
+# Fix import paths permanently - ensure backend modules can be imported
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
 from typing import Dict, List, Optional, Union, Any
 
 # Set up logging
@@ -153,10 +159,11 @@ class FyersTickerMapper:
 
             # Get master data for NSE equity instruments
             try:
-                # Fyers master data endpoint for NSE equity
-                master_data = self.fyers_client.master_data()
+                # Fyers doesn't have master_data() method - skip this approach
+                logger.info("Skipping Fyers master data - method not available")
+                master_data = None
 
-                if master_data and master_data.get('s') == 'ok':
+                if False:  # Disable this block since master_data() doesn't exist
                     instruments = master_data.get('d', [])
                     logger.info(f"Received {len(instruments)} instruments from Fyers")
 
@@ -192,6 +199,7 @@ class FyersTickerMapper:
 
             except Exception as e:
                 logger.error(f"Error fetching Fyers master data: {e}")
+                logger.info("Fyers master data not available - using fallback approach")
 
                 # Fallback: Try to get quotes for known major stocks to build partial mapping
                 logger.info("Attempting fallback approach with major stock quotes...")
@@ -1476,10 +1484,15 @@ class VirtualPortfolio:
 
         # Initialize Dhan API only if we have credentials
         if config.get("dhan_client_id") and config.get("dhan_access_token"):
-            self.api = dhanhq(
-                client_id=config["dhan_client_id"],
-                access_token=config["dhan_access_token"]
-            )
+            try:
+                self.api = dhanhq(
+                    client_id=config["dhan_client_id"],
+                    access_token=config["dhan_access_token"]
+                )
+                logger.info("Dhan API initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize Dhan API: {e}")
+                self.api = None
         else:
             self.api = None
             logger.warning("Dhan API credentials not provided. Running in simulation mode.")
@@ -1647,6 +1660,12 @@ class VirtualPortfolio:
 
     def sell(self, asset, qty, price):
         """Execute a sell order in live or paper trading mode."""
+        # Enforce global sell disable flag
+        enable_sell = str(os.getenv("ENABLE_SELL", "true")).lower() not in ("false", "0", "no", "off")
+        if not enable_sell:
+            logger.info("Sell disabled by configuration (ENABLE_SELL=false). Skipping sell for %s", asset)
+            return False
+
         if qty <= 0:
             logger.warning(f"Invalid sell quantity: {qty} for {asset}")
             return False
@@ -2077,6 +2096,13 @@ class TradingExecutor:
 
     def execute_trade(self, action, ticker, qty, price, stop_loss=None, take_profit=None):
         try:
+            # Enforce global sell disable flag
+            if action.upper() == "SELL":
+                enable_sell = str(os.getenv("ENABLE_SELL", "true")).lower() not in ("false", "0", "no", "off")
+                if not enable_sell:
+                    logger.info("Sell disabled by configuration (ENABLE_SELL=false). Skipping sell for %s", ticker)
+                    return {"success": False, "message": "Sell disabled by configuration"}
+
             # Apply risk management rules with detailed logging
             portfolio_value = self.portfolio.get_value({ticker: {"price": price}})
             max_trade_value = portfolio_value * self.max_capital_per_trade
@@ -5302,7 +5328,10 @@ class StockTradingBot:
         # Get moving averages from technical indicators
         ma_20 = technical_indicators.get("SMA_20", current_ticker_price)
         ma_50 = technical_indicators.get("SMA_50", current_ticker_price)
-        
+
+        # Get RSI value early to avoid undefined variable error
+        rsi_value = technical_indicators.get("rsi", 50)
+
         # Get volume data
         volume_data = history.get("Volume", pd.Series())
         volume_sma = volume_data.rolling(window=20).mean().iloc[-1] if not volume_data.empty else None
@@ -5330,8 +5359,7 @@ class StockTradingBot:
         else:
             signal_strengths["ml"] = 0.0
 
-        # RSI signal strength (distance from oversold)
-        rsi_value = technical_indicators.get("rsi", 50)
+        # RSI signal strength (distance from oversold) - rsi_value already defined above
         if rsi_value < 40:
             signal_strengths["rsi"] = min((40 - rsi_value) / 20, 1.0)  # Stronger as RSI gets lower
         else:

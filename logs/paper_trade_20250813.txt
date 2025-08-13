@@ -1,0 +1,131 @@
+=== PAPER TRADING SESSION - 2025-08-13 10:59:47 ===
+Starting Balance: Rs.10,000.00
+================================================================================
+
+
+[2025-08-13 14:36:25] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 479.5 hours
+
+Portfolio Performance:
+  - Starting Balance: Rs.10,000.00
+  - Current Cash: Rs.13.86
+  - Holdings Value: Rs.9,898.98
+  - Total Portfolio Value: Rs.9,912.84
+  - Total Return: Rs.-87.16 (-0.87%)
+  - Realized P&L: Rs.0.00
+  - Unrealized P&L: Rs.-87.16
+
+Trading Statistics:
+  - Total Trades: 9
+  - Buy Orders: 9
+  - Sell Orders: 0
+  - Win Rate: 0.0%
+  - Active Positions: 7
+
+Current Holdings:
+  - HDFCBANK.NS: 1 shares @ Rs.2015.70 (Rs.2,015.70)
+  - SUZLON.NS: 36 shares @ Rs.63.92 (Rs.2,301.16)
+  - JSWSTEEL.NS: 2 shares @ Rs.1050.55 (Rs.2,101.10)
+  - GAIL.NS: 5 shares @ Rs.170.72 (Rs.853.60)
+  - WIPRO.NS: 3 shares @ Rs.242.14 (Rs.726.42)
+  - BHEL.NS: 2 shares @ Rs.223.73 (Rs.447.46)
+  - BDL.NS: 1 shares @ Rs.1540.70 (Rs.1,540.70)
+======================================================================
+
+[2025-08-13 14:37:24] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 479.5 hours
+
+Portfolio Performance:
+  - Starting Balance: Rs.10,000.00
+  - Current Cash: Rs.13.86
+  - Holdings Value: Rs.9,900.29
+  - Total Portfolio Value: Rs.9,914.15
+  - Total Return: Rs.-85.85 (-0.86%)
+  - Realized P&L: Rs.0.00
+  - Unrealized P&L: Rs.-85.85
+
+Trading Statistics:
+  - Total Trades: 9
+  - Buy Orders: 9
+  - Sell Orders: 0
+  - Win Rate: 0.0%
+  - Active Positions: 7
+
+Current Holdings:
+  - HDFCBANK.NS: 1 shares @ Rs.2015.70 (Rs.2,015.70)
+  - SUZLON.NS: 36 shares @ Rs.63.92 (Rs.2,301.16)
+  - JSWSTEEL.NS: 2 shares @ Rs.1050.55 (Rs.2,101.10)
+  - GAIL.NS: 5 shares @ Rs.170.72 (Rs.853.60)
+  - WIPRO.NS: 3 shares @ Rs.242.14 (Rs.726.42)
+  - BHEL.NS: 2 shares @ Rs.223.73 (Rs.447.46)
+  - BDL.NS: 1 shares @ Rs.1540.70 (Rs.1,540.70)
+======================================================================
+
+[2025-08-13 14:38:29] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 479.5 hours
+
+Portfolio Performance:
+  - Starting Balance: Rs.10,000.00
+  - Current Cash: Rs.13.86
+  - Holdings Value: Rs.9,904.83
+  - Total Portfolio Value: Rs.9,918.69
+  - Total Return: Rs.-81.31 (-0.81%)
+  - Realized P&L: Rs.0.00
+  - Unrealized P&L: Rs.-81.31
+
+Trading Statistics:
+  - Total Trades: 9
+  - Buy Orders: 9
+  - Sell Orders: 0
+  - Win Rate: 0.0%
+  - Active Positions: 7
+
+Current Holdings:
+  - HDFCBANK.NS: 1 shares @ Rs.2015.70 (Rs.2,015.70)
+  - SUZLON.NS: 36 shares @ Rs.63.92 (Rs.2,301.16)
+  - JSWSTEEL.NS: 2 shares @ Rs.1050.55 (Rs.2,101.10)
+  - GAIL.NS: 5 shares @ Rs.170.72 (Rs.853.60)
+  - WIPRO.NS: 3 shares @ Rs.242.14 (Rs.726.42)
+  - BHEL.NS: 2 shares @ Rs.223.73 (Rs.447.46)
+  - BDL.NS: 1 shares @ Rs.1540.70 (Rs.1,540.70)
+======================================================================
+
+[2025-08-13 15:06:45] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 480.0 hours
+
+Portfolio Performance:
+  - Starting Balance: Rs.10,000.00
+  - Current Cash: Rs.1,000.00
+  - Holdings Value: Rs.0.00
+  - Total Portfolio Value: Rs.1,000.00
+  - Total Return: Rs.-9,000.00 (-90.00%)
+  - Realized P&L: Rs.0.00
+  - Unrealized P&L: Rs.0.00
+
+Trading Statistics:
+  - Total Trades: 9
+  - Buy Orders: 9
+  - Sell Orders: 0
+  - Win Rate: 0.0%
+  - Active Positions: 0
+======================================================================
+
+[2025-08-13 15:28:00] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 480.3 hours
+
+Portfolio Performance:
+  - Starting Balance: Rs.10,000.00
+  - Current Cash: Rs.1,000.00
+  - Holdings Value: Rs.0.00
+  - Total Portfolio Value: Rs.1,000.00
+  - Total Return: Rs.-9,000.00 (-90.00%)
+  - Realized P&L: Rs.0.00
+  - Unrealized P&L: Rs.0.00
+
+Trading Statistics:
+  - Total Trades: 9
+  - Buy Orders: 9
+  - Sell Orders: 0
+  - Win Rate: 0.0%
+  - Active Positions: 0
+======================================================================

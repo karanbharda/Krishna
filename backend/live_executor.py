@@ -5,6 +5,7 @@ Handles real order execution, portfolio management, and risk controls
 """
 
 import logging
+import os
 import json
 import time
 from datetime import datetime
@@ -45,7 +46,12 @@ class LiveTradingExecutor:
         # Risk management
         self.max_daily_loss = config.get("max_daily_loss", 0.05)  # 5% of portfolio
         self.daily_pnl = 0.0
-        
+
+        # Global sell enable flag (env or config)
+        self.enable_sell = str(self.config.get("enable_sell", os.getenv("ENABLE_SELL", "true"))).lower() not in ("false", "0", "no", "off")
+        if not self.enable_sell:
+            logger.warning("Sell operations are DISABLED by configuration (ENABLE_SELL=false)")
+
         logger.info("Live Trading Executor initialized")
     
     def validate_connection(self) -> bool:
@@ -63,7 +69,22 @@ class LiveTradingExecutor:
             
             # Get account funds
             funds = self.dhan_client.get_funds()
-            available_cash = float(funds.get("availabelBalance", 0))
+            # Normalize across possible Dhan fund keys
+            # Common keys observed: 'availablecash', 'availabelBalance', 'availableBalance', 'netAvailableMargin'
+            def _get_cash(d: Dict[str, Any]) -> float:
+                for key in ("availablecash", "availabelBalance", "availableBalance", "netAvailableMargin", "netAvailableCash"):
+                    if key in d and d.get(key) is not None:
+                        try:
+                            return float(d.get(key))
+                        except Exception:
+                            continue
+                # Fallback: if there is a numeric field resembling available funds
+                for k, v in d.items():
+                    if isinstance(v, (int, float)) and "avail" in k.lower() and "cash" in k.lower():
+                        return float(v)
+                return 0.0
+
+            available_cash = _get_cash(funds)
             logger.info(f"Dhan Account Balance: Rs.{available_cash:.2f}")
             
             # Get current holdings
@@ -261,6 +282,11 @@ class LiveTradingExecutor:
     def execute_sell_order(self, symbol: str, signal_data: Dict) -> Dict:
         """Execute a sell order through Dhan API"""
         try:
+            # Enforce global sell disable flag
+            if not self.enable_sell:
+                logger.info("Sell disabled by configuration (ENABLE_SELL=false). Skipping sell for %s", symbol)
+                return {"success": False, "message": "Sell disabled by configuration"}
+
             # Get real-time price
             current_price = self.get_real_time_price(symbol)
             if not current_price:
@@ -305,72 +331,10 @@ class LiveTradingExecutor:
                 }
                 
             return {"success": False, "message": order_result.get("message", "Order failed")}
-            
+
         except Exception as e:
             logger.error(f"Error executing sell order: {e}")
             return {"success": False, "message": str(e)}
-        try:
-            # Check if we have holdings
-            if symbol not in self.portfolio.holdings:
-                return {"success": False, "message": f"No holdings found for {symbol}"}
-            
-            holding = self.portfolio.holdings[symbol]
-            available_quantity = holding["quantity"]
-            
-            if available_quantity <= 0:
-                return {"success": False, "message": f"No shares available to sell for {symbol}"}
-            
-            # Check market status
-            if not self.dhan_client.is_market_open():
-                return {"success": False, "message": "Market is closed"}
-            
-            # Get current price
-            current_price = self.get_real_time_price(symbol)
-            if current_price <= 0:
-                return {"success": False, "message": "Unable to get current price"}
-            
-            # Determine sell quantity (sell all for now)
-            sell_quantity = available_quantity
-            
-            # Place market sell order
-            order_response = self.dhan_client.place_order(
-                symbol=symbol,
-                quantity=sell_quantity,
-                order_type="MARKET",
-                side="SELL"
-            )
-            
-            order_id = order_response.get("orderId")
-            if order_id:
-                # Track pending order
-                self.pending_orders[order_id] = {
-                    "symbol": symbol,
-                    "quantity": sell_quantity,
-                    "side": "SELL",
-                    "price": current_price,
-                    "timestamp": datetime.now().isoformat(),
-                    "signal_data": signal_data
-                }
-                
-                # Update trade count
-                self._update_daily_trade_count()
-                
-                logger.info(f"Sell order placed: {sell_quantity} {symbol} at Rs.{current_price:.2f}")
-                
-                return {
-                    "success": True,
-                    "order_id": order_id,
-                    "symbol": symbol,
-                    "quantity": sell_quantity,
-                    "price": current_price,
-                    "message": f"Sell order placed for {sell_quantity} shares of {symbol}"
-                }
-            else:
-                return {"success": False, "message": "Order placement failed"}
-                
-        except Exception as e:
-            logger.error(f"Failed to execute sell order for {symbol}: {e}")
-            return {"success": False, "message": f"Sell order failed: {str(e)}"}
     
     def check_and_update_orders(self) -> List[Dict]:
         """Check status of pending orders and update portfolio"""

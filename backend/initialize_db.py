@@ -10,7 +10,7 @@ import logging
 # Add the parent directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from backend.db.database import DatabaseManager
+from db.database import DatabaseManager
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

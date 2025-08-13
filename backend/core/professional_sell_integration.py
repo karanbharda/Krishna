@@ -4,6 +4,7 @@ Integrates the professional sell logic with existing trading modules
 """
 
 import logging
+import os
 import pandas as pd
 from typing import Dict, Optional, Tuple
 from datetime import datetime, timedelta
@@ -45,22 +46,24 @@ class ProfessionalSellIntegration:
         """
         Main integration point for professional sell evaluation
         Returns a decision compatible with existing trading modules
-        All sell signals temporarily disabled.
         """
-        logger.info("Sell signals globally disabled")
-        return {
-            "action": "hold",
-            "ticker": ticker,
-            "qty": 0,
-            "price": current_price,
-            "stop_loss": 0.0,
-            "take_profit": 0.0,
-            "success": True,
-            "confidence_score": 0.0,
-            "signals": 0,
-            "reason": "sell_disabled",
-            "professional_reasoning": "Sell functionality temporarily disabled"
-        }
+        # Check if sell is disabled by configuration
+        enable_sell = str(os.getenv("ENABLE_SELL", "true")).lower() not in ("false", "0", "no", "off")
+        if not enable_sell:
+            logger.info("Sell signals globally disabled by configuration (ENABLE_SELL=false)")
+            return {
+                "action": "hold",
+                "ticker": ticker,
+                "qty": 0,
+                "price": current_price,
+                "stop_loss": 0.0,
+                "take_profit": 0.0,
+                "success": True,
+                "confidence_score": 0.0,
+                "signals": 0,
+                "reason": "sell_disabled",
+                "professional_reasoning": "Sell functionality disabled by configuration"
+            }
         
         try:
             # Check if we have a position

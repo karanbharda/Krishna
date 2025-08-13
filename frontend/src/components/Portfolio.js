@@ -403,6 +403,8 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const [realtimeData, setRealtimeData] = useState(null);
+  const [syncLoading, setSyncLoading] = useState(false);
+  const [syncStatus, setSyncStatus] = useState('');
 
   // Fetch trade history on component mount
   useEffect(() => {
@@ -487,6 +489,43 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleAddTicker();
+    }
+  };
+
+  const handleSyncPortfolio = async () => {
+    if (syncLoading) return;
+
+    setSyncLoading(true);
+    setSyncStatus('🔄 Syncing with Dhan account...');
+
+    try {
+      const response = await fetch('/api/live/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setSyncStatus(`✅ Synced! Balance: ₹${result.balance || 0}`);
+
+        // Trigger a refresh of the portfolio data
+        setLastUpdate(new Date());
+
+        // Clear status after 3 seconds
+        setTimeout(() => setSyncStatus(''), 3000);
+      } else {
+        const error = await response.json();
+        setSyncStatus(`❌ Sync failed: ${error.detail || 'Unknown error'}`);
+        setTimeout(() => setSyncStatus(''), 5000);
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
+      setSyncStatus('❌ Sync failed: Network error');
+      setTimeout(() => setSyncStatus(''), 5000);
+    } finally {
+      setSyncLoading(false);
     }
   };
 
@@ -699,12 +738,43 @@ const Portfolio = ({ botData, onAddTicker, onRemoveTicker }) => {
       <Section>
         <h3>Current Holdings</h3>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <RealTimeIndicator>
-            Live Portfolio Data
-          </RealTimeIndicator>
-          <LastUpdateTime>
-            Last updated: {lastUpdate.toLocaleTimeString()}
-          </LastUpdateTime>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <RealTimeIndicator>
+              Live Portfolio Data
+            </RealTimeIndicator>
+            {botData?.mode === 'live' && (
+              <button
+                onClick={handleSyncPortfolio}
+                disabled={syncLoading}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: syncLoading ? '#6c757d' : '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: syncLoading ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                {syncLoading ? '🔄 Syncing...' : '🔄 Sync Now'}
+              </button>
+            )}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+            <LastUpdateTime>
+              Last updated: {lastUpdate.toLocaleTimeString()}
+            </LastUpdateTime>
+            {syncStatus && (
+              <div style={{
+                fontSize: '12px',
+                marginTop: '4px',
+                color: syncStatus.includes('✅') ? '#28a745' : syncStatus.includes('❌') ? '#dc3545' : '#007bff'
+              }}>
+                {syncStatus}
+              </div>
+            )}
+          </div>
         </div>
 
         <HoldingsTable>
