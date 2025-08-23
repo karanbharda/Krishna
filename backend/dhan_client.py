@@ -31,6 +31,10 @@ class DhanAPIClient:
         # Rate limiting
         self.last_request_time = 0
         self.min_request_interval = 0.1  # 100ms between requests
+
+        # Validation rate limiting
+        self.last_validation_time = 0
+        self.validation_cache_duration = 300  # Cache validation for 5 minutes
         
         logger.info("Dhan API client initialized")
     
@@ -63,7 +67,7 @@ class DhanAPIClient:
             # Handle specific status codes more gracefully
             if response.status_code == 500 and endpoint == '/v2/holdings':
                 # 500 error on holdings usually means empty portfolio
-                logger.info("Holdings endpoint returned 500 - likely empty portfolio")
+                logger.debug("Holdings endpoint returned 500 - likely empty portfolio")
                 return {"data": []}
 
             response.raise_for_status()
@@ -90,7 +94,7 @@ class DhanAPIClient:
         """Get account funds and margin information"""
         try:
             response = self._make_request('GET', '/v2/fundlimit')
-            logger.info(f"Dhan Account Funds Response: {json.dumps(response, indent=2)}")
+            logger.debug(f"Dhan Account Funds Response: {json.dumps(response, indent=2)}")
             return response
         except Exception as e:
             logger.error(f"Failed to get funds: {e}")
@@ -306,12 +310,19 @@ class DhanAPIClient:
             return False
     
     def validate_connection(self) -> bool:
-        """Validate API connection and credentials"""
+        """Validate API connection and credentials with rate limiting"""
         try:
+            # Rate limiting - avoid excessive validation calls
+            current_time = time.time()
+            if current_time - self.last_validation_time < self.validation_cache_duration:
+                logger.debug("Using cached validation result")
+                return True  # Assume valid if recently validated
+
             profile = self.get_profile()
-            logger.info(f"Profile response: {profile}")
+            logger.debug(f"Profile response: {profile}")
             if profile and 'dhanClientId' in profile:
-                logger.info("Dhan API connection validated successfully")
+                logger.debug("Dhan API connection validated successfully")
+                self.last_validation_time = current_time
                 return True
             else:
                 logger.error(f"Dhan API validation failed - invalid response: {profile}")

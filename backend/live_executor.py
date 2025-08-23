@@ -47,6 +47,10 @@ class LiveTradingExecutor:
         self.max_daily_loss = config.get("max_daily_loss", 0.05)  # 5% of portfolio
         self.daily_pnl = 0.0
 
+        # Rate limiting for sync operations
+        self.last_sync_time = 0
+        self.min_sync_interval = 60  # Minimum 60 seconds between syncs
+
         # Global sell enable flag (env or config)
         self.enable_sell = str(self.config.get("enable_sell", os.getenv("ENABLE_SELL", "true"))).lower() not in ("false", "0", "no", "off")
         if not self.enable_sell:
@@ -65,7 +69,13 @@ class LiveTradingExecutor:
     def sync_portfolio_with_dhan(self) -> bool:
         """Sync local portfolio with actual Dhan account"""
         try:
-            logger.info("Syncing portfolio with Dhan account...")
+            # Rate limiting - avoid excessive sync calls
+            current_time = time.time()
+            if current_time - self.last_sync_time < self.min_sync_interval:
+                logger.debug(f"Sync rate limited - last sync {current_time - self.last_sync_time:.1f}s ago")
+                return True  # Return success to avoid errors, but skip actual sync
+
+            logger.debug("Syncing portfolio with Dhan account...")
             
             # Get account funds
             funds = self.dhan_client.get_funds()
@@ -85,11 +95,11 @@ class LiveTradingExecutor:
                 return 0.0
 
             available_cash = _get_cash(funds)
-            logger.info(f"Dhan Account Balance: Rs.{available_cash:.2f}")
+            logger.debug(f"Dhan Account Balance: Rs.{available_cash:.2f}")
             
             # Get current holdings
             holdings = self.dhan_client.get_holdings()
-            logger.info(f"Dhan Holdings: {json.dumps(holdings, indent=2)}")
+            logger.debug(f"Dhan Holdings: {json.dumps(holdings, indent=2)}")
             
             # Update portfolio cash
             self.portfolio.cash = available_cash
@@ -117,7 +127,10 @@ class LiveTradingExecutor:
             # Update portfolio value
             self.portfolio.total_value = available_cash + total_holdings_value
             
-            logger.info(f"Portfolio synced - Cash: Rs.{available_cash:.2f}, Holdings: Rs.{total_holdings_value:.2f}")
+            logger.debug(f"Portfolio synced - Cash: Rs.{available_cash:.2f}, Holdings: Rs.{total_holdings_value:.2f}")
+
+            # Update last sync time
+            self.last_sync_time = time.time()
             return True
             
         except Exception as e:

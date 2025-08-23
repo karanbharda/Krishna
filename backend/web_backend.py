@@ -1153,7 +1153,13 @@ class WebTradingBot:
 
             # Sync portfolio with Dhan account
             if self.live_executor.sync_portfolio_with_dhan():
-                logger.info("Live trading initialized successfully")
+                # Get account summary for startup logging
+                try:
+                    funds = self.live_executor.dhan_client.get_funds()
+                    balance = funds.get('availabelBalance', 0.0) if funds else 0.0
+                    logger.info(f"🚀 Live trading initialized successfully - Account Balance: Rs.{balance:.2f}")
+                except:
+                    logger.info("🚀 Live trading initialized successfully")
                 return True
             else:
                 logger.error("Failed to sync portfolio with Dhan")
@@ -1276,7 +1282,16 @@ class WebTradingBot:
                     logger.warning("Trading thread did not stop within timeout, forcing stop...")
                 else:
                     logger.info("Trading thread stopped successfully")
-            logger.info("Web Trading Bot stopped successfully")
+            # Show final account summary if in live mode
+            if hasattr(self, 'live_executor') and self.live_executor:
+                try:
+                    funds = self.live_executor.dhan_client.get_funds()
+                    balance = funds.get('availabelBalance', 0.0) if funds else 0.0
+                    logger.info(f"🛑 Web Trading Bot stopped - Final Account Balance: Rs.{balance:.2f}")
+                except:
+                    logger.info("🛑 Web Trading Bot stopped successfully")
+            else:
+                logger.info("🛑 Web Trading Bot stopped successfully")
         else:
             logger.info("Trading bot is already stopped")
 
@@ -1408,7 +1423,7 @@ class WebTradingBot:
                                     current_prices[ticker] = hist['Close'].iloc[-1]
                                     price_fetch_success = True
                             except Exception as e:
-                                logger.warning(f"Yahoo Finance failed for {ticker}: {e}")
+                                logger.debug(f"Yahoo Finance failed for {ticker}: {e}")
                                 current_prices[ticker] = holdings[ticker]['avg_price']  # Fallback to avg price
                     except Exception as e:
                         logger.warning(f"Error fetching current prices: {e}")

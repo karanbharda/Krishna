@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class DhanSyncService:
     """Background service to sync portfolio with Dhan account in real-time"""
     
-    def __init__(self, sync_interval: int = 30):
+    def __init__(self, sync_interval: int = 300):  # Increased to 5 minutes
         """
         Initialize Dhan sync service
         
@@ -42,7 +42,7 @@ class DhanSyncService:
             logger.error("Dhan credentials not found in environment variables")
             raise ValueError("Dhan credentials not configured")
         
-        logger.info(f"Dhan Sync Service initialized with {sync_interval}s interval")
+        logger.debug(f"Dhan Sync Service initialized with {sync_interval}s interval")
     
     def get_dhan_funds(self) -> Optional[Dict[str, Any]]:
         """Get current funds from Dhan API"""
@@ -227,7 +227,7 @@ class DhanSyncService:
                 if db_success and json_success:
                     self.last_known_balance = current_balance
                     self.last_sync_time = datetime.now()
-                    logger.info(f"✅ Portfolio synced successfully: ₹{current_balance}")
+                    logger.debug(f"✅ Portfolio synced successfully: ₹{current_balance}")
                     return True
                 else:
                     logger.error("Failed to update portfolio data")
@@ -271,7 +271,7 @@ def get_sync_service() -> Optional[DhanSyncService]:
     """Get the global sync service instance"""
     return _sync_service
 
-def start_sync_service(sync_interval: int = 30) -> DhanSyncService:
+def start_sync_service(sync_interval: int = 300) -> DhanSyncService:  # 5 minutes default
     """Start the global sync service"""
     global _sync_service
     

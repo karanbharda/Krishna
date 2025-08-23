@@ -3284,7 +3284,7 @@ class Stock:
             alpha = "N/A"
             for benchmark_ticker in benchmark_tickers:
                 # Use Fyers for benchmark data too - SAME LOGIC
-                benchmark_history = get_stock_data_fyers_or_yf(benchmark_ticker, period="2y")
+                benchmark_history = get_stock_data_fyers_or_yf(benchmark_ticker, period="1y")
                 if benchmark_history is not None and not benchmark_history.empty:
                     benchmark_returns = benchmark_history["Close"].pct_change().dropna()
                 else:
@@ -4059,7 +4059,7 @@ class Stock:
                 "transformer_epoch_logs": {}
             }
 
-    def analyze_stock(self, ticker, benchmark_tickers=None, prediction_days=30, training_period="7y", bot_running=True):
+    def analyze_stock(self, ticker, benchmark_tickers=None, prediction_days=30, training_period="2y", bot_running=True):
         try:
             # Check if bot should stop before starting analysis
             if not bot_running:
@@ -4072,8 +4072,8 @@ class Stock:
             ticker = ticker.strip().upper()
             logger.info(f"Fetching and analyzing data for {ticker}...")
 
-            # Use Fyers for historical data (2y) - SAME LOGIC
-            history = get_stock_data_fyers_or_yf(ticker, period="2y")
+            # Use Fyers for historical data (1y) - SAME LOGIC
+            history = get_stock_data_fyers_or_yf(ticker, period="1y")
 
             if history is None or history.empty:
                 logger.error(f"No price data found for {ticker}.")
@@ -5078,8 +5078,8 @@ class StockTradingBot:
         metrics = self.portfolio.get_metrics()
         available_cash = metrics["cash"]
         total_value = metrics["total_value"]
-        # Use Fyers for historical data (2y) - SAME LOGIC
-        history = get_stock_data_fyers_or_yf(ticker, period="2y")
+        # Use Fyers for historical data (1y) - SAME LOGIC
+        history = get_stock_data_fyers_or_yf(ticker, period="1y")
 
         # PRODUCTION FIX: Rebalanced signal weights for better action-oriented trading
         weights = {
@@ -5909,7 +5909,7 @@ class StockTradingBot:
             ticker,
             benchmark_tickers=self.config.get("benchmark_tickers", ["^NSEI"]),
             prediction_days=self.config.get("prediction_days", 30),
-            training_period=self.config.get("period", "3y"),
+            training_period=self.config.get("period", "1y"),
             bot_running=self.bot_running
         )
 
