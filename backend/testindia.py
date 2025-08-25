@@ -3708,21 +3708,51 @@ class Stock:
             
             def create_sequences(x_data, y_data, seq_length):
                 logger.info(f"Creating sequences with length {seq_length}...")
+                logger.info(f"Input data shape: {x_data.shape}, Target data shape: {y_data.shape}")
+                
+                # Check if we have enough data to create sequences
+                if len(x_data) <= seq_length:
+                    logger.warning(f"Insufficient data for sequence creation. Data length: {len(x_data)}, Required: {seq_length + 1}")
+                    # Return empty tensors with correct shape for compatibility
+                    empty_x = torch.empty((0, seq_length, x_data.shape[1]), device=self.device, dtype=torch.float32)
+                    empty_y = torch.empty((0,), device=self.device, dtype=torch.float32)
+                    empty_x.requires_grad_(True)
+                    return empty_x, empty_y
+                
                 xs, ys = [], []
-                for i in range(len(x_data) - seq_length):
+                available_sequences = len(x_data) - seq_length
+                logger.info(f"Can create {available_sequences} sequences")
+                
+                for i in range(available_sequences):
                     seq = x_data[i:i+seq_length].detach().clone()
                     seq.requires_grad_(True)
                     xs.append(seq)
                     ys.append(y_data[i+seq_length])
+                
+                if len(xs) == 0:
+                    logger.warning("No sequences could be created")
+                    # Return empty tensors with correct shape for compatibility
+                    empty_x = torch.empty((0, seq_length, x_data.shape[1]), device=self.device, dtype=torch.float32)
+                    empty_y = torch.empty((0,), device=self.device, dtype=torch.float32)
+                    empty_x.requires_grad_(True)
+                    return empty_x, empty_y
+                
                 xs_tensor = torch.stack(xs).to(self.device)
                 ys_tensor = torch.stack(ys).to(self.device)
                 xs_tensor.requires_grad_(True)
+                logger.info(f"Created sequences - X shape: {xs_tensor.shape}, Y shape: {ys_tensor.shape}")
                 return xs_tensor, ys_tensor
             
             logger.info("Generating training sequences...")
             X_train_seq, y_train_seq = create_sequences(X_train_tensor, y_train_tensor, seq_length)
             logger.info("Generating test sequences...")
             X_test_seq, y_test_seq = create_sequences(X_test_tensor, y_test_tensor, seq_length)
+            
+            # Check if we have any sequences to train with
+            if X_train_seq.shape[0] == 0 or X_test_seq.shape[0] == 0:
+                logger.error(f"Insufficient data for adversarial training. Train sequences: {X_train_seq.shape[0]}, Test sequences: {X_test_seq.shape[0]}")
+                logger.warning("Skipping adversarial training due to insufficient data. Returning None.")
+                return None
             
             train_dataset = TensorDataset(X_train_seq, y_train_seq)
             train_loader = DataLoader(train_dataset, batch_size=256, shuffle=True)  # INDUSTRY LEVEL: Increased batch size
@@ -4173,9 +4203,55 @@ class Stock:
             volume_trend = "HIGH" if isinstance(volume, (int, float)) and volume > 1000000 else "MODERATE"
 
             logger.info(f"Fetching institutional investments data for {ticker}...")
-            institutional_holders = stock.institutional_holders
-            major_holders = stock.major_holders
-
+            
+            # Initialize variables with fallback values
+            institutional_holders = None
+            major_holders = None
+            mutual_fund_holders = None
+            
+            try:
+                # Rate limit handling with exponential backoff (per project specifications)
+                max_retries = 3
+                base_delay = 2  # Start with 2 seconds
+                
+                for attempt in range(max_retries):
+                    try:
+                        # Fetch institutional data with rate limit protection
+                        institutional_holders = stock.institutional_holders
+                        major_holders = stock.major_holders
+                        
+                        # Add 0.5s delay between related API calls to reduce rate limiting pressure
+                        time.sleep(0.5)
+                        mutual_fund_holders = stock.mutualfund_holders
+                        
+                        logger.info(f"✅ Successfully fetched institutional data for {ticker} on attempt {attempt + 1}")
+                        break  # Success, exit retry loop
+                        
+                    except Exception as e:
+                        error_message = str(e).lower()
+                        
+                        # Check for rate limiting errors with comprehensive detection patterns
+                        if any(phrase in error_message for phrase in ["rate limited", "too many requests", "429", "yfrateli"]):
+                            if attempt < max_retries - 1:  # Don't sleep on last attempt
+                                delay = base_delay * (2 ** attempt)  # Exponential backoff: 2s, 4s, 8s
+                                logger.warning(f"⏱️ Rate limited for {ticker}. Waiting {delay}s before retry {attempt + 1}/{max_retries}...")
+                                time.sleep(delay)
+                                continue
+                            else:
+                                logger.error(f"❌ Rate limit exceeded for {ticker} after {max_retries} attempts. Using fallback data.")
+                                break
+                        else:
+                            # Non-rate limit error, log and use fallback
+                            logger.error(f"❌ Error fetching institutional data for {ticker}: {e}")
+                            break
+                else:
+                    # All retries failed due to rate limiting
+                    logger.error(f"❌ All retry attempts failed for {ticker}. Using fallback data.")
+                    
+            except Exception as e:
+                logger.error(f"❌ Unexpected error fetching institutional data for {ticker}: {e}")
+            
+            # Continue with processing using fallback logic for system resilience
             institutional_data = {}
             if institutional_holders is not None and not institutional_holders.empty:
                 top_institutional = institutional_holders.head(5)
@@ -4210,7 +4286,6 @@ class Stock:
                     institutional_data["institutional_ownership_pct"] = 0
                     institutional_data["insider_ownership_pct"] = 0
 
-            mutual_fund_holders = stock.mutualfund_holders
             mutual_fund_data = {}
             if mutual_fund_holders is not None and not mutual_fund_holders.empty:
                 top_mutual_funds = mutual_fund_holders.head(5)
@@ -5660,8 +5735,13 @@ class StockTradingBot:
 
         # Use more flexible signal system - either condition can trigger buy
         if final_buy_score > confidence_threshold or weighted_signal_score >= min_weighted_signal_threshold:
-            if available_cash < 100:  # Minimum trade value in INR
+            # Early cash validation - skip expensive calculations if stock is unaffordable
+            if current_ticker_price > available_cash:
+                logger.info(f"[SKIP] {ticker}: Price Rs.{current_ticker_price:.2f} > Available Cash Rs.{available_cash:.2f}")
+                buy_qty = 0  # Ensure buy_qty is 0 for unaffordable stocks
+            elif available_cash < 100:  # Minimum trade value in INR
                 logger.info(f"[SKIP] SKIPPING BUY for {ticker}: Insufficient cash (Rs.{available_cash:.2f} < Rs.100)")
+                buy_qty = 0  # Ensure buy_qty is 0 for insufficient cash
             else:
                 logger.info(f"[BUY] PROCEEDING with BUY calculation for {ticker}")
 
@@ -5715,6 +5795,7 @@ class StockTradingBot:
             logger.info(f"[SKIP] BUY PRE-CHECKS FAILED for {ticker}")
             logger.info(f"   - Buy Score Check: {'PASS' if final_buy_score > confidence_threshold else 'FAIL'}")
             logger.info(f"   - Weighted Signal Check: {'PASS' if weighted_signal_score >= min_weighted_signal_threshold else 'FAIL'}")
+            buy_qty = 0  # Ensure buy_qty is 0 when pre-checks fail
 
         # Sell Quantity Calculation with weighted signals
         sell_qty = 0

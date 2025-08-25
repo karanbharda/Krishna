@@ -1,0 +1,283 @@
+{
+    "success": true,
+    "stock_data": {
+        "symbol": "HDFCBANK.NS",
+        "name": "HDFCBANK.NS",
+        "current_price": {
+            "INR": 1964.8,
+            "USD": 22.47,
+            "EUR": 19.2,
+            "BTC": 0.00019962,
+            "ETH": 0.00476812
+        },
+        "sector": "N/A",
+        "industry": "N/A",
+        "pe_ratio": "N/A",
+        "dividends": "N/A"
+    },
+    "recommendation": "NEUTRAL",
+    "buy_score": 0.0,
+    "sell_score": 0.0,
+    "technical_indicators": {
+        "sma_50": 1988.234,
+        "sma_200": 1843.6185,
+        "ema_50": 1977.981164126329,
+        "rsi": 42.76641275094175,
+        "macd": -4.001676222745573,
+        "signal_line": -0.5706625764594871,
+        "macd_histogram": -3.4310136462860856,
+        "bb_upper": 2028.821509725974,
+        "bb_lower": 1956.2684902740261,
+        "volatility": 0.008064758053636795,
+        "momentum": -0.009178013111447326,
+        "volume_trend": "MODERATE"
+    },
+    "fundamental_analysis": {
+        "market_cap": "N/A",
+        "pe_ratio": "N/A",
+        "dividend_yield": "N/A",
+        "52w_high": "N/A",
+        "52w_low": "N/A",
+        "balance_sheet": {},
+        "income_statement": {},
+        "cash_flow": {}
+    },
+    "sentiment_analysis": {
+        "newsapi": {
+            "positive": 2.0,
+            "negative": 1.0,
+            "neutral": 0
+        },
+        "gnews": {
+            "positive": 5.0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "reddit": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "google_news": {
+            "positive": 7.0,
+            "negative": 2.0,
+            "neutral": 4.0
+        },
+        "aggregated": {
+            "positive": 14.0,
+            "negative": 3.0,
+            "neutral": 4.0
+        },
+        "weighted_aggregated": {
+            "positive": 42.25,
+            "negative": 9.100000000000001,
+            "neutral": 10.4,
+            "total_weight": 11.31
+        },
+        "comprehensive_analysis": {
+            "sentiment_strength": {
+                "bullish": 3.735632183908046,
+                "bearish": 0.8045977011494254,
+                "neutral": 0.9195402298850575
+            },
+            "confidence_score": 0.6842105263157895,
+            "market_context_applied": 1.3,
+            "sources_coverage": {
+                "global_financial": true,
+                "indian_focus": true,
+                "broad_market": true,
+                "social_sentiment": true
+            }
+        }
+    },
+    "mpt_metrics": {
+        "annual_return": 0.19870579940672725,
+        "annual_volatility": 0.17781006206457306,
+        "sharpe_ratio": 0.7800784601062408,
+        "beta": "N/A",
+        "alpha": "N/A"
+    },
+    "institutional_holders": {},
+    "mutual_fund_holders": {},
+    "support_level": 1751.437575,
+    "resistance_level": 2087.6457,
+    "risk_level": "LOW",
+    "timeframe": "LONG_TERM",
+    "explanation": "Recommendation for HDFCBANK.NS (HDFCBANK.NS): NEUTRAL\nCurrent Price: Rs.1964.80\n\nBuy Score: 0.000, Sell Score: 0.000\n\nNeutral Factors:\n- Price is stable relative to moving averages.\n- Sentiment is balanced, with no strong bullish or bearish signals.\n\nRisk Assessment:\n- Volatility: 0.0081 (higher values indicate higher risk)\n- Sector: N/A\n- Industry: N/A\n",
+    "ml_analysis": {
+        "success": true,
+        "predicted_price": 1929.320830460685,
+        "confidence": -0.5250313720549271,
+        "mse": 2299.4227119183315,
+        "mae": 28.348736215174874,
+        "r2_score": -0.5250313720549271,
+        "best_ml_model": "stacking",
+        "best_model_metrics": {
+            "mse": 2299.4227119183315,
+            "mae": 28.348736215174874,
+            "r2": -0.5250313720549271
+        },
+        "all_model_scores": {
+            "xgb": {
+                "mse": 35387.96795926174,
+                "mae": 165.5878009748057,
+                "r2": -22.470134939271443,
+                "prediction": 1760.404052734375
+            },
+            "lgb": {
+                "mse": 3207.7961563332165,
+                "mae": 36.97538388032828,
+                "r2": -1.1274860634407418,
+                "prediction": 1877.3275881485793
+            },
+            "cb": {
+                "mse": 3655.305088432284,
+                "mae": 44.67092946194569,
+                "r2": -1.4242845412449894,
+                "prediction": 1925.130872663374
+            },
+            "et": {
+                "mse": 2839.877590913617,
+                "mae": 30.454935826706414,
+                "r2": -0.8834737938749448,
+                "prediction": 1923.826473007874
+            },
+            "svr": {
+                "mse": 12938.983567690408,
+                "mae": 95.43607420494638,
+                "r2": -7.581439054661251,
+                "prediction": 2000.2646265563287
+            },
+            "mlp": {
+                "mse": 567321.0787886182,
+                "mae": 511.5997055853937,
+                "r2": -375.2607191345409,
+                "prediction": 1736.3230751356268
+            },
+            "ensemble": {
+                "mse": 15979.034734040923,
+                "mae": 96.73905479830918,
+                "r2": -9.59767268465306,
+                "prediction": 1870.546110517712
+            },
+            "stacking": {
+                "mse": 2299.4227119183315,
+                "mae": 28.348736215174874,
+                "r2": -0.5250313720549271,
+                "prediction": 1949.6137364992423
+            }
+        },
+        "lstm_metrics": {
+            "mse": 0.04459356516599655,
+            "r2": -2.836888551712036,
+            "adv_mse": 0.07495914399623871,
+            "adv_r2": -5.449582576751709
+        },
+        "transformer_metrics": {
+            "mse": 0.015815839171409607,
+            "r2": -0.36081552505493164,
+            "adv_mse": 0.019529525190591812,
+            "adv_r2": -0.680345892906189
+        },
+        "rl_metrics": {
+            "success": true,
+            "recommendation": "BUY",
+            "performance_pct": 31.559120664518268,
+            "final_net_worth": 131559.12066451827,
+            "average_reward": 163250.79978022416,
+            "average_events_per_episode": 19.78,
+            "actions_distribution": {
+                "hold": 0.2653061224489796,
+                "buy": 0.3877551020408163,
+                "sell": 0.3469387755102041
+            },
+            "epoch_logs": [
+                {
+                    "episode": 10,
+                    "total_reward": -353504.1161842985,
+                    "average_reward": 198767.5615023949,
+                    "events_triggered": 15
+                },
+                {
+                    "episode": 20,
+                    "total_reward": -874868.0942125351,
+                    "average_reward": 301834.0369565372,
+                    "events_triggered": 20
+                },
+                {
+                    "episode": 30,
+                    "total_reward": -475543.9431260772,
+                    "average_reward": 149524.77977773274,
+                    "events_triggered": 16
+                },
+                {
+                    "episode": 40,
+                    "total_reward": 708555.8730923388,
+                    "average_reward": 671258.2259101281,
+                    "events_triggered": 18
+                },
+                {
+                    "episode": 50,
+                    "total_reward": -488000.7229536502,
+                    "average_reward": -186701.82420291338,
+                    "events_triggered": 26
+                },
+                {
+                    "episode": 60,
+                    "total_reward": -1211505.1904970289,
+                    "average_reward": -33403.419959556406,
+                    "events_triggered": 16
+                },
+                {
+                    "episode": 70,
+                    "total_reward": -113747.8781914472,
+                    "average_reward": 91070.66732079399,
+                    "events_triggered": 10
+                },
+                {
+                    "episode": 80,
+                    "total_reward": -1054785.5278612028,
+                    "average_reward": -155774.1001462812,
+                    "events_triggered": 19
+                },
+                {
+                    "episode": 90,
+                    "total_reward": 2274105.987478904,
+                    "average_reward": 289803.6768124396,
+                    "events_triggered": 24
+                },
+                {
+                    "episode": 100,
+                    "total_reward": 557781.4394881042,
+                    "average_reward": 306128.3938309665,
+                    "events_triggered": 17
+                }
+            ]
+        },
+        "ensemble_components": {
+            "best_ml_model": 1949.6137364992423,
+            "lstm": 1895.5946044921875,
+            "transformer": 1942.754150390625,
+            "ensemble_average": 1880.429566907889
+        },
+        "industry_level_features": {
+            "top_5_ml_models": [
+                "xgb",
+                "lgb",
+                "cb",
+                "et",
+                "svr",
+                "mlp",
+                "ensemble",
+                "stacking"
+            ],
+            "ensemble_methods": [
+                "VotingRegressor",
+                "StackingRegressor"
+            ],
+            "advanced_scaling": "RobustScaler",
+            "model_selection": "Best R2 Score"
+        }
+    },
+    "timestamp": "2025-08-25 10:54:46"
+}

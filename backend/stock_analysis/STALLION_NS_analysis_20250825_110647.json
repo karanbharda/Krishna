@@ -1,0 +1,112 @@
+{
+    "success": true,
+    "stock_data": {
+        "symbol": "STALLION.NS",
+        "name": "STALLION.NS",
+        "current_price": {
+            "INR": 147.98,
+            "USD": 1.69,
+            "EUR": 1.45,
+            "BTC": 1.504e-05,
+            "ETH": 0.0003584
+        },
+        "sector": "N/A",
+        "industry": "N/A",
+        "pe_ratio": "N/A",
+        "dividends": "N/A"
+    },
+    "recommendation": "NEUTRAL",
+    "buy_score": 0.0,
+    "sell_score": 0.0,
+    "technical_indicators": {
+        "sma_50": 109.0668,
+        "sma_200": 147.98,
+        "ema_50": 115.98725260691677,
+        "rsi": 64.07956677614933,
+        "macd": 11.223989543920567,
+        "signal_line": 10.827725174176775,
+        "macd_histogram": 0.39626436974379153,
+        "bb_upper": 159.55842903224422,
+        "bb_lower": 109.94757096775575,
+        "volatility": 0.05729643989627447,
+        "momentum": 0.5421008753647353,
+        "volume_trend": "MODERATE"
+    },
+    "fundamental_analysis": {
+        "market_cap": "N/A",
+        "pe_ratio": "N/A",
+        "dividend_yield": "N/A",
+        "52w_high": "N/A",
+        "52w_low": "N/A",
+        "balance_sheet": {},
+        "income_statement": {},
+        "cash_flow": {}
+    },
+    "sentiment_analysis": {
+        "newsapi": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "gnews": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "reddit": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "google_news": {
+            "positive": 5.0,
+            "negative": 2.0,
+            "neutral": 3.0
+        },
+        "aggregated": {
+            "positive": 5.0,
+            "negative": 2.0,
+            "neutral": 3.0
+        },
+        "weighted_aggregated": {
+            "positive": 13.0,
+            "negative": 5.2,
+            "neutral": 7.800000000000001,
+            "total_weight": 11.31
+        },
+        "comprehensive_analysis": {
+            "sentiment_strength": {
+                "bullish": 1.1494252873563218,
+                "bearish": 0.45977011494252873,
+                "neutral": 0.6896551724137931
+            },
+            "confidence_score": 0.5,
+            "market_context_applied": 1.3,
+            "sources_coverage": {
+                "global_financial": true,
+                "indian_focus": true,
+                "broad_market": true,
+                "social_sentiment": true
+            }
+        }
+    },
+    "mpt_metrics": {
+        "annual_return": 0.5254282294599678,
+        "annual_volatility": 0.7064127637150126,
+        "sharpe_ratio": 0.6588615797544325,
+        "beta": "N/A",
+        "alpha": "N/A"
+    },
+    "institutional_holders": {},
+    "mutual_fund_holders": {},
+    "support_level": 103.61345999999999,
+    "resistance_level": 155.379,
+    "risk_level": "HIGH",
+    "timeframe": "SHORT_TERM",
+    "explanation": "Recommendation for STALLION.NS (STALLION.NS): NEUTRAL\nCurrent Price: Rs.147.98\n\nBuy Score: 0.000, Sell Score: 0.000\n\nNeutral Factors:\n- Price is stable relative to moving averages.\n- Sentiment is balanced, with no strong bullish or bearish signals.\n\nRisk Assessment:\n- Volatility: 0.0573 (higher values indicate higher risk)\n- Sector: N/A\n- Industry: N/A\n",
+    "ml_analysis": {
+        "success": false,
+        "message": "Unable to fetch sufficient historical data for ML analysis of STALLION.NS"
+    },
+    "timestamp": "2025-08-25 11:06:47"
+}

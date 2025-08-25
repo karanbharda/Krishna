@@ -1,0 +1,498 @@
+=== PAPER TRADING SESSION - 2025-08-25 09:32:53 ===
+Starting Balance: Rs.10,000.00
+================================================================================
+
+
+[2025-08-25 09:52:08] === STRATEGY ANALYSIS: AFFLE.NS ===
+Market Sentiment:
+  - Positive: 90.9% (10.0 articles)
+  - Negative: 9.1% (1.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.1937.60
+  - Predicted Price: Rs.1937.43
+  - Expected Change: -0.01%
+  - RL Recommendation: BUY
+Decision Factors:
+  - Buy Score: 0.505
+  - Sell Score: 0.250
+  - Buy Signals: 1/4
+  - Sell Signals: 2/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 09:52:43] === STRATEGY ANALYSIS: 3IINFOLTD.NS ===
+Market Sentiment:
+  - Positive: 40.0% (4.0 articles)
+  - Negative: 20.0% (2.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.24.01
+  - Predicted Price: Rs.23.95
+  - Expected Change: -0.25%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.150
+  - Sell Score: 0.250
+  - Buy Signals: 1/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 09:53:15] === STRATEGY ANALYSIS: STARCEMENT.NS ===
+Market Sentiment:
+  - Positive: 36.4% (4.0 articles)
+  - Negative: 45.5% (5.0 articles)
+  - Overall: Bearish
+ML/RL Analysis:
+  - Current Price: Rs.281.26
+  - Predicted Price: Rs.275.54
+  - Expected Change: -2.03%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.250
+  - Sell Score: 0.250
+  - Buy Signals: 0/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 09:53:53] === STRATEGY ANALYSIS: SONATSOFTW.NS ===
+Market Sentiment:
+  - Positive: 27.3% (3.0 articles)
+  - Negative: 36.4% (4.0 articles)
+  - Overall: Bearish
+ML/RL Analysis:
+  - Current Price: Rs.384.35
+  - Predicted Price: Rs.384.74
+  - Expected Change: +0.10%
+  - RL Recommendation: SELL
+Decision Factors:
+  - Buy Score: 0.150
+  - Sell Score: 0.250
+  - Buy Signals: 0/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 09:54:18] === STRATEGY ANALYSIS: DDEVPLSTIK.NS ===
+Market Sentiment:
+  - Positive: 50.0% (3.0 articles)
+  - Negative: 16.7% (1.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.325.85
+  - Predicted Price: Rs.327.17
+  - Expected Change: +0.40%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.250
+  - Sell Score: 0.250
+  - Buy Signals: 1/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 10:15:19] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 763.1 hours
+
+Portfolio Performance:
+  - Starting Balance: Rs.10,000.00
+  - Current Cash: Rs.1,000.00
+  - Holdings Value: Rs.0.00
+  - Total Portfolio Value: Rs.1,000.00
+  - Total Return: Rs.-9,000.00 (-90.00%)
+  - Realized P&L: Rs.0.00
+  - Unrealized P&L: Rs.0.00
+
+Trading Statistics:
+  - Total Trades: 9
+  - Buy Orders: 9
+  - Sell Orders: 0
+  - Win Rate: 0.0%
+  - Active Positions: 0
+======================================================================
+
+[2025-08-25 10:27:56] === STRATEGY ANALYSIS: AFFLE.NS ===
+Market Sentiment:
+  - Positive: 90.9% (10.0 articles)
+  - Negative: 9.1% (1.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.1928.70
+  - Predicted Price: Rs.1909.23
+  - Expected Change: -1.01%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.505
+  - Sell Score: 0.250
+  - Buy Signals: 1/4
+  - Sell Signals: 2/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 10:29:14] === STRATEGY ANALYSIS: 3IINFOLTD.NS ===
+Market Sentiment:
+  - Positive: 40.0% (4.0 articles)
+  - Negative: 20.0% (2.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.23.92
+  - Predicted Price: Rs.23.55
+  - Expected Change: -1.56%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.150
+  - Sell Score: 0.250
+  - Buy Signals: 1/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 10:30:38] === STRATEGY ANALYSIS: KAJARIACER.NS ===
+Market Sentiment:
+  - Positive: 40.0% (6.0 articles)
+  - Negative: 26.7% (4.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.1283.00
+  - Predicted Price: Rs.1273.96
+  - Expected Change: -0.70%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.250
+  - Sell Score: 0.250
+  - Buy Signals: 0/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 10:30:38] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 763.4 hours
+
+Portfolio Performance:
+  - Starting Balance: Rs.10,000.00
+  - Current Cash: Rs.1,000.00
+  - Holdings Value: Rs.0.00
+  - Total Portfolio Value: Rs.1,000.00
+  - Total Return: Rs.-9,000.00 (-90.00%)
+  - Realized P&L: Rs.0.00
+  - Unrealized P&L: Rs.0.00
+
+Trading Statistics:
+  - Total Trades: 9
+  - Buy Orders: 9
+  - Sell Orders: 0
+  - Win Rate: 0.0%
+  - Active Positions: 0
+======================================================================
+
+[2025-08-25 10:33:32] === STRATEGY ANALYSIS: AFFLE.NS ===
+Market Sentiment:
+  - Positive: 90.9% (10.0 articles)
+  - Negative: 9.1% (1.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.1929.90
+  - Predicted Price: Rs.1910.94
+  - Expected Change: -0.98%
+  - RL Recommendation: SELL
+Decision Factors:
+  - Buy Score: 0.505
+  - Sell Score: 0.250
+  - Buy Signals: 1/4
+  - Sell Signals: 2/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 10:38:07] === STRATEGY ANALYSIS: ASIANPAINT.NS ===
+Market Sentiment:
+  - Positive: 27.6% (8.0 articles)
+  - Negative: 44.8% (13.0 articles)
+  - Overall: Bearish
+ML/RL Analysis:
+  - Current Price: Rs.2515.00
+  - Predicted Price: Rs.2514.61
+  - Expected Change: -0.02%
+  - RL Recommendation: SELL
+Decision Factors:
+  - Buy Score: 0.400
+  - Sell Score: 0.000
+  - Buy Signals: 1/4
+  - Sell Signals: 0/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 10:40:19] === STRATEGY ANALYSIS: HDFCBANK.NS ===
+Market Sentiment:
+  - Positive: 63.6% (14.0 articles)
+  - Negative: 18.2% (4.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.1966.70
+  - Predicted Price: Rs.1931.78
+  - Expected Change: -1.78%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.380
+  - Sell Score: 0.250
+  - Buy Signals: 1/4
+  - Sell Signals: 2/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 10:41:48] === STRATEGY ANALYSIS: STARCEMENT.NS ===
+Market Sentiment:
+  - Positive: 36.4% (4.0 articles)
+  - Negative: 45.5% (5.0 articles)
+  - Overall: Bearish
+ML/RL Analysis:
+  - Current Price: Rs.282.53
+  - Predicted Price: Rs.279.91
+  - Expected Change: -0.93%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.250
+  - Sell Score: 0.250
+  - Buy Signals: 0/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 10:43:23] === STRATEGY ANALYSIS: SONATSOFTW.NS ===
+Market Sentiment:
+  - Positive: 27.3% (3.0 articles)
+  - Negative: 36.4% (4.0 articles)
+  - Overall: Bearish
+ML/RL Analysis:
+  - Current Price: Rs.395.35
+  - Predicted Price: Rs.374.72
+  - Expected Change: -5.22%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.150
+  - Sell Score: 0.250
+  - Buy Signals: 1/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 10:44:54] === STRATEGY ANALYSIS: DDEVPLSTIK.NS ===
+Market Sentiment:
+  - Positive: 50.0% (3.0 articles)
+  - Negative: 16.7% (1.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.319.80
+  - Predicted Price: Rs.316.80
+  - Expected Change: -0.94%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.250
+  - Sell Score: 0.150
+  - Buy Signals: 1/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 10:46:28] === STRATEGY ANALYSIS: VSTTILLERS.NS ===
+Market Sentiment:
+  - Positive: 55.6% (5.0 articles)
+  - Negative: 33.3% (3.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.5422.30
+  - Predicted Price: Rs.5389.93
+  - Expected Change: -0.60%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.456
+  - Sell Score: 0.300
+  - Buy Signals: 1/4
+  - Sell Signals: 2/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 10:48:56] === STRATEGY ANALYSIS: STALLION.NS ===
+Market Sentiment:
+  - Positive: 50.0% (5.0 articles)
+  - Negative: 20.0% (2.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.147.80
+  - Predicted Price: Rs.149.57
+  - Expected Change: +1.20%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.250
+  - Sell Score: 0.250
+  - Buy Signals: 0/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 10:49:08] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 763.7 hours
+
+Portfolio Performance:
+  - Starting Balance: Rs.10,000.00
+  - Current Cash: Rs.1,000.00
+  - Holdings Value: Rs.0.00
+  - Total Portfolio Value: Rs.1,000.00
+  - Total Return: Rs.-9,000.00 (-90.00%)
+  - Realized P&L: Rs.0.00
+  - Unrealized P&L: Rs.0.00
+
+Trading Statistics:
+  - Total Trades: 9
+  - Buy Orders: 9
+  - Sell Orders: 0
+  - Win Rate: 0.0%
+  - Active Positions: 0
+======================================================================
+
+[2025-08-25 10:52:14] === STRATEGY ANALYSIS: ASIANPAINT.NS ===
+Market Sentiment:
+  - Positive: 24.1% (7.0 articles)
+  - Negative: 44.8% (13.0 articles)
+  - Overall: Bearish
+ML/RL Analysis:
+  - Current Price: Rs.2512.30
+  - Predicted Price: Rs.2504.03
+  - Expected Change: -0.33%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.400
+  - Sell Score: 0.000
+  - Buy Signals: 1/4
+  - Sell Signals: 0/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 10:54:46] === STRATEGY ANALYSIS: HDFCBANK.NS ===
+Market Sentiment:
+  - Positive: 66.7% (14.0 articles)
+  - Negative: 14.3% (3.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.1964.80
+  - Predicted Price: Rs.1929.32
+  - Expected Change: -1.81%
+  - RL Recommendation: BUY
+Decision Factors:
+  - Buy Score: 0.392
+  - Sell Score: 0.250
+  - Buy Signals: 1/4
+  - Sell Signals: 2/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 10:57:14] === STRATEGY ANALYSIS: STARCEMENT.NS ===
+Market Sentiment:
+  - Positive: 36.4% (4.0 articles)
+  - Negative: 45.5% (5.0 articles)
+  - Overall: Bearish
+ML/RL Analysis:
+  - Current Price: Rs.282.06
+  - Predicted Price: Rs.277.04
+  - Expected Change: -1.78%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.250
+  - Sell Score: 0.250
+  - Buy Signals: 0/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 10:59:47] === STRATEGY ANALYSIS: SONATSOFTW.NS ===
+Market Sentiment:
+  - Positive: 27.3% (3.0 articles)
+  - Negative: 36.4% (4.0 articles)
+  - Overall: Bearish
+ML/RL Analysis:
+  - Current Price: Rs.395.95
+  - Predicted Price: Rs.383.98
+  - Expected Change: -3.02%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.150
+  - Sell Score: 0.250
+  - Buy Signals: 1/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 11:02:13] === STRATEGY ANALYSIS: DDEVPLSTIK.NS ===
+Market Sentiment:
+  - Positive: 50.0% (3.0 articles)
+  - Negative: 16.7% (1.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.322.60
+  - Predicted Price: Rs.319.97
+  - Expected Change: -0.82%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.250
+  - Sell Score: 0.150
+  - Buy Signals: 1/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 11:04:33] === STRATEGY ANALYSIS: VSTTILLERS.NS ===
+Market Sentiment:
+  - Positive: 55.6% (5.0 articles)
+  - Negative: 33.3% (3.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.5394.00
+  - Predicted Price: Rs.5310.82
+  - Expected Change: -1.54%
+  - RL Recommendation: BUY
+Decision Factors:
+  - Buy Score: 0.456
+  - Sell Score: 0.300
+  - Buy Signals: 1/4
+  - Sell Signals: 2/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 11:07:57] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 764.0 hours
+
+Portfolio Performance:
+  - Starting Balance: Rs.10,000.00
+  - Current Cash: Rs.0.00
+  - Holdings Value: Rs.0.00
+  - Total Portfolio Value: Rs.0.00
+  - Total Return: Rs.-10,000.00 (-100.00%)
+  - Realized P&L: Rs.0.00
+  - Unrealized P&L: Rs.0.00
+
+Trading Statistics:
+  - Total Trades: 9
+  - Buy Orders: 9
+  - Sell Orders: 0
+  - Win Rate: 0.0%
+  - Active Positions: 0
+======================================================================
+
+[2025-08-25 11:11:37] === STRATEGY ANALYSIS: ASIANPAINT.NS ===
+Market Sentiment:
+  - Positive: 18.2% (2.0 articles)
+  - Negative: 54.5% (6.0 articles)
+  - Overall: Bearish
+ML/RL Analysis:
+  - Current Price: Rs.2514.70
+  - Predicted Price: Rs.2495.28
+  - Expected Change: -0.77%
+  - RL Recommendation: SELL
+Decision Factors:
+  - Buy Score: 0.400
+  - Sell Score: 0.045
+  - Buy Signals: 1/4
+  - Sell Signals: 0/4
+  - Final Decision: HOLD
+============================================================

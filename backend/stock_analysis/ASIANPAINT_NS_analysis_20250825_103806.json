@@ -1,0 +1,283 @@
+{
+    "success": true,
+    "stock_data": {
+        "symbol": "ASIANPAINT.NS",
+        "name": "ASIANPAINT.NS",
+        "current_price": {
+            "INR": 2515.0,
+            "USD": 28.77,
+            "EUR": 24.58,
+            "BTC": 0.00025525,
+            "ETH": 0.00609831
+        },
+        "sector": "N/A",
+        "industry": "N/A",
+        "pe_ratio": "N/A",
+        "dividends": "N/A"
+    },
+    "recommendation": "NEUTRAL",
+    "buy_score": 0.0,
+    "sell_score": 0.0,
+    "technical_indicators": {
+        "sma_50": 2411.7740000000003,
+        "sma_200": 2357.16875,
+        "ema_50": 2432.2960987596207,
+        "rsi": 56.738224591228224,
+        "macd": 40.81353497904229,
+        "signal_line": 40.56239750308967,
+        "macd_histogram": 0.2511374759526177,
+        "bb_upper": 2613.3052450374375,
+        "bb_lower": 2355.014754962562,
+        "volatility": 0.010909155377017324,
+        "momentum": 0.047218520986009364,
+        "volume_trend": "MODERATE"
+    },
+    "fundamental_analysis": {
+        "market_cap": "N/A",
+        "pe_ratio": "N/A",
+        "dividend_yield": "N/A",
+        "52w_high": "N/A",
+        "52w_low": "N/A",
+        "balance_sheet": {},
+        "income_statement": {},
+        "cash_flow": {}
+    },
+    "sentiment_analysis": {
+        "newsapi": {
+            "positive": 4.0,
+            "negative": 4.0,
+            "neutral": 3.0
+        },
+        "gnews": {
+            "positive": 2.0,
+            "negative": 3.0,
+            "neutral": 2.0
+        },
+        "reddit": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "google_news": {
+            "positive": 2.0,
+            "negative": 6.0,
+            "neutral": 3.0
+        },
+        "aggregated": {
+            "positive": 8.0,
+            "negative": 13.0,
+            "neutral": 8.0
+        },
+        "weighted_aggregated": {
+            "positive": 27.3,
+            "negative": 40.95,
+            "neutral": 26.000000000000004,
+            "total_weight": 11.31
+        },
+        "comprehensive_analysis": {
+            "sentiment_strength": {
+                "bullish": 2.413793103448276,
+                "bearish": 3.6206896551724137,
+                "neutral": 2.298850574712644
+            },
+            "confidence_score": 0.4344827586206897,
+            "market_context_applied": 1.3,
+            "sources_coverage": {
+                "global_financial": true,
+                "indian_focus": true,
+                "broad_market": true,
+                "social_sentiment": true
+            }
+        }
+    },
+    "mpt_metrics": {
+        "annual_return": -0.2124290132489208,
+        "annual_volatility": 0.20994267823097404,
+        "sharpe_ratio": -1.297635219024884,
+        "beta": "N/A",
+        "alpha": "N/A"
+    },
+    "institutional_holders": {},
+    "mutual_fund_holders": {},
+    "support_level": 2239.3103125,
+    "resistance_level": 2640.75,
+    "risk_level": "LOW",
+    "timeframe": "MEDIUM_TERM",
+    "explanation": "Recommendation for ASIANPAINT.NS (ASIANPAINT.NS): NEUTRAL\nCurrent Price: Rs.2515.00\n\nBuy Score: 0.000, Sell Score: 0.000\n\nNeutral Factors:\n- Price is stable relative to moving averages.\n- Sentiment is balanced, with no strong bullish or bearish signals.\n\nRisk Assessment:\n- Volatility: 0.0109 (higher values indicate higher risk)\n- Sector: N/A\n- Industry: N/A\n",
+    "ml_analysis": {
+        "success": true,
+        "predicted_price": 2514.607853225823,
+        "confidence": -0.061178849240212996,
+        "mse": 2115.7760402479485,
+        "mae": 13.0083966419992,
+        "r2_score": -0.061178849240212996,
+        "best_ml_model": "et",
+        "best_model_metrics": {
+            "mse": 2115.7760402479485,
+            "mae": 13.0083966419992,
+            "r2": -0.061178849240212996
+        },
+        "all_model_scores": {
+            "xgb": {
+                "mse": 2379.209088735414,
+                "mae": 19.398836344288366,
+                "r2": -0.1933051111544981,
+                "prediction": 2523.213134765625
+            },
+            "lgb": {
+                "mse": 2990.6367283964037,
+                "mae": 27.75424166630025,
+                "r2": -0.49996993139372914,
+                "prediction": 2477.486813911008
+            },
+            "cb": {
+                "mse": 2152.335949952331,
+                "mae": 13.357072791295325,
+                "r2": -0.0795156685303473,
+                "prediction": 2517.6759070281687
+            },
+            "et": {
+                "mse": 2115.7760402479485,
+                "mae": 13.0083966419992,
+                "r2": -0.061178849240212996,
+                "prediction": 2513.786450302469
+            },
+            "svr": {
+                "mse": 5309.156474985537,
+                "mae": 56.86005349215465,
+                "r2": -1.6628359766760243,
+                "prediction": 2567.525559681058
+            },
+            "mlp": {
+                "mse": 2286021.530663984,
+                "mae": 1250.2176732997445,
+                "r2": -1145.5663903463371,
+                "prediction": 2776.5507806263013
+            },
+            "ensemble": {
+                "mse": 77888.72583469375,
+                "mae": 226.77228280330542,
+                "r2": -38.06550923998578,
+                "prediction": 2562.706457085368
+            },
+            "stacking": {
+                "mse": 2416.500409881231,
+                "mae": 20.21306880038008,
+                "r2": -0.21200877378578875,
+                "prediction": 2538.841201051892
+            }
+        },
+        "lstm_metrics": {
+            "mse": 0.002332099014893174,
+            "r2": -2030.5816650390625,
+            "adv_mse": 0.015681374818086624,
+            "adv_r2": -13659.65234375
+        },
+        "transformer_metrics": {
+            "mse": 0.00020656197739299387,
+            "r2": -178.9441375732422,
+            "adv_mse": 0.0004923702217638493,
+            "adv_r2": -427.9227600097656
+        },
+        "rl_metrics": {
+            "success": true,
+            "recommendation": "SELL",
+            "performance_pct": -19.320752374342135,
+            "final_net_worth": 80679.24762565787,
+            "average_reward": 112123.371696115,
+            "average_events_per_episode": 16.67,
+            "actions_distribution": {
+                "hold": 0.24390243902439024,
+                "buy": 0.4146341463414634,
+                "sell": 0.34146341463414637
+            },
+            "epoch_logs": [
+                {
+                    "episode": 10,
+                    "total_reward": -579747.9361574317,
+                    "average_reward": 16644.471113357133,
+                    "events_triggered": 15
+                },
+                {
+                    "episode": 20,
+                    "total_reward": 11739.259572007533,
+                    "average_reward": 523843.00049988914,
+                    "events_triggered": 14
+                },
+                {
+                    "episode": 30,
+                    "total_reward": -655054.5811650675,
+                    "average_reward": -41914.22051787384,
+                    "events_triggered": 17
+                },
+                {
+                    "episode": 40,
+                    "total_reward": -494642.0975928178,
+                    "average_reward": 8557.262973426195,
+                    "events_triggered": 17
+                },
+                {
+                    "episode": 50,
+                    "total_reward": 574531.5150625634,
+                    "average_reward": 73111.11654727554,
+                    "events_triggered": 17
+                },
+                {
+                    "episode": 60,
+                    "total_reward": 1569844.0192881133,
+                    "average_reward": 17648.45595270735,
+                    "events_triggered": 19
+                },
+                {
+                    "episode": 70,
+                    "total_reward": -166401.20009391697,
+                    "average_reward": 176792.01196793537,
+                    "events_triggered": 16
+                },
+                {
+                    "episode": 80,
+                    "total_reward": -27723.69194488587,
+                    "average_reward": -109734.65555726334,
+                    "events_triggered": 25
+                },
+                {
+                    "episode": 90,
+                    "total_reward": -183481.23493642808,
+                    "average_reward": 105397.68301114484,
+                    "events_triggered": 12
+                },
+                {
+                    "episode": 100,
+                    "total_reward": -288798.47716003895,
+                    "average_reward": 350888.5909705517,
+                    "events_triggered": 22
+                }
+            ]
+        },
+        "ensemble_components": {
+            "best_ml_model": 2513.786450302469,
+            "lstm": 2506.62060546875,
+            "transformer": 2523.41650390625,
+            "ensemble_average": 2559.723288056486
+        },
+        "industry_level_features": {
+            "top_5_ml_models": [
+                "xgb",
+                "lgb",
+                "cb",
+                "et",
+                "svr",
+                "mlp",
+                "ensemble",
+                "stacking"
+            ],
+            "ensemble_methods": [
+                "VotingRegressor",
+                "StackingRegressor"
+            ],
+            "advanced_scaling": "RobustScaler",
+            "model_selection": "Best R2 Score"
+        }
+    },
+    "timestamp": "2025-08-25 10:38:06"
+}
