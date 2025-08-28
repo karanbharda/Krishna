@@ -1,8 +1,19 @@
 {
-    "cash": 1000.0,
-    "holdings": {},
-    "starting_balance": 1000.0,
+    "cash": 460.22,
+    "holdings": {
+        "NBCC": {
+            "qty": 2,
+            "avg_price": 102.1,
+            "last_price": 102.1
+        },
+        "IOB": {
+            "qty": 1,
+            "avg_price": 38.15,
+            "last_price": 38.15
+        }
+    },
+    "starting_balance": 757.56,
     "realized_pnl": 0.0,
     "unrealized_pnl": 0.0,
-    "last_updated": "2025-08-13T14:09:29.340455"
+    "last_updated": "2025-08-28T11:45:17.887322"
 }

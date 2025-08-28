@@ -11,6 +11,9 @@ import time
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 import pandas as pd
+from pathlib import Path
+import sqlite3
+from io import StringIO
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +39,64 @@ class DhanAPIClient:
         self.last_validation_time = 0
         self.validation_cache_duration = 300  # Cache validation for 5 minutes
         
-        logger.info("Dhan API client initialized")
+        # Security ID cache for dynamic lookups
+        self.security_id_cache = {}
+        self.cache_expiry = {}
+        self.cache_duration = 3600  # Cache for 1 hour
+        
+        # Instrument data cache
+        self.instrument_cache = {}
+        self.instrument_cache_expiry = {}
+        self.instrument_cache_duration = 86400  # Cache instruments for 24 hours
+        
+        # Daily instrument master (Dhan's recommended approach)
+        self.daily_instruments_df = None
+        self.daily_instruments_last_updated = None
+        self.daily_instruments_cache_duration = 3600  # Refresh every hour
+        self.daily_refresh_hour = 8  # Refresh at 8 AM daily
+        
+        # Dhan instrument master URLs (no auth required)
+        self.compact_url = "https://images.dhan.co/api-data/api-scrip-master.csv"
+        self.detailed_url = "https://images.dhan.co/api-data/api-scrip-master-detailed.csv"
+        
+        # Data directory for caching
+        self.data_dir = Path("data")
+        self.data_dir.mkdir(exist_ok=True)
+        
+        # Initialize database for corrected security IDs
+        self._init_security_id_db()
+        
+        logger.info("Dhan API client initialized with direct API instrument fetching")
+    
+    def _init_security_id_db(self):
+        """Initialize database for storing corrected security IDs"""
+        try:
+            db_path = self.data_dir / "security_ids.db"
+            self.security_db = sqlite3.connect(db_path, check_same_thread=False)
+            cursor = self.security_db.cursor()
+            
+            # Create table for corrected security IDs
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS corrected_security_ids (
+                    symbol TEXT PRIMARY KEY,
+                    security_id TEXT NOT NULL,
+                    exchange_segment TEXT DEFAULT 'NSE_EQ',
+                    last_validated TIMESTAMP,
+                    validation_count INTEGER DEFAULT 0
+                )
+            ''')
+            
+            # Create index for faster lookups
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_symbol_exchange 
+                ON corrected_security_ids (symbol, exchange_segment)
+            ''')
+            
+            self.security_db.commit()
+            logger.info("Security ID database initialized")
+        except Exception as e:
+            logger.error(f"Failed to initialize security ID database: {e}")
+            self.security_db = None
     
     def _rate_limit(self):
         """Implement rate limiting to avoid API limits"""
@@ -70,6 +130,21 @@ class DhanAPIClient:
                 logger.debug("Holdings endpoint returned 500 - likely empty portfolio")
                 return {"data": []}
 
+            # Enhanced error handling for 400 errors
+            if response.status_code == 400:
+                try:
+                    error_detail = response.json()
+                    logger.error(f"Dhan API 400 Error - {endpoint}: {error_detail}")
+                    if data:
+                        logger.error(f"Request data that caused 400 error: {data}")
+                    raise Exception(f"Dhan API error (400): {error_detail}")
+                except ValueError:
+                    # JSON decode error
+                    logger.error(f"Dhan API 400 Error - {endpoint}: {response.text}")
+                    if data:
+                        logger.error(f"Request data that caused 400 error: {data}")
+                    raise Exception(f"Dhan API error (400): {response.text}")
+
             response.raise_for_status()
             return response.json()
 
@@ -77,10 +152,11 @@ class DhanAPIClient:
             # More specific error handling
             if "500" in str(e) and endpoint == '/v2/holdings':
                 logger.info("Holdings API returned 500 - empty portfolio (normal for new accounts)")
-                return {"data": []}
             else:
                 logger.error(f"Dhan API request failed: {e}")
-                raise Exception(f"Dhan API error: {str(e)}")
+                if data:
+                    logger.error(f"Request data: {data}")
+            raise Exception(f"Dhan API error: {str(e)}")
     
     def get_profile(self) -> Dict:
         """Get user profile and account information"""
@@ -104,7 +180,16 @@ class DhanAPIClient:
         """Get current stock holdings"""
         try:
             response = self._make_request('GET', '/v2/holdings')
-            return response.get('data', [])
+            
+            # Handle different response formats
+            if isinstance(response, list):
+                return response
+            elif isinstance(response, dict):
+                return response.get('data', [])
+            else:
+                logger.warning(f"Unexpected response format from holdings: {type(response)}")
+                return []
+                
         except Exception as e:
             # More graceful error handling for holdings
             if "500" in str(e):
@@ -117,7 +202,16 @@ class DhanAPIClient:
         """Get current trading positions"""
         try:
             response = self._make_request('GET', '/v2/positions')
-            return response.get('data', [])
+            
+            # Handle different response formats
+            if isinstance(response, list):
+                return response
+            elif isinstance(response, dict):
+                return response.get('data', [])
+            else:
+                logger.warning(f"Unexpected response format from positions: {type(response)}")
+                return []
+                
         except Exception as e:
             logger.error(f"Failed to get positions: {e}")
             return []
@@ -126,7 +220,16 @@ class DhanAPIClient:
         """Get order history"""
         try:
             response = self._make_request('GET', '/v2/orders')
-            return response.get('data', [])
+            
+            # Handle different response formats
+            if isinstance(response, list):
+                return response
+            elif isinstance(response, dict):
+                return response.get('data', [])
+            else:
+                logger.warning(f"Unexpected response format from orders: {type(response)}")
+                return []
+                
         except Exception as e:
             logger.error(f"Failed to get orders: {e}")
             return []
@@ -134,12 +237,12 @@ class DhanAPIClient:
     def get_quote(self, symbol: str, exchange: str = "NSE") -> Dict:
         """Get real-time quote for a symbol"""
         try:
-            # Convert symbol format for Dhan API
-            dhan_symbol = self._convert_symbol_to_dhan(symbol)
+            # Get numeric security ID instead of symbol
+            security_id = self.get_security_id(symbol)
             
             data = {
-                "symbol": dhan_symbol,
-                "exchange": exchange
+                "securityId": security_id,
+                "exchangeSegment": "NSE_EQ"
             }
             
             response = self._make_request('POST', '/v2/marketdata/quote', data)
@@ -153,8 +256,8 @@ class DhanAPIClient:
                           from_date: str = None, to_date: str = None) -> pd.DataFrame:
         """Get historical price data"""
         try:
-            # Convert symbol format
-            dhan_symbol = self._convert_symbol_to_dhan(symbol)
+            # Get numeric security ID
+            security_id = self.get_security_id(symbol)
             
             # Default date range if not provided
             if not to_date:
@@ -163,11 +266,11 @@ class DhanAPIClient:
                 from_date = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
             
             data = {
-                "symbol": dhan_symbol,
-                "exchange": "NSE",
+                "securityId": security_id,
+                "exchangeSegment": "NSE_EQ",
                 "timeframe": timeframe,
-                "from_date": from_date,
-                "to_date": to_date
+                "fromDate": from_date,
+                "toDate": to_date
             }
             
             response = self._make_request('POST', '/v2/charts/historical', data)
@@ -185,34 +288,310 @@ class DhanAPIClient:
             logger.error(f"Failed to get historical data for {symbol}: {e}")
             return pd.DataFrame()
     
+    def _get_corrected_security_id(self, symbol: str, exchange: str = "NSE_EQ") -> Optional[str]:
+        """Get corrected security ID from database if available"""
+        try:
+            if not self.security_db:
+                return None
+                
+            cursor = self.security_db.cursor()
+            cursor.execute('''
+                SELECT security_id FROM corrected_security_ids 
+                WHERE symbol = ? AND exchange_segment = ? AND validation_count > 0
+                ORDER BY last_validated DESC LIMIT 1
+            ''', (symbol.upper(), exchange))
+            
+            result = cursor.fetchone()
+            if result:
+                logger.info(f"✅ Found corrected security ID in database for {symbol}: {result[0]}")
+                return result[0]
+            return None
+        except Exception as e:
+            logger.error(f"Error retrieving corrected security ID for {symbol}: {e}")
+            return None
+    
+    def _store_corrected_security_id(self, symbol: str, security_id: str, exchange: str = "NSE_EQ"):
+        """Store corrected security ID in database"""
+        try:
+            if not self.security_db:
+                return
+                
+            cursor = self.security_db.cursor()
+            cursor.execute('''
+                INSERT OR REPLACE INTO corrected_security_ids 
+                (symbol, security_id, exchange_segment, last_validated, validation_count)
+                VALUES (?, ?, ?, ?, 
+                    CASE 
+                        WHEN EXISTS(SELECT 1 FROM corrected_security_ids WHERE symbol = ? AND exchange_segment = ?) 
+                        THEN (SELECT validation_count FROM corrected_security_ids WHERE symbol = ? AND exchange_segment = ?) + 1
+                        ELSE 1
+                    END
+                )
+            ''', (symbol.upper(), security_id, exchange, datetime.now(), 
+                  symbol.upper(), exchange, symbol.upper(), exchange))
+            
+            self.security_db.commit()
+            logger.info(f"✅ Stored corrected security ID in database: {symbol} -> {security_id}")
+        except Exception as e:
+            logger.error(f"Error storing corrected security ID for {symbol}: {e}")
+    
+    def _is_cache_valid(self, symbol: str) -> bool:
+        """Check if cached security ID is still valid"""
+        if symbol not in self.security_id_cache:
+            return False
+        
+        if symbol not in self.cache_expiry:
+            return False
+        
+        return time.time() < self.cache_expiry[symbol]
+    
+    def _cache_security_id(self, symbol: str, security_id: str):
+        """Cache security ID for future use"""
+        self.security_id_cache[symbol] = security_id
+        self.cache_expiry[symbol] = time.time() + self.cache_duration
+        logger.debug(f"Cached security ID for {symbol}: {security_id}")
+    
+    def _get_cached_security_id(self, symbol: str) -> Optional[str]:
+        """Get security ID from cache if valid"""
+        if self._is_cache_valid(symbol):
+            logger.debug(f"Using cached security ID for {symbol}: {self.security_id_cache[symbol]}")
+            return self.security_id_cache[symbol]
+        return None
+    
+    def _fetch_instrument_data(self, exchange_segment: str = "NSE_EQ") -> pd.DataFrame:
+        """Fetch real-time instrument data directly from Dhan API"""
+        try:
+            url = f"{self.base_url}/v2/instrument/{exchange_segment}"
+            response = self.session.get(url)
+            
+            if response.status_code == 200:
+                # Parse CSV data directly into DataFrame
+                df = pd.read_csv(StringIO(response.text))
+                logger.info(f"✅ Loaded instruments: {len(df)}")
+                return df
+            else:
+                logger.error(f"Failed to fetch instruments. Status: {response.status_code}")
+                return pd.DataFrame()
+                
+        except Exception as e:
+            logger.error(f"Error fetching instrument data: {e}")
+            return pd.DataFrame()
+    
+    def _search_security_id_in_instruments(self, symbol: str, exchange_segment: str = "NSE_EQ") -> Optional[str]:
+        """Search for security ID in instrument data"""
+        try:
+            # Fetch instrument data if not already cached or cache expired
+            cache_key = f"instruments_{exchange_segment}"
+            if (cache_key not in self.instrument_cache or 
+                time.time() > self.instrument_cache_expiry.get(cache_key, 0)):
+                
+                df = self._fetch_instrument_data(exchange_segment)
+                if not df.empty:
+                    self.instrument_cache[cache_key] = df
+                    self.instrument_cache_expiry[cache_key] = time.time() + self.instrument_cache_duration
+                else:
+                    return None
+            else:
+                df = self.instrument_cache[cache_key]
+            
+            # Search for symbol in the DataFrame
+            # Handle different column names that might be present
+            symbol_columns = ['SYMBOL_NAME', 'TradingSymbol', 'tradingSymbol', 'symbol']
+            security_id_columns = ['SECURITY_ID', 'SecurityId', 'securityId']
+            
+            symbol_col = None
+            security_id_col = None
+            
+            # Find the appropriate columns
+            for col in df.columns:
+                if col in symbol_columns:
+                    symbol_col = col
+                elif col in security_id_columns:
+                    security_id_col = col
+            
+            if not symbol_col or not security_id_col:
+                logger.error(f"Could not find required columns in instrument data. Available columns: {df.columns.tolist()}")
+                return None
+            
+            # Create a mapping of common symbol variations
+            symbol_variations = {
+                'HDFCBANK': 'HDFC BANK',
+                'INFY': 'INFOSYS',
+                'SBIN': 'STATE BANK',
+                'ICICIBANK': 'ICICI BANK',
+                'KOTAKBANK': 'KOTAK MAHINDRA',
+                'AXISBANK': 'AXIS BANK',
+                'BAJFINANCE': 'BAJAJ FINANCE',
+                'BAJAJFINSV': 'BAJAJ FINSERV',
+                'TITAN': 'TITAN COMPANY',
+                'NESTLEIND': 'NESTLE INDIA',
+                'HINDUNILVR': 'HINDUSTAN UNILEVER',
+                'LT': 'LARSEN TOUBRO',
+                'M&M': 'MAHINDRA MAHINDRA',
+                'M&MFIN': 'MAHINDRA FINANCE',
+                'TATAMOTORS': 'TATA MOTORS',
+                'TATASTEEL': 'TATA STEEL',
+                'TATAPOWER': 'TATA POWER',
+                'TATACONSUM': 'TATA CONSUMER',
+                'TCS': 'TCSL',  # TCS appears as TCSL in the data
+                'WIPRO': 'WIPRO LTD',
+                'TECHM': 'TECH MAHINDRA',
+                'HCLTECH': 'HCL TECHNOLOGIES',
+                'ASIANPAINT': 'ASIAN PAINTS',
+                'ULTRACEMCO': 'ULTRATECH CEMENT',
+                'SUNPHARMA': 'SUN PHARMACEUTICAL',
+                'DRREDDY': 'DR. REDDY',
+                'CIPLA': 'CIPLA LTD',
+                'DIVISLAB': 'DIVI S LABORATORIES',
+                'BHARTIARTL': 'BHARTI AIRTEL',
+                'ITC': 'ITC LTD',
+                'ONGC': 'OIL AND NATURAL GAS',  # ONGC appears as OIL AND NATURAL GAS in the data
+                'NTPC': 'NTPC LTD',
+                'POWERGRID': 'POWER GRID',
+                'COALINDIA': 'COAL INDIA',
+                'RELIANCE': 'RELIANCE INDUSTRIES'
+            }
+            
+            # Get the search term - use variation if available, otherwise use original symbol
+            search_term = symbol_variations.get(symbol.upper(), symbol.upper())
+            
+            # Search for exact match first
+            result = df[df[symbol_col].str.upper() == search_term]
+            if not result.empty:
+                security_id = str(result.iloc[0][security_id_col])
+                logger.info(f"✅ Found security ID for {symbol} (exact match): {security_id}")
+                return security_id
+            
+            # Search for exact match with original symbol (in case variation wasn't needed)
+            if search_term != symbol.upper():
+                result = df[df[symbol_col].str.upper() == symbol.upper()]
+                if not result.empty:
+                    security_id = str(result.iloc[0][security_id_col])
+                    logger.info(f"✅ Found security ID for {symbol} (original match): {security_id}")
+                    return security_id
+            
+            # Search for partial match with search term
+            result = df[df[symbol_col].str.contains(search_term, case=False, na=False)]
+            if not result.empty:
+                security_id = str(result.iloc[0][security_id_col])
+                logger.info(f"✅ Found security ID for {symbol} (partial match): {security_id}")
+                return security_id
+            
+            # Search for partial match with original symbol
+            if search_term != symbol.upper():
+                result = df[df[symbol_col].str.contains(symbol.upper(), case=False, na=False)]
+                if not result.empty:
+                    security_id = str(result.iloc[0][security_id_col])
+                    logger.info(f"✅ Found security ID for {symbol} (original partial match): {security_id}")
+                    return security_id
+            
+            logger.warning(f"❌ Symbol {symbol} not found in instrument data")
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error searching for security ID: {e}")
+            return None
+    
+    def get_security_id(self, symbol: str) -> str:
+        """Get numeric security ID for a symbol using direct API approach"""
+        # Convert symbol format
+        if symbol.endswith('.NS'):
+            symbol = symbol[:-3]
+        
+        symbol = symbol.upper()
+        
+        # Check cache first
+        cached_id = self._get_cached_security_id(symbol)
+        if cached_id:
+            logger.debug(f"Using cached security ID for {symbol}: {cached_id}")
+            return cached_id
+        
+        # Check database for previously validated security IDs
+        db_id = self._get_corrected_security_id(symbol)
+        if db_id:
+            self._cache_security_id(symbol, db_id)
+            return db_id
+        
+        # Fetch and search in real-time instrument data (the working approach from example)
+        security_id = self._search_security_id_in_instruments(symbol)
+        if security_id:
+            self._cache_security_id(symbol, security_id)
+            # Store in database for future use
+            self._store_corrected_security_id(symbol, security_id)
+            return security_id
+        
+        logger.error(f"❌ Security ID not found for {symbol}")
+        raise ValueError(f"Security ID not found for {symbol}")
+    
+    def validate_order_prerequisites(self) -> bool:
+        """Validate that all prerequisites for order placement are met"""
+        try:
+            # Check credentials
+            if not self.client_id or not self.access_token:
+                logger.error("Dhan credentials not properly configured")
+                return False
+            
+            # Validate API connection
+            if not self.validate_connection():
+                logger.error("Dhan API connection validation failed")
+                return False
+            
+            # Check market status
+            if not self.is_market_open():
+                logger.warning("Market is currently closed")
+                return False
+            
+            logger.info("All order prerequisites validated successfully")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Order prerequisites validation failed: {e}")
+            return False
+    
     def place_order(self, symbol: str, quantity: int, order_type: str = "MARKET", 
                    side: str = "BUY", price: float = None) -> Dict:
-        """Place a trading order"""
+        """Place a trading order with comprehensive validation"""
         try:
-            # Convert symbol format
-            dhan_symbol = self._convert_symbol_to_dhan(symbol)
+            # Validate prerequisites first
+            if not self.validate_order_prerequisites():
+                raise Exception("Order prerequisites validation failed")
             
+            # Get numeric security ID
+            security_id = self.get_security_id(symbol)
+            
+            # Prepare order data according to official Dhan API v2 format
             order_data = {
                 "dhanClientId": self.client_id,
                 "transactionType": side.upper(),
                 "exchangeSegment": "NSE_EQ",
-                "productType": "INTRADAY",  # Can be INTRADAY, CNC, MTF
+                "productType": "CNC",  # CNC for delivery trading (positions carry forward)
                 "orderType": order_type.upper(),
                 "validity": "DAY",
-                "securityId": dhan_symbol,
-                "quantity": quantity,
-                "disclosedQuantity": 0,
-                "triggerPrice": 0
+                "securityId": str(security_id),  # Must be string
+                "quantity": int(quantity),  # Must be integer
+                "disclosedQuantity": 0,  # Integer, not string
+                "triggerPrice": 0.0,  # Float, always required
+                "afterMarketOrder": False,  # Boolean, always required
+                "boProfitValue": 0.0,  # Float, always required 
+                "boStopLossValue": 0.0  # Float, always required
             }
             
-            # Add price for limit orders
+            # Set price field (always required according to API docs)
             if order_type.upper() == "LIMIT" and price:
-                order_data["price"] = price
+                order_data["price"] = float(price)
             else:
-                order_data["price"] = 0
+                # For MARKET orders, price must be 0.0 (float)
+                order_data["price"] = 0.0
+            
+            logger.info(f"Placing order: {side} {quantity} {symbol} (ID: {security_id})")
+            logger.debug(f"Order data: {order_data}")
             
             response = self._make_request('POST', '/v2/orders', order_data)
-            logger.info(f"Order placed: {side} {quantity} {symbol} - Order ID: {response.get('orderId')}")
+            
+            if response and 'orderId' in response:
+                logger.info(f"Order placed successfully: {side} {quantity} {symbol} - Order ID: {response.get('orderId')}")
+            else:
+                logger.warning(f"Unexpected order response: {response}")
             
             return response
             
@@ -257,21 +636,9 @@ class DhanAPIClient:
         if symbol.endswith('.NS'):
             symbol = symbol[:-3]
         
-        # Dhan uses different symbol formats for some stocks
-        symbol_mapping = {
-            'RELIANCE': 'RELIANCE',
-            'TCS': 'TCS',
-            'HDFCBANK': 'HDFCBANK',
-            'INFY': 'INFY',
-            'ICICIBANK': 'ICICIBANK',
-            'SBIN': 'SBIN',
-            'BHARTIARTL': 'BHARTIARTL',
-            'ITC': 'ITC',
-            'KOTAKBANK': 'KOTAKBANK',
-            'LT': 'LT'
-        }
-        
-        return symbol_mapping.get(symbol.upper(), symbol.upper())
+        # Return the symbol in uppercase format
+        # No more hardcoded mappings - using dynamic resolution
+        return symbol.upper()
     
     def get_market_status(self) -> Dict:
         """Get current market status using profile endpoint as fallback"""

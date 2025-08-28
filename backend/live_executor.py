@@ -2,6 +2,7 @@
 """
 Live Trading Executor for Dhan API Integration
 Handles real order execution, portfolio management, and risk controls
+Integrates with SQLite database for consistent portfolio calculations
 """
 
 import logging
@@ -12,17 +13,29 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Any
 from dhan_client import DhanAPIClient
 
+# Import database portfolio manager
+try:
+    from portfolio_manager import DualPortfolioManager
+    from db.database import Portfolio, Holding, Trade
+except ImportError:
+    from .portfolio_manager import DualPortfolioManager
+    from .db.database import Portfolio, Holding, Trade
+
 logger = logging.getLogger(__name__)
 
 class LiveTradingExecutor:
-    """Execute live trades through Dhan API with risk management"""
+    """Execute live trades through Dhan API with database integration and risk management"""
     
-    def __init__(self, portfolio, config: Dict):
-        self.portfolio = portfolio
+    def __init__(self, portfolio_manager: DualPortfolioManager, config: Dict):
+        self.portfolio_manager = portfolio_manager
         self.config = config
         self.stop_loss_pct = config.get("stop_loss_pct", 0.05)
         self.max_capital_per_trade = config.get("max_capital_per_trade", 0.25)
-        self.max_trade_limit = config.get("max_trade_limit", 10)
+        self.max_trade_limit = config.get("max_trade_limit", 150)
+        
+        # Ensure we're in live mode
+        if self.portfolio_manager.current_mode != "live":
+            self.portfolio_manager.switch_mode("live")
         
         # Initialize Dhan client
         self.dhan_client = DhanAPIClient(
@@ -31,11 +44,10 @@ class LiveTradingExecutor:
         )
         
         # Sync portfolio with Dhan account on initialization
-        if self.portfolio.mode == "live":
-            if not self.sync_portfolio_with_dhan():
-                logger.error("Failed to sync portfolio with Dhan account during initialization")
-            else:
-                logger.info("Successfully synced portfolio with Dhan account")
+        if not self.sync_portfolio_with_dhan():
+            logger.error("Failed to sync portfolio with Dhan account during initialization")
+        else:
+            logger.info("Successfully synced portfolio with Dhan account")
         
         # Trading state
         self.pending_orders = {}
@@ -67,7 +79,7 @@ class LiveTradingExecutor:
             return False
     
     def sync_portfolio_with_dhan(self) -> bool:
-        """Sync local portfolio with actual Dhan account"""
+        """Sync local portfolio with actual Dhan account using database"""
         try:
             # Rate limiting - avoid excessive sync calls
             current_time = time.time()
@@ -80,7 +92,6 @@ class LiveTradingExecutor:
             # Get account funds
             funds = self.dhan_client.get_funds()
             # Normalize across possible Dhan fund keys
-            # Common keys observed: 'availablecash', 'availabelBalance', 'availableBalance', 'netAvailableMargin'
             def _get_cash(d: Dict[str, Any]) -> float:
                 for key in ("availablecash", "availabelBalance", "availableBalance", "netAvailableMargin", "netAvailableCash"):
                     if key in d and d.get(key) is not None:
@@ -97,57 +108,118 @@ class LiveTradingExecutor:
             available_cash = _get_cash(funds)
             logger.debug(f"Dhan Account Balance: Rs.{available_cash:.2f}")
             
-            # Get current holdings
+            # Get current holdings from Dhan
             holdings = self.dhan_client.get_holdings()
-            logger.debug(f"Dhan Holdings: {json.dumps(holdings, indent=2)}")
+            logger.debug(f"Dhan Holdings: {len(holdings)} positions")
             
-            # Update portfolio cash
-            self.portfolio.cash = available_cash
-            
-            # Update holdings
-            self.portfolio.holdings = {}
-            total_holdings_value = 0
-            
-            for holding in holdings:
-                symbol = holding.get("tradingSymbol", "")
-                quantity = int(holding.get("totalQty", 0))
-                avg_price = float(holding.get("avgCostPrice", 0))
-                current_price = avg_price  # We'll need to get current price separately
+            # Update database portfolio
+            session = None
+            try:
+                session = self.portfolio_manager.db.Session()
+                portfolio = session.query(Portfolio).filter_by(mode='live').first()
+                if not portfolio:
+                    # Create live portfolio if it doesn't exist
+                    portfolio = Portfolio(
+                        mode='live',
+                        cash=available_cash,
+                        starting_balance=available_cash,
+                        realized_pnl=0.0,
+                        unrealized_pnl=0.0,
+                        last_updated=datetime.now()
+                    )
+                    session.add(portfolio)
+                    session.flush()
+                else:
+                    # Update existing portfolio cash
+                    portfolio.cash = available_cash
+                    portfolio.last_updated = datetime.now()
                 
-                if quantity > 0:
-                    self.portfolio.holdings[symbol] = {
-                        "quantity": quantity,
-                        "avg_price": avg_price,
-                        "current_price": current_price,
-                        "total_value": quantity * current_price,
-                        "pnl": quantity * (current_price - avg_price)
-                    }
-                    total_holdings_value += quantity * current_price
-            
-            # Update portfolio value
-            self.portfolio.total_value = available_cash + total_holdings_value
-            
-            logger.debug(f"Portfolio synced - Cash: Rs.{available_cash:.2f}, Holdings: Rs.{total_holdings_value:.2f}")
-
-            # Update last sync time
-            self.last_sync_time = time.time()
-            return True
+                # Clear existing holdings and add current ones from Dhan
+                session.query(Holding).filter_by(portfolio_id=portfolio.id).delete()
+                
+                total_holdings_value = 0
+                for holding in holdings:
+                    symbol = holding.get("tradingSymbol", "")
+                    quantity = int(holding.get("totalQty", 0))
+                    avg_price = float(holding.get("avgCostPrice", 0))
+                    current_price = float(holding.get("ltp", avg_price))  # Use LTP if available
+                    
+                    if quantity > 0 and symbol:
+                        db_holding = Holding(
+                            portfolio_id=portfolio.id,
+                            ticker=symbol,
+                            quantity=quantity,
+                            avg_price=avg_price,
+                            last_price=current_price
+                        )
+                        session.add(db_holding)
+                        total_holdings_value += quantity * current_price
+                
+                # Update portfolio metrics
+                portfolio.unrealized_pnl = total_holdings_value - sum(
+                    h.quantity * h.avg_price for h in 
+                    session.query(Holding).filter_by(portfolio_id=portfolio.id).all()
+                )
+                
+                session.commit()
+                
+                # Update current portfolio reference
+                self.portfolio_manager.current_portfolio = portfolio
+                
+                logger.debug(f"Portfolio synced - Cash: Rs.{available_cash:.2f}, Holdings: Rs.{total_holdings_value:.2f}")
+                self.last_sync_time = time.time()
+                return True
+                
+            except Exception as e:
+                if session:
+                    session.rollback()
+                raise e
+            finally:
+                if session:
+                    session.close()
             
         except Exception as e:
             logger.error(f"Failed to sync portfolio with Dhan: {e}")
             return False
     
     def get_real_time_price(self, symbol: str) -> float:
-        """Get real-time price from Dhan API"""
+        """Get real-time price using Fyers API for reliable data"""
         try:
-            quote = self.dhan_client.get_quote(symbol)
-            price = float(quote.get("ltp", 0))
+            # Use Fyers for real-time price data (more reliable than Dhan quotes)
+            try:
+                # Import Fyers utilities
+                from testindia import get_stock_data_fyers_or_yf
+                
+                # Get recent price data from Fyers
+                hist = get_stock_data_fyers_or_yf(symbol, period="1d")
+                
+                if hist is not None and not hist.empty:
+                    current_price = float(hist['Close'].iloc[-1])
+                    if current_price > 0:
+                        logger.debug(f"Got price from Fyers for {symbol}: Rs.{current_price:.2f}")
+                        return current_price
+                    else:
+                        logger.warning(f"Invalid price from Fyers for {symbol}: {current_price}")
+                else:
+                    logger.warning(f"No price data from Fyers for {symbol}")
+                    
+            except Exception as fyers_error:
+                logger.warning(f"Fyers price fetch failed for {symbol}: {fyers_error}")
             
-            if price > 0:
-                return price
-            else:
-                logger.warning(f"Invalid price received for {symbol}: {price}")
-                return 0.0
+            # Secondary fallback: Try Dhan API if Fyers fails
+            try:
+                quote = self.dhan_client.get_quote(symbol)
+                price = float(quote.get("ltp", 0))
+                
+                if price > 0:
+                    logger.debug(f"Got fallback price from Dhan API for {symbol}: Rs.{price:.2f}")
+                    return price
+                    
+            except Exception as dhan_error:
+                logger.warning(f"Dhan API fallback failed for {symbol}: {dhan_error}")
+            
+            logger.error(f"All price sources failed for {symbol}")
+            return 0.0
                 
         except Exception as e:
             logger.error(f"Failed to get real-time price for {symbol}: {e}")
@@ -155,10 +227,22 @@ class LiveTradingExecutor:
     
     def calculate_position_size(self, symbol: str, current_price: float, 
                               signal_strength: float) -> int:
-        """Calculate position size based on risk management"""
+        """Calculate position size based on risk management using database portfolio"""
+        session = None
         try:
-            # Get available cash
-            available_cash = self.portfolio.cash
+            # Get portfolio summary from database with fresh session
+            session = self.portfolio_manager.db.Session()
+            portfolio = session.query(Portfolio).filter_by(mode='live').first()
+            if not portfolio:
+                logger.warning(f"No live portfolio found for position sizing")
+                return 0
+                
+            available_cash = portfolio.cash
+            total_value = available_cash  # Simple calculation for now
+            
+            if available_cash <= 0:
+                logger.warning(f"No available cash for {symbol}: Rs.{available_cash:.2f}")
+                return 0
             
             # Maximum capital per trade
             max_trade_amount = available_cash * self.max_capital_per_trade
@@ -184,53 +268,12 @@ class LiveTradingExecutor:
         except Exception as e:
             logger.error(f"Failed to calculate position size for {symbol}: {e}")
             return 0
+        finally:
+            if session:
+                session.close()
     
     def execute_buy_order(self, symbol: str, signal_data: Dict) -> Dict:
-        """Execute a buy order through Dhan API"""
-        try:
-            # Get real-time price
-            current_price = self.get_real_time_price(symbol)
-            if not current_price:
-                return {"success": False, "message": "Failed to get current price"}
-            
-            # Calculate position size
-            quantity = self.calculate_position_size(symbol, current_price, signal_data.get("confidence", 0.5))
-            if quantity <= 0:
-                return {"success": False, "message": "Invalid position size"}
-            
-            # Place order through Dhan API
-            order_result = self.dhan_client.place_order(
-                symbol=symbol,
-                quantity=quantity,
-                price=current_price,
-                order_type="LIMIT",
-                transaction_type="BUY"
-            )
-            
-            if order_result.get("success"):
-                # Record trade in database
-                self.portfolio.record_trade(
-                    ticker=symbol,
-                    action="buy",
-                    quantity=quantity,
-                    price=current_price,
-                    stop_loss=signal_data.get("stop_loss"),
-                    take_profit=signal_data.get("take_profit")
-                )
-                
-                return {
-                    "success": True,
-                    "message": "Order executed successfully",
-                    "order_id": order_result.get("order_id"),
-                    "quantity": quantity,
-                    "price": current_price
-                }
-                
-            return {"success": False, "message": order_result.get("message", "Order failed")}
-            
-        except Exception as e:
-            logger.error(f"Error executing buy order: {e}")
-            return {"success": False, "message": str(e)}
+        """Execute a buy order through Dhan API with database recording"""
         try:
             # Check daily trade limit
             if self._check_daily_limits():
@@ -240,14 +283,21 @@ class LiveTradingExecutor:
             if not self.dhan_client.is_market_open():
                 return {"success": False, "message": "Market is closed"}
             
-            # Get current price
+            # Get current price using Fyers (reliable) with fallback
             current_price = self.get_real_time_price(symbol)
             if current_price <= 0:
-                return {"success": False, "message": "Unable to get current price"}
+                # Use the price from trading signal as final fallback
+                current_price = signal_data.get("current_price", 0)
+                if current_price <= 0:
+                    return {"success": False, "message": "Unable to get current price from any source"}
+                logger.info(f"Using trading signal price for {symbol}: Rs.{current_price:.2f}")
             
-            # Calculate position size
-            signal_strength = signal_data.get("confidence", 0.5)
-            quantity = self.calculate_position_size(symbol, current_price, signal_strength)
+            # Use provided quantity if available, otherwise calculate
+            quantity = signal_data.get("quantity", 0)
+            if quantity <= 0:
+                # Calculate position size if no quantity provided
+                signal_strength = signal_data.get("confidence", 0.5)
+                quantity = self.calculate_position_size(symbol, current_price, signal_strength)
             
             if quantity <= 0:
                 return {"success": False, "message": "Insufficient funds or invalid quantity"}
@@ -272,6 +322,20 @@ class LiveTradingExecutor:
                     "signal_data": signal_data
                 }
                 
+                # Record trade in database immediately (market orders usually execute quickly)
+                try:
+                    self.portfolio_manager.record_trade(
+                        ticker=symbol,
+                        action="buy",
+                        quantity=quantity,
+                        price=current_price,
+                        stop_loss=signal_data.get("stop_loss"),
+                        take_profit=signal_data.get("take_profit")
+                    )
+                    logger.info(f"Trade recorded in database: BUY {quantity} {symbol} at Rs.{current_price:.2f}")
+                except Exception as db_error:
+                    logger.error(f"Failed to record trade in database: {db_error}")
+                
                 # Update trade count
                 self._update_daily_trade_count()
                 
@@ -291,59 +355,79 @@ class LiveTradingExecutor:
         except Exception as e:
             logger.error(f"Failed to execute buy order for {symbol}: {e}")
             return {"success": False, "message": f"Buy order failed: {str(e)}"}
+
     
     def execute_sell_order(self, symbol: str, signal_data: Dict) -> Dict:
-        """Execute a sell order through Dhan API"""
+        """Execute a sell order through Dhan API with database integration"""
         try:
             # Enforce global sell disable flag
             if not self.enable_sell:
                 logger.info("Sell disabled by configuration (ENABLE_SELL=false). Skipping sell for %s", symbol)
                 return {"success": False, "message": "Sell disabled by configuration"}
 
-            # Get real-time price
+            # Get current price
             current_price = self.get_real_time_price(symbol)
             if not current_price:
                 return {"success": False, "message": "Failed to get current price"}
             
-            # Get current holding
-            holding = self.portfolio.get_holding(symbol)
-            if not holding or holding.quantity <= 0:
-                return {"success": False, "message": "No position to sell"}
+            # Get current holding from database
+            session = None
+            try:
+                session = self.portfolio_manager.db.Session()
+                portfolio = session.query(Portfolio).filter_by(mode='live').first()
+                if not portfolio:
+                    return {"success": False, "message": "No live portfolio found"}
                 
-            # Calculate profit/loss
-            pnl = (current_price - holding.avg_price) * holding.quantity
-            
-            # Place order through Dhan API
-            order_result = self.dhan_client.place_order(
-                symbol=symbol,
-                quantity=holding.quantity,
-                price=current_price,
-                order_type="LIMIT",
-                transaction_type="SELL"
-            )
-            
-            if order_result.get("success"):
-                # Record trade in database
-                self.portfolio.record_trade(
-                    ticker=symbol,
-                    action="sell",
+                holding = session.query(Holding).filter_by(
+                    portfolio_id=portfolio.id, 
+                    ticker=symbol
+                ).first()
+                
+                if not holding or holding.quantity <= 0:
+                    return {"success": False, "message": "No position to sell"}
+                    
+                # Calculate profit/loss
+                pnl = (current_price - holding.avg_price) * holding.quantity
+                
+                # Place order through Dhan API
+                order_response = self.dhan_client.place_order(
+                    symbol=symbol,
                     quantity=holding.quantity,
-                    price=current_price,
-                    pnl=pnl,
-                    stop_loss=signal_data.get("stop_loss"),
-                    take_profit=signal_data.get("take_profit")
+                    order_type="MARKET",
+                    side="SELL"
                 )
                 
-                return {
-                    "success": True,
-                    "message": "Order executed successfully",
-                    "order_id": order_result.get("order_id"),
-                    "quantity": holding.quantity,
-                    "price": current_price,
-                    "pnl": pnl
-                }
-                
-            return {"success": False, "message": order_result.get("message", "Order failed")}
+                order_id = order_response.get("orderId")
+                if order_id:
+                    # Record trade in database
+                    try:
+                        self.portfolio_manager.record_trade(
+                            ticker=symbol,
+                            action="sell",
+                            quantity=holding.quantity,
+                            price=current_price,
+                            pnl=pnl,
+                            stop_loss=signal_data.get("stop_loss"),
+                            take_profit=signal_data.get("take_profit")
+                        )
+                        logger.info(f"Sell trade recorded in database: {holding.quantity} {symbol} at Rs.{current_price:.2f}")
+                    except Exception as db_error:
+                        logger.error(f"Failed to record sell trade in database: {db_error}")
+                    
+                    return {
+                        "success": True,
+                        "order_id": order_id,
+                        "quantity": holding.quantity,
+                        "price": current_price,
+                        "pnl": pnl,
+                        "message": f"Sell order placed for {holding.quantity} shares of {symbol}"
+                    }
+                else:
+                    return {"success": False, "message": "Sell order placement failed"}
+                    
+            finally:
+                if session:
+                    session.close()
 
         except Exception as e:
             logger.error(f"Error executing sell order: {e}")
@@ -412,71 +496,92 @@ class LiveTradingExecutor:
     
     def _update_portfolio_after_execution(self, symbol: str, side: str, 
                                         quantity: int, price: float):
-        """Update portfolio after order execution"""
+        """Update portfolio after order execution using database"""
+        session = None
         try:
+            session = self.portfolio_manager.db.Session()
+            portfolio = session.query(Portfolio).filter_by(mode='live').first()
+            if not portfolio:
+                logger.error("No live portfolio found for execution update")
+                return
+            
             if side == "BUY":
-                # Add to holdings
-                if symbol in self.portfolio.holdings:
+                # Update or create holding
+                holding = session.query(Holding).filter_by(
+                    portfolio_id=portfolio.id, 
+                    ticker=symbol
+                ).first()
+                
+                if holding:
                     # Average down the price
-                    existing = self.portfolio.holdings[symbol]
-                    total_qty = existing["quantity"] + quantity
-                    total_cost = (existing["quantity"] * existing["avg_price"]) + (quantity * price)
+                    total_qty = holding.quantity + quantity
+                    total_cost = (holding.quantity * holding.avg_price) + (quantity * price)
                     avg_price = total_cost / total_qty
                     
-                    self.portfolio.holdings[symbol] = {
-                        "quantity": total_qty,
-                        "avg_price": avg_price,
-                        "current_price": price,
-                        "total_value": total_qty * price,
-                        "pnl": total_qty * (price - avg_price)
-                    }
+                    holding.quantity = total_qty
+                    holding.avg_price = avg_price
+                    holding.last_price = price
                 else:
                     # New holding
-                    self.portfolio.holdings[symbol] = {
-                        "quantity": quantity,
-                        "avg_price": price,
-                        "current_price": price,
-                        "total_value": quantity * price,
-                        "pnl": 0.0
-                    }
+                    holding = Holding(
+                        portfolio_id=portfolio.id,
+                        ticker=symbol,
+                        quantity=quantity,
+                        avg_price=price,
+                        last_price=price
+                    )
+                    session.add(holding)
                 
                 # Reduce cash
-                self.portfolio.cash -= quantity * price
+                portfolio.cash -= quantity * price
                 
             elif side == "SELL":
-                # Remove from holdings
-                if symbol in self.portfolio.holdings:
-                    existing = self.portfolio.holdings[symbol]
+                # Update holding
+                holding = session.query(Holding).filter_by(
+                    portfolio_id=portfolio.id, 
+                    ticker=symbol
+                ).first()
+                
+                if holding and holding.quantity >= quantity:
+                    # Calculate P&L
+                    pnl = quantity * (price - holding.avg_price)
+                    self.daily_pnl += pnl
                     
-                    if existing["quantity"] >= quantity:
-                        # Calculate P&L
-                        pnl = quantity * (price - existing["avg_price"])
-                        self.daily_pnl += pnl
-                        
-                        # Update holding
-                        remaining_qty = existing["quantity"] - quantity
-                        if remaining_qty > 0:
-                            self.portfolio.holdings[symbol]["quantity"] = remaining_qty
-                            self.portfolio.holdings[symbol]["total_value"] = remaining_qty * price
-                            self.portfolio.holdings[symbol]["pnl"] = remaining_qty * (price - existing["avg_price"])
-                        else:
-                            # Remove holding completely
-                            del self.portfolio.holdings[symbol]
-                        
-                        # Add cash
-                        self.portfolio.cash += quantity * price
-                        
-                        logger.info(f"Trade P&L: Rs.{pnl:.2f} for {quantity} {symbol}")
+                    # Update holding
+                    remaining_qty = holding.quantity - quantity
+                    if remaining_qty > 0:
+                        holding.quantity = remaining_qty
+                        holding.last_price = price
+                    else:
+                        # Remove holding completely
+                        session.delete(holding)
+                    
+                    # Add cash
+                    portfolio.cash += quantity * price
+                    
+                    # Update realized P&L
+                    portfolio.realized_pnl += pnl
+                    
+                    logger.info(f"Trade P&L: Rs.{pnl:.2f} for {quantity} {symbol}")
             
-            # Update total portfolio value
-            holdings_value = sum(h["total_value"] for h in self.portfolio.holdings.values())
-            self.portfolio.total_value = self.portfolio.cash + holdings_value
+            # Update portfolio timestamp
+            portfolio.last_updated = datetime.now()
+            session.commit()
+            
+            # Sync portfolio manager current portfolio
+            self.portfolio_manager.current_portfolio = portfolio
             
         except Exception as e:
+            if session:
+                session.rollback()
             logger.error(f"Failed to update portfolio after execution: {e}")
+            raise
+        finally:
+            if session:
+                session.close()
     
     def _check_daily_limits(self) -> bool:
-        """Check if daily trading limits are exceeded"""
+        """Check if daily trading limits are exceeded using database"""
         current_date = datetime.now().date()
         
         # Reset daily counters if new day
@@ -490,11 +595,23 @@ class LiveTradingExecutor:
             logger.warning(f"Daily trade limit reached: {self.daily_trade_count}")
             return True
         
-        # Check daily loss limit
-        max_loss = self.portfolio.total_value * self.max_daily_loss
-        if self.daily_pnl < -max_loss:
-            logger.warning(f"Daily loss limit reached: Rs.{self.daily_pnl:.2f}")
-            return True
+        # Check daily loss limit using fresh database session
+        session = None
+        try:
+            session = self.portfolio_manager.db.Session()
+            portfolio = session.query(Portfolio).filter_by(mode='live').first()
+            if portfolio:
+                total_value = portfolio.cash  # Simple calculation
+                max_loss = total_value * self.max_daily_loss
+                
+                if self.daily_pnl < -max_loss:
+                    logger.warning(f"Daily loss limit reached: Rs.{self.daily_pnl:.2f}")
+                    return True
+        except Exception as e:
+            logger.error(f"Error checking daily loss limit: {e}")
+        finally:
+            if session:
+                session.close()
         
         return False
     

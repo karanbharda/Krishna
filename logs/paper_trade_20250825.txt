@@ -496,3 +496,293 @@ Decision Factors:
   - Sell Signals: 0/4
   - Final Decision: HOLD
 ============================================================
+
+[2025-08-25 12:15:46] === STRATEGY ANALYSIS: IOB.NS ===
+Market Sentiment:
+  - Positive: 58.3% (7.0 articles)
+  - Negative: 16.7% (2.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.38.29
+  - Predicted Price: Rs.39.01
+  - Expected Change: +1.87%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.465
+  - Sell Score: 0.150
+  - Buy Signals: 0/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 12:19:15] === STRATEGY ANALYSIS: UCOBANK.NS ===
+Market Sentiment:
+  - Positive: 9.1% (1.0 articles)
+  - Negative: 9.1% (1.0 articles)
+  - Overall: Bearish
+ML/RL Analysis:
+  - Current Price: Rs.28.97
+  - Predicted Price: Rs.29.11
+  - Expected Change: +0.49%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.150
+  - Sell Score: 0.250
+  - Buy Signals: 0/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 12:45:46] === STRATEGY ANALYSIS: PSB.NS ===
+Market Sentiment:
+  - Positive: 33.3% (4.0 articles)
+  - Negative: 33.3% (4.0 articles)
+  - Overall: Bearish
+ML/RL Analysis:
+  - Current Price: Rs.28.95
+  - Predicted Price: Rs.28.74
+  - Expected Change: -0.73%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.150
+  - Sell Score: 0.250
+  - Buy Signals: 1/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 12:49:17] === STRATEGY ANALYSIS: NSLNISP.NS ===
+Market Sentiment:
+  - Positive: 41.7% (5.0 articles)
+  - Negative: 25.0% (3.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.38.95
+  - Predicted Price: Rs.38.98
+  - Expected Change: +0.08%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.289
+  - Sell Score: 0.150
+  - Buy Signals: 1/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 12:52:52] === STRATEGY ANALYSIS: CENTRALBK.NS ===
+Market Sentiment:
+  - Positive: 63.6% (7.0 articles)
+  - Negative: 0.0% (0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.35.79
+  - Predicted Price: Rs.35.60
+  - Expected Change: -0.53%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.500
+  - Sell Score: 0.250
+  - Buy Signals: 3/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 13:09:01] === STRATEGY ANALYSIS: NSLNISP.NS ===
+Market Sentiment:
+  - Positive: 41.7% (5.0 articles)
+  - Negative: 25.0% (3.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.39.00
+  - Predicted Price: Rs.38.62
+  - Expected Change: -0.97%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.289
+  - Sell Score: 0.152
+  - Buy Signals: 1/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 13:09:01] === PAPER TRADING P&L SUMMARY ===
+Session Duration: 766.0 hours
+
+Portfolio Performance:
+  - Starting Balance: Rs.10,000.00
+  - Current Cash: Rs.1,000.00
+  - Holdings Value: Rs.0.00
+  - Total Portfolio Value: Rs.1,000.00
+  - Total Return: Rs.-9,000.00 (-90.00%)
+  - Realized P&L: Rs.0.00
+  - Unrealized P&L: Rs.0.00
+
+Trading Statistics:
+  - Total Trades: 9
+  - Buy Orders: 9
+  - Sell Orders: 0
+  - Win Rate: 0.0%
+  - Active Positions: 0
+======================================================================
+
+[2025-08-25 13:13:28] === STRATEGY ANALYSIS: NSLNISP.NS ===
+Market Sentiment:
+  - Positive: 41.7% (5.0 articles)
+  - Negative: 25.0% (3.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.38.94
+  - Predicted Price: Rs.38.87
+  - Expected Change: -0.17%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.289
+  - Sell Score: 0.150
+  - Buy Signals: 1/4
+  - Sell Signals: 1/4
+  - Final Decision: HOLD
+============================================================
+
+[2025-08-25 13:27:59] === BUY SIGNAL EXECUTED ===
+Asset: NSLNISP.NS
+Action: BUY 5 shares at Rs.38.92
+Trade Value: Rs.194.60
+Entry Signal: Price Rs.38.92 identified as favorable entry point
+Position Size: 5 shares (19.5% of portfolio)
+Portfolio Cash: Rs.805.40
+Total Portfolio Value: Rs.1,000.25
+Unrealized P&L: Rs.0.25
+============================================================
+
+[2025-08-25 13:28:00] === STRATEGY ANALYSIS: NSLNISP.NS ===
+Market Sentiment:
+  - Positive: 50.0% (6.0 articles)
+  - Negative: 25.0% (3.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.38.92
+  - Predicted Price: Rs.39.15
+  - Expected Change: +0.59%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.326
+  - Sell Score: 0.150
+  - Buy Signals: 1/4
+  - Sell Signals: 1/4
+  - Final Decision: BUY
+  - Quantity: 5 shares
+  - Trade Value: Rs.194.60
+============================================================
+
+[2025-08-25 13:44:26] === STRATEGY ANALYSIS: NSLNISP.NS ===
+Market Sentiment:
+  - Positive: 50.0% (6.0 articles)
+  - Negative: 25.0% (3.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.38.99
+  - Predicted Price: Rs.39.25
+  - Expected Change: +0.67%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.326
+  - Sell Score: 0.150
+  - Buy Signals: 1/4
+  - Sell Signals: 1/4
+  - Final Decision: BUY
+  - Quantity: 5 shares
+  - Trade Value: Rs.194.95
+============================================================
+
+[2025-08-25 13:55:37] === BUY SIGNAL EXECUTED ===
+Asset: NSLNISP.NS
+Action: BUY 5 shares at Rs.39.07
+Trade Value: Rs.195.35
+Entry Signal: Price Rs.39.07 identified as favorable entry point
+Position Size: 5 shares (19.5% of portfolio)
+Portfolio Cash: Rs.804.65
+Total Portfolio Value: Rs.1,000.15
+Unrealized P&L: Rs.0.15
+============================================================
+
+[2025-08-25 13:55:38] === STRATEGY ANALYSIS: NSLNISP.NS ===
+Market Sentiment:
+  - Positive: 50.0% (6.0 articles)
+  - Negative: 25.0% (3.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.39.07
+  - Predicted Price: Rs.38.90
+  - Expected Change: -0.44%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.325
+  - Sell Score: 0.150
+  - Buy Signals: 2/4
+  - Sell Signals: 1/4
+  - Final Decision: BUY
+  - Quantity: 5 shares
+  - Trade Value: Rs.195.35
+============================================================
+
+[2025-08-25 14:00:56] === BUY SIGNAL EXECUTED ===
+Asset: IOB.NS
+Action: BUY 5 shares at Rs.38.25
+Trade Value: Rs.191.25
+Entry Signal: Price Rs.38.25 identified as favorable entry point
+Position Size: 5 shares (19.1% of portfolio)
+Portfolio Cash: Rs.808.75
+Total Portfolio Value: Rs.1,000.00
+Unrealized P&L: Rs.0.00
+============================================================
+
+[2025-08-25 14:00:56] === STRATEGY ANALYSIS: IOB.NS ===
+Market Sentiment:
+  - Positive: 45.5% (5.0 articles)
+  - Negative: 18.2% (2.0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.38.25
+  - Predicted Price: Rs.38.29
+  - Expected Change: +0.10%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.312
+  - Sell Score: 0.150
+  - Buy Signals: 2/4
+  - Sell Signals: 1/4
+  - Final Decision: BUY
+  - Quantity: 5 shares
+  - Trade Value: Rs.191.25
+============================================================
+
+[2025-08-25 14:06:11] === BUY SIGNAL EXECUTED ===
+Asset: SUZLON.NS
+Action: BUY 3 shares at Rs.57.86
+Trade Value: Rs.173.58
+Entry Signal: Price Rs.57.86 identified as favorable entry point
+Position Size: 3 shares (17.4% of portfolio)
+Portfolio Cash: Rs.826.42
+Total Portfolio Value: Rs.1,000.03
+Unrealized P&L: Rs.0.03
+============================================================
+
+[2025-08-25 14:06:11] === STRATEGY ANALYSIS: SUZLON.NS ===
+Market Sentiment:
+  - Positive: 100.0% (12.0 articles)
+  - Negative: 0.0% (0 articles)
+  - Overall: Bullish
+ML/RL Analysis:
+  - Current Price: Rs.57.86
+  - Predicted Price: Rs.57.75
+  - Expected Change: -0.20%
+  - RL Recommendation: HOLD
+Decision Factors:
+  - Buy Score: 0.500
+  - Sell Score: 0.250
+  - Buy Signals: 4/4
+  - Sell Signals: 1/4
+  - Final Decision: BUY
+  - Quantity: 3 shares
+  - Trade Value: Rs.173.58
+============================================================

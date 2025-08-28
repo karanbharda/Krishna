@@ -1731,21 +1731,27 @@ class VirtualPortfolio:
             return False
 
     def get_security_id(self, ticker):
-        """Fetch security ID for a ticker from Dhan API or a mapping."""
+        """Fetch security ID for a ticker using dynamic resolution system."""
         try:
-            # Convert ticker to Dhan format (remove .NS, .BO suffixes)
-            dhan_symbol = ticker.split('.')[0] if ticker.endswith(('.NS', '.BO')) else ticker
-
-            # Use fetch_security_list instead of get_instruments
-            instruments = self.api.fetch_security_list("compact")
-            for inst in instruments:
-                if inst.get("trading_symbol") == dhan_symbol and inst.get("exchange_segment") == "NSE":
-                    return inst.get("security_id")
-            logger.error(f"Security ID not found for {ticker} (converted to {dhan_symbol})")
+            # Import the dynamic security ID method from dhan_client
+            from dhan_client import DhanAPIClient
+            
+            # Create a temporary client instance for security ID lookup
+            # Use dummy credentials since we only need the mapping function
+            temp_client = DhanAPIClient("temp", "temp")
+            
+            # Use the dynamic security ID resolution
+            security_id = temp_client.get_security_id(ticker)
+            logger.info(f"Found security ID for {ticker}: {security_id}")
+            return security_id
+            
+        except ValueError as e:
+            logger.error(f"Security ID not found for {ticker}: {e}")
             return None
         except Exception as e:
             logger.error(f"Error fetching security ID for {ticker}: {e}")
             return None
+
 
     def get_value(self, current_prices):
         """Calculate total portfolio value based on current prices."""
@@ -2092,7 +2098,26 @@ class TradingExecutor:
         self.dhanhq = portfolio.api  # Use the dhanhq client from VirtualPortfolio
         self.stop_loss_pct = float(config.get("stop_loss_pct", 0.05))
         self.max_capital_per_trade = float(config.get("max_capital_per_trade", 0.40))  # Increased from 25% to 40%
-        self.max_trade_limit = int(config.get("max_trade_limit", 10))
+        self.max_trade_limit = int(config.get("max_trade_limit", 150))
+        
+        # Initialize live executor for database integration if available
+        self.live_executor = None
+        if self.mode == "live":
+            try:
+                from portfolio_manager import DualPortfolioManager
+                from live_executor import LiveTradingExecutor
+                
+                # Check if we have a portfolio manager available
+                if hasattr(self, '_portfolio_manager'):
+                    self.live_executor = self._portfolio_manager.live_executor
+                else:
+                    logger.warning("No portfolio manager available for live trading database integration")
+            except ImportError:
+                logger.warning("Live trading database components not available")
+        
+    def set_live_executor(self, live_executor):
+        """Set the live executor for database integration"""
+        self.live_executor = live_executor
 
     def execute_trade(self, action, ticker, qty, price, stop_loss=None, take_profit=None):
         try:
@@ -2143,25 +2168,63 @@ class TradingExecutor:
                     stop_loss = price * (1 + self.stop_loss_pct)
 
             # Execute trade based on mode
-            if self.mode == "live" and self.dhanhq:
-                # Fetch security ID for live trading
-                security_id = self.get_security_id(ticker)
-                if security_id is None:
-                    error_msg = f"Could not find security ID for {ticker}"
-                    logger.error(error_msg)
-                    return {"success": False, "message": error_msg}
+            if self.mode == "live":
+                # Use database-integrated live executor if available
+                if self.live_executor:
+                    logger.info(f"Using database-integrated live executor for {action.upper()} {qty} {ticker}")
+                    
+                    signal_data = {
+                        "confidence": 0.5,  # Default confidence
+                        "stop_loss": stop_loss,
+                        "take_profit": take_profit,
+                        "current_price": price,  # Pass current price as fallback
+                        "quantity": qty  # Pass the calculated quantity
+                    }
+                    
+                    if action.upper() == "BUY":
+                        result = self.live_executor.execute_buy_order(ticker, signal_data)
+                    else:  # SELL
+                        result = self.live_executor.execute_sell_order(ticker, signal_data)
+                    
+                    if result.get("success"):
+                        logger.info(f"Database live trade executed: {action} {qty} units of {ticker} at Rs.{price}")
+                        return {
+                            "success": True,
+                            "action": action,
+                            "ticker": ticker,
+                            "qty": result.get("quantity", qty),
+                            "price": result.get("price", price),
+                            "stop_loss": stop_loss,
+                            "take_profit": take_profit,
+                            "mode": self.mode,
+                            "order_id": result.get("order_id")
+                        }
+                    else:
+                        logger.error(f"Database live trade failed: {result.get('message')}")
+                        return {"success": False, "message": result.get("message", "Live trade failed")}
+                
+                # Fallback to original live trading logic if no database executor
+                elif self.dhanhq:
+                    # Fetch security ID for live trading
+                    security_id = self.get_security_id(ticker)
+                    if security_id is None:
+                        error_msg = f"Could not find security ID for {ticker}"
+                        logger.error(error_msg)
+                        return {"success": False, "message": error_msg}
 
-                # Place live order
-                order = self.dhanhq.place_order(
-                    security_id=security_id,
-                    exchange_segment="NSE_EQ",
-                    transaction_type=action.upper(),
-                    order_type="MARKET",
-                    quantity=int(qty),
-                    price=0,  # Market order
-                    validity="DAY"
-                )
-                logger.info(f"Live trade executed: {action} {qty} units of {ticker} at Rs.{price}")
+                    # Place live order
+                    order = self.dhanhq.place_order(
+                        security_id=security_id,
+                        exchange_segment="NSE_EQ",
+                        transaction_type=action.upper(),
+                        order_type="MARKET",
+                        quantity=int(qty),
+                        price=0,  # Market order
+                        validity="DAY"
+                    )
+                    logger.info(f"Legacy live trade executed: {action} {qty} units of {ticker} at Rs.{price}")
+                else:
+                    return {"success": False, "message": "No live trading client available"}
             else:
                 # Enhanced paper trading logging
                 signal_type = "ENTRY" if action.upper() == "BUY" else "EXIT"
@@ -2205,20 +2268,25 @@ class TradingExecutor:
         return ticker
 
     def get_security_id(self, symbol, exchange="NSE"):
-        """Fetch security ID for a ticker from Dhan API."""
+        """Fetch security ID for a ticker using dynamic resolution system."""
         try:
-            # Convert ticker to Dhan format
-            dhan_symbol = self.convert_ticker_to_dhan_format(symbol)
-
-            # Use fetch_security_list instead of get_instruments
-            instruments = self.dhanhq.fetch_security_list("compact")
-            for inst in instruments:
-                if inst.get("trading_symbol") == dhan_symbol and inst.get("exchange_segment") == exchange:
-                    return inst.get("security_id")
-            logger.error(f"Security ID not found for {symbol} (converted to {dhan_symbol})")
+            # Import the dynamic security ID method from dhan_client
+            from dhan_client import DhanAPIClient
+            
+            # Create a temporary client instance for security ID lookup
+            # Use dummy credentials since we only need the mapping function
+            temp_client = DhanAPIClient("temp", "temp")
+            
+            # Use the dynamic security ID resolution
+            security_id = temp_client.get_security_id(symbol)
+            logger.info(f"Found security ID for {symbol}: {security_id}")
+            return security_id
+            
+        except ValueError as e:
+            logger.error(f"Security ID not found for {symbol}: {e}")
             return None
         except Exception as e:
-            logger.error(f"Error fetching security ID for {symbol}: {str(e)}")
+            logger.error(f"Error fetching security ID for {symbol}: {e}")
             return None
         
 class PerformanceReport:
@@ -4809,7 +4877,15 @@ class Stock:
                             X_train, y_train, X_test, y_test, input_size=X.shape[1], bot_running=bot_running
                         )
 
-                        if adv_training_result["success"]:
+                        # Handle case where adversarial training returns None due to insufficient data
+                        if adv_training_result is None:
+                            logger.warning(f"Adversarial training returned None for {ticker}. Using stacking regressor prediction.")
+                            lstm_metrics = {"mse": "N/A", "r2": "N/A", "adv_mse": "N/A", "adv_r2": "N/A"}
+                            transformer_metrics = {"mse": "N/A", "r2": "N/A", "adv_mse": "N/A", "adv_r2": "N/A"}
+                            lstm_pred = predicted_price
+                            transformer_pred = predicted_price
+                            ensemble_pred = predicted_price
+                        elif adv_training_result["success"]:
                             lstm_model = adv_training_result["lstm_model"]
                             transformer_model = adv_training_result["transformer_model"]
                             lstm_metrics = adv_training_result["lstm_metrics"]
@@ -5248,7 +5324,11 @@ class StockTradingBot:
         # ENHANCED: Use weighted sentiment for better accuracy
         sentiment_score = 0.0
 
-        # Try weighted aggregation first (NEW), fallback to regular aggregation
+        # ENHANCED: Professional sentiment processing with comprehensive analysis integration
+        sentiment_score = 0.0
+        sentiment_confidence = 0.0
+        
+        # Try weighted aggregation first (preferred method)
         if "weighted_aggregated" in sentiment_data and sentiment_data["weighted_aggregated"]["total_weight"] > 0:
             weighted = sentiment_data["weighted_aggregated"]
             total_weighted = weighted["positive"] + weighted["negative"] + weighted["neutral"]
@@ -5256,56 +5336,152 @@ class StockTradingBot:
             if total_weighted > 0:
                 positive_ratio = weighted["positive"] / total_weighted
                 negative_ratio = weighted["negative"] / total_weighted
-                logger.debug(f"Using WEIGHTED sentiment - Positive: {positive_ratio:.3f}, Negative: {negative_ratio:.3f}")
+                neutral_ratio = weighted["neutral"] / total_weighted
+                
+                # Use comprehensive analysis for confidence scoring
+                if "comprehensive_analysis" in sentiment_data:
+                    comprehensive = sentiment_data["comprehensive_analysis"]
+                    sentiment_confidence = comprehensive.get("confidence_score", 0.0)
+                    
+                    # Also use bullish/bearish strength from comprehensive analysis
+                    bullish_strength = comprehensive.get("sentiment_strength", {}).get("bullish", 0)
+                    bearish_strength = comprehensive.get("sentiment_strength", {}).get("bearish", 0)
+                    
+                    logger.debug(f"Comprehensive sentiment - Bullish: {bullish_strength:.3f}, Bearish: {bearish_strength:.3f}, Confidence: {sentiment_confidence:.3f}")
+                    
+                    # Use comprehensive analysis if available and confident
+                    if sentiment_confidence > 0.4 and (bullish_strength > 0 or bearish_strength > 0):
+                        total_strength = bullish_strength + bearish_strength
+                        if total_strength > 0:
+                            bullish_ratio = bullish_strength / total_strength
+                            sentiment_score = (bullish_ratio - 0.5) * 2  # Convert to -1 to +1 scale
+                            logger.debug(f"Using comprehensive analysis: bullish_ratio={bullish_ratio:.3f}, sentiment_score={sentiment_score:.3f}")
+                        else:
+                            sentiment_score = 0
+                    else:
+                        # Fall back to ratio-based calculation
+                        sentiment_score = (positive_ratio - negative_ratio)
+                        logger.debug(f"Using ratio-based sentiment: pos={positive_ratio:.3f}, neg={negative_ratio:.3f}, score={sentiment_score:.3f}")
+                else:
+                    # Standard ratio calculation
+                    sentiment_score = (positive_ratio - negative_ratio)
+                    sentiment_confidence = max(positive_ratio, negative_ratio, neutral_ratio)
+                    logger.debug(f"Standard weighted sentiment: pos={positive_ratio:.3f}, neg={negative_ratio:.3f}, score={sentiment_score:.3f}")
+                
+                logger.debug(f"Using WEIGHTED sentiment - Total: {total_weighted:.1f}, Weight: {weighted['total_weight']:.2f}")
             else:
                 positive_ratio = negative_ratio = 0
+                sentiment_score = 0
+                logger.debug("Weighted sentiment data empty")
         else:
             # Fallback to regular aggregation
-            aggregated = sentiment_data["aggregated"]
+            aggregated = sentiment_data.get("aggregated", {"positive": 0, "negative": 0, "neutral": 0})
             total_sentiment = aggregated["positive"] + aggregated["negative"] + aggregated["neutral"]
 
             if total_sentiment > 0:
                 positive_ratio = aggregated["positive"] / total_sentiment
                 negative_ratio = aggregated["negative"] / total_sentiment
-                logger.debug(f"Using REGULAR sentiment - Positive: {positive_ratio:.3f}, Negative: {negative_ratio:.3f}")
+                sentiment_score = (positive_ratio - negative_ratio)
+                sentiment_confidence = max(positive_ratio, negative_ratio)
+                logger.debug(f"Using REGULAR aggregated sentiment - Positive: {positive_ratio:.3f}, Negative: {negative_ratio:.3f}")
             else:
                 positive_ratio = negative_ratio = 0
+                sentiment_score = 0
+                sentiment_confidence = 0
+                logger.debug("No sentiment data available")
 
-        # Enhanced sentiment calculation with stronger signals (same logic, better input)
-        if positive_ratio > 0.6:  # Strong positive sentiment
-            sentiment_score = 0.8 + (positive_ratio - 0.6) * 2  # Scale up strong sentiment
-        elif positive_ratio > 0.5:  # Moderate positive sentiment
-            sentiment_score = (positive_ratio - 0.5) * 4  # Amplify moderate sentiment
-        elif negative_ratio > 0.6:  # Strong negative sentiment
-            sentiment_score = -(0.8 + (negative_ratio - 0.6) * 2)
-        elif negative_ratio > 0.5:  # Moderate negative sentiment
-            sentiment_score = -((negative_ratio - 0.5) * 4)
+        # ENHANCED: Advanced sentiment scoring with progressive thresholds and confidence weighting
+        
+        # Apply confidence multiplier to sentiment score
+        confidence_adjusted_score = sentiment_score * (0.5 + sentiment_confidence * 0.5)  # 50-100% of score based on confidence
+        
+        logger.debug(f"Sentiment processing - Raw: {sentiment_score:.3f}, Confidence: {sentiment_confidence:.3f}, Adjusted: {confidence_adjusted_score:.3f}")
+        
+        # Progressive sentiment thresholds with confidence consideration
+        final_sentiment_score = 0.0
+        
+        if confidence_adjusted_score > 0.4:  # Strong positive sentiment
+            base_strength = 0.8 + (confidence_adjusted_score - 0.4) * 1.5
+            final_sentiment_score = min(base_strength, 1.0)
+            logger.debug(f"Strong positive sentiment: {confidence_adjusted_score:.3f} -> {final_sentiment_score:.3f}")
+        elif confidence_adjusted_score > 0.25:  # Moderate positive sentiment
+            final_sentiment_score = (confidence_adjusted_score - 0.25) * 4  # 0.0 to 0.6
+            logger.debug(f"Moderate positive sentiment: {confidence_adjusted_score:.3f} -> {final_sentiment_score:.3f}")
+        elif confidence_adjusted_score > 0.1:  # Weak positive sentiment
+            final_sentiment_score = (confidence_adjusted_score - 0.1) * 2  # 0.0 to 0.3
+            logger.debug(f"Weak positive sentiment: {confidence_adjusted_score:.3f} -> {final_sentiment_score:.3f}")
+        elif confidence_adjusted_score > 0.05:  # Very weak positive
+            final_sentiment_score = (confidence_adjusted_score - 0.05) * 1.5  # 0.0 to 0.075
+            logger.debug(f"Very weak positive sentiment: {confidence_adjusted_score:.3f} -> {final_sentiment_score:.3f}")
+        elif confidence_adjusted_score < -0.4:  # Strong negative sentiment (for sell signals)
+            final_sentiment_score = confidence_adjusted_score  # Keep negative for sell logic
+            logger.debug(f"Strong negative sentiment: {confidence_adjusted_score:.3f} -> {final_sentiment_score:.3f}")
+        elif confidence_adjusted_score < -0.25:  # Moderate negative
+            final_sentiment_score = confidence_adjusted_score * 0.7  # Reduce impact
+            logger.debug(f"Moderate negative sentiment: {confidence_adjusted_score:.3f} -> {final_sentiment_score:.3f}")
+        elif confidence_adjusted_score < -0.1:  # Weak negative
+            final_sentiment_score = confidence_adjusted_score * 0.5  # Further reduce
+            logger.debug(f"Weak negative sentiment: {confidence_adjusted_score:.3f} -> {final_sentiment_score:.3f}")
+        else:  # Neutral sentiment (-0.1 to +0.05)
+            final_sentiment_score = 0.0
+            logger.debug(f"Neutral sentiment: {confidence_adjusted_score:.3f} -> 0.000")
+        
+        # Store the final processed sentiment score for use in signal strength calculation
+        processed_sentiment_score = final_sentiment_score
+        
+        # Apply enhanced sentiment to buy/sell scores
+        if processed_sentiment_score > 0:
+            sentiment_contribution = processed_sentiment_score * weights["sentiment"]
+            scores["buy"] += sentiment_contribution
+            logger.debug(f"Enhanced sentiment BUY contribution: {sentiment_contribution:.3f}")
+        elif processed_sentiment_score < 0:
+            sentiment_contribution = abs(processed_sentiment_score) * weights["sentiment"]
+            scores["sell"] += sentiment_contribution
+            logger.debug(f"Enhanced sentiment SELL contribution: {sentiment_contribution:.3f}")
         else:
-            sentiment_score = 0  # Neutral sentiment
+            logger.debug("No sentiment contribution (neutral after processing)")
+        
+        # Store processed sentiment for later use in signal strength calculation
+        sentiment_score = processed_sentiment_score
 
-        # Apply sentiment score
-        if sentiment_score > 0:
-            scores["buy"] += sentiment_score * weights["sentiment"]
-        elif sentiment_score < 0:
-            scores["sell"] += abs(sentiment_score) * weights["sentiment"]
-
-        # PRODUCTION FIX: Simplified and faster ML scoring
+        # ENHANCED: Professional ML scoring with multiple validation layers
         ml_score = 0.0
-        if ml_analysis.get("success") and weights["ml"] > 0:
+        if ml_analysis.get("success") and weights["ml"] > 0:  # Fixed: Check ML analysis success directly
             ensemble_r2 = ml_analysis.get("r2_score", 0)
             predicted_price = ml_analysis.get("predicted_price", current_price)
+            
+            # Debug ML data availability
+            logger.debug(f"ML Analysis - R2: {ensemble_r2:.3f}, Predicted: {predicted_price:.2f}, Current: {current_price:.2f}")
 
-            # Only use ML if it has reasonable accuracy
-            if ensemble_r2 > 0.3:  # Lowered threshold for more signals
+            # More aggressive ML usage - lower accuracy threshold
+            if ensemble_r2 > -0.5:  # Significantly lowered threshold to allow more ML signals
                 price_change_pct = ((predicted_price - current_price) / current_price) if current_price > 0 else 0
-
-                # Stronger ML signals with lower thresholds
-                if price_change_pct > 0.02:  # Lowered from 0.03
-                    ml_score = min(price_change_pct * 3, 1.0) * ensemble_r2  # Amplified signal
+                
+                # Enhanced ML signal generation with multiple trigger points
+                if price_change_pct > 0.005:  # Lower threshold (0.5% vs 1%)
+                    # Progressive scoring based on prediction confidence
+                    base_ml_score = min(price_change_pct * 4, 1.0)  # More reasonable amplification
+                    confidence_factor = min(max(ensemble_r2, 0.1) * 2, 1.0)  # Boost confidence impact, ensure minimum
+                    ml_score = base_ml_score * confidence_factor
                     scores["buy"] += ml_score * weights["ml"]
-                elif price_change_pct < -0.02:  # Lowered from -0.03
-                    ml_score = min(abs(price_change_pct) * 3, 1.0) * ensemble_r2  # Amplified signal
+                    logger.debug(f"ML BUY signal: price_change={price_change_pct:.3f}, base_score={base_ml_score:.3f}, confidence={confidence_factor:.3f}, final={ml_score:.3f}")
+                elif price_change_pct < -0.005:  # Lower sell threshold too
+                    base_ml_score = min(abs(price_change_pct) * 4, 1.0)
+                    confidence_factor = min(max(ensemble_r2, 0.1) * 2, 1.0)
+                    ml_score = base_ml_score * confidence_factor
                     scores["sell"] += ml_score * weights["ml"]
+                    logger.debug(f"ML SELL signal: price_change={price_change_pct:.3f}, base_score={base_ml_score:.3f}, confidence={confidence_factor:.3f}, final={ml_score:.3f}")
+                else:
+                    # Still provide minimal signal for very small predictions
+                    if abs(price_change_pct) > 0.002:  # 0.2% threshold
+                        ml_score = abs(price_change_pct) * 2 * max(ensemble_r2, 0.1)
+                        if price_change_pct > 0:
+                            scores["buy"] += ml_score * weights["ml"] * 0.5  # Reduced weight for weak signals
+                        else:
+                            scores["sell"] += ml_score * weights["ml"] * 0.5
+                        logger.debug(f"ML weak signal: {price_change_pct:.3f}% -> {ml_score:.3f}")
+            else:
+                logger.debug(f"ML accuracy too low: {ensemble_r2:.3f} < -0.5 threshold")
 
         # RL Score - DISABLED for performance (weight set to 0.0)
         # This eliminates the 100-episode RL training that was causing 60+ second delays
@@ -5346,33 +5522,143 @@ class StockTradingBot:
         market_regime = detect_market_regime(history['Close'].values, volatility)
         logger.info(f"Market regime detected for {ticker}: {market_regime}")
 
-        # PRODUCTION FIX: More aggressive regime-specific confidence thresholds
-        if market_regime == "TRENDING":
-            # Aggressive in trending markets
-            base_buy_threshold = 0.25
-            base_sell_threshold = 0.30
-            logger.info(f"TRENDING market: Using aggressive thresholds (0.25)")
-        elif market_regime == "VOLATILE":
-            # Quick decisions in volatile markets
-            base_buy_threshold = 0.30
-            base_sell_threshold = 0.35
-            logger.info(f"VOLATILE market: Using quick decision thresholds (0.30)")
-        else:  # RANGE_BOUND
-            # Less conservative in range-bound markets (was 0.50, now 0.35)
-            base_buy_threshold = 0.35
-            base_sell_threshold = 0.40
-            logger.info(f"RANGE_BOUND market: Using moderate thresholds (0.35)")
+        # CRITICAL FIX: Initialize signal_strengths FIRST to prevent undefined variable error
+        signal_strengths = {}
 
-        # Risk level adjustments
-        if risk_level == "HIGH":
-            confidence_threshold = base_buy_threshold - 0.05  # More aggressive
-            sell_confidence_threshold = base_sell_threshold - 0.05
-        elif risk_level == "LOW":
-            confidence_threshold = base_buy_threshold + 0.05  # More conservative
-            sell_confidence_threshold = base_sell_threshold + 0.05
-        else:  # MEDIUM
-            confidence_threshold = base_buy_threshold
-            sell_confidence_threshold = base_sell_threshold
+        # ENHANCED: Dynamic confidence thresholds based on market volatility and recent performance
+        def calculate_dynamic_thresholds(volatility, market_regime, portfolio_metrics, signal_quality):
+            """Calculate adaptive confidence thresholds based on multiple factors"""
+            
+            # Get recent portfolio performance
+            recent_trades = [t for t in self.portfolio.trade_log if 
+                           datetime.strptime(t["timestamp"], "%Y-%m-%d %H:%M:%S.%f") > datetime.now() - timedelta(days=7)]
+            
+            # Calculate recent performance metrics
+            if recent_trades:
+                recent_success_rate = len([t for t in recent_trades if t.get("success", False)]) / len(recent_trades)
+                
+                # Calculate recent P&L
+                recent_pnl = 0
+                for trade in recent_trades:
+                    if trade["action"] == "sell" and trade["asset"] in self.portfolio.holdings:
+                        avg_price = self.portfolio.holdings[trade["asset"]].get("avg_price", trade["price"])
+                        trade_pnl = (trade["price"] - avg_price) * trade["qty"]
+                        recent_pnl += trade_pnl
+                
+                recent_pnl_rate = recent_pnl / total_value if total_value > 0 else 0
+            else:
+                recent_success_rate = 0.5  # Neutral when no recent trades
+                recent_pnl_rate = 0.0
+            
+            logger.debug(f"Recent performance - Success rate: {recent_success_rate:.3f}, P&L rate: {recent_pnl_rate:.3f}")
+            
+            # Base thresholds by market regime
+            base_thresholds = {
+                "TRENDING": {"buy": 0.20, "sell": 0.25},     # Aggressive in trends
+                "VOLATILE": {"buy": 0.35, "sell": 0.40},     # Conservative in volatility
+                "RANGE_BOUND": {"buy": 0.25, "sell": 0.30}  # Moderate in ranges
+            }
+            
+            # Get base threshold
+            regime_thresholds = base_thresholds.get(market_regime, base_thresholds["RANGE_BOUND"])
+            base_buy_threshold = regime_thresholds["buy"]
+            base_sell_threshold = regime_thresholds["sell"]
+            
+            # Volatility adjustments
+            volatility_factor = min(max(volatility * 50, 0.5), 3.0)  # 0.5 to 3.0 range
+            
+            if volatility_factor > 2.0:  # Very high volatility
+                volatility_adjustment = 0.15
+            elif volatility_factor > 1.5:  # High volatility
+                volatility_adjustment = 0.10
+            elif volatility_factor > 1.0:  # Medium volatility
+                volatility_adjustment = 0.05
+            elif volatility_factor < 0.8:  # Low volatility
+                volatility_adjustment = -0.05  # Lower thresholds
+            else:  # Normal volatility
+                volatility_adjustment = 0.0
+            
+            logger.debug(f"Volatility factor: {volatility_factor:.2f}, adjustment: {volatility_adjustment:+.3f}")
+            
+            # Performance-based adjustments
+            if recent_success_rate > 0.7:  # Good recent performance
+                performance_adjustment = -0.03  # Lower thresholds (more confident)
+            elif recent_success_rate > 0.5:  # Average performance
+                performance_adjustment = 0.0
+            else:  # Poor recent performance
+                performance_adjustment = 0.05  # Higher thresholds (more conservative)
+            
+            # P&L-based adjustments
+            if recent_pnl_rate > 0.02:  # Good recent profits (>2%)
+                pnl_adjustment = -0.02
+            elif recent_pnl_rate < -0.02:  # Recent losses (>2%)
+                pnl_adjustment = 0.03
+            else:
+                pnl_adjustment = 0.0
+            
+            # Signal quality adjustments
+            avg_signal_strength = sum(signal_strengths.values()) / len(signal_strengths) if signal_strengths else 0
+            if avg_signal_strength > 0.7:  # Very strong signals
+                signal_adjustment = -0.03
+            elif avg_signal_strength > 0.5:  # Good signals
+                signal_adjustment = -0.01
+            elif avg_signal_strength > 0.3:  # Moderate signals
+                signal_adjustment = 0.0
+            else:  # Weak signals
+                signal_adjustment = 0.04
+            
+            logger.debug(f"Performance adj: {performance_adjustment:+.3f}, P&L adj: {pnl_adjustment:+.3f}, Signal adj: {signal_adjustment:+.3f}")
+            
+            # Calculate final thresholds
+            final_buy_threshold = base_buy_threshold + volatility_adjustment + performance_adjustment + pnl_adjustment + signal_adjustment
+            final_sell_threshold = base_sell_threshold + volatility_adjustment + performance_adjustment + pnl_adjustment + signal_adjustment
+            
+            # Apply bounds to prevent extreme thresholds
+            final_buy_threshold = max(0.05, min(final_buy_threshold, 0.70))
+            final_sell_threshold = max(0.10, min(final_sell_threshold, 0.75))
+            
+            return {
+                "buy": final_buy_threshold,
+                "sell": final_sell_threshold,
+                "reasoning": {
+                    "base_regime": market_regime,
+                    "volatility_factor": volatility_factor,
+                    "recent_success_rate": recent_success_rate,
+                    "recent_pnl_rate": recent_pnl_rate,
+                    "avg_signal_strength": avg_signal_strength,
+                    "adjustments": {
+                        "volatility": volatility_adjustment,
+                        "performance": performance_adjustment,
+                        "pnl": pnl_adjustment,
+                        "signal_quality": signal_adjustment
+                    }
+                }
+            }
+        
+        # Calculate dynamic thresholds (signal_strengths already initialized above)
+        metrics = self.portfolio.get_metrics()
+        dynamic_thresholds = calculate_dynamic_thresholds(
+            volatility, market_regime, metrics, signal_strengths
+        )
+        
+        # Use dynamic thresholds
+        confidence_threshold = dynamic_thresholds["buy"]
+        sell_confidence_threshold = dynamic_thresholds["sell"]
+        
+        # Log threshold calculation details
+        logger.info(f"=== DYNAMIC CONFIDENCE THRESHOLDS for {ticker} ====")
+        logger.info(f"  Market Regime: {market_regime}")
+        logger.info(f"  Volatility: {volatility:.4f}")
+        logger.info(f"  Final Buy Threshold: {confidence_threshold:.3f}")
+        logger.info(f"  Final Sell Threshold: {sell_confidence_threshold:.3f}")
+        
+        reasoning = dynamic_thresholds["reasoning"]
+        logger.info(f"  Recent Success Rate: {reasoning['recent_success_rate']:.3f}")
+        logger.info(f"  Recent P&L Rate: {reasoning['recent_pnl_rate']:.3f}")
+        logger.info(f"  Avg Signal Strength: {reasoning['avg_signal_strength']:.3f}")
+        
+        adjustments = reasoning["adjustments"]
+        logger.info(f"  Adjustments - Vol: {adjustments['volatility']:+.3f}, Perf: {adjustments['performance']:+.3f}, P&L: {adjustments['pnl']:+.3f}, Signal: {adjustments['signal_quality']:+.3f}")
 
         # Calculate unrealized PnL
         current_prices = self.portfolio.get_current_prices()
@@ -5386,19 +5672,49 @@ class StockTradingBot:
         # PRODUCTION FIX: Weighted signal system (replaces binary signals)
         # Calculate weighted signal strength instead of binary signals
 
-        # Enhanced signal weights with focus on technical reliability
-        signal_weights = {
-            "technical": 0.35,      # Increased weight for technical analysis
-            "sentiment": 0.10,      # Reduced sentiment weight
-            "ml": 0.15,            # ML prediction strength maintained
-            "rsi": 0.15,           # RSI momentum strength maintained
-            "macd": 0.15,          # Increased MACD trend importance
-            "breakout": 0.05,      # Reduced breakout weight
-            "volume": 0.05         # Reduced volume weight for buy-only strategy
-        }
-
-        # Calculate individual signal strengths (0.0 to 1.0)
-        signal_strengths = {}
+        # ENHANCED: Optimize signal weights based on current market conditions and recent performance
+        if market_regime == "TRENDING":
+            # In trending markets, emphasize trend-following signals
+            optimized_weights = {
+                "technical": 0.40,    # Higher weight for technical in trends
+                "sentiment": 0.15,    # Moderate sentiment weight
+                "ml": 0.10,          # Reduce ML weight in trending markets
+                "rsi": 0.15,         # RSI for momentum confirmation
+                "macd": 0.15,        # MACD for trend confirmation
+                "breakout": 0.03,    # Minimal breakout weight
+                "volume": 0.02       # Minimal volume weight
+            }
+        elif market_regime == "VOLATILE":
+            # In volatile markets, emphasize risk-aware signals
+            optimized_weights = {
+                "technical": 0.25,    # Reduce technical weight in volatility
+                "sentiment": 0.05,    # Minimize sentiment in volatile markets
+                "ml": 0.20,          # Higher ML weight for pattern recognition
+                "rsi": 0.20,         # Higher RSI weight for momentum
+                "macd": 0.15,        # Moderate MACD weight
+                "breakout": 0.10,    # Higher breakout weight for volatility
+                "volume": 0.05       # Moderate volume weight
+            }
+        else:  # RANGE_BOUND
+            # In range-bound markets, balanced approach with breakout emphasis
+            optimized_weights = {
+                "technical": 0.30,    # Moderate technical weight
+                "sentiment": 0.12,    # Moderate sentiment weight
+                "ml": 0.18,          # Good ML weight for range prediction
+                "rsi": 0.12,         # Moderate RSI weight
+                "macd": 0.10,        # Lower MACD weight in ranges
+                "breakout": 0.12,    # Higher breakout weight for range breaks
+                "volume": 0.06       # Moderate volume weight
+            }
+        
+        logger.debug(f"Optimized signal weights for {market_regime}: {optimized_weights}")
+        
+        # CRITICAL FIX: Weighted signal score calculation moved to AFTER signal_strengths are populated
+        # This prevents the bug where weighted_signal_score was calculated with all zero values
+        weighted_signal_score = 0.0  # Placeholder - will be calculated after signal_strengths are populated
+        
+        # Use optimized weights for signal breakdown
+        signal_weights = optimized_weights
 
         # Get moving averages from technical indicators
         ma_20 = technical_indicators.get("SMA_20", current_ticker_price)
@@ -5412,64 +5728,618 @@ class StockTradingBot:
         volume_sma = volume_data.rolling(window=20).mean().iloc[-1] if not volume_data.empty else None
         current_volume = volume_data.iloc[-1] if not volume_data.empty else None
 
-        # Enhanced technical signal strength with multiple confirmations
-        technical_signals = {
-            'trend': 1.0 if current_ticker_price > ma_20 > ma_50 else 0.5 if current_ticker_price > ma_20 else 0.0,
-            'momentum': 1.0 if rsi_value > 40 and rsi_value < 60 else 0.5 if rsi_value > 30 else 0.0,
-            'volume': 1.0 if volume_sma and current_volume > volume_sma * 1.5 else 0.5 if volume_sma and current_volume > volume_sma else 0.0,
-            'pattern': 1.0 if support_level and current_ticker_price > support_level * 1.02 else 0.0
+        # ENHANCED: Professional technical signal with multi-timeframe analysis and adaptive thresholds
+        technical_signals = {}
+        
+        # Get current technical indicators
+        current_rsi = technical_indicators.get("rsi", 50)
+        current_macd = technical_indicators.get("macd", 0)
+        current_signal = technical_indicators.get("signal_line", 0)
+        current_bb_upper = technical_indicators.get("bb_upper", current_ticker_price * 1.02)
+        current_bb_lower = technical_indicators.get("bb_lower", current_ticker_price * 0.98)
+        
+        # ENHANCED: Multi-timeframe RSI analysis with adaptive thresholds
+        def get_adaptive_rsi_thresholds(volatility, market_regime):
+            """Calculate adaptive RSI thresholds based on market conditions"""
+            if market_regime == "VOLATILE":
+                # In volatile markets, use wider bands
+                oversold, overbought = 25, 75
+                moderate_oversold, moderate_overbought = 35, 65
+            elif market_regime == "TRENDING":
+                # In trending markets, use standard bands
+                oversold, overbought = 30, 70
+                moderate_oversold, moderate_overbought = 40, 60
+            else:  # RANGE_BOUND
+                # In range-bound markets, use tighter bands for more signals
+                oversold, overbought = 35, 65
+                moderate_oversold, moderate_overbought = 45, 55
+            
+            # Adjust for volatility
+            volatility_factor = min(max(volatility * 50, 0.5), 2.0)  # 0.5 to 2.0 range
+            adjustment = (volatility_factor - 1.0) * 5  # -2.5 to +5 adjustment
+            
+            return {
+                'oversold': max(15, oversold - adjustment),
+                'moderate_oversold': max(25, moderate_oversold - adjustment),
+                'moderate_overbought': min(75, moderate_overbought + adjustment),
+                'overbought': min(85, overbought + adjustment)
+            }
+        
+        rsi_thresholds = get_adaptive_rsi_thresholds(volatility, market_regime)
+        logger.debug(f"Adaptive RSI thresholds: {rsi_thresholds}")
+        
+        # Enhanced RSI signal calculation
+        if current_rsi < rsi_thresholds['oversold']:  # Extremely oversold
+            rsi_signal = 1.0
+            rsi_strength = "extremely_oversold"
+        elif current_rsi < rsi_thresholds['moderate_oversold']:  # Moderately oversold
+            range_size = rsi_thresholds['moderate_oversold'] - rsi_thresholds['oversold']
+            rsi_signal = 0.7 + (rsi_thresholds['moderate_oversold'] - current_rsi) / range_size * 0.3
+            rsi_strength = "moderately_oversold"
+        elif current_rsi < 50:  # Below neutral but not oversold
+            range_size = 50 - rsi_thresholds['moderate_oversold']
+            rsi_signal = 0.3 + (rsi_thresholds['moderate_oversold'] - current_rsi) / range_size * 0.4
+            rsi_strength = "below_neutral"
+        elif current_rsi < rsi_thresholds['moderate_overbought']:  # Above neutral, good momentum
+            range_size = rsi_thresholds['moderate_overbought'] - 50
+            rsi_signal = 0.3 + (current_rsi - 50) / range_size * 0.4
+            rsi_strength = "healthy_uptrend"
+        elif current_rsi < rsi_thresholds['overbought']:  # Moderately overbought
+            range_size = rsi_thresholds['overbought'] - rsi_thresholds['moderate_overbought']
+            rsi_signal = 0.3 - (current_rsi - rsi_thresholds['moderate_overbought']) / range_size * 0.2
+            rsi_strength = "moderately_overbought"
+        else:  # Extremely overbought
+            rsi_signal = 0.1
+            rsi_strength = "extremely_overbought"
+        
+        technical_signals['rsi'] = max(0.0, rsi_signal)
+        logger.debug(f"Enhanced RSI analysis: {current_rsi:.1f} -> {rsi_strength} -> signal: {technical_signals['rsi']:.3f}")
+        
+        # ENHANCED: Multi-timeframe moving average analysis
+        ma_20 = technical_indicators.get("SMA_20", current_ticker_price)
+        ma_50 = technical_indicators.get("SMA_50", current_ticker_price)
+        sma_50 = technical_indicators.get("sma_50", current_ticker_price)
+        sma_200 = technical_indicators.get("sma_200", current_ticker_price)
+        ema_50 = technical_indicators.get("ema_50", current_ticker_price)
+        
+        # Use the most reliable MA data available
+        if ma_20 and ma_50:
+            short_ma, long_ma = ma_20, ma_50
+        elif sma_50 and sma_200:
+            short_ma, long_ma = sma_50, sma_200
+        else:
+            short_ma, long_ma = current_ticker_price, current_ticker_price
+        
+        # Multi-timeframe trend analysis
+        trend_signals = []
+        
+        # Short-term trend (price vs short MA)
+        if current_ticker_price > short_ma * 1.02:  # 2% above short MA
+            short_trend = 1.0
+        elif current_ticker_price > short_ma:
+            short_trend = (current_ticker_price - short_ma) / (short_ma * 0.02) * 0.8 + 0.2
+        elif current_ticker_price > short_ma * 0.98:  # Within 2% below
+            short_trend = 0.2 + (current_ticker_price - short_ma * 0.98) / (short_ma * 0.02) * 0.2
+        else:
+            short_trend = 0.1
+        trend_signals.append(('short_term', short_trend, 0.4))  # 40% weight
+        
+        # Medium-term trend (short MA vs long MA)
+        if short_ma > long_ma * 1.01:  # Short MA clearly above long MA
+            medium_trend = 1.0
+        elif short_ma > long_ma:
+            medium_trend = 0.7 + (short_ma - long_ma) / (long_ma * 0.01) * 0.3
+        elif short_ma > long_ma * 0.99:  # Close to crossing
+            medium_trend = 0.4 + (short_ma - long_ma * 0.99) / (long_ma * 0.01) * 0.3
+        else:
+            medium_trend = 0.2
+        trend_signals.append(('medium_term', medium_trend, 0.4))  # 40% weight
+        
+        # Long-term trend momentum (if EMA available)
+        if ema_50 and abs(ema_50 - current_ticker_price) > 0:
+            ema_distance = (current_ticker_price - ema_50) / ema_50
+            if ema_distance > 0.05:  # 5% above EMA
+                long_trend = 1.0
+            elif ema_distance > 0:
+                long_trend = 0.5 + ema_distance / 0.05 * 0.5
+            elif ema_distance > -0.05:
+                long_trend = 0.3 + (ema_distance + 0.05) / 0.05 * 0.2
+            else:
+                long_trend = 0.1
+            trend_signals.append(('long_term', long_trend, 0.2))  # 20% weight
+        
+        # Calculate weighted trend signal
+        total_weight = sum(weight for _, _, weight in trend_signals)
+        weighted_trend = sum(signal * weight for _, signal, weight in trend_signals) / total_weight
+        technical_signals['trend'] = weighted_trend
+        
+        logger.debug(f"Multi-timeframe trend analysis:")
+        for name, signal, weight in trend_signals:
+            logger.debug(f"  {name}: {signal:.3f} (weight: {weight:.1f})")
+        logger.debug(f"  Weighted trend signal: {weighted_trend:.3f}")
+        
+        # ENHANCED: MACD with divergence detection
+        macd_signals = []
+        
+        # Basic MACD signal
+        if current_macd > current_signal:
+            macd_diff = current_macd - current_signal
+            if abs(current_signal) > 0.001:
+                macd_strength = min(abs(macd_diff) / abs(current_signal), 2.0)
+            else:
+                macd_strength = 1.0
+            basic_macd = min(0.5 + macd_strength * 0.5, 1.0)
+        else:
+            basic_macd = 0.2
+        macd_signals.append(('basic_crossover', basic_macd, 0.6))
+        
+        # MACD histogram trend (if available)
+        macd_histogram = technical_indicators.get("macd_histogram", 0)
+        if macd_histogram > 0:
+            histogram_signal = min(macd_histogram * 10, 1.0)  # Scale histogram
+        else:
+            histogram_signal = 0.1
+        macd_signals.append(('histogram_trend', histogram_signal, 0.4))
+        
+        # Calculate weighted MACD signal
+        total_macd_weight = sum(weight for _, _, weight in macd_signals)
+        weighted_macd = sum(signal * weight for _, signal, weight in macd_signals) / total_macd_weight
+        technical_signals['macd'] = weighted_macd
+        
+        logger.debug(f"Enhanced MACD analysis: basic={basic_macd:.3f}, histogram={histogram_signal:.3f}, weighted={weighted_macd:.3f}")
+        
+        # ENHANCED: Bollinger Bands with volatility context
+        bb_range = current_bb_upper - current_bb_lower
+        bb_position = (current_ticker_price - current_bb_lower) / bb_range if bb_range > 0 else 0.5
+        
+        if bb_position < 0.2:  # Near lower band - potential bounce
+            bb_signal = 0.8 + (0.2 - bb_position) * 1.0  # 0.8 to 1.0
+        elif bb_position < 0.4:  # Lower half - moderate signal
+            bb_signal = 0.5 + (0.4 - bb_position) * 1.5  # 0.5 to 0.8
+        elif bb_position < 0.6:  # Middle range - neutral
+            bb_signal = 0.4
+        elif bb_position < 0.8:  # Upper half - moderate signal
+            bb_signal = 0.3
+        else:  # Near upper band - potential resistance
+            bb_signal = 0.2
+        
+        technical_signals['bollinger'] = bb_signal
+        logger.debug(f"Bollinger Bands analysis: position={bb_position:.3f}, signal={bb_signal:.3f}")
+        
+        # Calculate overall technical signal strength with improved weighting
+        technical_weights = {
+            'rsi': 0.3,        # RSI gets high weight due to reliability
+            'trend': 0.35,     # Trend analysis is critical
+            'macd': 0.25,      # MACD for momentum confirmation
+            'bollinger': 0.1   # Bollinger for volatility context
         }
-        signal_strengths["technical"] = sum(technical_signals.values()) / len(technical_signals)
+        
+        weighted_technical = sum(
+            technical_signals.get(signal, 0.0) * weight 
+            for signal, weight in technical_weights.items()
+        )
+        
+        signal_strengths["technical"] = weighted_technical
+        
+        logger.debug(f"Technical signal components:")
+        for signal, strength in technical_signals.items():
+            weight = technical_weights.get(signal, 0)
+            contribution = strength * weight
+            logger.debug(f"  {signal}: {strength:.3f} × {weight:.2f} = {contribution:.3f}")
+        logger.debug(f"Overall technical signal strength: {weighted_technical:.3f}")
 
-        # Enhanced sentiment signal strength with market context
-        base_sentiment = min(max(sentiment_score / 0.2, 0.0), 1.0) if sentiment_score > 0 else 0.0
-        market_context_multiplier = 1.2 if market_regime == "TRENDING" else 0.8 if market_regime == "VOLATILE" else 1.0
-        signal_strengths["sentiment"] = base_sentiment * market_context_multiplier
+        # ENHANCED: Advanced sentiment signal with confidence weighting and market context
+        if processed_sentiment_score != 0:  # Only apply when sentiment is available
+            base_sentiment = min(max(abs(processed_sentiment_score) / 0.12, 0.0), 1.0)  # More aggressive normalization
+            
+            # Enhanced market context multipliers
+            context_multipliers = []
+            
+            # Market regime multiplier
+            if market_regime == "TRENDING":
+                regime_multiplier = 1.4  # Sentiment very important in trending markets
+            elif market_regime == "VOLATILE":
+                regime_multiplier = 0.6  # Sentiment less reliable in volatile markets
+            else:  # RANGE_BOUND
+                regime_multiplier = 1.0  # Normal sentiment weight
+            context_multipliers.append(regime_multiplier)
+            
+            # Volatility-based adjustment
+            if volatility > 0.04:  # High volatility
+                volatility_multiplier = 0.7
+            elif volatility > 0.02:  # Medium volatility
+                volatility_multiplier = 1.0
+            else:  # Low volatility
+                volatility_multiplier = 1.2  # Sentiment more reliable in low volatility
+            context_multipliers.append(volatility_multiplier)
+            
+            # Technical confirmation bonus
+            if signal_strengths.get("technical", 0) > 0.6:  # Strong technical signal
+                technical_confirmation = 1.2  # Sentiment + technical alignment
+            elif signal_strengths.get("technical", 0) > 0.4:  # Moderate technical
+                technical_confirmation = 1.0
+            else:  # Weak technical
+                technical_confirmation = 0.8  # Reduce sentiment weight when technical is weak
+            context_multipliers.append(technical_confirmation)
+            
+            # Calculate final multiplier
+            final_multiplier = min(sum(context_multipliers) / len(context_multipliers), 1.5)  # Cap at 1.5x
+            
+            # Apply sentiment direction
+            if processed_sentiment_score > 0:
+                signal_strengths["sentiment"] = base_sentiment * final_multiplier
+            else:
+                signal_strengths["sentiment"] = 0.0  # Only positive sentiment for buy signals
+            
+            logger.debug(f"Enhanced sentiment signal: {signal_strengths['sentiment']:.3f}")
+            logger.debug(f"  Base: {base_sentiment:.3f}, Regime: {regime_multiplier:.2f}, Volatility: {volatility_multiplier:.2f}, Technical: {technical_confirmation:.2f}, Final: {final_multiplier:.2f}")
+        else:
+            signal_strengths["sentiment"] = 0.0  # Zero when no sentiment data
+            logger.debug("Sentiment signal: 0.000 (no sentiment data available)")
 
-        # Enhanced ML signal strength with confidence weighting
-        if ml_score > 0:
-            base_ml_score = min(max(ml_score / 0.1, 0.0), 1.0)
-            prediction_accuracy = ml_analysis.get("accuracy", 0.6)  # Default to 60% if not available
-            signal_strengths["ml"] = base_ml_score * prediction_accuracy
+        # ENHANCED: Professional ML signal strength with comprehensive validation and ensemble optimization
+        if ml_analysis.get("success") and ml_analysis.get("predicted_price"):  # Fixed: Check ML analysis success directly
+            # Get comprehensive ML metrics for intelligent validation
+            ml_r2 = ml_analysis.get("r2_score", 0.0)
+            ml_mse = ml_analysis.get("mse", float('inf'))
+            ml_mae = ml_analysis.get("mae", float('inf'))
+            ml_confidence = ml_analysis.get("confidence", 0.0)
+            predicted_price = ml_analysis.get("predicted_price", current_ticker_price)
+            best_model = ml_analysis.get("best_ml_model", "unknown")
+            
+            # AGGRESSIVE DEBUG: Log all ML analysis components
+            logger.info(f"=== ML ANALYSIS DEBUG for {ticker} ===")
+            logger.info(f"  ML Success: {ml_analysis.get('success')}")
+            logger.info(f"  R2 Score: {ml_r2:.6f}")
+            logger.info(f"  Predicted Price: {predicted_price:.2f}")
+            logger.info(f"  Current Price: {current_ticker_price:.2f}")
+            logger.info(f"  Best Model: {best_model}")
+            
+            # Enhanced ensemble analysis
+            ensemble_components = ml_analysis.get("ensemble_components", {})
+            all_model_scores = ml_analysis.get("all_model_scores", {})
+            
+            logger.debug(f"ML Analysis - R2: {ml_r2:.3f}, MSE: {ml_mse:.1f}, MAE: {ml_mae:.2f}, Confidence: {ml_confidence:.3f}, Best: {best_model}")
+            
+            # ENHANCED: Smart model selection based on comprehensive metrics
+            usable_models = []
+            for model_name, metrics in all_model_scores.items():
+                model_r2 = metrics.get("r2", -999)
+                model_mse = metrics.get("mse", float('inf'))
+                model_prediction = metrics.get("prediction", current_ticker_price)
+                
+                # Filter out clearly poor models
+                if model_r2 > -2.0 and model_mse < 50000:  # Basic quality threshold
+                    price_change = abs(model_prediction - current_ticker_price) / current_ticker_price
+                    if price_change < 0.3:  # Prediction within 30% of current price
+                        usable_models.append({
+                            'name': model_name,
+                            'r2': model_r2,
+                            'mse': model_mse,
+                            'prediction': model_prediction,
+                            'quality_score': max(0, model_r2) + 1/(1 + model_mse/1000)  # Combined quality metric
+                        })
+            
+            logger.debug(f"Usable models: {len(usable_models)}/{len(all_model_scores)}")
+            
+            # Calculate base ML score with improved logic
+            if usable_models:
+                # Use the best quality model instead of just the "best" model
+                best_quality_model = max(usable_models, key=lambda x: x['quality_score'])
+                ensemble_prediction = best_quality_model['prediction']
+                ensemble_quality = best_quality_model['quality_score']
+                
+                # Also consider LSTM/Transformer if available
+                lstm_prediction = ensemble_components.get("lstm", current_ticker_price)
+                transformer_prediction = ensemble_components.get("transformer", current_ticker_price)
+                
+                # Weighted ensemble of top performers
+                predictions = [ensemble_prediction]
+                weights_list = [0.5]  # Base model gets 50%
+                
+                if abs(lstm_prediction - current_ticker_price) / current_ticker_price < 0.2:  # LSTM within 20%
+                    predictions.append(lstm_prediction)
+                    weights_list.append(0.25)
+                    
+                if abs(transformer_prediction - current_ticker_price) / current_ticker_price < 0.2:  # Transformer within 20%
+                    predictions.append(transformer_prediction)
+                    weights_list.append(0.25)
+                
+                # Normalize weights
+                total_weight = sum(weights_list)
+                weights_list = [w/total_weight for w in weights_list]
+                
+                # Calculate weighted prediction
+                smart_ensemble_prediction = sum(p*w for p, w in zip(predictions, weights_list))
+                
+                logger.debug(f"Smart ensemble: {len(predictions)} models, prediction: {smart_ensemble_prediction:.2f}")
+                
+                # Use smart ensemble prediction instead of simple ML prediction
+                predicted_price = smart_ensemble_prediction
+            else:
+                # Fall back to original prediction if no usable models
+                predicted_price = ml_analysis.get("predicted_price", current_ticker_price)
+                ensemble_quality = 0.1  # Low quality fallback
+                logger.debug("No usable models found, using fallback prediction")
+            
+            # Enhanced validation with realistic bounds
+            price_change_pct = (predicted_price - current_ticker_price) / current_ticker_price if current_ticker_price > 0 else 0
+            
+            # AGGRESSIVE DEBUG: Log price change calculation
+            logger.info(f"  Price Change: {price_change_pct:.6f} ({price_change_pct*100:.3f}%)")
+            
+            # Validate prediction reasonableness
+            if abs(price_change_pct) > 0.5:  # More than 50% change is suspicious
+                logger.info(f"  CAPPING extreme prediction: {price_change_pct:.3f} -> ±0.5")
+                price_change_pct = 0.5 if price_change_pct > 0 else -0.5
+            
+            # Calculate base ML score with quality weighting - FIXED: Always calculate if price_change_pct exists
+            base_ml_score = min(max(abs(price_change_pct) * 6, 0.0), 1.0)  # Increased scaling for stronger signals
+            
+            # AGGRESSIVE DEBUG: Log base score calculation
+            logger.info(f"  Base ML Score: {base_ml_score:.6f} (|{price_change_pct:.6f}| * 6)")
+            
+            # Apply multiple quality multipliers
+            quality_multipliers = []
+            
+            # R2-based quality (more lenient for negative R2)
+            if ml_r2 > 0.2:  # Good quality
+                r2_multiplier = 1.0
+            elif ml_r2 > 0.0:  # Positive but low quality
+                r2_multiplier = 0.7 + ml_r2 * 1.5  # More generous scaling
+            elif ml_r2 > -0.3:  # Slightly negative but potentially useful
+                r2_multiplier = 0.5 + (ml_r2 + 0.3) * 1.67  # 0.5 to 1.0
+            else:  # Very poor quality
+                r2_multiplier = 0.3  # Still allow some signal
+            quality_multipliers.append(r2_multiplier)
+            
+            # AGGRESSIVE DEBUG: Log R2 multiplier calculation
+            logger.info(f"  R2 Multiplier: {r2_multiplier:.6f} (R2: {ml_r2:.6f})")
+            
+            # Confidence-based quality (more lenient)
+            if abs(ml_confidence) > 0.4:  # High confidence
+                confidence_multiplier = 1.0
+            elif abs(ml_confidence) > 0.2:  # Medium confidence
+                confidence_multiplier = 0.8
+            elif abs(ml_confidence) > 0.1:  # Low confidence
+                confidence_multiplier = 0.6
+            else:  # Very low confidence
+                confidence_multiplier = 0.4  # Still allow some signal
+            quality_multipliers.append(confidence_multiplier)
+            
+            # Model consensus quality (if multiple models agree)
+            if usable_models and len(usable_models) > 1:
+                predictions_range = max([m['prediction'] for m in usable_models]) - min([m['prediction'] for m in usable_models])
+                relative_range = predictions_range / current_ticker_price
+                if relative_range < 0.1:  # Models agree within 10%
+                    consensus_multiplier = 1.2
+                elif relative_range < 0.2:  # Models agree within 20%
+                    consensus_multiplier = 1.0
+                else:  # Models disagree significantly
+                    consensus_multiplier = 0.7
+                quality_multipliers.append(consensus_multiplier)
+            
+            # Calculate final quality multiplier
+            final_quality = min(sum(quality_multipliers) / len(quality_multipliers), 1.0)
+            
+            # AGGRESSIVE DEBUG: Log quality calculation
+            logger.info(f"  Quality Multipliers: {quality_multipliers}")
+            logger.info(f"  Final Quality: {final_quality:.6f}")
+            
+            # FIXED: Use ML signal regardless of direction for buy signals, but weight appropriately
+            if price_change_pct > 0.002:  # Very low threshold (0.2%)
+                signal_strengths["ml"] = base_ml_score * final_quality
+                logger.info(f"  ML POSITIVE signal: change={price_change_pct:.6f}, base={base_ml_score:.6f}, quality={final_quality:.6f}, FINAL={signal_strengths['ml']:.6f}")
+            elif price_change_pct > -0.005:  # Small negative prediction - still some buy potential
+                signal_strengths["ml"] = base_ml_score * final_quality * 0.4  # Less penalty
+                logger.info(f"  ML SLIGHTLY NEGATIVE signal: change={price_change_pct:.6f}, base={base_ml_score:.6f}, quality={final_quality:.6f}, FINAL={signal_strengths['ml']:.6f}")
+            else:  # Strong negative prediction
+                signal_strengths["ml"] = 0.0
+                logger.info(f"  ML NEGATIVE signal: change={price_change_pct:.6f}, no buy signal, FINAL=0.000000")
+            
+            logger.debug(f"Quality components - R2: {r2_multiplier:.3f}, Confidence: {confidence_multiplier:.3f}, Final: {final_quality:.3f}")
         else:
             signal_strengths["ml"] = 0.0
+            logger.info(f"=== ML ANALYSIS DEBUG for {ticker} ===")
+            logger.info(f"  ML Analysis Failed: success={ml_analysis.get('success')}, has_predicted_price={bool(ml_analysis.get('predicted_price'))}")            
+            logger.info(f"  ML signal: 0.000000 (no ML analysis available or failed)")
 
-        # RSI signal strength (distance from oversold) - rsi_value already defined above
-        if rsi_value < 40:
-            signal_strengths["rsi"] = min((40 - rsi_value) / 20, 1.0)  # Stronger as RSI gets lower
+        # ENHANCED: RSI signal strength with progressive thresholds
+        logger.debug(f"RSI value: {rsi_value:.2f}")
+        
+        if rsi_value < 45:  # Expanded from 40 to capture more oversold signals
+            # Progressive RSI scoring - stronger signals for more oversold conditions
+            if rsi_value < 25:  # Extremely oversold
+                signal_strengths["rsi"] = 1.0
+                logger.debug(f"RSI extremely oversold: {rsi_value:.2f} -> 1.000")
+            elif rsi_value < 35:  # Very oversold
+                signal_strengths["rsi"] = 0.8 + (35 - rsi_value) / 10 * 0.2  # 0.8 to 1.0
+                logger.debug(f"RSI very oversold: {rsi_value:.2f} -> {signal_strengths['rsi']:.3f}")
+            else:  # Moderately oversold (35-45)
+                signal_strengths["rsi"] = (45 - rsi_value) / 10 * 0.6  # 0.0 to 0.6
+                logger.debug(f"RSI moderately oversold: {rsi_value:.2f} -> {signal_strengths['rsi']:.3f}")
+        elif rsi_value > 55:  # Also capture momentum in trending markets
+            # Upward momentum signal (but weaker than oversold)
+            if rsi_value < 65:  # Healthy uptrend
+                signal_strengths["rsi"] = (rsi_value - 55) / 10 * 0.3  # 0.0 to 0.3
+                logger.debug(f"RSI upward momentum: {rsi_value:.2f} -> {signal_strengths['rsi']:.3f}")
+            else:  # Potential overbought (reduce signal)
+                signal_strengths["rsi"] = max(0.1, 0.3 - (rsi_value - 65) / 10 * 0.2)  # Diminishing returns
+                logger.debug(f"RSI potential overbought: {rsi_value:.2f} -> {signal_strengths['rsi']:.3f}")
         else:
-            signal_strengths["rsi"] = 0.0
+            # Neutral RSI (45-55) - minimal signal but not zero
+            signal_strengths["rsi"] = 0.05  # Small base signal to avoid complete zero
+            logger.debug(f"RSI neutral: {rsi_value:.2f} -> {signal_strengths['rsi']:.3f}")
 
-        # MACD signal strength
+        # ENHANCED: Professional MACD signal strength with trend validation and robust bounds checking
         macd_val = technical_indicators.get("macd", 0)
         signal_val = technical_indicators.get("signal_line", 0)
-        if macd_val > signal_val:
-            signal_strengths["macd"] = min((macd_val - signal_val) / abs(signal_val) if signal_val != 0 else 1.0, 1.0)
+        
+        logger.debug(f"MACD values - MACD: {macd_val:.4f}, Signal: {signal_val:.4f}")
+        
+        # Validate MACD values for sanity
+        if abs(macd_val) > 1000 or abs(signal_val) > 1000:
+            logger.warning(f"Extreme MACD values detected: MACD={macd_val:.4f}, Signal={signal_val:.4f}. Using default.")
+            signal_strengths["macd"] = 0.3
+            logger.debug("MACD extreme values, using default signal: 0.300")
+        elif macd_val != 0 and signal_val != 0:  # Ensure we have valid MACD data
+            macd_diff = macd_val - signal_val
+            
+            # Additional bounds checking for extreme differences
+            if abs(macd_diff) > 100:
+                logger.warning(f"Extreme MACD difference detected: {macd_diff:.4f}. Capping calculation.")
+                # Cap the difference to prevent extreme signals
+                macd_diff = 100 if macd_diff > 0 else -100
+            
+            if macd_val > signal_val:  # Bullish MACD crossover
+                # Enhanced bounds checking for signal value denominator
+                if abs(signal_val) > 0.01:  # Stricter threshold to avoid division by very small numbers
+                    strength_ratio = abs(macd_diff) / abs(signal_val)
+                    # Additional bounds checking on strength ratio
+                    if strength_ratio > 10.0:  # Cap extreme ratios
+                        logger.debug(f"Capping extreme MACD strength ratio: {strength_ratio:.3f} -> 10.0")
+                        strength_ratio = 10.0
+                    signal_strengths["macd"] = min(strength_ratio * 0.1, 1.0)  # More conservative scaling (was 0.5)
+                elif abs(signal_val) > 0.001:  # Moderate small numbers
+                    # Use reduced signal strength for small denominators
+                    strength_ratio = abs(macd_diff) / abs(signal_val)
+                    strength_ratio = min(strength_ratio, 5.0)  # Cap at 5.0
+                    signal_strengths["macd"] = min(strength_ratio * 0.05, 0.5)  # Very conservative scaling
+                else:
+                    # Very small signal line - use conservative default
+                    signal_strengths["macd"] = 0.4  # Reduced from 0.7 for safety
+                
+                logger.debug(f"MACD bullish: diff={macd_diff:.4f}, strength={signal_strengths['macd']:.3f}")
+            else:  # Bearish MACD
+                # Still provide minimal signal for potential reversal
+                signal_strengths["macd"] = 0.1
+                logger.debug(f"MACD bearish: diff={macd_diff:.4f}, minimal signal=0.100")
         else:
-            signal_strengths["macd"] = 0.0
+            # Default signal when MACD data unavailable
+            signal_strengths["macd"] = 0.3
+            logger.debug("MACD unavailable, using default signal: 0.300")
 
-        # Breakout signal strength (proximity to resistance)
-        resistance_breakout_threshold = resistance_level * 1.01
-        if current_ticker_price > resistance_level:
-            # Price above resistance - calculate strength based on how far above
-            signal_strengths["breakout"] = min((current_ticker_price - resistance_level) / (resistance_breakout_threshold - resistance_level), 1.0)
+        # ENHANCED: Professional breakout signal with volume and momentum confirmation
+        if resistance_level and resistance_level > 0:
+            resistance_breakout_threshold = resistance_level * 1.01
+            
+            if current_ticker_price > resistance_level:
+                # Price above resistance - calculate breakout strength
+                breakout_distance = current_ticker_price - resistance_level
+                resistance_range = resistance_level * 0.03  # 3% range for normalization
+                
+                # Base breakout strength
+                base_strength = min(breakout_distance / resistance_range, 1.0)
+                
+                # Volume confirmation bonus
+                volume_bonus = 1.0
+                if volume_ratio > 1.5:  # High volume confirmation
+                    volume_bonus = 1.2
+                elif volume_ratio > 1.2:  # Moderate volume
+                    volume_bonus = 1.1
+                elif volume_ratio < 0.8:  # Low volume - penalty
+                    volume_bonus = 0.8
+                
+                signal_strengths["breakout"] = min(base_strength * volume_bonus, 1.0)
+                logger.debug(f"Breakout above resistance: distance={breakout_distance:.2f}, volume_ratio={volume_ratio:.2f}, strength={signal_strengths['breakout']:.3f}")
+            else:
+                # Price below resistance - calculate proximity strength
+                proximity_range = resistance_level * 0.03  # 3% range below resistance
+                proximity_distance = current_ticker_price - (resistance_level * 0.97)
+                
+                if proximity_distance > 0:  # Within 3% of resistance
+                    proximity_strength = proximity_distance / proximity_range
+                    signal_strengths["breakout"] = min(proximity_strength * 0.6, 0.6)  # Max 0.6 for proximity
+                    logger.debug(f"Near resistance: proximity={proximity_distance:.2f}, strength={signal_strengths['breakout']:.3f}")
+                else:
+                    signal_strengths["breakout"] = 0.1  # Minimal signal when far from resistance
+                    logger.debug(f"Far from resistance: {current_ticker_price:.2f} vs {resistance_level:.2f}, minimal signal")
         else:
-            # Price below resistance - calculate proximity strength
-            proximity_to_resistance = (current_ticker_price - resistance_level * 0.98) / (resistance_level * 0.03)
-            signal_strengths["breakout"] = max(min(proximity_to_resistance, 0.8), 0.0)  # Max 0.8 for proximity
+            # No resistance data - use price momentum as proxy
+            if ma_20 and current_ticker_price > ma_20 * 1.02:  # 2% above MA20
+                signal_strengths["breakout"] = 0.4
+                logger.debug("No resistance data, using MA20 momentum: 0.400")
+            else:
+                signal_strengths["breakout"] = 0.2
+                logger.debug("No resistance/momentum data, default: 0.200")
 
-        # Volume signal strength
+        # ENHANCED: Professional volume signal with adaptive thresholds and market context
         volume_ratio = technical_indicators.get("volume_ratio", 1.0)
+        
+        # Get additional volume context if available
+        historical_volume_data = history.get("Volume", pd.Series()) if history is not None else pd.Series()
+        
+        logger.debug(f"Volume ratio: {volume_ratio:.2f}")
+        
         if volume_ratio > 1.0:
-            signal_strengths["volume"] = min((volume_ratio - 1.0) / 0.5, 1.0)  # Normalize volume spike
+            # Progressive volume signal strength with market context adjustment
+            if volume_ratio > 4.0:  # Exceptional volume (rare events)
+                base_volume_signal = 1.0
+                logger.debug(f"Exceptional volume spike: {volume_ratio:.2f} -> base=1.000")
+            elif volume_ratio > 2.5:  # Very high volume
+                base_volume_signal = 0.85 + (volume_ratio - 2.5) * 0.1  # 0.85 to 1.0
+                logger.debug(f"Very high volume: {volume_ratio:.2f} -> base={base_volume_signal:.3f}")
+            elif volume_ratio > 1.8:  # High volume
+                base_volume_signal = 0.7 + (volume_ratio - 1.8) * 0.21  # 0.7 to 0.85
+                logger.debug(f"High volume: {volume_ratio:.2f} -> base={base_volume_signal:.3f}")
+            elif volume_ratio > 1.3:  # Above average volume
+                base_volume_signal = 0.5 + (volume_ratio - 1.3) * 0.4  # 0.5 to 0.7
+                logger.debug(f"Above average volume: {volume_ratio:.2f} -> base={base_volume_signal:.3f}")
+            elif volume_ratio > 1.1:  # Slightly above average
+                base_volume_signal = 0.3 + (volume_ratio - 1.1) * 1.0  # 0.3 to 0.5
+                logger.debug(f"Slightly above average volume: {volume_ratio:.2f} -> base={base_volume_signal:.3f}")
+            else:  # Minimal above average (1.0-1.1)
+                base_volume_signal = (volume_ratio - 1.0) * 3  # 0.0 to 0.3
+                logger.debug(f"Minimal above average volume: {volume_ratio:.2f} -> base={base_volume_signal:.3f}")
+            
+            # Market regime adjustment for volume signals
+            if market_regime == "VOLATILE":
+                # In volatile markets, high volume is more meaningful
+                regime_multiplier = 1.2
+            elif market_regime == "TRENDING":
+                # In trending markets, volume confirms direction
+                regime_multiplier = 1.1
+            else:  # RANGE_BOUND
+                # In range-bound markets, volume spikes may indicate breakouts
+                regime_multiplier = 1.0
+            
+            signal_strengths["volume"] = min(base_volume_signal * regime_multiplier, 1.0)
+            logger.debug(f"Volume signal after regime adjustment: {signal_strengths['volume']:.3f} (regime: {market_regime}, multiplier: {regime_multiplier:.2f})")
         else:
-            signal_strengths["volume"] = 0.0
+            # Below average volume - provide context-dependent minimal signal
+            if market_regime == "TRENDING" and volume_ratio > 0.7:
+                # In trending markets, even moderate volume can be okay
+                signal_strengths["volume"] = volume_ratio * 0.4  # 0.0 to 0.28
+                logger.debug(f"Below average volume in trending market: {volume_ratio:.2f} -> {signal_strengths['volume']:.3f}")
+            elif volume_ratio > 0.5:
+                # Moderate low volume
+                signal_strengths["volume"] = volume_ratio * 0.3  # 0.0 to 0.15
+                logger.debug(f"Moderate low volume: {volume_ratio:.2f} -> {signal_strengths['volume']:.3f}")
+            else:
+                # Very low volume - minimal signal
+                signal_strengths["volume"] = 0.05  # Always provide minimal signal
+                logger.debug(f"Very low volume: {volume_ratio:.2f} -> 0.050 (minimal)")
 
-        # Calculate weighted signal score
+        # CRITICAL FIX: Now calculate weighted signal score AFTER all signal_strengths are populated
         weighted_signal_score = sum(
-            signal_strengths[signal] * signal_weights[signal]
-            for signal in signal_weights.keys()
+            signal_strengths.get(signal, 0.0) * weight
+            for signal, weight in signal_weights.items()
         )
+        
+        # Apply market regime bonus/penalty  
+        if market_regime == "TRENDING" and weighted_signal_score > 0.3:
+            regime_bonus = min(weighted_signal_score * 0.1, 0.1)  # Up to 10% bonus
+            weighted_signal_score += regime_bonus
+            logger.debug(f"Trending market bonus: +{regime_bonus:.3f}")
+        elif market_regime == "VOLATILE" and weighted_signal_score > 0.4:
+            regime_penalty = min(weighted_signal_score * 0.05, 0.05)  # Up to 5% penalty
+            weighted_signal_score -= regime_penalty
+            logger.debug(f"Volatile market penalty: -{regime_penalty:.3f}")
+        
+        # Final bounds check
+        weighted_signal_score = max(0.0, min(weighted_signal_score, 1.0))
+        
+        logger.info(f"CORRECTED WEIGHTED SIGNAL SCORE: {weighted_signal_score:.3f}")
 
         # DEBUG: Log weighted signal breakdown
         logger.info(f"=== WEIGHTED SIGNAL BREAKDOWN for {ticker} ===")
@@ -5500,9 +6370,33 @@ class StockTradingBot:
         else:
             sell_signal_strengths["rsi"] = 0.0
 
-        # MACD bearish signal strength
-        if macd_val < signal_val:
-            sell_signal_strengths["macd"] = min(abs(macd_val - signal_val) / abs(signal_val) if signal_val != 0 else 1.0, 1.0)
+        # MACD bearish signal strength with robust bounds checking
+        if macd_val != 0 and signal_val != 0:  # Ensure valid MACD data
+            # Validate MACD values for sanity
+            if abs(macd_val) > 1000 or abs(signal_val) > 1000:
+                logger.warning(f"Extreme MACD values in sell calculation: MACD={macd_val:.4f}, Signal={signal_val:.4f}")
+                sell_signal_strengths["macd"] = 0.0
+            elif macd_val < signal_val:  # Bearish crossover
+                macd_diff = abs(macd_val - signal_val)
+                # Cap extreme differences
+                if macd_diff > 100:
+                    logger.warning(f"Extreme MACD difference in sell: {macd_diff:.4f}. Capping.")
+                    macd_diff = 100
+                
+                # Enhanced bounds checking for denominator
+                if abs(signal_val) > 0.01:  # Stricter threshold
+                    strength_ratio = macd_diff / abs(signal_val)
+                    # Cap extreme ratios
+                    if strength_ratio > 10.0:
+                        strength_ratio = 10.0
+                    sell_signal_strengths["macd"] = min(strength_ratio * 0.1, 1.0)  # Conservative scaling
+                elif abs(signal_val) > 0.001:  # Moderate small numbers
+                    strength_ratio = min(macd_diff / abs(signal_val), 5.0)
+                    sell_signal_strengths["macd"] = min(strength_ratio * 0.05, 0.5)
+                else:
+                    sell_signal_strengths["macd"] = 0.3  # Conservative default
+            else:
+                sell_signal_strengths["macd"] = 0.0
         else:
             sell_signal_strengths["macd"] = 0.0
 
@@ -5553,64 +6447,250 @@ class StockTradingBot:
         atr = true_range.rolling(window=14).mean().iloc[-1]
         atr = float(atr) if not pd.isna(atr) else volatility * current_ticker_price
 
-        # FIXED: Realistic Kelly Criterion with proper inputs
-        # Fix 1: Realistic win probability based on buy score (60-85% range)
-        win_prob = 0.60 + (final_buy_score * 0.25)  # Maps 0.0-1.0 buy score to 60-85% win rate
-        win_prob = max(0.60, min(win_prob, 0.85))  # Bound between 60-85%
-
-        # Fix 2: Realistic expected return calculation
-        predicted_price = ml_analysis.get("predicted_price", current_ticker_price)
-        if predicted_price and current_ticker_price > 0:
-            ml_expected_return = (predicted_price / current_ticker_price - 1)
-            # Enhanced ML prediction validation
-            historical_volatility = history['Close'].pct_change().std() * np.sqrt(252)  # Annualized volatility
-            max_expected_return = min(0.20, historical_volatility * 2)  # Cap at 20% or 2x historical volatility
-            ml_expected_return = max(0.0, min(ml_expected_return, max_expected_return))  # Only allow positive returns for buy-only strategy
-        else:
+        # ENHANCED: Professional Kelly Criterion with comprehensive win rate estimation and risk adjustment
+        def calculate_advanced_kelly_fraction():
+            """Calculate Kelly fraction using multiple sophisticated approaches"""
+            
+            # Method 1: Historical Performance-Based Kelly
+            historical_kelly = 0.15  # Default
+            
+            # Get recent trading history for this specific ticker
+            ticker_trades = [t for t in self.portfolio.trade_log if t.get("asset") == ticker]
+            
+            if len(ticker_trades) >= 10:  # Need sufficient data
+                # Calculate actual win rate and average win/loss for this ticker
+                completed_trades = []
+                for i, trade in enumerate(ticker_trades):
+                    if trade["action"] == "buy":
+                        # Look for corresponding sell trade
+                        for j in range(i+1, len(ticker_trades)):
+                            if ticker_trades[j]["action"] == "sell":
+                                pnl = (ticker_trades[j]["price"] - trade["price"]) * trade["qty"]
+                                pnl_pct = pnl / (trade["price"] * trade["qty"])
+                                completed_trades.append(pnl_pct)
+                                break
+                
+                if len(completed_trades) >= 5:
+                    wins = [t for t in completed_trades if t > 0]
+                    losses = [t for t in completed_trades if t < 0]
+                    
+                    if len(wins) > 0 and len(losses) > 0:
+                        actual_win_rate = len(wins) / len(completed_trades)
+                        avg_win = np.mean(wins)
+                        avg_loss = abs(np.mean(losses))
+                        
+                        # Kelly formula: f = (p*b - q) / b, where b = avg_win/avg_loss
+                        if avg_loss > 0:
+                            b = avg_win / avg_loss
+                            historical_kelly = (actual_win_rate * b - (1 - actual_win_rate)) / b
+                            historical_kelly = max(0.02, min(historical_kelly, 0.40))  # Bounds: 2-40%
+                            
+                            logger.debug(f"Historical Kelly for {ticker}: win_rate={actual_win_rate:.3f}, avg_win={avg_win:.3f}, avg_loss={avg_loss:.3f}, kelly={historical_kelly:.3f}")
+            
+            # Method 2: Signal Quality-Based Win Rate Estimation
+            signal_quality_kelly = 0.15  # Default
+            
+            # Estimate win probability based on signal strength and market conditions
+            avg_signal_strength = sum(signal_strengths.values()) / len(signal_strengths) if signal_strengths else 0
+            
+            # Base win rate estimation
+            if avg_signal_strength > 0.8:  # Very strong signals
+                estimated_win_rate = 0.78
+            elif avg_signal_strength > 0.6:  # Strong signals
+                estimated_win_rate = 0.68 + (avg_signal_strength - 0.6) * 0.5  # 68-78%
+            elif avg_signal_strength > 0.4:  # Moderate signals
+                estimated_win_rate = 0.58 + (avg_signal_strength - 0.4) * 0.5  # 58-68%
+            elif avg_signal_strength > 0.2:  # Weak signals
+                estimated_win_rate = 0.48 + (avg_signal_strength - 0.2) * 0.5  # 48-58%
+            else:  # Very weak signals
+                estimated_win_rate = 0.45
+            
+            # Adjust for market regime
+            if market_regime == "TRENDING":
+                estimated_win_rate *= 1.05  # 5% boost in trending markets
+            elif market_regime == "VOLATILE":
+                estimated_win_rate *= 0.93  # 7% penalty in volatile markets
+            
+            # Adjust for confidence score
+            confidence_multiplier = 0.90 + (final_buy_score * 0.20)  # 90-110% based on confidence
+            estimated_win_rate *= confidence_multiplier
+            
+            # Bound the win rate
+            estimated_win_rate = max(0.45, min(estimated_win_rate, 0.85))
+            
+            # Calculate expected returns with enhanced validation
             ml_expected_return = 0.0
-
-        # Combine multiple factors for expected return
-        technical_return = (final_buy_score - 0.5) * 0.10  # -5% to +5% based on buy score
-        sentiment_return = sentiment_score * 0.05 if sentiment_score > 0 else 0.0  # 0% to +5%
-
-        # Weighted expected return (more conservative than individual components)
-        expected_return = (ml_expected_return * 0.4 + technical_return * 0.4 + sentiment_return * 0.2)
-        expected_return = max(0.01, min(expected_return, 0.12))  # Bound between 1-12%
-
-        # Fix 3: More aggressive Kelly calculation
-        if expected_return > 0 and win_prob > 0.5:
-            # Kelly formula: f = (bp - q) / b, where b = odds, p = win prob, q = lose prob
-            odds_ratio = expected_return / (1 - expected_return) if expected_return < 1 else expected_return
-            kelly_fraction = (win_prob * odds_ratio - (1 - win_prob)) / odds_ratio
-            kelly_fraction = max(0.10, kelly_fraction)  # Minimum 10% position (increased from 5%)
-        else:
-            kelly_fraction = 0.15  # More aggressive base position size (increased from 8%)
-
-        # Market condition adjustments
-        if volatility > 0.03:  # High volatility
-            kelly_fraction *= 0.7  # Reduce position size
-        elif volatility < 0.015:  # Low volatility
-            kelly_fraction *= 1.2  # Increase position size
-
-        # Signal strength adjustment
-        signal_strength = (buy_signals / 7.0)  # Normalize by max possible signals
-        kelly_fraction *= (0.8 + 0.4 * signal_strength)  # Scale by signal strength
-
-        # Final bounds with more aggressive limits
-        kelly_fraction = max(min(kelly_fraction, 0.35), 0.12)  # 12-35% position size (increased from 8-25%)
-
-        # DEBUG: Log improved Kelly fraction calculation
-        logger.info(f"=== IMPROVED KELLY FRACTION CALCULATION for {ticker} ===")
-        logger.info(f"  Win Probability: {win_prob:.3f} (60-85% realistic range)")
-        logger.info(f"  Expected Return Components:")
-        logger.info(f"    - ML Expected Return: {ml_expected_return:.3f}")
-        logger.info(f"    - Technical Return: {technical_return:.3f}")
-        logger.info(f"    - Sentiment Return: {sentiment_return:.3f}")
-        logger.info(f"  Combined Expected Return: {expected_return:.3f} (1-12% bounded)")
-        logger.info(f"  Base Kelly Fraction: {kelly_fraction:.3f}")
-        logger.info(f"  Signal Strength: {signal_strength:.3f} ({buy_signals}/7)")
-        logger.info(f"  Volatility: {volatility:.3f}")
-        logger.info(f"  Final Kelly Fraction: {kelly_fraction:.3f} (5-25% bounds)")
+            if predicted_price and current_ticker_price > 0:
+                ml_return_raw = (predicted_price / current_ticker_price - 1)
+                
+                # Enhanced ML return validation
+                historical_volatility = history['Close'].pct_change().std() * np.sqrt(252) if history is not None else 0.20
+                max_reasonable_return = min(0.25, historical_volatility * 3)  # Cap at 25% or 3x volatility
+                
+                ml_expected_return = max(-0.10, min(ml_return_raw, max_reasonable_return))  # -10% to reasonable max
+            
+            # Technical expected return (based on support/resistance levels)
+            technical_expected_return = 0.0
+            if resistance_level and current_ticker_price > 0:
+                technical_return_raw = (resistance_level / current_ticker_price - 1)
+                technical_expected_return = max(0.0, min(technical_return_raw, 0.20))  # 0-20% cap
+            
+            # Sentiment expected return
+            sentiment_expected_return = 0.0
+            if processed_sentiment_score > 0:
+                sentiment_expected_return = processed_sentiment_score * 0.08  # Up to 8% from sentiment
+            
+            # Weighted expected return calculation
+            total_expected_return = (
+                ml_expected_return * 0.4 +
+                technical_expected_return * 0.4 +
+                sentiment_expected_return * 0.2
+            )
+            
+            # Ensure positive expected return for Kelly calculation
+            total_expected_return = max(0.01, min(total_expected_return, 0.15))  # 1-15% range
+            
+            # Average loss estimation (more conservative)
+            estimated_avg_loss = min(0.08, volatility * 4)  # Up to 8% or 4x volatility
+            
+            # Kelly calculation with enhanced formula
+            if estimated_avg_loss > 0:
+                odds_ratio = total_expected_return / estimated_avg_loss
+                signal_quality_kelly = (estimated_win_rate * odds_ratio - (1 - estimated_win_rate)) / odds_ratio
+                signal_quality_kelly = max(0.02, min(signal_quality_kelly, 0.35))  # 2-35% bounds
+            
+            logger.debug(f"Signal-based Kelly: win_rate={estimated_win_rate:.3f}, exp_return={total_expected_return:.3f}, avg_loss={estimated_avg_loss:.3f}, kelly={signal_quality_kelly:.3f}")
+            
+            # Method 3: Confidence and Market-Weighted Kelly
+            confidence_kelly = 0.15  # Default
+            
+            # Base Kelly from confidence
+            confidence_kelly = 0.08 + (final_buy_score * 0.25)  # 8-33% based on buy score
+            
+            # Weighted signal adjustment
+            if weighted_signal_score > 0.5:
+                confidence_kelly *= (1.0 + (weighted_signal_score - 0.5))  # Boost for strong signals
+            else:
+                confidence_kelly *= (0.7 + weighted_signal_score * 0.6)  # Reduce for weak signals
+            
+            # Market regime adjustment
+            regime_multipliers = {
+                "TRENDING": 1.15,     # More aggressive in trends
+                "VOLATILE": 0.75,     # More conservative in volatility
+                "RANGE_BOUND": 0.95   # Slightly conservative in ranges
+            }
+            confidence_kelly *= regime_multipliers.get(market_regime, 1.0)
+            
+            confidence_kelly = max(0.05, min(confidence_kelly, 0.40))  # 5-40% bounds
+            
+            logger.debug(f"Confidence-based Kelly: base={0.08 + (final_buy_score * 0.25):.3f}, signal_adj={weighted_signal_score:.3f}, regime_mult={regime_multipliers.get(market_regime, 1.0):.2f}, final={confidence_kelly:.3f}")
+            
+            # Final Kelly: Weighted combination of all methods
+            kelly_weights = []
+            kelly_values = []
+            
+            # Weight historical Kelly higher if we have good data
+            if len(ticker_trades) >= 10:
+                kelly_weights.append(0.5)  # 50% weight for historical
+                kelly_values.append(historical_kelly)
+                kelly_weights.append(0.3)  # 30% for signal-based
+                kelly_values.append(signal_quality_kelly)
+                kelly_weights.append(0.2)  # 20% for confidence-based
+                kelly_values.append(confidence_kelly)
+            else:
+                kelly_weights.append(0.6)  # 60% for signal-based
+                kelly_values.append(signal_quality_kelly)
+                kelly_weights.append(0.4)  # 40% for confidence-based
+                kelly_values.append(confidence_kelly)
+            
+            # Calculate weighted Kelly
+            final_kelly = sum(k * w for k, w in zip(kelly_values, kelly_weights))
+            
+            # Apply additional risk adjustments
+            
+            # Volatility adjustment (more sophisticated)
+            if volatility > 0.04:  # High volatility (>4%)
+                vol_adjustment = 0.70
+            elif volatility > 0.025:  # Medium volatility (2.5-4%)
+                vol_adjustment = 0.85
+            elif volatility < 0.015:  # Low volatility (<1.5%)
+                vol_adjustment = 1.15
+            else:  # Normal volatility
+                vol_adjustment = 1.0
+            
+            final_kelly *= vol_adjustment
+            
+            # Portfolio heat adjustment (reduce Kelly if portfolio is already stressed)
+            portfolio_metrics = self.portfolio.get_metrics()
+            current_positions = len([h for h in self.portfolio.holdings.values() if h["qty"] > 0])
+            
+            if current_positions >= 8:  # Many positions - reduce Kelly
+                position_adjustment = 0.80
+            elif current_positions >= 5:  # Several positions - slightly reduce
+                position_adjustment = 0.90
+            else:  # Few positions - normal Kelly
+                position_adjustment = 1.0
+            
+            final_kelly *= position_adjustment
+            
+            # Recent performance adjustment
+            if hasattr(self.portfolio, 'trade_log') and len(self.portfolio.trade_log) > 0:
+                recent_trades = [t for t in self.portfolio.trade_log if 
+                               datetime.strptime(t["timestamp"], "%Y-%m-%d %H:%M:%S.%f") > datetime.now() - timedelta(days=5)]
+                
+                if len(recent_trades) >= 3:
+                    recent_success_rate = len([t for t in recent_trades if t.get("success", False)]) / len(recent_trades)
+                    
+                    if recent_success_rate > 0.7:  # Good recent performance
+                        performance_adjustment = 1.1
+                    elif recent_success_rate < 0.4:  # Poor recent performance
+                        performance_adjustment = 0.8
+                    else:
+                        performance_adjustment = 1.0
+                    
+                    final_kelly *= performance_adjustment
+            
+            # Final bounds with more aggressive limits for profitable system
+            final_kelly = max(0.08, min(final_kelly, 0.35))  # 8-35% range (was 12-35%)
+            
+            return {
+                "final_kelly": final_kelly,
+                "components": {
+                    "historical_kelly": historical_kelly,
+                    "signal_quality_kelly": signal_quality_kelly,
+                    "confidence_kelly": confidence_kelly
+                },
+                "adjustments": {
+                    "volatility": vol_adjustment,
+                    "position_count": position_adjustment,
+                    "estimated_win_rate": estimated_win_rate,
+                    "total_expected_return": total_expected_return
+                },
+                "weights": dict(zip(["historical", "signal_quality", "confidence"], kelly_weights)) if len(kelly_weights) == 3 else {"signal_quality": kelly_weights[0], "confidence": kelly_weights[1]}
+            }
+        
+        # Calculate the advanced Kelly fraction
+        kelly_result = calculate_advanced_kelly_fraction()
+        kelly_fraction = kelly_result["final_kelly"]
+        
+        # Enhanced logging for Kelly calculation
+        logger.info(f"=== ADVANCED KELLY FRACTION CALCULATION for {ticker} ====")
+        logger.info(f"  Final Kelly Fraction: {kelly_fraction:.3f} (8-35% bounds)")
+        
+        components = kelly_result["components"]
+        logger.info(f"  Component Kellys:")
+        for name, value in components.items():
+            logger.info(f"    - {name}: {value:.3f}")
+        
+        weights = kelly_result["weights"]
+        logger.info(f"  Component Weights: {weights}")
+        
+        adjustments = kelly_result["adjustments"]
+        logger.info(f"  Risk Adjustments:")
+        logger.info(f"    - Volatility factor: {adjustments['volatility']:.2f}")
+        logger.info(f"    - Position count factor: {adjustments['position_count']:.2f}")
+        logger.info(f"    - Estimated win rate: {adjustments['estimated_win_rate']:.3f}")
+        logger.info(f"    - Expected return: {adjustments['total_expected_return']:.3f}")
 
         # Liquidity Check
         avg_daily_volume = history["Volume"].rolling(window=20).mean().iloc[-1]
@@ -5726,15 +6806,26 @@ class StockTradingBot:
         else:  # RANGE_BOUND
             min_weighted_signal_threshold = 0.20  # Moderate threshold for range-bound markets
 
+        # Use more flexible signal system - either condition can trigger buy, with special handling for volatile markets
+        volatile_market_adjustment = False
+        if market_regime == "VOLATILE" and weighted_signal_score >= 0.25:  # Strong signals in volatile market
+            # Allow lower buy score threshold when weighted signals are strong
+            adjusted_buy_threshold = confidence_threshold * 0.75  # 25% reduction for strong signals
+            volatile_market_adjustment = True
+            logger.info(f"VOLATILE market adjustment: Reduced threshold from {confidence_threshold:.3f} to {adjusted_buy_threshold:.3f}")
+        else:
+            adjusted_buy_threshold = confidence_threshold
+
         # DEBUG: Log buy decision pre-checks with weighted system
         logger.info(f"=== BUY DECISION PRE-CHECKS for {ticker} ===")
-        logger.info(f"  Buy Score: {final_buy_score:.3f} > Threshold: {confidence_threshold:.3f} = {'PASS' if final_buy_score > confidence_threshold else 'FAIL'}")
+        logger.info(f"  Buy Score: {final_buy_score:.3f} > Threshold: {adjusted_buy_threshold:.3f} = {'PASS' if final_buy_score > adjusted_buy_threshold else 'FAIL'}")
+        if volatile_market_adjustment:
+            logger.info(f"    (Volatile market adjustment applied: {confidence_threshold:.3f} -> {adjusted_buy_threshold:.3f})")
         logger.info(f"  Weighted Signal Score: {weighted_signal_score:.3f} > Threshold: {min_weighted_signal_threshold:.3f} = {'PASS' if weighted_signal_score >= min_weighted_signal_threshold else 'FAIL'}")
         logger.info(f"  Legacy Buy Signals (for reference): {buy_signals}/7")
         logger.info(f"  Market Regime: {market_regime} (threshold: {min_weighted_signal_threshold:.3f})")
-
-        # Use more flexible signal system - either condition can trigger buy
-        if final_buy_score > confidence_threshold or weighted_signal_score >= min_weighted_signal_threshold:
+            
+        if final_buy_score > adjusted_buy_threshold or weighted_signal_score >= min_weighted_signal_threshold:
             # Early cash validation - skip expensive calculations if stock is unaffordable
             if current_ticker_price > available_cash:
                 logger.info(f"[SKIP] {ticker}: Price Rs.{current_ticker_price:.2f} > Available Cash Rs.{available_cash:.2f}")
@@ -5754,6 +6845,8 @@ class StockTradingBot:
                 }.get(market_regime, 0.7)
                 
                 volatility_adjustment = max(0.6, min(1.0, 1.0 / (1 + volatility)))
+                
+                # Enhanced position sizing with the optimized Kelly fraction
                 position_size_pct = kelly_fraction * market_condition_factor * volatility_adjustment
                 target_position_value = total_value * position_size_pct
                 logger.info(f"  Initial Position Value: Rs.{target_position_value:.2f} ({position_size_pct:.3f}% of portfolio)")
@@ -5858,7 +6951,9 @@ class StockTradingBot:
         # DEBUG: Final BUY execution checks with weighted signals
         logger.info(f"=== FINAL BUY EXECUTION CHECKS for {ticker} ===")
         logger.info(f"  1. buy_qty > 0: {buy_qty} > 0 = {'PASS' if buy_qty > 0 else 'FAIL'}")
-        logger.info(f"  2. final_buy_score > confidence_threshold: {final_buy_score:.3f} > {confidence_threshold:.3f} = {'PASS' if final_buy_score > confidence_threshold else 'FAIL'}")
+        logger.info(f"  2. final_buy_score > confidence_threshold: {final_buy_score:.3f} > {adjusted_buy_threshold:.3f} = {'PASS' if final_buy_score > adjusted_buy_threshold else 'FAIL'}")
+        if volatile_market_adjustment:
+            logger.info(f"    (Volatile market threshold adjustment: {confidence_threshold:.3f} -> {adjusted_buy_threshold:.3f})")
         logger.info(f"  3. weighted_signal_score >= threshold: {weighted_signal_score:.3f} >= {min_weighted_signal_threshold:.3f} = {'PASS' if weighted_signal_score >= min_weighted_signal_threshold else 'FAIL'}")
         logger.info(f"  4. buy_qty * price <= available_cash: Rs.{buy_qty * current_ticker_price:.2f} <= Rs.{available_cash:.2f} = {'PASS' if buy_qty * current_ticker_price <= available_cash else 'FAIL'}")
         logger.info(f"  5. not backoff: {'PASS' if not backoff else 'FAIL'}")
@@ -5868,15 +6963,9 @@ class StockTradingBot:
         all_conditions_met = (
             buy_qty > 0
             and (
-                # Require higher confidence scores
-                final_buy_score > (confidence_threshold * 1.1)  # 10% higher confidence requirement
-                or (weighted_signal_score >= min_weighted_signal_threshold * 1.15)  # 15% higher signal threshold
-            )
-            and (
-                # Additional technical validation
-                analysis.get("technical_indicators", {}).get("RSI", 100) < 65  # Not overbought
-                and buy_signals >= 3  # Require more confirmation signals
-                and analysis.get("technical_indicators", {}).get("MACD", 0) > analysis.get("technical_indicators", {}).get("MACD_Signal", 0)  # MACD confirmation
+                # Use adjusted threshold for volatile markets
+                final_buy_score > adjusted_buy_threshold
+                or (weighted_signal_score >= min_weighted_signal_threshold)
             )
             and buy_qty * current_ticker_price <= available_cash
             and not backoff
@@ -6157,7 +7246,7 @@ def main_with_mode():
             "starting_balance": 10000,  # Rs.10 thousand
             "current_portfolio_value": 10000,
             "current_pnl": 0,
-            "mode": args.mode,
+            "mode": os.getenv("MODE", "paper"),
             "dhan_client_id": os.getenv("DHAN_CLIENT_ID"),
             "dhan_access_token": os.getenv("DHAN_ACCESS_TOKEN"),
             "period": "3y",
@@ -6167,7 +7256,7 @@ def main_with_mode():
             # Risk management settings from .env
             "stop_loss_pct": float(os.getenv("STOP_LOSS_PCT", "0.05")),
             "max_capital_per_trade": float(os.getenv("MAX_CAPITAL_PER_TRADE", "0.25")),
-            "max_trade_limit": int(os.getenv("MAX_TRADE_LIMIT", "10")),
+            "max_trade_limit": int(os.getenv("MAX_TRADE_LIMIT", "150")),
             # Configurable paths
             "data_dir": os.getenv("DATA_DIR", "data"),
             "log_dir": os.getenv("LOG_DIR", "logs"),

@@ -234,7 +234,7 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
         riskLevel: formData.riskLevel,
         stop_loss_pct: stopLossPct / 100, // Convert percentage to decimal
         max_capital_per_trade: maxAllocation / 100, // Convert percentage to decimal
-        max_trade_limit: 10 // Default value
+        max_trade_limit: 150 // Default value
       };
 
       console.log('Saving settings:', settingsToSave);

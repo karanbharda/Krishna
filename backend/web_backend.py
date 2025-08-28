@@ -29,7 +29,8 @@ try:
     from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.staticfiles import StaticFiles
-    from fastapi.responses import HTMLResponse, FileResponse
+    from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
+
     from pydantic import BaseModel
     import asyncio
     import json
@@ -310,56 +311,56 @@ app.add_middleware(
 async def validation_error_handler(request, exc: ValidationError):
     """Handle validation errors with proper HTTP responses"""
     logger.warning(f"Validation error: {exc}")
-    return HTTPException(status_code=400, detail=str(exc))
+    return JSONResponse(status_code=400, content={"detail": str(exc)})
 
 @app.exception_handler(ConfigurationError)
 async def configuration_error_handler(request, exc: ConfigurationError):
     """Handle configuration errors"""
     logger.error(f"Configuration error: {exc}")
-    return HTTPException(status_code=500, detail="Configuration error occurred")
+    return JSONResponse(status_code=500, content={"detail": "Configuration error occurred"})
 
 @app.exception_handler(DataServiceError)
 async def data_service_error_handler(request, exc: DataServiceError):
     """Handle data service errors"""
     logger.error(f"Data service error: {exc}")
-    return HTTPException(status_code=503, detail="Data service temporarily unavailable")
+    return JSONResponse(status_code=503, content={"detail": "Data service temporarily unavailable"})
 
 @app.exception_handler(TradingExecutionError)
 async def trading_execution_error_handler(request, exc: TradingExecutionError):
     """Handle trading execution errors"""
     logger.error(f"Trading execution error: {exc}")
-    return HTTPException(status_code=500, detail="Trading execution failed")
+    return JSONResponse(status_code=500, content={"detail": "Trading execution failed"})
 
 @app.exception_handler(NetworkError)
 async def network_error_handler(request, exc: NetworkError):
     """Handle network errors"""
     logger.error(f"Network error: {exc}")
-    return HTTPException(status_code=502, detail="Network connectivity issue")
+    return JSONResponse(status_code=502, content={"detail": "Network connectivity issue"})
 
 @app.exception_handler(AuthenticationError)
 async def authentication_error_handler(request, exc: AuthenticationError):
     """Handle authentication errors"""
     logger.error(f"Authentication error: {exc}")
-    return HTTPException(status_code=401, detail="Authentication failed")
+    return JSONResponse(status_code=401, content={"detail": "Authentication failed"})
 
 # Priority 4: Add comprehensive error handlers for common exceptions
 @app.exception_handler(ValueError)
 async def value_error_handler(request, exc: ValueError):
     """Handle value errors"""
     logger.warning(f"Value error: {exc}")
-    return HTTPException(status_code=400, detail="Invalid input value")
+    return JSONResponse(status_code=400, content={"detail": "Invalid input value"})
 
 @app.exception_handler(KeyError)
 async def key_error_handler(request, exc: KeyError):
     """Handle key errors"""
     logger.error(f"Key error: {exc}")
-    return HTTPException(status_code=500, detail="Missing required data")
+    return JSONResponse(status_code=500, content={"detail": "Missing required data"})
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request, exc: Exception):
     """Handle all other exceptions"""
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
-    return HTTPException(status_code=500, detail="Internal server error")
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 # Global variables
 trading_bot = None
@@ -736,8 +737,11 @@ class ConnectionManager:
 
         message_str = json.dumps(message)
         disconnected = []
+        
+        # Create a copy of connections list to prevent concurrent modification
+        connections_copy = list(self.active_connections)
 
-        for connection in self.active_connections:
+        for connection in connections_copy:
             try:
                 await connection.send_text(message_str)
             except Exception as e:
@@ -1121,15 +1125,15 @@ class WebTradingBot:
                 logger.error("Failed to validate Dhan API connection")
                 return False
                 
-            # Initialize live executor with Dhan credentials
+            # Initialize live executor with database integration
             self.live_executor = LiveTradingExecutor(
-                portfolio=self.trading_bot.portfolio,
+                portfolio_manager=self.portfolio_manager,  # Use database portfolio manager
                 config={
                     "dhan_client_id": os.getenv("DHAN_CLIENT_ID"),
                     "dhan_access_token": os.getenv("DHAN_ACCESS_TOKEN"),
                     "stop_loss_pct": 0.05,
                     "max_capital_per_trade": 0.25,
-                    "max_trade_limit": 10
+                    "max_trade_limit": 150
                 }
             )
             
@@ -1138,20 +1142,14 @@ class WebTradingBot:
                 logger.error("Failed to sync portfolio with Dhan account")
                 return False
                 
+            # Connect live executor to trading bot for database integration
+            if hasattr(self.trading_bot, 'executor'):
+                self.trading_bot.executor.set_live_executor(self.live_executor)
+                logger.info("Connected database live executor to trading bot")
+                
             logger.info("Successfully connected to Dhan account and synced portfolio")
 
-            # Initialize live executor
-            try:
-                self.live_executor = LiveTradingExecutor(
-                    portfolio=self.trading_bot.portfolio,
-                    config=self.config
-                )
-            except AttributeError:
-                # Portfolio might not be directly accessible, skip live executor
-                self.live_executor = None
-                logger.warning("Could not initialize live executor - portfolio not accessible")
-
-            # Sync portfolio with Dhan account
+            # Sync portfolio with Dhan account (using already initialized live_executor)
             if self.live_executor.sync_portfolio_with_dhan():
                 # Get account summary for startup logging
                 try:
@@ -1684,24 +1682,62 @@ class WebTradingBot:
     def _on_trade_executed(self, trade_data):
         """Callback method called when a trade is executed"""
         try:
-            # Schedule the broadcast in the main event loop
-            import asyncio
+            # FIXED: Use thread-safe queue approach to prevent deadlocks and memory leaks
             import threading
-
-            def run_broadcast():
-                try:
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
-                    loop.run_until_complete(self.broadcast_trade_update(trade_data))
-                    loop.run_until_complete(self.broadcast_portfolio_update())
-                    loop.close()
-                except Exception as e:
-                    logger.error(f"Error in broadcast thread: {e}")
-
-            # Run broadcast in a separate thread to avoid blocking
-            broadcast_thread = threading.Thread(target=run_broadcast, daemon=True)
-            broadcast_thread.start()
-
+            import queue
+            
+            # Use a bounded queue to prevent memory exhaustion
+            if not hasattr(self, '_broadcast_queue'):
+                self._broadcast_queue = queue.Queue(maxsize=100)
+                self._broadcast_worker_active = True
+                
+                def broadcast_worker():
+                    """Worker thread for processing broadcasts safely"""
+                    import asyncio
+                    while self._broadcast_worker_active:
+                        try:
+                            # Get update from queue with timeout
+                            update_data = self._broadcast_queue.get(timeout=1.0)
+                            if update_data is None:  # Shutdown signal
+                                break
+                                
+                            # Process the broadcast in a controlled manner
+                            try:
+                                # Create isolated event loop for this thread
+                                loop = asyncio.new_event_loop()
+                                asyncio.set_event_loop(loop)
+                                
+                                async def safe_broadcast():
+                                    try:
+                                        await self.broadcast_trade_update(update_data)
+                                        await self.broadcast_portfolio_update()
+                                    except Exception as e:
+                                        logger.error(f"Error in safe broadcast: {e}")
+                                
+                                loop.run_until_complete(safe_broadcast())
+                                loop.close()
+                                
+                            except Exception as e:
+                                logger.error(f"Error in broadcast worker: {e}")
+                            finally:
+                                self._broadcast_queue.task_done()
+                                
+                        except queue.Empty:
+                            continue  # Timeout, check if still active
+                        except Exception as e:
+                            logger.error(f"Fatal error in broadcast worker: {e}")
+                            break
+                
+                # Start worker thread as daemon
+                worker_thread = threading.Thread(target=broadcast_worker, daemon=True)
+                worker_thread.start()
+                
+            # Queue the update safely
+            try:
+                self._broadcast_queue.put_nowait(trade_data)
+            except queue.Full:
+                logger.warning("Broadcast queue full, dropping trade update")
+                
         except Exception as e:
             logger.error(f"Error in trade callback: {e}")
 
@@ -1758,7 +1794,7 @@ def initialize_bot():
             "starting_balance": 10000,  # Rs.10 thousand
             "current_portfolio_value": 10000,
             "current_pnl": 0,
-            "mode": "paper",  # Default to paper mode for web interface
+            "mode": os.getenv("MODE", "paper"),  # Default to paper mode for web interface
             "riskLevel": "MEDIUM",  # Default risk level
             "dhan_client_id": os.getenv("DHAN_CLIENT_ID"),
             "dhan_access_token": os.getenv("DHAN_ACCESS_TOKEN"),
@@ -1769,7 +1805,7 @@ def initialize_bot():
             # Risk management settings - will be set by risk level
             "stop_loss_pct": 0.05,  # Default 5% (MEDIUM)
             "max_capital_per_trade": 0.25,  # Default 25% (MEDIUM)
-            "max_trade_limit": 10
+            "max_trade_limit": 150
         }
         
         trading_bot = WebTradingBot(config)
@@ -3120,7 +3156,7 @@ async def startup_event():
                     "mode": "paper",
                     "stop_loss_pct": 0.05,
                     "max_capital_per_trade": 0.25,
-                    "max_trade_limit": 10,
+                    "max_trade_limit": 150,
                     "sleep_interval": 300
                 }
 

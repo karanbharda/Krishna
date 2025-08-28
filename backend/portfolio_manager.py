@@ -177,9 +177,10 @@ class DualPortfolioManager:
             raise ValueError("Price must be a positive number")
             
         action = action.lower()  # Normalize action to lowercase
-        session = self.db.Session()
+        session = None
         try:
-            # Get current portfolio
+            session = self.db.Session()
+            # Get current portfolio from this session to prevent detached instance issues
             portfolio = session.query(Portfolio).filter_by(mode=self.current_mode).first()
             if not portfolio:
                 raise ValueError(f"No portfolio found for mode {self.current_mode}")
@@ -257,6 +258,10 @@ class DualPortfolioManager:
             portfolio.last_updated = datetime.now()
             session.commit()
             
+            # Update current portfolio reference to prevent detached instance issues
+            self.current_portfolio = portfolio
+            
+            # Sync changes to JSON files
             try:
                 self._sync_to_json(session, portfolio)
             except Exception as sync_error:
@@ -269,25 +274,14 @@ class DualPortfolioManager:
                 except Exception as callback_error:
                     logger.error(f"Error in trade callback: {callback_error}")
                     
-            # Log P&L calculation if applicable
-            if action == 'sell':
-                logger.info(f"Realized P&L for {ticker}: {pnl:.2f} (Total: {portfolio.realized_pnl:.2f})")
-            
-            portfolio.last_updated = datetime.now()
-            session.commit()
-            
-            # Sync changes to JSON files
-            try:
-                self._sync_to_json(session, portfolio)
-            except Exception as sync_error:
-                logger.error(f"Error syncing to JSON files: {sync_error}")
-                    
         except Exception as e:
-            session.rollback()
+            if session:
+                session.rollback()
             logger.error(f"Error recording trade: {e}")
             raise
         finally:
-            session.close()
+            if session:
+                session.close()
                     
     def _sync_to_json(self, session, portfolio):
         """Sync database changes back to JSON files for backward compatibility"""

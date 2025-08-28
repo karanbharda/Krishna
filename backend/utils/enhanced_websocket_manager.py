@@ -57,6 +57,10 @@ class EnhancedConnectionManager:
         self.data_cache: Dict[UpdateType, Any] = {}
         self.cache_timestamps: Dict[UpdateType, float] = {}
         
+        # Shutdown control
+        self.shutdown_event = asyncio.Event()
+        self.is_active = True
+        
         # Performance optimization settings
         self.min_update_interval = {
             UpdateType.PORTFOLIO: 1.0,      # Portfolio updates every 1 second max
@@ -253,22 +257,41 @@ class EnhancedConnectionManager:
     
     async def _heartbeat_loop(self):
         """Background task to send periodic heartbeats"""
-        while True:
+        while self.is_active and not self.shutdown_event.is_set():
             try:
-                await asyncio.sleep(30)  # Send heartbeat every 30 seconds
+                await asyncio.wait_for(asyncio.sleep(30), timeout=35)  # Send heartbeat every 30 seconds with timeout
+                
+                # Check if we should continue
+                if not self.is_active or self.shutdown_event.is_set():
+                    break
                 
                 for client_id in list(self.active_connections.keys()):
                     await self._send_heartbeat(client_id)
                     
+            except asyncio.TimeoutError:
+                logger.warning("Heartbeat loop timeout, continuing...")
+                continue
+            except asyncio.CancelledError:
+                logger.info("Heartbeat loop cancelled")
+                break
             except Exception as e:
                 logger.error(f"Error in heartbeat loop: {e}")
-                await asyncio.sleep(5)  # Wait before retrying
+                if self.is_active and not self.shutdown_event.is_set():
+                    await asyncio.sleep(5)  # Wait before retrying
+                else:
+                    break
+        
+        logger.info("Heartbeat loop stopped")
     
     async def _cleanup_loop(self):
         """Background task to clean up stale connections and cache"""
-        while True:
+        while self.is_active and not self.shutdown_event.is_set():
             try:
-                await asyncio.sleep(60)  # Run cleanup every minute
+                await asyncio.wait_for(asyncio.sleep(60), timeout=65)  # Run cleanup every minute with timeout
+                
+                # Check if we should continue
+                if not self.is_active or self.shutdown_event.is_set():
+                    break
                 
                 # Clean up old cache entries
                 now = datetime.now().timestamp()
@@ -286,9 +309,20 @@ class EnhancedConnectionManager:
                 
                 logger.debug(f"Cleanup: {len(expired_keys)} cache entries removed")
                 
+            except asyncio.TimeoutError:
+                logger.warning("Cleanup loop timeout, continuing...")
+                continue
+            except asyncio.CancelledError:
+                logger.info("Cleanup loop cancelled")
+                break
             except Exception as e:
                 logger.error(f"Error in cleanup loop: {e}")
-                await asyncio.sleep(30)  # Wait before retrying
+                if self.is_active and not self.shutdown_event.is_set():
+                    await asyncio.sleep(30)  # Wait before retrying
+                else:
+                    break
+        
+        logger.info("Cleanup loop stopped")
     
     def subscribe_client(self, client_id: str, update_types: List[UpdateType]):
         """Subscribe client to specific update types"""
@@ -307,14 +341,29 @@ class EnhancedConnectionManager:
         }
     
     def stop_background_tasks(self):
-        """Stop all background tasks"""
+        """Stop all background tasks safely"""
         try:
+            # Set shutdown flag
+            self.is_active = False
+            if not self.shutdown_event.is_set():
+                self.shutdown_event.set()
+            
+            # Cancel tasks
             if self._heartbeat_task and not self._heartbeat_task.done():
                 self._heartbeat_task.cancel()
             if self._cleanup_task and not self._cleanup_task.done():
                 self._cleanup_task.cancel()
+                
+            logger.info("Background tasks shutdown initiated")
         except Exception as e:
             logger.warning(f"Error stopping background tasks: {e}")
+    
+    def __del__(self):
+        """Cleanup when object is destroyed"""
+        try:
+            self.stop_background_tasks()
+        except:
+            pass
 
 
 # Global instance

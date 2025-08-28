@@ -1,12 +1,23 @@
 {
-  "cash": 1000.0,
-  "total_value": 1000.0,
-  "starting_balance": 1000.0,
-  "holdings": {},
+  "cash": 460.22,
+  "total_value": 702.57,
+  "starting_balance": 757.56,
+  "holdings": {
+    "NBCC": {
+      "qty": 2,
+      "avg_price": 102.1,
+      "last_price": 102.1
+    },
+    "IOB": {
+      "qty": 1,
+      "avg_price": 38.15,
+      "last_price": 38.15
+    }
+  },
   "unrealized_pnl": 0.0,
   "realized_pnl": 0.0,
   "total_trades": 0,
   "winning_trades": 0,
   "losing_trades": 0,
-  "last_updated": "2025-08-13T14:09:29.341118"
+  "last_updated": "2025-08-28T11:45:17.888010"
 }

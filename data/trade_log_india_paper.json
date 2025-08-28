@@ -70,5 +70,61 @@
         "price": 63.99,
         "mode": "paper",
         "timestamp": "2025-08-11 11:50:00.982770"
+    },
+    {
+        "asset": "NSLNISP.NS",
+        "action": "buy",
+        "qty": 5,
+        "price": 38.92,
+        "mode": "paper",
+        "timestamp": "2025-08-25 13:27:59.455861"
+    },
+    {
+        "asset": "NSLNISP.NS",
+        "action": "buy",
+        "qty": 5,
+        "price": 39.07,
+        "mode": "paper",
+        "timestamp": "2025-08-25 13:55:37.786993"
+    },
+    {
+        "asset": "IOB.NS",
+        "action": "buy",
+        "qty": 5,
+        "price": 38.25,
+        "mode": "paper",
+        "timestamp": "2025-08-25 14:00:56.169487"
+    },
+    {
+        "asset": "SUZLON.NS",
+        "action": "buy",
+        "qty": 3,
+        "price": 57.86,
+        "mode": "paper",
+        "timestamp": "2025-08-25 14:06:11.209044"
+    },
+    {
+        "asset": "RAJOOENG.NS",
+        "action": "buy",
+        "qty": 2,
+        "price": 102.9,
+        "mode": "paper",
+        "timestamp": "2025-08-26 13:51:02.276049"
+    },
+    {
+        "asset": "RAJOOENG.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 102.9,
+        "mode": "paper",
+        "timestamp": "2025-08-26 13:52:09.411541"
+    },
+    {
+        "asset": "RAJOOENG.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 102.9,
+        "mode": "paper",
+        "timestamp": "2025-08-26 14:12:24.915185"
     }
 ]
