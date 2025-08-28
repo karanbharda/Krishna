@@ -33,22 +33,7 @@ class LiveTradingExecutor:
         self.max_capital_per_trade = config.get("max_capital_per_trade", 0.25)
         self.max_trade_limit = config.get("max_trade_limit", 150)
         
-        # Ensure we're in live mode
-        if self.portfolio_manager.current_mode != "live":
-            self.portfolio_manager.switch_mode("live")
-        
-        # Initialize Dhan client
-        self.dhan_client = DhanAPIClient(
-            client_id=config.get("dhan_client_id"),
-            access_token=config.get("dhan_access_token")
-        )
-        
-        # Sync portfolio with Dhan account on initialization
-        if not self.sync_portfolio_with_dhan():
-            logger.error("Failed to sync portfolio with Dhan account during initialization")
-        else:
-            logger.info("Successfully synced portfolio with Dhan account")
-        
+        # Initialize all attributes before any method calls
         # Trading state
         self.pending_orders = {}
         self.executed_orders = {}
@@ -65,6 +50,26 @@ class LiveTradingExecutor:
 
         # Global sell enable flag (env or config)
         self.enable_sell = str(self.config.get("enable_sell", os.getenv("ENABLE_SELL", "true"))).lower() not in ("false", "0", "no", "off")
+        
+        # Ensure we're in live mode
+        if self.portfolio_manager.current_mode != "live":
+            self.portfolio_manager.switch_mode("live")
+        
+        # Initialize Dhan client
+        self.dhan_client = DhanAPIClient(
+            client_id=config.get("dhan_client_id"),
+            access_token=config.get("dhan_access_token")
+        )
+        
+        # Sync portfolio with Dhan account on initialization
+        try:
+            if not self.sync_portfolio_with_dhan():
+                logger.error("Failed to sync portfolio with Dhan account during initialization")
+            else:
+                logger.info("Successfully synced portfolio with Dhan account")
+        except Exception as e:
+            logger.error(f"Failed to sync portfolio with Dhan: {e}")
+
         if not self.enable_sell:
             logger.warning("Sell operations are DISABLED by configuration (ENABLE_SELL=false)")
 

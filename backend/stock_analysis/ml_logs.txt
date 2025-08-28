@@ -6206,3 +6206,50 @@ Reinforcement Learning Results:
     Episode 80: Reward = 774162.01, Avg Reward = 107498.37, Events = 40
     Episode 90: Reward = -52964.22, Avg Reward = 37660.50, Events = 35
     Episode 100: Reward = -586131.49, Avg Reward = -196117.92, Events = 29
+
+[20250828_123711] Analysis for RVNL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for RVNL.NS (RVNL.NS): NEUTRAL
+Current Price: Rs.313.15
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0155 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 3.57
+Predicted Price (USD): 315.8003513650106
+Predicted Change (%): 8745.95
+Confidence Score: -0.037806494590947315
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 11.186605368720702
+  Average Reward: 182243.99355391946
+  Average Events/Episode: 39.75
+  Actions Distribution:
+    hold: 0.2300
+    buy: 0.5350
+    sell: 0.2350
+  RL Epoch Logs:
+    Episode 10: Reward = 673023.38, Avg Reward = 188889.47, Events = 42
+    Episode 20: Reward = -333440.33, Avg Reward = 353825.71, Events = 40
+    Episode 30: Reward = 328268.56, Avg Reward = -51575.14, Events = 30
+    Episode 40: Reward = 374144.29, Avg Reward = 169862.94, Events = 32
+    Episode 50: Reward = 179936.31, Avg Reward = 273211.91, Events = 43
+    Episode 60: Reward = 110112.00, Avg Reward = 252611.14, Events = 34
+    Episode 70: Reward = 104303.41, Avg Reward = 71117.31, Events = 47
+    Episode 80: Reward = -158006.82, Avg Reward = 236232.91, Events = 39
+    Episode 90: Reward = -249084.43, Avg Reward = 33836.80, Events = 46
+    Episode 100: Reward = 672693.64, Avg Reward = 294426.89, Events = 39

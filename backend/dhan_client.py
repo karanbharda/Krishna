@@ -413,76 +413,96 @@ class DhanAPIClient:
                 logger.error(f"Could not find required columns in instrument data. Available columns: {df.columns.tolist()}")
                 return None
             
-            # Create a mapping of common symbol variations
-            symbol_variations = {
-                'HDFCBANK': 'HDFC BANK',
-                'INFY': 'INFOSYS',
-                'SBIN': 'STATE BANK',
-                'ICICIBANK': 'ICICI BANK',
-                'KOTAKBANK': 'KOTAK MAHINDRA',
-                'AXISBANK': 'AXIS BANK',
-                'BAJFINANCE': 'BAJAJ FINANCE',
-                'BAJAJFINSV': 'BAJAJ FINSERV',
-                'TITAN': 'TITAN COMPANY',
-                'NESTLEIND': 'NESTLE INDIA',
-                'HINDUNILVR': 'HINDUSTAN UNILEVER',
-                'LT': 'LARSEN TOUBRO',
-                'M&M': 'MAHINDRA MAHINDRA',
-                'M&MFIN': 'MAHINDRA FINANCE',
-                'TATAMOTORS': 'TATA MOTORS',
-                'TATASTEEL': 'TATA STEEL',
-                'TATAPOWER': 'TATA POWER',
-                'TATACONSUM': 'TATA CONSUMER',
-                'TCS': 'TCSL',  # TCS appears as TCSL in the data
-                'WIPRO': 'WIPRO LTD',
-                'TECHM': 'TECH MAHINDRA',
-                'HCLTECH': 'HCL TECHNOLOGIES',
-                'ASIANPAINT': 'ASIAN PAINTS',
-                'ULTRACEMCO': 'ULTRATECH CEMENT',
-                'SUNPHARMA': 'SUN PHARMACEUTICAL',
-                'DRREDDY': 'DR. REDDY',
-                'CIPLA': 'CIPLA LTD',
-                'DIVISLAB': 'DIVI S LABORATORIES',
-                'BHARTIARTL': 'BHARTI AIRTEL',
-                'ITC': 'ITC LTD',
-                'ONGC': 'OIL AND NATURAL GAS',  # ONGC appears as OIL AND NATURAL GAS in the data
-                'NTPC': 'NTPC LTD',
-                'POWERGRID': 'POWER GRID',
-                'COALINDIA': 'COAL INDIA',
-                'RELIANCE': 'RELIANCE INDUSTRIES'
-            }
+            # Create a more dynamic and comprehensive search without relying on hardcoded mappings
+            search_symbol = symbol.upper()
             
-            # Get the search term - use variation if available, otherwise use original symbol
-            search_term = symbol_variations.get(symbol.upper(), symbol.upper())
-            
-            # Search for exact match first
-            result = df[df[symbol_col].str.upper() == search_term]
+            # First try exact match
+            result = df[df[symbol_col].str.upper() == search_symbol]
             if not result.empty:
                 security_id = str(result.iloc[0][security_id_col])
                 logger.info(f"✅ Found security ID for {symbol} (exact match): {security_id}")
                 return security_id
             
-            # Search for exact match with original symbol (in case variation wasn't needed)
-            if search_term != symbol.upper():
-                result = df[df[symbol_col].str.upper() == symbol.upper()]
+            # Try multiple variations dynamically
+            variations = [
+                search_symbol,
+                search_symbol.replace('-', ' '),
+                search_symbol.replace('_', ' '),
+                search_symbol.replace('&', ' AND '),
+                search_symbol + ' LTD',
+                search_symbol + ' LIMITED',
+                search_symbol + ' EQ',
+                search_symbol + '-EQ',
+                'THE ' + search_symbol,
+                search_symbol.replace('M&M', 'MAHINDRA AND MAHINDRA'),
+                search_symbol.replace('M&M', 'MAHINDRA & MAHINDRA'),
+                search_symbol.replace('L&T', 'LARSEN AND TOUBRO'),
+                search_symbol.replace('L&T', 'LARSEN & TOUBRO')
+            ]
+            
+            # Add variations with common suffixes/prefixes
+            common_suffixes = [' LTD', ' LIMITED', ' CORPORATION', ' COMPANY', ' INDIA', ' INDUSTRIES', ' SOLUTIONS', ' SERVICES']
+            common_prefixes = ['THE ', 'M/S ']
+            
+            for suffix in common_suffixes:
+                if not search_symbol.endswith(suffix.strip()):
+                    variations.append(search_symbol + suffix)
+            
+            for prefix in common_prefixes:
+                if not search_symbol.startswith(prefix.strip()):
+                    variations.append(prefix + search_symbol)
+            
+            # Special handling for known abbreviation patterns
+            abbreviation_mapping = {
+                'RVNL': 'RAIL VIKAS NIGAM',
+                'HINDUNILVR': 'HINDUSTAN UNILEVER',
+                'BAJFINANCE': 'BAJAJ FINANCE',
+                'BAJAJFINSV': 'BAJAJ FINSERV',
+                'TATAMOTORS': 'TATA MOTORS',
+                'TATASTEEL': 'TATA STEEL',
+                'TATAPOWER': 'TATA POWER',
+                'TATACONSUM': 'TATA CONSUMER',
+                'M&MFIN': 'MAHINDRA FINANCE',
+                'TECHM': 'TECH MAHINDRA',
+                'HCLTECH': 'HCL TECHNOLOGIES',
+                'ULTRACEMCO': 'ULTRATECH CEMENT',
+                'DRREDDY': 'DR. REDDY',
+                'DIVISLAB': 'DIVI S LABORATORIES',
+                'BHARTIARTL': 'BHARTI AIRTEL',
+                'ONGC': 'OIL AND NATURAL GAS',
+                'POWERGRID': 'POWER GRID',
+                'COALINDIA': 'COAL INDIA'
+            }
+            
+            # Apply abbreviation mapping if available
+            if search_symbol in abbreviation_mapping:
+                expanded_name = abbreviation_mapping[search_symbol]
+                variations.append(expanded_name)
+                variations.append(expanded_name + ' LTD')
+                variations.append(expanded_name + ' LIMITED')
+            
+            # Try each variation
+            for variation in variations:
+                result = df[df[symbol_col].str.upper() == variation]
                 if not result.empty:
                     security_id = str(result.iloc[0][security_id_col])
-                    logger.info(f"✅ Found security ID for {symbol} (original match): {security_id}")
+                    logger.info(f"✅ Found security ID for {symbol} (variation match: {variation}): {security_id}")
                     return security_id
             
-            # Search for partial match with search term
-            result = df[df[symbol_col].str.contains(search_term, case=False, na=False)]
-            if not result.empty:
-                security_id = str(result.iloc[0][security_id_col])
-                logger.info(f"✅ Found security ID for {symbol} (partial match): {security_id}")
-                return security_id
-            
-            # Search for partial match with original symbol
-            if search_term != symbol.upper():
-                result = df[df[symbol_col].str.contains(symbol.upper(), case=False, na=False)]
+            # Try partial matches as a last resort
+            for variation in variations:
+                result = df[df[symbol_col].str.contains(variation, case=False, na=False)]
                 if not result.empty:
                     security_id = str(result.iloc[0][security_id_col])
-                    logger.info(f"✅ Found security ID for {symbol} (original partial match): {security_id}")
+                    logger.info(f"✅ Found security ID for {symbol} (partial match: {variation}): {security_id}")
+                    return security_id
+            
+            # Try reverse partial match (search symbol contains instrument symbol)
+            for idx, row in df.iterrows():
+                instrument_symbol = str(row[symbol_col]).upper()
+                if search_symbol in instrument_symbol or instrument_symbol in search_symbol:
+                    security_id = str(row[security_id_col])
+                    logger.info(f"✅ Found security ID for {symbol} (reverse partial match: {instrument_symbol}): {security_id}")
                     return security_id
             
             logger.warning(f"❌ Symbol {symbol} not found in instrument data")

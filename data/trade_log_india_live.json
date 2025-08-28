@@ -6,5 +6,13 @@
         "qty": 1,
         "price": 367.35,
         "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-08-28 12:37:16.507766",
+        "asset": "RVNL.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 313.0,
+        "pnl": 0.0
     }
 ]

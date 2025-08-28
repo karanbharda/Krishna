@@ -1,8 +1,8 @@
 {
     "date": "2025-08-28",
-    "roi_today": 31.655578436031483,
-    "cumulative_roi": 31.655578436031483,
+    "roi_today": 51.992525313980266,
+    "cumulative_roi": 51.992525313980266,
     "sharpe": 0,
     "drawdown": 0,
-    "trades_executed": 0
+    "trades_executed": 1
 }

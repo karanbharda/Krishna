@@ -1,7 +1,7 @@
 {
-  "cash": 460.22,
-  "total_value": 702.57,
-  "starting_balance": 757.56,
+  "cash": 146.98,
+  "total_value": 389.33,
+  "starting_balance": 460.22,
   "holdings": {
     "NBCC": {
       "qty": 2,
@@ -19,5 +19,5 @@
   "total_trades": 0,
   "winning_trades": 0,
   "losing_trades": 0,
-  "last_updated": "2025-08-28T11:45:17.888010"
+  "last_updated": "2025-08-28T12:37:41.522793"
 }
