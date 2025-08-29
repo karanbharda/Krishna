@@ -14,5 +14,21 @@
         "qty": 1,
         "price": 313.0,
         "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-08-29 10:08:11.733916",
+        "asset": "NMDC.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 68.3,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-08-29 10:34:38.146093",
+        "asset": "NMDC.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 68.61,
+        "pnl": 0.0
     }
 ]

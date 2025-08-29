@@ -6253,3 +6253,238 @@ Reinforcement Learning Results:
     Episode 80: Reward = -158006.82, Avg Reward = 236232.91, Events = 39
     Episode 90: Reward = -249084.43, Avg Reward = 33836.80, Events = 46
     Episode 100: Reward = 672693.64, Avg Reward = 294426.89, Events = 39
+
+[20250829_100803] Analysis for NMDC.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for NMDC.NS (NMDC.NS): NEUTRAL
+Current Price: Rs.68.35
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0146 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 0.78
+Predicted Price (USD): 68.4268166648076
+Predicted Change (%): 8672.67
+Confidence Score: -0.11905049109028099
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.7655191055906616
+  Average Reward: 60204.21109077211
+  Average Events/Episode: 86.37
+  Actions Distribution:
+    hold: 0.1655
+    buy: 0.5272
+    sell: 0.3073
+  RL Epoch Logs:
+    Episode 10: Reward = 10562.36, Avg Reward = 103928.90, Events = 76
+    Episode 20: Reward = 1150668.05, Avg Reward = 130181.95, Events = 94
+    Episode 30: Reward = -299674.10, Avg Reward = 63795.44, Events = 94
+    Episode 40: Reward = -107287.54, Avg Reward = -38677.64, Events = 77
+    Episode 50: Reward = 185497.10, Avg Reward = 34321.02, Events = 85
+    Episode 60: Reward = -201148.43, Avg Reward = -2019.44, Events = 81
+    Episode 70: Reward = -81958.50, Avg Reward = 76339.01, Events = 89
+    Episode 80: Reward = 479150.23, Avg Reward = 61492.07, Events = 81
+    Episode 90: Reward = 93573.16, Avg Reward = 72125.81, Events = 89
+    Episode 100: Reward = 374010.69, Avg Reward = 100554.99, Events = 96
+
+[20250829_101359] Analysis for YESBANK.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for YESBANK.NS (YESBANK.NS): NEUTRAL
+Current Price: Rs.19.17
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0125 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 0.22
+Predicted Price (USD): 18.772443154060074
+Predicted Change (%): 8432.93
+Confidence Score: -0.055462041041618004
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.001
+  Average Reward: -13047.025487908653
+  Average Events/Episode: 87.47
+  Actions Distribution:
+    hold: 0.0047
+    buy: 0.0023
+    sell: 0.9930
+  RL Epoch Logs:
+    Episode 10: Reward = 53159.35, Avg Reward = -69621.73, Events = 86
+    Episode 20: Reward = -148721.67, Avg Reward = -115634.23, Events = 85
+    Episode 30: Reward = 20804.41, Avg Reward = 24510.00, Events = 92
+    Episode 40: Reward = 11610.82, Avg Reward = 38704.45, Events = 76
+    Episode 50: Reward = 20416.05, Avg Reward = -20595.78, Events = 90
+    Episode 60: Reward = 0.00, Avg Reward = 9454.34, Events = 73
+    Episode 70: Reward = -32659.22, Avg Reward = 11342.71, Events = 76
+    Episode 80: Reward = 0.00, Avg Reward = -5310.27, Events = 84
+    Episode 90: Reward = 23189.08, Avg Reward = 2001.93, Events = 83
+    Episode 100: Reward = 419.00, Avg Reward = -5321.67, Events = 97
+
+[20250829_102036] Analysis for IDBI.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for IDBI.NS (IDBI.NS): NEUTRAL
+Current Price: Rs.88.88
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0216 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.01
+Predicted Price (USD): 89.0579248813259
+Predicted Change (%): 8717.62
+Confidence Score: -0.021717827794370148
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -2.1955649029978086
+  Average Reward: -99302.23235751713
+  Average Events/Episode: 85.97
+  Actions Distribution:
+    hold: 0.5206
+    buy: 0.0596
+    sell: 0.4197
+  RL Epoch Logs:
+    Episode 10: Reward = 96155.60, Avg Reward = 94410.52, Events = 95
+    Episode 20: Reward = -964540.70, Avg Reward = -274876.96, Events = 83
+    Episode 30: Reward = -109849.52, Avg Reward = 181516.63, Events = 74
+    Episode 40: Reward = -1125251.90, Avg Reward = -40423.20, Events = 85
+    Episode 50: Reward = -227875.86, Avg Reward = -356302.31, Events = 91
+    Episode 60: Reward = -1961352.46, Avg Reward = -140766.69, Events = 86
+    Episode 70: Reward = -203900.48, Avg Reward = -136250.82, Events = 102
+    Episode 80: Reward = 429767.13, Avg Reward = 26280.60, Events = 101
+    Episode 90: Reward = 410960.52, Avg Reward = -327671.56, Events = 91
+    Episode 100: Reward = 1181551.12, Avg Reward = -18938.53, Events = 76
+
+[20250829_102716] Analysis for NHPC.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for NHPC.NS (NHPC.NS): NEUTRAL
+Current Price: Rs.77.32
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0130 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 0.88
+Predicted Price (USD): 77.67325592041016
+Predicted Change (%): 8726.51
+Confidence Score: -0.12110235447389295
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.013383575250394643
+  Average Reward: -41355.79296875
+  Average Events/Episode: 88.23
+  Actions Distribution:
+    hold: 0.0023
+    buy: 0.0090
+    sell: 0.9887
+  RL Epoch Logs:
+    Episode 10: Reward = -659585.25, Avg Reward = -353310.84, Events = 96
+    Episode 20: Reward = -42229.53, Avg Reward = -273395.75, Events = 97
+    Episode 30: Reward = -213284.89, Avg Reward = -89946.40, Events = 102
+    Episode 40: Reward = -728357.81, Avg Reward = -127731.20, Events = 85
+    Episode 50: Reward = 749300.06, Avg Reward = 98353.61, Events = 83
+    Episode 60: Reward = -483853.97, Avg Reward = 78708.58, Events = 83
+    Episode 70: Reward = 85662.83, Avg Reward = 199967.06, Events = 87
+    Episode 80: Reward = 81572.05, Avg Reward = 14254.68, Events = 87
+    Episode 90: Reward = 1732.00, Avg Reward = 52231.79, Events = 88
+    Episode 100: Reward = -186446.14, Avg Reward = -12689.40, Events = 88
+
+[20250829_103432] Analysis for NMDC.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for NMDC.NS (NMDC.NS): NEUTRAL
+Current Price: Rs.68.52
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0145 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 0.78
+Predicted Price (USD): 68.50744038338557
+Predicted Change (%): 8683.01
+Confidence Score: -0.005942261603954391
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.8675033565895428
+  Average Reward: -11043.992951986856
+  Average Events/Episode: 89.57
+  Actions Distribution:
+    hold: 0.0067
+    buy: 0.0134
+    sell: 0.9800
+  RL Epoch Logs:
+    Episode 10: Reward = 110088.35, Avg Reward = 105983.85, Events = 92
+    Episode 20: Reward = 13457.27, Avg Reward = 25977.69, Events = 79
+    Episode 30: Reward = -51132.63, Avg Reward = -227580.16, Events = 75
+    Episode 40: Reward = 1010646.63, Avg Reward = 63871.21, Events = 113
+    Episode 50: Reward = 187623.52, Avg Reward = 20092.43, Events = 77
+    Episode 60: Reward = -512694.94, Avg Reward = -193025.01, Events = 92
+    Episode 70: Reward = -86010.02, Avg Reward = 135264.39, Events = 77
+    Episode 80: Reward = -49340.57, Avg Reward = -23305.31, Events = 86
+    Episode 90: Reward = 25977.22, Avg Reward = -43013.00, Events = 82
+    Episode 100: Reward = 315848.84, Avg Reward = 25293.98, Events = 95

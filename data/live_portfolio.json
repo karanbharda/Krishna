@@ -1,17 +1,27 @@
 {
-  "cash": 146.98,
-  "total_value": 389.33,
-  "starting_balance": 460.22,
+  "cash": 70.38,
+  "total_value": 923.13,
+  "starting_balance": 108.42,
   "holdings": {
     "NBCC": {
       "qty": 2,
       "avg_price": 102.1,
       "last_price": 102.1
     },
+    "RVNL": {
+      "qty": 1,
+      "avg_price": 313.15,
+      "last_price": 313.15
+    },
     "IOB": {
       "qty": 1,
       "avg_price": 38.15,
       "last_price": 38.15
+    },
+    "ORIENTBELL": {
+      "qty": 1,
+      "avg_price": 297.25,
+      "last_price": 297.25
     }
   },
   "unrealized_pnl": 0.0,
@@ -19,5 +29,5 @@
   "total_trades": 0,
   "winning_trades": 0,
   "losing_trades": 0,
-  "last_updated": "2025-08-28T12:37:41.522793"
+  "last_updated": "2025-08-29T10:34:55.134757"
 }

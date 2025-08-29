@@ -5268,7 +5268,7 @@ class StockTradingBot:
         if hasattr(technical_indicators, 'volume_ratio') and technical_indicators.get('volume_ratio', 1.0) > 1.2:
             buy_technical_score += 0.2
 
-        # Price above short-term moving average
+         # Price above short-term moving average
         if current_price > technical_indicators["sma_50"]:
             buy_technical_score += 0.2
 
@@ -6876,13 +6876,34 @@ class StockTradingBot:
                 logger.info(f"    - Max by Volume: {max_qty_by_volume:.2f}")
                 logger.info(f"    - Max by Cash: {available_cash / current_ticker_price:.2f}")
 
-                # AGGRESSIVE FIX: Ensure minimum 1 share if we have enough cash
+                # CASH-CONSTRAINT-AWARE FIX: Ensure final quantity respects available cash
                 if buy_qty < 1 and available_cash >= current_ticker_price:
                     buy_qty = 1  # Force minimum 1 share if we can afford it
-                    logger.info(f"  FORCED MINIMUM: Set to 1 share (Rs.{current_ticker_price:.2f}) - conditions met")
+                    # Double-check that even 1 share doesn't exceed available cash
+                    if buy_qty * current_ticker_price > available_cash:
+                        buy_qty = 0
+                        logger.info(f"  [CASH BLOCK] Even 1 share (Rs.{current_ticker_price:.2f}) exceeds available cash (Rs.{available_cash:.2f})")
+                elif buy_qty >= 1:
+                    # Round to nearest integer but ensure we don't exceed available cash
+                    buy_qty = int(buy_qty + 0.5)  # Round to nearest integer
+                    # Check if rounded quantity exceeds available cash
+                    if buy_qty * current_ticker_price > available_cash:
+                        # Reduce quantity to maximum affordable amount
+                        buy_qty = int(available_cash / current_ticker_price)
+                        logger.info(f"  [CASH ADJUST] Reduced quantity to {buy_qty} shares to fit available cash")
                 else:
-                    # Use ceiling instead of truncation to avoid 0 quantity for small positions
-                    buy_qty = max(1, int(buy_qty + 0.5)) if buy_qty > 0.1 else 0  # Round up, minimum 1 share if > 0.1
+                    buy_qty = 0  # Set to 0 for small positions
+                
+                # Final validation: ensure quantity is either 0 or affordable
+                if buy_qty > 0 and buy_qty * current_ticker_price > available_cash:
+                    # If we still exceed cash, reduce to maximum possible or set to 0
+                    max_affordable_qty = int(available_cash / current_ticker_price)
+                    if max_affordable_qty >= 1:
+                        buy_qty = max_affordable_qty
+                        logger.info(f"  [FINAL CASH ADJUST] Set to maximum affordable quantity: {buy_qty} shares")
+                    else:
+                        buy_qty = 0
+                        logger.info(f"  [CASH BLOCK] Insufficient cash for even 1 share")
                 logger.info(f"  FINAL BUY QUANTITY: {buy_qty} shares (Rs.{buy_qty * current_ticker_price:.2f})")
         else:
             logger.info(f"[SKIP] BUY PRE-CHECKS FAILED for {ticker}")
