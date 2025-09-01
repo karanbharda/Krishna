@@ -7022,20 +7022,33 @@ class StockTradingBot:
                 "signals": buy_signals,
                 "reason": "signal_based"
             }
-        elif False:  # Sell signals disabled
-            # Sell functionality temporarily disabled
-            logger.info(f"SELL signals disabled for {ticker} - holding position")
+        elif sell_qty > 0:  # Execute sell when we have a positive sell quantity
+            logger.info(
+                f"Executing SELL for {ticker}: {sell_qty:.0f} units at Rs.{current_ticker_price:.2f}, "
+                f"Position Value: Rs.{sell_qty * current_ticker_price:.2f}, "
+                f"Stop-Loss: Rs.{stop_loss:.2f}, Take-Profit: Rs.{take_profit:.2f}, ATR: Rs.{atr:.2f}"
+            )
+            success_result = self.executor.execute_trade("sell", ticker, sell_qty, current_ticker_price, stop_loss, take_profit)
+
+            # Handle the case where trade execution returns detailed result
+            if isinstance(success_result, dict):
+                success = success_result.get("success", False)
+                actual_qty = success_result.get("qty", sell_qty)
+            else:
+                success = success_result
+                actual_qty = sell_qty if success else 0
+
             trade = {
-                "action": "hold",
+                "action": "sell",
                 "ticker": ticker,
-                "qty": 0,
+                "qty": actual_qty,
                 "price": current_ticker_price,
                 "stop_loss": stop_loss,
                 "take_profit": take_profit,
-                "success": True,
-                "confidence_score": 0,
-                "signals": 0,
-                "reason": "sell_disabled"
+                "success": success_result,
+                "confidence_score": final_sell_score,
+                "signals": sell_signals,
+                "reason": "signal_based"
             }
         else:
             # PRODUCTION FIX: Regime-specific HOLD conditions

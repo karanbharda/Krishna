@@ -1,10 +1,15 @@
 {
-    "cash": 70.38,
+    "cash": 70.4,
     "holdings": {
         "NBCC": {
             "qty": 2,
             "avg_price": 102.1,
             "last_price": 102.1
+        },
+        "NSLNISP": {
+            "qty": 2,
+            "avg_price": 37.87,
+            "last_price": 37.87
         },
         "RVNL": {
             "qty": 1,
@@ -22,8 +27,8 @@
             "last_price": 297.25
         }
     },
-    "starting_balance": 108.42,
+    "starting_balance": 70.4,
     "realized_pnl": 0.0,
     "unrealized_pnl": 0.0,
-    "last_updated": "2025-08-29T10:34:55.133971"
+    "last_updated": "2025-09-01T10:31:58.105625"
 }

@@ -48,8 +48,9 @@ class LiveTradingExecutor:
         self.last_sync_time = 0
         self.min_sync_interval = 60  # Minimum 60 seconds between syncs
 
-        # Global sell enable flag (env or config)
+        # Global enable flags (env or config)
         self.enable_sell = str(self.config.get("enable_sell", os.getenv("ENABLE_SELL", "true"))).lower() not in ("false", "0", "no", "off")
+        self.enable_buy = str(self.config.get("enable_buy", os.getenv("ENABLE_BUY", "true"))).lower() not in ("false", "0", "no", "off")
         
         # Ensure we're in live mode
         if self.portfolio_manager.current_mode != "live":
@@ -72,6 +73,9 @@ class LiveTradingExecutor:
 
         if not self.enable_sell:
             logger.warning("Sell operations are DISABLED by configuration (ENABLE_SELL=false)")
+        
+        if not self.enable_buy:
+            logger.warning("Buy operations are DISABLED by configuration (ENABLE_BUY=false)")
 
         logger.info("Live Trading Executor initialized")
     
@@ -280,6 +284,11 @@ class LiveTradingExecutor:
     def execute_buy_order(self, symbol: str, signal_data: Dict) -> Dict:
         """Execute a buy order through Dhan API with database recording"""
         try:
+            # Enforce global buy disable flag
+            if not self.enable_buy:
+                logger.info("Buy disabled by configuration (ENABLE_BUY=false). Skipping buy for %s", symbol)
+                return {"success": False, "message": "Buy disabled by configuration"}
+            
             # Check daily trade limit
             if self._check_daily_limits():
                 return {"success": False, "message": "Daily trade limit exceeded"}
@@ -337,9 +346,9 @@ class LiveTradingExecutor:
                         stop_loss=signal_data.get("stop_loss"),
                         take_profit=signal_data.get("take_profit")
                     )
-                    logger.info(f"Trade recorded in database: BUY {quantity} {symbol} at Rs.{current_price:.2f}")
+                    logger.info(f"✅ Buy trade executed successfully: {quantity} {symbol} at Rs.{current_price:.2f}")
                 except Exception as db_error:
-                    logger.error(f"Failed to record trade in database: {db_error}")
+                    logger.error(f"❌ Failed to record buy trade in database: {db_error}")
                 
                 # Update trade count
                 self._update_daily_trade_count()
@@ -355,15 +364,20 @@ class LiveTradingExecutor:
                     "message": f"Buy order placed for {quantity} shares of {symbol}"
                 }
             else:
-                return {"success": False, "message": "Order placement failed"}
+                logger.error(f"❌ Unexpected order response for buy order: {order_response}")
+                return {"success": False, "message": "Order placement failed - unexpected response"}
                 
+        except ValueError as ve:
+            # Handle security ID validation errors specifically
+            logger.error(f"❌ Security ID validation failed for {symbol}: {ve}")
+            return {"success": False, "message": f"Security ID validation failed for {symbol}"}
         except Exception as e:
-            logger.error(f"Failed to execute buy order for {symbol}: {e}")
+            logger.error(f"❌ Failed to execute buy order for {symbol}: {e}")
             return {"success": False, "message": f"Buy order failed: {str(e)}"}
 
     
     def execute_sell_order(self, symbol: str, signal_data: Dict) -> Dict:
-        """Execute a sell order through Dhan API with database integration"""
+        """Execute a sell order through Dhan API with comprehensive validation and error handling"""
         try:
             # Enforce global sell disable flag
             if not self.enable_sell:
@@ -394,7 +408,8 @@ class LiveTradingExecutor:
                 # Calculate profit/loss
                 pnl = (current_price - holding.avg_price) * holding.quantity
                 
-                # Place order through Dhan API
+                # Place order through Dhan API with comprehensive validation
+                logger.info(f"Attempting to place sell order for {holding.quantity} {symbol}")
                 order_response = self.dhan_client.place_order(
                     symbol=symbol,
                     quantity=holding.quantity,
@@ -415,9 +430,9 @@ class LiveTradingExecutor:
                             stop_loss=signal_data.get("stop_loss"),
                             take_profit=signal_data.get("take_profit")
                         )
-                        logger.info(f"Sell trade recorded in database: {holding.quantity} {symbol} at Rs.{current_price:.2f}")
+                        logger.info(f"✅ Sell trade executed successfully: {holding.quantity} {symbol} at Rs.{current_price:.2f}")
                     except Exception as db_error:
-                        logger.error(f"Failed to record sell trade in database: {db_error}")
+                        logger.error(f"❌ Failed to record sell trade in database: {db_error}")
                     
                     return {
                         "success": True,
@@ -428,15 +443,20 @@ class LiveTradingExecutor:
                         "message": f"Sell order placed for {holding.quantity} shares of {symbol}"
                     }
                 else:
-                    return {"success": False, "message": "Sell order placement failed"}
+                    logger.error(f"❌ Unexpected order response for sell order: {order_response}")
+                    return {"success": False, "message": "Sell order placement failed - unexpected response"}
                     
             finally:
                 if session:
                     session.close()
 
+        except ValueError as ve:
+            # Handle security ID validation errors specifically
+            logger.error(f"❌ Security ID validation failed for {symbol}: {ve}")
+            return {"success": False, "message": f"Security ID validation failed for {symbol}"}
         except Exception as e:
-            logger.error(f"Error executing sell order: {e}")
-            return {"success": False, "message": str(e)}
+            logger.error(f"❌ Error executing sell order for {symbol}: {e}")
+            return {"success": False, "message": f"Sell order failed: {str(e)}"}
     
     def check_and_update_orders(self) -> List[Dict]:
         """Check status of pending orders and update portfolio"""
