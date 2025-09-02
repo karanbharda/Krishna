@@ -1,5 +1,5 @@
 {
-    "cash": 70.4,
+    "cash": 970.02,
     "holdings": {
         "NBCC": {
             "qty": 2,
@@ -27,8 +27,8 @@
             "last_price": 297.25
         }
     },
-    "starting_balance": 70.4,
+    "starting_balance": 970.02,
     "realized_pnl": 0.0,
     "unrealized_pnl": 0.0,
-    "last_updated": "2025-09-01T10:31:58.105625"
+    "last_updated": "2025-09-02T11:51:59.639427"
 }

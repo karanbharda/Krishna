@@ -579,12 +579,13 @@ class DhanAPIClient:
             # Get numeric security ID
             security_id = self.get_security_id(symbol)
             
+            # Only use CNC (delivery) product type for equity trades
             # Prepare order data according to official Dhan API v2 format
             order_data = {
                 "dhanClientId": self.client_id,
                 "transactionType": side.upper(),
                 "exchangeSegment": "NSE_EQ",
-                "productType": "CNC",  # CNC for delivery trading (positions carry forward)
+                "productType": "CNC",  # Cash and Carry - for delivery-based trading
                 "orderType": order_type.upper(),
                 "validity": "DAY",
                 "securityId": str(security_id),  # Must be string
@@ -603,17 +604,17 @@ class DhanAPIClient:
                 # For MARKET orders, price must be 0.0 (float)
                 order_data["price"] = 0.0
             
-            logger.info(f"Placing order: {side} {quantity} {symbol} (ID: {security_id})")
+            logger.info(f"Placing order: {side} {quantity} {symbol} (ID: {security_id}, Product: CNC)")
             logger.debug(f"Order data: {order_data}")
             
             response = self._make_request('POST', '/v2/orders', order_data)
             
             if response and 'orderId' in response:
                 logger.info(f"Order placed successfully: {side} {quantity} {symbol} - Order ID: {response.get('orderId')}")
+                return response
             else:
                 logger.warning(f"Unexpected order response: {response}")
-            
-            return response
+                raise Exception(f"Order placement failed with unexpected response: {response}")
             
         except Exception as e:
             logger.error(f"Failed to place order: {e}")
