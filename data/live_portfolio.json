@@ -1,13 +1,8 @@
 {
-  "cash": 970.02,
-  "total_value": 1898.51,
-  "starting_balance": 970.02,
+  "cash": 1173.39,
+  "total_value": 1897.68,
+  "starting_balance": 1173.39,
   "holdings": {
-    "NBCC": {
-      "qty": 2,
-      "avg_price": 102.1,
-      "last_price": 102.1
-    },
     "NSLNISP": {
       "qty": 2,
       "avg_price": 37.87,
@@ -34,5 +29,5 @@
   "total_trades": 0,
   "winning_trades": 0,
   "losing_trades": 0,
-  "last_updated": "2025-09-02T11:51:59.640123"
+  "last_updated": "2025-09-03T10:06:14.807228"
 }
