@@ -979,7 +979,22 @@ class WebTradingBot:
                         'reward': trade.get('profit_loss', 0),
                         'timestamp': trade.get('timestamp', '')
                     }
-                    learning_engine.add_experience(experience)
+                    # FIX: Use the correct method signature for add_experience
+                    if hasattr(learning_engine, 'performance_tracker') and hasattr(learning_engine.performance_tracker, 'add_experience'):
+                        # Use the PerformanceTracker's add_experience method
+                        learning_engine.performance_tracker.add_experience(
+                            experience['state'], 
+                            experience['action'], 
+                            experience['reward'], 
+                            None  # next_state not available in this context
+                        )
+                    else:
+                        # Fallback to record_outcome if add_experience is not available
+                        learning_engine.record_outcome(experience['state'], {
+                            'action': experience['action'],
+                            'reward': experience['reward'],
+                            'timestamp': experience['timestamp']
+                        })
                 logger.info("Historical data loaded successfully for learning engine")
         except Exception as e:
             logger.error(f"Error loading historical data for learning: {e}")

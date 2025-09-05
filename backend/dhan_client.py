@@ -46,7 +46,7 @@ class DhanAPIClient:
         
         # Manual security ID mappings - takes precedence over dynamic search
         self.manual_security_id_mapping = {
-            // Banking & Financial Services
+            # Banking & Financial Services
             'HDFCBANK': '500180',
             'ICICIBANK': '532174',
             'SBIN': '500112',
@@ -59,9 +59,9 @@ class DhanAPIClient:
             'PNB': '532461',
             'CANBK': '532483',
             'BANKBARODA': '532134',
-            'IDBI': '532461',        // IDBI Bank Ltd
+            'IDBI': '532461',        # IDBI Bank Ltd
             
-            // IT Services
+            # IT Services
             'TCS': '532540',
             'INFY': '500209',
             'WIPRO': '507685',
@@ -72,7 +72,7 @@ class DhanAPIClient:
             'MPHASIS': '526299',
             'COFORGE': '532541',
             
-            // Energy & Oil
+            # Energy & Oil
             'RELIANCE': '500325',
             'ONGC': '500312',
             'IOC': '530965',
@@ -86,7 +86,7 @@ class DhanAPIClient:
             'ADANITRANS': '542066',
             'ADANIPORTS': '532921',
             
-            // FMCG & Consumer
+            # FMCG & Consumer
             'HINDUNILVR': '500696',
             'ITC': '500875',
             'NESTLEIND': '500790',
@@ -98,7 +98,7 @@ class DhanAPIClient:
             'TATACONSUM': '500800',
             'UBL': '532953',
             
-            // Pharmaceuticals
+            # Pharmaceuticals
             'SUNPHARMA': '524715',
             'DRREDDY': '500124',
             'CIPLA': '500087',
@@ -110,7 +110,7 @@ class DhanAPIClient:
             'TORNTPHARM': '500825',
             'GLENMARK': '532296',
             
-            // Automotive
+            # Automotive
             'MARUTI': '532500',
             'HYUNDAI': '543066',
             'M&M': '500520',
@@ -120,10 +120,10 @@ class DhanAPIClient:
             'HEROMOTOCO': '500182',
             'TVSMOTORS': '532343',
             'ASHOKLEY': '500477',
-            'MOTHERSON': '532754',   // Samvardhana Motherson International Ltd
+            'MOTHERSON': '532754',   # Samvardhana Motherson International Ltd
             'MOTHERSUMI': '533188',
             
-            // Metals & Mining
+            # Metals & Mining
             'TATASTEEL': '500470',
             'JSWSTEEL': '500228',
             'HINDALCO': '500440',
@@ -134,13 +134,13 @@ class DhanAPIClient:
             'MOIL': '533286',
             'WELCORP': '532144',
             
-            // Telecom
+            # Telecom
             'BHARTIARTL': '532454',
             'IDEA': '532822',
             'MTNL': '500455',
             'LTTS': '540005',
             
-            // Cement
+            # Cement
             'ULTRACEMCO': '532538',
             'SHREECEM': '500387',
             'ACC': '500410',
@@ -148,7 +148,7 @@ class DhanAPIClient:
             'DALMIACEMEN': '532139',
             'JKCEMENT': '532454',
             
-            // Real Estate & Construction
+            # Real Estate & Construction
             'LT': '500510',
             'DLF': '532868',
             'GODREJPROP': '533150',
@@ -156,19 +156,19 @@ class DhanAPIClient:
             'PRESTIGE': '532811',
             'SOBHA': '533129',
             'BRIGADE': '532929',
-            'NBCC': '538835',  // NBCC (India) Limited - Infrastructure/Construction
+            'NBCC': '538835',  # NBCC (India) Limited - Infrastructure/Construction
             
-            // Airlines & Tourism
+            # Airlines & Tourism
             'INDIGO': '539448',
             'SPICEJET': '532906',
             'IRCTC': '542830',
             
-            // Textiles
+            # Textiles
             'RNAM': '500261',
             'WELSPUNIND': '514162',
             'TRIDENT': '521064',
             
-            // Chemicals
+            # Chemicals
             'UPL': '512070',
             'PIDILITIND': '500331',
             'AAVAS': '540376',
@@ -176,26 +176,26 @@ class DhanAPIClient:
             'TATACHEM': '500770',
             'GNFC': '532538',
             
-            // Media & Entertainment
+            # Media & Entertainment
             'ZEEL': '505537',
             'SUNTV': '532733',
             'PVR': '532689',
             'BALRAMCHIN': '500335',
             
-            // Agriculture
+            # Agriculture
             'RALLIS': '500355',
             'COROMANDEL': '500825',
             'CHAMBLFERT': '515145',
             
-            // Logistics
+            # Logistics
             'BLUEDART': '526612',
             'GATI': '532345',
             
-            // Specialty Stocks
+            # Specialty Stocks
             'NSLNISP': '1333',
             'IOB': '1584',
             
-            // Additional Popular Stocks
+            # Additional Popular Stocks
             'ASIANPAINT': '500820',
             'TITAN': '500114',
             'BAJFINANCE': '500034',
@@ -206,25 +206,25 @@ class DhanAPIClient:
             'GRASIM': '500300',
             'SBILIFE': '542933',
             
-            // Manual corrections for known problematic symbols
-            'RAJOOENG': '539297',  // Corrected security ID for RAJOOENG
-            'NBCC': '538835',      // Corrected security ID for NBCC
-            'SHANTIGOLD': '544459',  // Shanti Gold International Ltd
-            'DBI': '532461',         // IDBI Bank Ltd (alternative symbol)
-            'GMRAIRPORT': '532754',  // GMR Airports Ltd
-            'GMRI': '532754'         // GMR Airports Ltd (alternative symbol)
+            # Manual corrections for known problematic symbols
+            'RAJOOENG': '539297',  # Corrected security ID for RAJOOENG
+            'NBCC': '538835',      # Corrected security ID for NBCC
+            'SHANTIGOLD': '544459',  # Shanti Gold International Ltd
+            'DBI': '532461',         # IDBI Bank Ltd (alternative symbol)
+            'GMRAIRPORT': '532754',  # GMR Airports Ltd
+            'GMRI': '532754'         # GMR Airports Ltd (alternative symbol)
         }
         
         # Instrument data cache
         self.instrument_cache = {}
         self.instrument_cache_expiry = {}
-        self.instrument_cache_duration = 86400  // Cache instruments for 24 hours
+        self.instrument_cache_duration = 86400  # Cache instruments for 24 hours
         
         # Daily instrument master (Dhan's recommended approach)
         self.daily_instruments_df = None
         self.daily_instruments_last_updated = None
-        self.daily_instruments_cache_duration = 3600  // Refresh every hour
-        self.daily_refresh_hour = 8  // Refresh at 8 AM daily
+        self.daily_instruments_cache_duration = 3600  # Refresh every hour
+        self.daily_refresh_hour = 8  # Refresh at 8 AM daily
         
         # Dhan instrument master URLs (no auth required)
         self.compact_url = "https://images.dhan.co/api-data/api-scrip-master.csv"
@@ -691,35 +691,35 @@ class DhanAPIClient:
     
     def get_security_id(self, symbol: str) -> str:
         """Get numeric security ID for a symbol using direct API approach"""
-        // Convert symbol format
+        # Convert symbol format
         if symbol.endswith('.NS'):
             symbol = symbol[:-3]
         
         symbol = symbol.upper()
         
-        // Check manual mapping first - takes precedence
+        # Check manual mapping first - takes precedence
         if symbol in self.manual_security_id_mapping:
             manual_id = self.manual_security_id_mapping[symbol]
             logger.info(f"✅ Using manual security ID mapping for {symbol}: {manual_id}")
             return manual_id
         
-        // Check cache first
+        # Check cache first
         cached_id = self._get_cached_security_id(symbol)
         if cached_id:
             logger.debug(f"Using cached security ID for {symbol}: {cached_id}")
             return cached_id
         
-        // Check database for previously validated security IDs
+        # Check database for previously validated security IDs
         db_id = self._get_corrected_security_id(symbol)
         if db_id:
             self._cache_security_id(symbol, db_id)
             return db_id
         
-        // Fetch and search in real-time instrument data (the working approach from example)
+        # Fetch and search in real-time instrument data (the working approach from example)
         security_id = self._search_security_id_in_instruments(symbol)
         if security_id:
             self._cache_security_id(symbol, security_id)
-            // Store in database for future use
+            # Store in database for future use
             self._store_corrected_security_id(symbol, security_id)
             return security_id
         
