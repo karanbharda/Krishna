@@ -74,6 +74,8 @@ from langchain.memory import ConversationBufferMemory
 
 from typing import Optional, List
 
+# Add import for professional buy logic
+from core.professional_buy_integration import ProfessionalBuyIntegration
 
 # Setup logging
 logging.basicConfig(
@@ -5152,6 +5154,17 @@ class StockTradingBot:
             reddit_user_agent=config.get("reddit_user_agent")
         )
 
+        # Initialize professional buy integration
+        try:
+            from core.professional_buy_integration import ProfessionalBuyIntegration
+            from core.professional_buy_config import ProfessionalBuyConfig
+            professional_config = ProfessionalBuyConfig.get_default_config()
+            self.professional_buy_integration = ProfessionalBuyIntegration(professional_config)
+            logger.info("Professional buy integration initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize professional buy integration: {e}")
+            self.professional_buy_integration = None
+
         # Initialize production core components
         try:
             from core import AdaptiveThresholdManager, IntegratedRiskManager
@@ -5231,6 +5244,68 @@ class StockTradingBot:
         total_value = metrics["total_value"]
         # Use Fyers for historical data (1y) - SAME LOGIC
         history = get_stock_data_fyers_or_yf(ticker, period="1y")
+
+        # PROFESSIONAL BUY LOGIC INTEGRATION
+        # Use professional buy logic if available, otherwise fall back to legacy logic
+        if self.professional_buy_integration is not None:
+            try:
+                # Prepare data for professional buy evaluation
+                portfolio_data = {
+                    "total_value": total_value,
+                    "available_cash": available_cash,
+                    "holdings": self.portfolio.holdings
+                }
+                
+                analysis_data = {
+                    "technical_indicators": technical_indicators,
+                    "sentiment_analysis": sentiment_data,
+                    "ml_analysis": ml_analysis,
+                    "deep_learning_analysis": analysis.get("deep_learning_analysis", {}),
+                    "fundamental_analysis": analysis.get("fundamental_analysis", {})
+                }
+                
+                # Evaluate professional buy decision
+                professional_decision = self.professional_buy_integration.evaluate_professional_buy(
+                    ticker=ticker,
+                    current_price=current_price,
+                    portfolio_data=portfolio_data,
+                    analysis_data=analysis_data
+                )
+                
+                # If professional logic recommends a buy, execute it
+                if professional_decision.get("action") == "buy":
+                    buy_qty = professional_decision.get("qty", 0)
+                    stop_loss = professional_decision.get("stop_loss", current_price * 0.95)
+                    take_profit = professional_decision.get("take_profit", current_price * 1.15)
+                    
+                    # Ensure we have enough cash
+                    if buy_qty > 0 and buy_qty * current_price <= available_cash:
+                        logger.info(f"Executing PROFESSIONAL BUY for {ticker}: {buy_qty} units at Rs.{current_price:.2f}")
+                        success_result = self.executor.execute_trade("buy", ticker, buy_qty, current_price, stop_loss, take_profit)
+                        
+                        return {
+                            "action": "buy",
+                            "ticker": ticker,
+                            "qty": buy_qty,
+                            "price": current_price,
+                            "stop_loss": stop_loss,
+                            "take_profit": take_profit,
+                            "success": success_result,
+                            "confidence_score": professional_decision.get("confidence_score", 0.0),
+                            "signals": professional_decision.get("signals", 0),
+                            "reason": "professional_buy"
+                        }
+                    else:
+                        logger.info(f"Professional buy decision for {ticker} blocked due to insufficient cash or zero quantity")
+                
+                # If professional logic recommends hold or sell, continue with existing logic
+                elif professional_decision.get("action") == "hold":
+                    logger.info(f"Professional buy logic recommends HOLD for {ticker}")
+                elif professional_decision.get("action") == "sell":
+                    logger.info(f"Professional buy logic recommends SELL for {ticker} (unexpected)")
+            except Exception as e:
+                logger.error(f"Error in professional buy evaluation for {ticker}: {e}")
+                # Continue with legacy logic on error
 
         # PRODUCTION FIX: Rebalanced signal weights for better action-oriented trading
         weights = {

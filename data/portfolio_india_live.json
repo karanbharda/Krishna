@@ -1,10 +1,18 @@
 {
-    "cash": 1173.39,
+    "cash": 493.86,
+    "starting_balance": 1000.0,
+    "realized_pnl": 0.480000000000004,
+    "unrealized_pnl": 2.2737367544323206e-13,
     "holdings": {
         "NSLNISP": {
             "qty": 2,
             "avg_price": 37.87,
             "last_price": 37.87
+        },
+        "ONGC": {
+            "qty": 1,
+            "avg_price": 236.09,
+            "last_price": 236.09
         },
         "RVNL": {
             "qty": 1,
@@ -17,13 +25,14 @@
             "last_price": 38.15
         },
         "ORIENTBELL": {
+            "qty": 2,
+            "avg_price": 300.5,
+            "last_price": 300.5
+        },
+        "MOTHERSON.NS": {
             "qty": 1,
-            "avg_price": 297.25,
-            "last_price": 297.25
+            "avg_price": 94.6,
+            "last_price": 94.6
         }
-    },
-    "starting_balance": 1173.39,
-    "realized_pnl": 0.0,
-    "unrealized_pnl": 0.0,
-    "last_updated": "2025-09-03T10:06:14.806483"
+    }
 }

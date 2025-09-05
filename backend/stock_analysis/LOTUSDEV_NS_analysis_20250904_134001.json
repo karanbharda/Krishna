@@ -1,0 +1,283 @@
+{
+    "success": true,
+    "stock_data": {
+        "symbol": "LOTUSDEV.NS",
+        "name": "LOTUSDEV.NS",
+        "current_price": {
+            "INR": 183.78,
+            "USD": 2.09,
+            "EUR": 1.79,
+            "BTC": 1.888e-05,
+            "ETH": 0.00047683
+        },
+        "sector": "N/A",
+        "industry": "N/A",
+        "pe_ratio": "N/A",
+        "dividends": "N/A"
+    },
+    "recommendation": "NEUTRAL",
+    "buy_score": 0.0,
+    "sell_score": 0.0,
+    "technical_indicators": {
+        "sma_50": 183.78,
+        "sma_200": 183.78,
+        "ema_50": 191.5227595183149,
+        "rsi": 52.05790143220466,
+        "macd": -3.5892786248779203,
+        "signal_line": -2.957853496741656,
+        "macd_histogram": -0.6314251281362644,
+        "bb_upper": 205.59943202763804,
+        "bb_lower": 173.46956797236197,
+        "volatility": 0.0,
+        "momentum": 0.0,
+        "volume_trend": "MODERATE"
+    },
+    "fundamental_analysis": {
+        "market_cap": "N/A",
+        "pe_ratio": "N/A",
+        "dividend_yield": "N/A",
+        "52w_high": "N/A",
+        "52w_low": "N/A",
+        "balance_sheet": {},
+        "income_statement": {},
+        "cash_flow": {}
+    },
+    "sentiment_analysis": {
+        "newsapi": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "gnews": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "reddit": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "google_news": {
+            "positive": 5.0,
+            "negative": 0,
+            "neutral": 5.0
+        },
+        "aggregated": {
+            "positive": 5.0,
+            "negative": 0,
+            "neutral": 5.0
+        },
+        "weighted_aggregated": {
+            "positive": 13.0,
+            "negative": 0.0,
+            "neutral": 13.0,
+            "total_weight": 11.31
+        },
+        "comprehensive_analysis": {
+            "sentiment_strength": {
+                "bullish": 1.1494252873563218,
+                "bearish": 0.0,
+                "neutral": 1.1494252873563218
+            },
+            "confidence_score": 0.5,
+            "market_context_applied": 1.3,
+            "sources_coverage": {
+                "global_financial": true,
+                "indian_focus": true,
+                "broad_market": true,
+                "social_sentiment": true
+            }
+        }
+    },
+    "mpt_metrics": {
+        "annual_return": -0.7514563976241703,
+        "annual_volatility": 0.4081435027223235,
+        "sharpe_ratio": -1.988164437781671,
+        "beta": "N/A",
+        "alpha": "N/A"
+    },
+    "institutional_holders": {},
+    "mutual_fund_holders": {},
+    "support_level": 174.59099999999998,
+    "resistance_level": 192.96900000000002,
+    "risk_level": "LOW",
+    "timeframe": "SHORT_TERM",
+    "explanation": "Recommendation for LOTUSDEV.NS (LOTUSDEV.NS): NEUTRAL\nCurrent Price: Rs.183.78\n\nBuy Score: 0.000, Sell Score: 0.000\n\nNeutral Factors:\n- Price is stable relative to moving averages.\n- Sentiment is balanced, with no strong bullish or bearish signals.\n\nRisk Assessment:\n- Volatility: 0.0000 (higher values indicate higher risk)\n- Sector: N/A\n- Industry: N/A\n",
+    "ml_analysis": {
+        "success": true,
+        "predicted_price": 180.87233533990545,
+        "confidence": -0.02203988701717985,
+        "mse": 44.94956361971889,
+        "mae": 3.7374927057601988,
+        "r2_score": -0.02203988701717985,
+        "best_ml_model": "et",
+        "best_model_metrics": {
+            "mse": 44.94956361971889,
+            "mae": 3.7374927057601988,
+            "r2": -0.02203988701717985
+        },
+        "all_model_scores": {
+            "xgb": {
+                "mse": 50.519126258883496,
+                "mae": 3.999736272660377,
+                "r2": -0.1486777164436206,
+                "prediction": 184.1561737060547
+            },
+            "lgb": {
+                "mse": 56.93991826868086,
+                "mae": 4.677754978090507,
+                "r2": -0.29467035823592713,
+                "prediction": 182.23360073869745
+            },
+            "cb": {
+                "mse": 45.75677055025904,
+                "mae": 3.8261620161171357,
+                "r2": -0.040393739950399965,
+                "prediction": 181.2966001759299
+            },
+            "et": {
+                "mse": 44.94956361971889,
+                "mae": 3.7374927057601988,
+                "r2": -0.02203988701717985,
+                "prediction": 182.42772074139597
+            },
+            "svr": {
+                "mse": 88.14440195076159,
+                "mae": 6.768419838690825,
+                "r2": -1.0041817396294594,
+                "prediction": 186.7833129991086
+            },
+            "mlp": {
+                "mse": 205.02295297087684,
+                "mae": 10.941200611702849,
+                "r2": -3.661705672229483,
+                "prediction": 152.35576755963248
+            },
+            "ensemble": {
+                "mse": 53.063097459922425,
+                "mae": 4.7017212682297655,
+                "r2": -0.20652121545690538,
+                "prediction": 178.2088635206832
+            },
+            "stacking": {
+                "mse": 62.08186373263189,
+                "mae": 6.196608682182747,
+                "r2": -0.41158524990174006,
+                "prediction": 180.9152790511966
+            }
+        },
+        "lstm_metrics": {
+            "mse": 0.04354830086231232,
+            "r2": -2.5428290367126465,
+            "adv_mse": 0.08194883912801743,
+            "adv_r2": -5.666867256164551
+        },
+        "transformer_metrics": {
+            "mse": 0.012792877852916718,
+            "r2": -0.04075193405151367,
+            "adv_mse": 0.0199778713285923,
+            "adv_r2": -0.6252800226211548
+        },
+        "rl_metrics": {
+            "success": true,
+            "recommendation": "HOLD",
+            "performance_pct": 0.17303909709717846,
+            "final_net_worth": 100173.03909709718,
+            "average_reward": 311351.55898179696,
+            "average_events_per_episode": 126.22,
+            "actions_distribution": {
+                "hold": 0.17088607594936708,
+                "buy": 0.25158227848101267,
+                "sell": 0.5775316455696202
+            },
+            "epoch_logs": [
+                {
+                    "episode": 10,
+                    "total_reward": 2868935.168077042,
+                    "average_reward": 1380841.4940909916,
+                    "events_triggered": 132
+                },
+                {
+                    "episode": 20,
+                    "total_reward": 4551239.395398534,
+                    "average_reward": 1510562.421496112,
+                    "events_triggered": 145
+                },
+                {
+                    "episode": 30,
+                    "total_reward": 995315.0741920337,
+                    "average_reward": -4596.570041866496,
+                    "events_triggered": 133
+                },
+                {
+                    "episode": 40,
+                    "total_reward": -1870450.400537343,
+                    "average_reward": 58031.23532785669,
+                    "events_triggered": 125
+                },
+                {
+                    "episode": 50,
+                    "total_reward": -4494117.463973821,
+                    "average_reward": 652351.3183285899,
+                    "events_triggered": 121
+                },
+                {
+                    "episode": 60,
+                    "total_reward": -395086.0706806011,
+                    "average_reward": 1613597.0691620111,
+                    "events_triggered": 111
+                },
+                {
+                    "episode": 70,
+                    "total_reward": 713570.8964189033,
+                    "average_reward": -963818.733542997,
+                    "events_triggered": 131
+                },
+                {
+                    "episode": 80,
+                    "total_reward": -1735179.072595274,
+                    "average_reward": 142242.81456498234,
+                    "events_triggered": 114
+                },
+                {
+                    "episode": 90,
+                    "total_reward": -816897.1895220445,
+                    "average_reward": -1149599.8002860073,
+                    "events_triggered": 126
+                },
+                {
+                    "episode": 100,
+                    "total_reward": 201208.16359817915,
+                    "average_reward": -126095.6592817042,
+                    "events_triggered": 117
+                }
+            ]
+        },
+        "ensemble_components": {
+            "best_ml_model": 182.42772074139597,
+            "lstm": 177.61912536621094,
+            "transformer": 182.57015991210938,
+            "ensemble_average": 178.54716481158735
+        },
+        "industry_level_features": {
+            "top_5_ml_models": [
+                "xgb",
+                "lgb",
+                "cb",
+                "et",
+                "svr",
+                "mlp",
+                "ensemble",
+                "stacking"
+            ],
+            "ensemble_methods": [
+                "VotingRegressor",
+                "StackingRegressor"
+            ],
+            "advanced_scaling": "RobustScaler",
+            "model_selection": "Best R2 Score"
+        }
+    },
+    "timestamp": "2025-09-04 13:40:01"
+}

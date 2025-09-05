@@ -38,5 +38,37 @@
         "qty": 2,
         "price": 38.11,
         "pnl": 0.480000000000004
+    },
+    {
+        "timestamp": "2025-09-05 14:48:05.580169",
+        "asset": "SHANTIGOLD.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 231.77,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-05 15:09:53.695149",
+        "asset": "SHANTIGOLD.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 230.87,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-05 15:19:00.004277",
+        "asset": "SHANTIGOLD.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 231.0,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-05 15:25:50.360720",
+        "asset": "MOTHERSON.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 94.6,
+        "pnl": 0.0
     }
 ]

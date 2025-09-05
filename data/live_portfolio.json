@@ -1,12 +1,17 @@
 {
-  "cash": 1173.39,
-  "total_value": 1897.68,
-  "starting_balance": 1173.39,
+  "cash": 588.46,
+  "total_value": 1852.59,
+  "starting_balance": 598.26,
   "holdings": {
     "NSLNISP": {
       "qty": 2,
       "avg_price": 37.87,
       "last_price": 37.87
+    },
+    "ONGC": {
+      "qty": 1,
+      "avg_price": 236.09,
+      "last_price": 236.09
     },
     "RVNL": {
       "qty": 1,
@@ -19,9 +24,9 @@
       "last_price": 38.15
     },
     "ORIENTBELL": {
-      "qty": 1,
-      "avg_price": 297.25,
-      "last_price": 297.25
+      "qty": 2,
+      "avg_price": 300.5,
+      "last_price": 300.5
     }
   },
   "unrealized_pnl": 0.0,
@@ -29,5 +34,5 @@
   "total_trades": 0,
   "winning_trades": 0,
   "losing_trades": 0,
-  "last_updated": "2025-09-03T10:06:14.807228"
+  "last_updated": "2025-09-05T15:19:19.003482"
 }

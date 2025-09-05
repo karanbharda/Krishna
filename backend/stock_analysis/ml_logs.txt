@@ -1455,3 +1455,238 @@ Reinforcement Learning Results:
     Episode 80: Reward = 7116.52, Avg Reward = 49951.71, Events = 77
     Episode 90: Reward = -315592.06, Avg Reward = -31526.04, Events = 70
     Episode 100: Reward = 117646.25, Avg Reward = 47226.31, Events = 65
+
+[20250905_143249] Analysis for SHANTIGOLD.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for SHANTIGOLD.NS (SHANTIGOLD.NS): NEUTRAL
+Current Price: Rs.231.39
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0000 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 2.62
+Predicted Price (USD): 228.4893520255174
+Predicted Change (%): 8620.97
+Confidence Score: -0.029181236263172483
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -1.9410083373758245
+  Average Reward: -197541.1933393713
+  Average Events/Episode: 136.72
+  Actions Distribution:
+    hold: 0.6536
+    buy: 0.3028
+    sell: 0.0437
+  RL Epoch Logs:
+    Episode 10: Reward = 8210317.72, Avg Reward = 1802019.26, Events = 160
+    Episode 20: Reward = -2798650.04, Avg Reward = -1630445.88, Events = 126
+    Episode 30: Reward = 1736561.95, Avg Reward = -147490.36, Events = 139
+    Episode 40: Reward = -1981912.55, Avg Reward = -1037185.18, Events = 151
+    Episode 50: Reward = 992351.48, Avg Reward = 493146.89, Events = 142
+    Episode 60: Reward = -8846644.53, Avg Reward = -1155817.10, Events = 162
+    Episode 70: Reward = 1465111.21, Avg Reward = 781478.16, Events = 135
+    Episode 80: Reward = -570754.76, Avg Reward = -414336.39, Events = 129
+    Episode 90: Reward = 844741.73, Avg Reward = -69312.30, Events = 140
+    Episode 100: Reward = -6431119.05, Avg Reward = -597469.03, Events = 145
+
+[20250905_144759] Analysis for SHANTIGOLD.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for SHANTIGOLD.NS (SHANTIGOLD.NS): NEUTRAL
+Current Price: Rs.231.73
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0000 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 2.63
+Predicted Price (USD): 232.06959582637725
+Predicted Change (%): 8723.94
+Confidence Score: -0.20778616802162153
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.685227583919841
+  Average Reward: -375449.0989608411
+  Average Events/Episode: 140.8
+  Actions Distribution:
+    hold: 0.2731
+    buy: 0.7226
+    sell: 0.0043
+  RL Epoch Logs:
+    Episode 10: Reward = 3581882.27, Avg Reward = -1398869.83, Events = 138
+    Episode 20: Reward = 832101.55, Avg Reward = 1067612.22, Events = 141
+    Episode 30: Reward = -1480656.33, Avg Reward = 161249.85, Events = 133
+    Episode 40: Reward = 2645634.74, Avg Reward = 127976.83, Events = 139
+    Episode 50: Reward = 2795109.45, Avg Reward = -1551339.99, Events = 139
+    Episode 60: Reward = 736924.47, Avg Reward = -581352.04, Events = 129
+    Episode 70: Reward = -1665005.32, Avg Reward = -196041.99, Events = 147
+    Episode 80: Reward = -559088.48, Avg Reward = -314721.35, Events = 170
+    Episode 90: Reward = -237298.44, Avg Reward = -626237.65, Events = 143
+    Episode 100: Reward = -495701.27, Avg Reward = -442767.03, Events = 125
+
+[20250905_150947] Analysis for SHANTIGOLD.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for SHANTIGOLD.NS (SHANTIGOLD.NS): NEUTRAL
+Current Price: Rs.231.19
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0000 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 2.62
+Predicted Price (USD): 232.9639734716168
+Predicted Change (%): 8791.75
+Confidence Score: -0.08076145655349531
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -2.8428153624890253
+  Average Reward: -108474.58231218295
+  Average Events/Episode: 144.73
+  Actions Distribution:
+    hold: 0.4323
+    buy: 0.5663
+    sell: 0.0014
+  RL Epoch Logs:
+    Episode 10: Reward = 1046248.49, Avg Reward = 455146.53, Events = 153
+    Episode 20: Reward = -4720768.27, Avg Reward = 609272.70, Events = 147
+    Episode 30: Reward = -5185604.75, Avg Reward = -1535052.74, Events = 162
+    Episode 40: Reward = 2049357.37, Avg Reward = -15213.44, Events = 134
+    Episode 50: Reward = -9724582.36, Avg Reward = -1375298.53, Events = 135
+    Episode 60: Reward = -955583.70, Avg Reward = -223338.73, Events = 137
+    Episode 70: Reward = 1243245.41, Avg Reward = 718162.68, Events = 150
+    Episode 80: Reward = -426335.15, Avg Reward = -142182.48, Events = 174
+    Episode 90: Reward = 671974.64, Avg Reward = -73612.71, Events = 136
+    Episode 100: Reward = 1759272.44, Avg Reward = 497370.90, Events = 155
+
+[20250905_151853] Analysis for SHANTIGOLD.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for SHANTIGOLD.NS (SHANTIGOLD.NS): NEUTRAL
+Current Price: Rs.231.50
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0000 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 2.62
+Predicted Price (USD): 229.3000088573198
+Predicted Change (%): 8651.91
+Confidence Score: -0.10212820168916759
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.803
+  Average Reward: -323389.2482964667
+  Average Events/Episode: 147.0
+  Actions Distribution:
+    hold: 0.4980
+    buy: 0.5007
+    sell: 0.0014
+  RL Epoch Logs:
+    Episode 10: Reward = 708318.71, Avg Reward = -579112.85, Events = 146
+    Episode 20: Reward = -5879298.40, Avg Reward = 530637.61, Events = 145
+    Episode 30: Reward = 2672778.57, Avg Reward = -194071.95, Events = 138
+    Episode 40: Reward = -9157518.58, Avg Reward = -468925.80, Events = 134
+    Episode 50: Reward = -1430689.19, Avg Reward = -1067979.99, Events = 145
+    Episode 60: Reward = -297804.77, Avg Reward = 681876.38, Events = 137
+    Episode 70: Reward = -1413448.09, Avg Reward = -781614.84, Events = 164
+    Episode 80: Reward = -106890.95, Avg Reward = -705681.07, Events = 135
+    Episode 90: Reward = -415686.62, Avg Reward = -361246.04, Events = 142
+    Episode 100: Reward = -765395.81, Avg Reward = -287773.93, Events = 159
+
+[20250905_152543] Analysis for MOTHERSON.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for MOTHERSON.NS (MOTHERSON.NS): NEUTRAL
+Current Price: Rs.94.64
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0231 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.07
+Predicted Price (USD): 94.59622569181056
+Predicted Change (%): 8740.77
+Confidence Score: -0.0774327574779774
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -1.783126603020908
+  Average Reward: -72928.00346411094
+  Average Events/Episode: 148.9
+  Actions Distribution:
+    hold: 0.0000
+    buy: 0.4554
+    sell: 0.5446
+  RL Epoch Logs:
+    Episode 10: Reward = -2510114.73, Avg Reward = 33456.31, Events = 151
+    Episode 20: Reward = 1371082.67, Avg Reward = 48231.64, Events = 149
+    Episode 30: Reward = 1250775.51, Avg Reward = -378564.83, Events = 133
+    Episode 40: Reward = 620980.29, Avg Reward = 128519.44, Events = 151
+    Episode 50: Reward = 1093213.88, Avg Reward = 36222.49, Events = 157
+    Episode 60: Reward = -511453.01, Avg Reward = -908062.74, Events = 142
+    Episode 70: Reward = -595313.74, Avg Reward = 554117.89, Events = 153
+    Episode 80: Reward = 2012874.20, Avg Reward = 2261.21, Events = 154
+    Episode 90: Reward = -160919.20, Avg Reward = -146243.52, Events = 141
+    Episode 100: Reward = 619307.42, Avg Reward = -99217.94, Events = 170

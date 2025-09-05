@@ -1,0 +1,283 @@
+{
+    "success": true,
+    "stock_data": {
+        "symbol": "SHANTIGOLD.NS",
+        "name": "SHANTIGOLD.NS",
+        "current_price": {
+            "INR": 232.24,
+            "USD": 2.64,
+            "EUR": 2.26,
+            "BTC": 2.378e-05,
+            "ETH": 0.0006013
+        },
+        "sector": "N/A",
+        "industry": "N/A",
+        "pe_ratio": "N/A",
+        "dividends": "N/A"
+    },
+    "recommendation": "NEUTRAL",
+    "buy_score": 0.0,
+    "sell_score": 0.0,
+    "technical_indicators": {
+        "sma_50": 232.24,
+        "sma_200": 232.24,
+        "ema_50": 233.1612117765433,
+        "rsi": 43.52916113066147,
+        "macd": -0.9060434068386201,
+        "signal_line": 0.407661036902189,
+        "macd_histogram": -1.313704443740809,
+        "bb_upper": 259.61003838225366,
+        "bb_lower": 215.05096161774628,
+        "volatility": 0.0,
+        "momentum": 0.0,
+        "volume_trend": "MODERATE"
+    },
+    "fundamental_analysis": {
+        "market_cap": "N/A",
+        "pe_ratio": "N/A",
+        "dividend_yield": "N/A",
+        "52w_high": "N/A",
+        "52w_low": "N/A",
+        "balance_sheet": {},
+        "income_statement": {},
+        "cash_flow": {}
+    },
+    "sentiment_analysis": {
+        "newsapi": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "gnews": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "reddit": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "google_news": {
+            "positive": 4.0,
+            "negative": 0,
+            "neutral": 4.0
+        },
+        "aggregated": {
+            "positive": 4.0,
+            "negative": 0,
+            "neutral": 4.0
+        },
+        "weighted_aggregated": {
+            "positive": 10.4,
+            "negative": 0.0,
+            "neutral": 10.4,
+            "total_weight": 11.31
+        },
+        "comprehensive_analysis": {
+            "sentiment_strength": {
+                "bullish": 0.9195402298850575,
+                "bearish": 0.0,
+                "neutral": 0.9195402298850575
+            },
+            "confidence_score": 0.5,
+            "market_context_applied": 1.3,
+            "sources_coverage": {
+                "global_financial": true,
+                "indian_focus": true,
+                "broad_market": true,
+                "social_sentiment": true
+            }
+        }
+    },
+    "mpt_metrics": {
+        "annual_return": 0.22390092248282975,
+        "annual_volatility": 0.4134058053475887,
+        "sharpe_ratio": 0.3964649754858256,
+        "beta": "N/A",
+        "alpha": "N/A"
+    },
+    "institutional_holders": {},
+    "mutual_fund_holders": {},
+    "support_level": 220.628,
+    "resistance_level": 243.85200000000003,
+    "risk_level": "LOW",
+    "timeframe": "SHORT_TERM",
+    "explanation": "Recommendation for SHANTIGOLD.NS (SHANTIGOLD.NS): NEUTRAL\nCurrent Price: Rs.232.24\n\nBuy Score: 0.000, Sell Score: 0.000\n\nNeutral Factors:\n- Price is stable relative to moving averages.\n- Sentiment is balanced, with no strong bullish or bearish signals.\n\nRisk Assessment:\n- Volatility: 0.0000 (higher values indicate higher risk)\n- Sector: N/A\n- Industry: N/A\n",
+    "ml_analysis": {
+        "success": true,
+        "predicted_price": 234.54170155723787,
+        "confidence": -0.046679761058879166,
+        "mse": 64.92163415257319,
+        "mae": 4.016084770980929,
+        "r2_score": -0.046679761058879166,
+        "best_ml_model": "et",
+        "best_model_metrics": {
+            "mse": 64.92163415257319,
+            "mae": 4.016084770980929,
+            "r2": -0.046679761058879166
+        },
+        "all_model_scores": {
+            "xgb": {
+                "mse": 81.56995872199455,
+                "mae": 4.996032362678925,
+                "r2": -0.31508742839209547,
+                "prediction": 229.35275268554688
+            },
+            "lgb": {
+                "mse": 74.99299094030641,
+                "mae": 4.814521648157112,
+                "r2": -0.20905221908034033,
+                "prediction": 230.49941533290112
+            },
+            "cb": {
+                "mse": 79.47082447963558,
+                "mae": 5.218429418728667,
+                "r2": -0.2812447601367136,
+                "prediction": 233.6559132674813
+            },
+            "et": {
+                "mse": 64.92163415257319,
+                "mae": 4.016084770980929,
+                "r2": -0.046679761058879166,
+                "prediction": 234.98283172249484
+            },
+            "svr": {
+                "mse": 123.5635472562474,
+                "mae": 7.681028900907133,
+                "r2": -0.9921165849555327,
+                "prediction": 236.80745356332676
+            },
+            "mlp": {
+                "mse": 161.5522664286372,
+                "mae": 9.077646489290888,
+                "r2": -1.6045784249154535,
+                "prediction": 234.08513358223507
+            },
+            "ensemble": {
+                "mse": 65.96068330579644,
+                "mae": 4.319499304429951,
+                "r2": -0.06343152237265448,
+                "prediction": 233.23058283830028
+            },
+            "stacking": {
+                "mse": 65.57625767589685,
+                "mae": 4.1251634397329395,
+                "r2": -0.057233734351752386,
+                "prediction": 239.0491952050001
+            }
+        },
+        "lstm_metrics": {
+            "mse": 0.015268604271113873,
+            "r2": -0.2580066919326782,
+            "adv_mse": 0.03046213835477829,
+            "adv_r2": -1.5098280906677246
+        },
+        "transformer_metrics": {
+            "mse": 0.012820038944482803,
+            "r2": -0.05626511573791504,
+            "adv_mse": 0.014640746638178825,
+            "adv_r2": -0.20627641677856445
+        },
+        "rl_metrics": {
+            "success": true,
+            "recommendation": "HOLD",
+            "performance_pct": -0.03176712375553325,
+            "final_net_worth": 99968.23287624447,
+            "average_reward": 382426.5100675672,
+            "average_events_per_episode": 141.76,
+            "actions_distribution": {
+                "hold": 0.3413940256045519,
+                "buy": 0.65149359886202,
+                "sell": 0.007112375533428165
+            },
+            "epoch_logs": [
+                {
+                    "episode": 10,
+                    "total_reward": 3792527.40032006,
+                    "average_reward": 1003299.3796145301,
+                    "events_triggered": 146
+                },
+                {
+                    "episode": 20,
+                    "total_reward": 3160818.428762339,
+                    "average_reward": -1252308.8528116613,
+                    "events_triggered": 141
+                },
+                {
+                    "episode": 30,
+                    "total_reward": 3526531.975735831,
+                    "average_reward": 383933.6801735679,
+                    "events_triggered": 137
+                },
+                {
+                    "episode": 40,
+                    "total_reward": 2657427.8091927744,
+                    "average_reward": 1295389.2421412747,
+                    "events_triggered": 144
+                },
+                {
+                    "episode": 50,
+                    "total_reward": 4281579.724495509,
+                    "average_reward": -591947.615312326,
+                    "events_triggered": 120
+                },
+                {
+                    "episode": 60,
+                    "total_reward": 2359485.657511127,
+                    "average_reward": 1487828.0846399055,
+                    "events_triggered": 133
+                },
+                {
+                    "episode": 70,
+                    "total_reward": -2182808.808159615,
+                    "average_reward": -43841.685227283415,
+                    "events_triggered": 135
+                },
+                {
+                    "episode": 80,
+                    "total_reward": 1760714.0136450443,
+                    "average_reward": 1173988.9663034938,
+                    "events_triggered": 140
+                },
+                {
+                    "episode": 90,
+                    "total_reward": -1022150.3668262555,
+                    "average_reward": 54859.38558428931,
+                    "events_triggered": 125
+                },
+                {
+                    "episode": 100,
+                    "total_reward": -116978.66953793161,
+                    "average_reward": 313064.5155698814,
+                    "events_triggered": 134
+                }
+            ]
+        },
+        "ensemble_components": {
+            "best_ml_model": 234.98283172249484,
+            "lstm": 231.40438842773438,
+            "transformer": 237.23788452148438,
+            "ensemble_average": 233.95790977466078
+        },
+        "industry_level_features": {
+            "top_5_ml_models": [
+                "xgb",
+                "lgb",
+                "cb",
+                "et",
+                "svr",
+                "mlp",
+                "ensemble",
+                "stacking"
+            ],
+            "ensemble_methods": [
+                "VotingRegressor",
+                "StackingRegressor"
+            ],
+            "advanced_scaling": "RobustScaler",
+            "model_selection": "Best R2 Score"
+        }
+    },
+    "timestamp": "2025-09-04 14:52:31"
+}
