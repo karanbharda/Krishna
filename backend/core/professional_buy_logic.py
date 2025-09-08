@@ -499,12 +499,18 @@ class ProfessionalBuyLogic:
                    f"weighted_score: {weighted_score:.3f}, "
                    f"confidence: {avg_confidence:.3f}")
 
-        # More responsive decision making
-        should_buy = meets_signal_threshold and (
-            meets_confidence_threshold or 
-            meets_weighted_threshold or
-            (signals_count >= self.min_signals_required + 1 and weighted_score >= self.min_weighted_score * 0.8)
-        )
+        # PROFESSIONAL BUY LOGIC: All three conditions must be met (similar to sell logic)
+        # This prevents the system from generating buy signals when conditions are marginal
+        should_buy = meets_signal_threshold and meets_confidence_threshold and meets_weighted_threshold
+
+        # Additional quality checks for professional trading
+        if should_buy:
+            # Check if we have at least one strong signal (strength > 0.7)
+            strong_signals = [s for s in triggered_signals if s.strength > 0.7]
+            if len(strong_signals) == 0:
+                # No strong signals, reduce confidence
+                logger.info("No strong signals detected, reducing confidence")
+                should_buy = False
 
         return BuyDecision(
             should_buy=should_buy,
@@ -512,12 +518,12 @@ class ProfessionalBuyLogic:
             buy_percentage=0.0,
             reason=BuyReason.TECHNICAL_BREAKOUT,
             confidence=avg_confidence,
-            urgency=min(weighted_score * 1.5, 1.0),  # Increased urgency scaling
+            urgency=min(weighted_score * 1.2, 1.0),  # More conservative urgency scaling
             signals_triggered=triggered_signals,
             target_entry_price=0.0,
             stop_loss_price=0.0,
             take_profit_price=0.0,
-            reasoning=f"Signal-based decision: {signals_count} signals, score: {weighted_score:.3f}"
+            reasoning=f"Signal-based decision: {signals_count} signals, score: {weighted_score:.3f}, confidence: {avg_confidence:.3f}"
         )
 
     def _apply_market_context_filters(self, decision: BuyDecision, market_context: MarketContext) -> BuyDecision:
@@ -621,5 +627,7 @@ class ProfessionalBuyLogic:
         if risk_reward_ratio < 1.5:  # Minimum acceptable risk-reward
             logger.info(f"RISK-REWARD SUBOPTIMAL: {risk_reward_ratio:.2f} < 1.5")
             decision.reasoning += f" | RISK-REWARD: {risk_reward_ratio:.2f}"
+            # Block the trade if risk-reward is suboptimal
+            decision.should_buy = False
 
         return decision
