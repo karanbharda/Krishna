@@ -70,5 +70,37 @@
         "qty": 1,
         "price": 94.6,
         "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-08 13:18:48.590267",
+        "asset": "PNB.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 104.67,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-08 13:24:06.143865",
+        "asset": "PNB.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 104.6,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-08 13:29:30.923355",
+        "asset": "PNB.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 104.52,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-08 13:44:05.662956",
+        "asset": "PNB.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 104.46,
+        "pnl": 0.0
     }
 ]

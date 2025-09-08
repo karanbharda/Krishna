@@ -325,6 +325,16 @@ class ContinuousLearningEngine:
         else:
             logger.warning("RL components not available - using pattern-based learning only")
 
+    def record_decision(self, decision_data: Dict[str, Any]) -> None:
+        """Record a trading decision for later learning (compatibility method for web backend)"""
+        try:
+            # Store decision data for later outcome matching
+            # In a real implementation, this would store the decision for later learning
+            # when the outcome is known
+            logger.debug(f"Recorded decision: {decision_data.get('symbol', 'unknown')} {decision_data.get('action', 'HOLD')}")
+        except Exception as e:
+            logger.error(f"Error recording decision: {e}")
+
     def _initialize_rl_components(self):
         """Initialize RL agent and environment"""
         try:

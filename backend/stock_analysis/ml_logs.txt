@@ -1690,3 +1690,332 @@ Reinforcement Learning Results:
     Episode 80: Reward = 2012874.20, Avg Reward = 2261.21, Events = 154
     Episode 90: Reward = -160919.20, Avg Reward = -146243.52, Events = 141
     Episode 100: Reward = 619307.42, Avg Reward = -99217.94, Events = 170
+
+[20250908_121711] Analysis for PNB.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for PNB.NS (PNB.NS): NEUTRAL
+Current Price: Rs.104.55
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0133 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.19
+Predicted Price (USD): 103.41607916606631
+Predicted Change (%): 8590.43
+Confidence Score: -0.11481860101232622
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 3.6424424334018117
+  Average Reward: 1056.7168549008911
+  Average Events/Episode: 36.56
+  Actions Distribution:
+    hold: 0.2222
+    buy: 0.2111
+    sell: 0.5667
+  RL Epoch Logs:
+    Episode 10: Reward = 133567.97, Avg Reward = 43139.59, Events = 42
+    Episode 20: Reward = 272345.50, Avg Reward = 62176.37, Events = 28
+    Episode 30: Reward = 121212.29, Avg Reward = -33567.18, Events = 38
+    Episode 40: Reward = 289718.49, Avg Reward = 35073.09, Events = 34
+    Episode 50: Reward = -103357.44, Avg Reward = -24857.25, Events = 34
+    Episode 60: Reward = 162860.87, Avg Reward = 35127.90, Events = 34
+    Episode 70: Reward = -84330.93, Avg Reward = -51309.85, Events = 36
+    Episode 80: Reward = -47996.96, Avg Reward = -60447.57, Events = 35
+    Episode 90: Reward = -49078.62, Avg Reward = 17560.06, Events = 48
+    Episode 100: Reward = -106924.73, Avg Reward = -12327.98, Events = 39
+
+[20250908_124647] Analysis for PNB.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for PNB.NS (PNB.NS): NEUTRAL
+Current Price: Rs.104.74
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0133 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.19
+Predicted Price (USD): 103.61185552292629
+Predicted Change (%): 8606.88
+Confidence Score: -0.028728041971296303
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.5577241130998882
+  Average Reward: 21688.057534243846
+  Average Events/Episode: 41.84
+  Actions Distribution:
+    hold: 0.2775
+    buy: 0.6603
+    sell: 0.0622
+  RL Epoch Logs:
+    Episode 10: Reward = 113545.99, Avg Reward = 63678.57, Events = 36
+    Episode 20: Reward = -1458.69, Avg Reward = 61610.73, Events = 39
+    Episode 30: Reward = 31578.94, Avg Reward = 103639.46, Events = 56
+    Episode 40: Reward = 8468.98, Avg Reward = -154131.97, Events = 41
+    Episode 50: Reward = -280416.42, Avg Reward = -67161.08, Events = 38
+    Episode 60: Reward = 294128.71, Avg Reward = 27095.84, Events = 34
+    Episode 70: Reward = 106783.22, Avg Reward = 72079.74, Events = 43
+    Episode 80: Reward = 55521.67, Avg Reward = 64049.47, Events = 47
+    Episode 90: Reward = -270410.31, Avg Reward = -42062.21, Events = 39
+    Episode 100: Reward = -112624.44, Avg Reward = 88082.02, Events = 38
+
+[20250908_131835] Analysis for PNB.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for PNB.NS (PNB.NS): NEUTRAL
+Current Price: Rs.104.68
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0133 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.19
+Predicted Price (USD): 103.69330542178928
+Predicted Change (%): 8613.72
+Confidence Score: -0.006367939337806883
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -1.5334456531350005
+  Average Reward: 17706.76726767288
+  Average Events/Episode: 48.39
+  Actions Distribution:
+    hold: 0.1411
+    buy: 0.3942
+    sell: 0.4647
+  RL Epoch Logs:
+    Episode 10: Reward = 141303.21, Avg Reward = 38390.71, Events = 48
+    Episode 20: Reward = 246444.70, Avg Reward = -119986.40, Events = 47
+    Episode 30: Reward = 70563.92, Avg Reward = 83334.36, Events = 42
+    Episode 40: Reward = 52285.00, Avg Reward = 24535.87, Events = 49
+    Episode 50: Reward = -194992.54, Avg Reward = 1696.09, Events = 45
+    Episode 60: Reward = -209092.92, Avg Reward = 61831.36, Events = 55
+    Episode 70: Reward = -179483.66, Avg Reward = -7694.96, Events = 39
+    Episode 80: Reward = -53735.19, Avg Reward = 19747.27, Events = 46
+    Episode 90: Reward = 3774.04, Avg Reward = 15496.84, Events = 44
+    Episode 100: Reward = 376854.93, Avg Reward = 59716.53, Events = 60
+
+[20250908_132353] Analysis for PNB.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for PNB.NS (PNB.NS): NEUTRAL
+Current Price: Rs.104.64
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0133 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.19
+Predicted Price (USD): 104.27336372653912
+Predicted Change (%): 8662.47
+Confidence Score: -0.11122123634896175
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.6232629264994757
+  Average Reward: -43099.78800889098
+  Average Events/Episode: 48.8
+  Actions Distribution:
+    hold: 0.3740
+    buy: 0.5813
+    sell: 0.0447
+  RL Epoch Logs:
+    Episode 10: Reward = 121879.58, Avg Reward = -119560.85, Events = 52
+    Episode 20: Reward = -125394.24, Avg Reward = -59883.11, Events = 53
+    Episode 30: Reward = -595419.86, Avg Reward = -35716.86, Events = 48
+    Episode 40: Reward = 166537.30, Avg Reward = -129681.81, Events = 48
+    Episode 50: Reward = 3831.10, Avg Reward = -3071.41, Events = 42
+    Episode 60: Reward = -86344.45, Avg Reward = 62006.74, Events = 48
+    Episode 70: Reward = -160880.07, Avg Reward = -29273.71, Events = 44
+    Episode 80: Reward = -45810.11, Avg Reward = -24308.17, Events = 58
+    Episode 90: Reward = -253686.42, Avg Reward = -31485.40, Events = 55
+    Episode 100: Reward = -55925.05, Avg Reward = -60023.30, Events = 52
+
+[20250908_132917] Analysis for PNB.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for PNB.NS (PNB.NS): NEUTRAL
+Current Price: Rs.104.62
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0133 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.19
+Predicted Price (USD): 103.1720107121427
+Predicted Change (%): 8569.92
+Confidence Score: -0.037033338809893124
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.6305872609208746
+  Average Reward: 31617.9638471172
+  Average Events/Episode: 49.97
+  Actions Distribution:
+    hold: 0.0837
+    buy: 0.7131
+    sell: 0.2032
+  RL Epoch Logs:
+    Episode 10: Reward = 597848.93, Avg Reward = -53459.17, Events = 53
+    Episode 20: Reward = 41152.32, Avg Reward = 87846.26, Events = 45
+    Episode 30: Reward = 470547.40, Avg Reward = -34560.18, Events = 48
+    Episode 40: Reward = 611985.97, Avg Reward = -95587.57, Events = 42
+    Episode 50: Reward = 330842.08, Avg Reward = 195104.57, Events = 51
+    Episode 60: Reward = 141648.47, Avg Reward = 236533.19, Events = 50
+    Episode 70: Reward = 290722.43, Avg Reward = -142111.35, Events = 51
+    Episode 80: Reward = -559542.70, Avg Reward = -55608.04, Events = 53
+    Episode 90: Reward = -87018.09, Avg Reward = 120887.25, Events = 45
+    Episode 100: Reward = 1076370.65, Avg Reward = 57134.68, Events = 49
+
+[20250908_134351] Analysis for PNB.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for PNB.NS (PNB.NS): NEUTRAL
+Current Price: Rs.104.46
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0133 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.19
+Predicted Price (USD): 102.80951722304293
+Predicted Change (%): 8539.46
+Confidence Score: -0.004927295628042838
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -1.0105973229318335
+  Average Reward: 387.4681904194328
+  Average Events/Episode: 54.32
+  Actions Distribution:
+    hold: 0.5170
+    buy: 0.4642
+    sell: 0.0189
+  RL Epoch Logs:
+    Episode 10: Reward = 459648.21, Avg Reward = 96622.29, Events = 45
+    Episode 20: Reward = -42007.99, Avg Reward = -131570.77, Events = 45
+    Episode 30: Reward = 501850.28, Avg Reward = -52582.70, Events = 60
+    Episode 40: Reward = -282776.62, Avg Reward = 86238.67, Events = 44
+    Episode 50: Reward = -155804.68, Avg Reward = -180066.01, Events = 52
+    Episode 60: Reward = -352100.02, Avg Reward = 240939.58, Events = 61
+    Episode 70: Reward = -177982.35, Avg Reward = -290353.80, Events = 45
+    Episode 80: Reward = -8150.28, Avg Reward = 76228.86, Events = 57
+    Episode 90: Reward = 237752.73, Avg Reward = 44613.27, Events = 54
+    Episode 100: Reward = -71717.11, Avg Reward = 113805.29, Events = 53
+
+[20250908_135714] Analysis for PNB.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for PNB.NS (PNB.NS): NEUTRAL
+Current Price: Rs.104.30
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0132 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.19
+Predicted Price (USD): 103.41169172774994
+Predicted Change (%): 8590.06
+Confidence Score: -0.010003946480392045
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -1.556645679864072
+  Average Reward: 30031.87838900778
+  Average Events/Episode: 55.92
+  Actions Distribution:
+    hold: 0.2832
+    buy: 0.2760
+    sell: 0.4409
+  RL Epoch Logs:
+    Episode 10: Reward = -354961.81, Avg Reward = 37195.68, Events = 55
+    Episode 20: Reward = -340748.12, Avg Reward = -53795.36, Events = 50
+    Episode 30: Reward = 90051.00, Avg Reward = 86883.36, Events = 58
+    Episode 40: Reward = 93426.05, Avg Reward = -63430.48, Events = 54
+    Episode 50: Reward = -81272.41, Avg Reward = 192881.48, Events = 62
+    Episode 60: Reward = 107099.52, Avg Reward = -190985.69, Events = 58
+    Episode 70: Reward = 74314.27, Avg Reward = 16886.90, Events = 56
+    Episode 80: Reward = 232032.73, Avg Reward = 353139.45, Events = 38
+    Episode 90: Reward = -477871.83, Avg Reward = -12936.31, Events = 52
+    Episode 100: Reward = 241525.66, Avg Reward = -65520.26, Events = 53

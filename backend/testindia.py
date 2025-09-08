@@ -2109,13 +2109,14 @@ class TradingExecutor:
                 from portfolio_manager import DualPortfolioManager
                 from live_executor import LiveTradingExecutor
                 
-                # Check if we have a portfolio manager available
-                if hasattr(self, '_portfolio_manager'):
-                    self.live_executor = self._portfolio_manager.live_executor
-                else:
-                    logger.warning("No portfolio manager available for live trading database integration")
-            except ImportError:
-                logger.warning("Live trading database components not available")
+                # Initialize the portfolio manager
+                self._portfolio_manager = DualPortfolioManager()
+                self.live_executor = LiveTradingExecutor(self._portfolio_manager, config)
+                logger.info("Live trading database integration initialized successfully")
+            except ImportError as e:
+                logger.warning(f"Live trading database components not available: {e}")
+            except Exception as e:
+                logger.warning(f"Failed to initialize live trading database integration: {e}")
         
     def set_live_executor(self, live_executor):
         """Set the live executor for database integration"""
@@ -5178,6 +5179,22 @@ class StockTradingBot:
             self.risk_manager = None
             self.production_core_enabled = False
 
+        # Initialize continuous learning engine
+        try:
+            from core.continuous_learning_engine import ContinuousLearningEngine
+            self.learning_engine = ContinuousLearningEngine()
+            logger.info("Continuous learning engine initialized successfully")
+        except ImportError as e:
+            logger.warning(f"Continuous learning engine not available: {e}")
+            self.learning_engine = None
+        except Exception as e:
+            logger.error(f"Failed to initialize continuous learning engine: {e}")
+            self.learning_engine = None
+
+        # Register callback for trade outcomes
+        if self.learning_engine:
+            self.portfolio.add_trade_callback(self._on_trade_executed)
+
         # Initialize unified data service manager
         self.data_service_manager = self._initialize_data_services()
 
@@ -5205,6 +5222,48 @@ class StockTradingBot:
         logger.info("Initializing Stock Trading Bot for Indian market...")
         # Portfolio is already initialized in VirtualPortfolio.__init__()
         # Don't call initialize_portfolio() as it resets the data
+
+    def _on_trade_executed(self, trade_data):
+        """Callback method called when a trade is executed, used for learning engine updates."""
+        if not self.learning_engine:
+            return
+            
+        try:
+            # Extract trade information
+            asset = trade_data.get("asset")
+            action = trade_data.get("action")
+            qty = trade_data.get("qty", 0)
+            price = trade_data.get("price", 0)
+            realized_pnl = trade_data.get("realized_pnl", 0)
+            
+            # Calculate profit/loss percentage
+            profit_loss_pct = 0
+            if action == "sell" and qty > 0 and price > 0:
+                # Find the original buy transaction to calculate P&L percentage
+                for log_entry in reversed(self.portfolio.trade_log):
+                    if (log_entry.get("asset") == asset and 
+                        log_entry.get("action") == "buy" and
+                        log_entry.get("qty", 0) >= qty):
+                        buy_price = log_entry.get("price", price)
+                        if buy_price > 0:
+                            profit_loss_pct = (price - buy_price) / buy_price
+                        break
+            
+            # Prepare outcome data for learning engine
+            outcome_data = {
+                "profit_loss": realized_pnl,
+                "profit_loss_pct": profit_loss_pct,
+                "holding_period": 0,  # Would need to track holding periods
+                "max_drawdown": 0.0,  # Would need to track drawdown
+                "max_runup": 0.0      # Would need to track runup
+            }
+            
+            # We would need to match this with the original decision data
+            # For now, we'll just log that a trade was executed
+            logger.debug(f"Trade executed for learning engine: {asset} {action} {qty}@{price}")
+            
+        except Exception as e:
+            logger.debug(f"Non-critical: Error in trade callback for learning engine: {e}")
 
     def is_market_open(self):
         """Check if the NSE is open."""
@@ -5268,7 +5327,7 @@ class StockTradingBot:
                 professional_decision = self.professional_buy_integration.evaluate_professional_buy(
                     ticker=ticker,
                     current_price=current_price,
-                    portfolio_data=portfolio_data,
+                    portfolio_context=portfolio_data,
                     analysis_data=analysis_data
                 )
                 
@@ -7229,6 +7288,73 @@ class StockTradingBot:
                 "trade_value": (trade["qty"] * trade["price"]) if trade else 0
             }
             self.portfolio.log_strategy_trigger(ticker, analysis, decision_data)
+
+        # Send trade outcome to continuous learning engine
+        if self.learning_engine and trade:
+            try:
+                # Prepare decision data for learning
+                decision_data = {
+                    "symbol": ticker,
+                    "action": trade["action"].upper(),
+                    "confidence": trade.get("confidence_score", 0.5),
+                    "quantity": trade["qty"],
+                    "price": trade["price"],
+                    "stop_loss": trade["stop_loss"],
+                    "take_profit": trade["take_profit"],
+                    "signals": trade.get("signals", 0),
+                    "reason": trade.get("reason", "unknown"),
+                    "market_context": {
+                        "volatility": volatility,
+                        "market_regime": market_regime,
+                        "support_level": support_level,
+                        "resistance_level": resistance_level
+                    },
+                    "technical_indicators": {
+                        "rsi": technical_indicators.get("rsi", 50),
+                        "macd": technical_indicators.get("macd", 0),
+                        "sma_trend": "UP" if technical_indicators.get("sma_50", 0) > technical_indicators.get("sma_200", 0) else "DOWN"
+                    }
+                }
+                
+                # For now, we'll use a placeholder for outcome data
+                # In a real implementation, this would be updated when the trade is closed
+                outcome_data = {
+                    "profit_loss": 0.0,
+                    "profit_loss_pct": 0.0,
+                    "holding_period": 0,
+                    "max_drawdown": 0.0,
+                    "max_runup": 0.0
+                }
+                
+                # Send to learning engine (async)
+                import asyncio
+                try:
+                    # Create a new event loop if one doesn't exist
+                    try:
+                        loop = asyncio.get_event_loop()
+                    except RuntimeError:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                    
+                    # Schedule the learning task
+                    if loop.is_running():
+                        # If we're in a running loop, create a task
+                        asyncio.create_task(self.learning_engine.learn_from_decision_outcome(decision_data, outcome_data))
+                    else:
+                        # If we're not in a running loop, run until complete
+                        loop.run_until_complete(self.learning_engine.learn_from_decision_outcome(decision_data, outcome_data))
+                except Exception as e:
+                    logger.debug(f"Non-critical: Could not send to learning engine immediately: {e}")
+                    # Fallback to a simpler approach
+                    try:
+                        # Try to record the decision for later learning
+                        if hasattr(self.learning_engine, 'record_decision'):
+                            self.learning_engine.record_decision(decision_data)
+                    except Exception as e2:
+                        logger.debug(f"Could not record decision for learning: {e2}")
+                        
+            except Exception as e:
+                logger.debug(f"Non-critical: Learning engine integration issue: {e}")
 
         return trade
 

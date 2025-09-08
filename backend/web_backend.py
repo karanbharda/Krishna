@@ -972,10 +972,10 @@ class WebTradingBot:
                     experience = {
                         'state': {
                             'symbol': trade.get('symbol', ''),
-                            'action': trade.get('action', ''),
                             'price': trade.get('price', 0),
                             'quantity': trade.get('quantity', 0)
                         },
+                        'action': trade.get('action', ''),
                         'reward': trade.get('profit_loss', 0),
                         'timestamp': trade.get('timestamp', '')
                     }

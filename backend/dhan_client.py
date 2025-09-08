@@ -56,7 +56,7 @@ class DhanAPIClient:
             'BANDHANBNK': '540691',
             'FEDERALBNK': '500469',
             'IDFCFIRSTB': '539437',
-            'PNB': '532461',
+            'PNB': '10180',  # Updated security ID for Punjab National Bank
             'CANBK': '532483',
             'BANKBARODA': '532134',
             'IDBI': '532461',        # IDBI Bank Ltd
