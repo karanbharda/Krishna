@@ -1343,6 +1343,17 @@ def fyers_to_yfinance_format(fyers_data, ticker):
 
 def get_stock_data_fyers_or_yf(ticker, period="1d"):
     """Get stock data from Fyers first, fallback to yfinance - SAME LOGIC"""
+    # Validate ticker format and handle special cases
+    if ticker.startswith('$'):
+        logger.error(f"Invalid ticker symbol format: {ticker} - symbols should not start with '$'")
+        # Try to correct common misformatted symbols
+        corrected_ticker = ticker[1:] + '.NS'  # Remove $ and add .NS suffix
+        logger.info(f"Attempting to correct ticker to: {corrected_ticker}")
+        ticker = corrected_ticker
+    elif '.' not in ticker and not ticker.isdigit():
+        # If no exchange suffix and not a numeric security ID, assume NSE
+        ticker = ticker + '.NS'
+    
     # Try Fyers first
     fyers_client = get_fyers_client()
     if fyers_client:
@@ -1374,6 +1385,12 @@ def get_stock_data_fyers_or_yf(ticker, period="1d"):
         if not df.empty:
             logger.info(f"Using Yahoo Finance data for {ticker} ({period})")
             return df
+        else:
+            logger.error(f"No data found for {ticker} (period={period}) (Yahoo error = \"No data found, symbol may be delisted\")")
+            # Try to suggest a corrected symbol if possible
+            if ticker.startswith('$'):
+                suggested_ticker = ticker[1:] + '.NS'
+                logger.info(f"Suggested correction: Try '{suggested_ticker}' instead of '{ticker}'")
     except Exception as e:
         logger.warning(f"Yahoo Finance failed for {ticker}: {e}")
 

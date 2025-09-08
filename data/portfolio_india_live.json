@@ -1,5 +1,5 @@
 {
-    "cash": 588.47,
+    "cash": 253.09,
     "holdings": {
         "NSLNISP": {
             "qty": 2,
@@ -32,8 +32,8 @@
             "last_price": 9.76667
         }
     },
-    "starting_balance": 588.47,
+    "starting_balance": 253.09,
     "realized_pnl": 0.0,
     "unrealized_pnl": 0.0,
-    "last_updated": "2025-09-08T13:51:32.643517"
+    "last_updated": "2025-09-08T15:50:55.848320"
 }

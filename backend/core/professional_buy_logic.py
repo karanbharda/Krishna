@@ -578,7 +578,7 @@ class ProfessionalBuyLogic:
 
         else:
             # Conservative entry
-            decision.buy_quantity = max(int(((max_exposure_per_stock - current_stock_exposure) * 0.25) / stock.current_price), 1)
+            decision.buy_quantity = int(((max_exposure_per_stock - current_stock_exposure) * 0.25) / stock.current_price)
             decision.buy_percentage = 0.25
             decision.reasoning += " | CONSERVATIVE ENTRY (25%)"
 
@@ -586,6 +586,14 @@ class ProfessionalBuyLogic:
         max_affordable_qty = int(available_cash / stock.current_price)
         decision.buy_quantity = min(decision.buy_quantity, max_affordable_qty)
 
+        # FIX: If calculated quantity is zero or negative, set should_buy to False
+        # This prevents the system from defaulting to 1 share when no valid quantity can be calculated
+        if decision.buy_quantity <= 0:
+            decision.should_buy = False
+            decision.buy_quantity = 0
+            decision.buy_percentage = 0.0
+            decision.reasoning += " | BLOCKED: No valid quantity calculated"
+            
         return decision
 
     def _optimize_risk_reward(

@@ -234,6 +234,22 @@ class DhanAPIClient:
             logger.error(f"Failed to get orders: {e}")
             return []
     
+    def get_order_by_id(self, order_id: str) -> Dict:
+        """Get specific order by ID"""
+        try:
+            response = self._make_request('GET', f'/v2/orders/{order_id}')
+            
+            # Handle different response formats
+            if isinstance(response, dict):
+                return response
+            else:
+                logger.warning(f"Unexpected response format from order {order_id}: {type(response)}")
+                return {}
+                
+        except Exception as e:
+            logger.error(f"Failed to get order {order_id}: {e}")
+            return {}
+    
     def get_quote(self, symbol: str, exchange: str = "NSE") -> Dict:
         """Get real-time quote for a symbol"""
         try:
@@ -373,7 +389,6 @@ class DhanAPIClient:
             'BANDHANBNK': '540691',
             'FEDERALBNK': '500469',
             'IDFCFIRSTB': '539437',
-            'PNB': '10180',  # Updated security ID for Punjab National Bank
             'CANBK': '532483',
             'BANKBARODA': '532134',
             
@@ -1109,12 +1124,27 @@ class DhanAPIClient:
                 return True  # Assume valid to avoid false negatives due to API issues
     
     def get_security_id(self, symbol: str) -> str:
-        """Get numeric security ID for a symbol using multi-layer approach (Dhan's recommended)"""
+        """Get numeric security ID for a symbol using multi-layer approach"""
+        # Validate and clean symbol format
+        original_symbol = symbol
+        
+        # Handle special cases and invalid formats
+        if symbol.startswith('$'):
+            logger.warning(f"Invalid symbol format detected: {symbol} - removing '$' prefix")
+            symbol = symbol[1:]
+        
         # Convert symbol format
         if symbol.endswith('.NS'):
             symbol = symbol[:-3]
+        elif symbol.endswith('.BO'):
+            symbol = symbol[:-3]
         
         symbol = symbol.upper()
+        
+        # Check if symbol is empty after cleaning
+        if not symbol:
+            logger.error(f"Invalid symbol after cleaning: '{original_symbol}'")
+            raise ValueError(f"Invalid symbol format: '{original_symbol}'")
         
         # Check cache first
         cached_id = self._get_cached_security_id(symbol)
@@ -1150,7 +1180,7 @@ class DhanAPIClient:
             logger.info(f"✅ Found security ID via dynamic validation for {symbol}: {security_id}")
             return security_id
         
-        logger.error(f"❌ Security ID not found for {symbol} using all methods")
+        logger.error(f"❌ Security ID not found for {symbol} (original: {original_symbol})")
         raise ValueError(f"Security ID not found for {symbol}")
     
     def validate_order_prerequisites(self) -> bool:

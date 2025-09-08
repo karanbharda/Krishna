@@ -102,5 +102,21 @@
         "qty": 1,
         "price": 104.46,
         "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-08 14:25:58.295848",
+        "asset": "SJVN.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 93.36,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-08 15:17:30.274033",
+        "asset": "PNB.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 104.19,
+        "pnl": 0.0
     }
 ]

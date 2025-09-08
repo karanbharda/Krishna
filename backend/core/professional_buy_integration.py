@@ -207,8 +207,20 @@ class ProfessionalBuyIntegration:
         # Calculate quantity based on portfolio context if available
         qty = buy_decision.buy_quantity
         if qty <= 0:
-            # Fallback quantity calculation
-            qty = max(1, int(10000 / stock_metrics.current_price))  # Default to small position
+            # Instead of defaulting to a small position, return hold decision
+            return {
+                "action": "hold",
+                "ticker": "",
+                "qty": 0,
+                "price": stock_metrics.current_price,
+                "stop_loss": buy_decision.stop_loss_price,
+                "take_profit": buy_decision.take_profit_price,
+                "success": True,
+                "confidence_score": buy_decision.confidence,
+                "signals": len(buy_decision.signals_triggered),
+                "reason": "no_valid_quantity",
+                "professional_reasoning": f"Professional buy logic recommends buying but calculated quantity is {qty} which is invalid. No buy action taken."
+            }
         
         return {
             "action": "buy",

@@ -968,33 +968,40 @@ class WebTradingBot:
             if recent_trades:
                 logger.info(f"Loading {len(recent_trades)} historical trades for learning engine")
                 for trade in recent_trades:
-                    # Convert trade to learning experience
-                    experience = {
-                        'state': {
-                            'symbol': trade.get('symbol', ''),
-                            'price': trade.get('price', 0),
-                            'quantity': trade.get('quantity', 0)
-                        },
-                        'action': trade.get('action', ''),
-                        'reward': trade.get('profit_loss', 0),
-                        'timestamp': trade.get('timestamp', '')
-                    }
-                    # FIX: Use the correct method signature for add_experience
-                    if hasattr(learning_engine, 'performance_tracker') and hasattr(learning_engine.performance_tracker, 'add_experience'):
-                        # Use the PerformanceTracker's add_experience method
-                        learning_engine.performance_tracker.add_experience(
-                            experience['state'], 
-                            experience['action'], 
-                            experience['reward'], 
-                            None  # next_state not available in this context
-                        )
-                    else:
-                        # Fallback to record_outcome if add_experience is not available
-                        learning_engine.record_outcome(experience['state'], {
-                            'action': experience['action'],
-                            'reward': experience['reward'],
-                            'timestamp': experience['timestamp']
-                        })
+                    try:
+                        # Convert trade to learning experience
+                        experience = {
+                            'state': {
+                                'symbol': trade.get('symbol', ''),
+                                'price': trade.get('price', 0),
+                                'quantity': trade.get('quantity', 0)
+                            },
+                            'action': trade.get('action', ''),
+                            'reward': trade.get('profit_loss', 0),
+                            'timestamp': trade.get('timestamp', '')
+                        }
+                        # FIX: Use the correct method signature for add_experience
+                        if hasattr(learning_engine, 'performance_tracker') and hasattr(learning_engine.performance_tracker, 'add_experience'):
+                            # Use the PerformanceTracker's add_experience method
+                            learning_engine.performance_tracker.add_experience(
+                                experience['state'], 
+                                experience['action'], 
+                                experience['reward'], 
+                                None  # next_state not available in this context
+                            )
+                        else:
+                            # Fallback to record_outcome if add_experience is not available
+                            learning_engine.record_outcome(experience['state'], {
+                                'action': experience['action'],
+                                'reward': experience['reward'],
+                                'timestamp': experience['timestamp']
+                            })
+                    except KeyError as e:
+                        logger.error(f"Missing key in trade data: {e} - skipping trade")
+                        continue
+                    except Exception as e:
+                        logger.error(f"Error processing trade for learning: {e} - skipping trade")
+                        continue
                 logger.info("Historical data loaded successfully for learning engine")
         except Exception as e:
             logger.error(f"Error loading historical data for learning: {e}")

@@ -1,7 +1,7 @@
 {
-  "cash": 588.47,
-  "total_value": 1881.90001,
-  "starting_balance": 588.47,
+  "cash": 253.09,
+  "total_value": 1546.52001,
+  "starting_balance": 253.09,
   "holdings": {
     "NSLNISP": {
       "qty": 2,
@@ -39,5 +39,5 @@
   "total_trades": 0,
   "winning_trades": 0,
   "losing_trades": 0,
-  "last_updated": "2025-09-08T13:51:32.644394"
+  "last_updated": "2025-09-08T15:50:55.849099"
 }
