@@ -455,7 +455,9 @@ class ProfessionalBuyLogic:
         """Check for immediate entry conditions (breakouts, etc.)"""
 
         # Breakout above resistance - immediate entry
-        if stock.current_price > entry_levels["support_entry"] * 1.03:  # Strong breakout
+        # Make this condition more stringent to prevent too many buy signals
+        if (stock.current_price > entry_levels["support_entry"] * 1.05 and  # Increased threshold from 1.03 to 1.05
+            entry_levels["support_entry"] > 0):  # Ensure support level is valid
             return BuyDecision(
                 should_buy=True,
                 buy_quantity=0,  # Will be determined later
@@ -467,7 +469,7 @@ class ProfessionalBuyLogic:
                 target_entry_price=stock.current_price,
                 stop_loss_price=stock.current_price * (1 - self.stop_loss_pct),
                 take_profit_price=stock.current_price * (1 + self.take_profit_ratio * self.stop_loss_pct),
-                reasoning=f"Strong breakout: {stock.current_price:.2f} > {entry_levels['support_entry'] * 1.03:.2f}"
+                reasoning=f"Strong breakout: {stock.current_price:.2f} > {entry_levels['support_entry'] * 1.05:.2f}"
             )
 
         return None
@@ -511,6 +513,15 @@ class ProfessionalBuyLogic:
                 # No strong signals, reduce confidence
                 logger.info("No strong signals detected, reducing confidence")
                 should_buy = False
+
+        # Additional check: Ensure we have meaningful signals
+        if should_buy and signals_count > 0:
+            # Calculate average signal strength
+            avg_strength = np.mean([s.strength for s in triggered_signals])
+            # If average strength is too low, don't buy
+            if avg_strength < 0.3:
+                should_buy = False
+                logger.info(f"Average signal strength too low: {avg_strength:.3f}")
 
         return BuyDecision(
             should_buy=should_buy,

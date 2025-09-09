@@ -1,10 +1,25 @@
 {
-    "cash": 253.09,
+    "cash": 253.18,
     "holdings": {
+        "SJVN": {
+            "qty": 1,
+            "avg_price": 93.39,
+            "last_price": 93.39
+        },
         "NSLNISP": {
             "qty": 2,
             "avg_price": 37.87,
             "last_price": 37.87
+        },
+        "PNB": {
+            "qty": 1,
+            "avg_price": 104.29,
+            "last_price": 104.29
+        },
+        "ASHOKLEY": {
+            "qty": 1,
+            "avg_price": 137.6,
+            "last_price": 137.6
         },
         "ONGC": {
             "qty": 1,
@@ -32,8 +47,8 @@
             "last_price": 9.76667
         }
     },
-    "starting_balance": 253.09,
+    "starting_balance": 253.18,
     "realized_pnl": 0.0,
     "unrealized_pnl": 0.0,
-    "last_updated": "2025-09-08T15:50:55.848320"
+    "last_updated": "2025-09-09T10:46:28.565066"
 }

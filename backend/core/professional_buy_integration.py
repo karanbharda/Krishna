@@ -257,7 +257,7 @@ class ProfessionalBuyIntegration:
     def get_professional_config(self) -> Dict:
         """Get professional buy logic configuration"""
         return {
-            "min_buy_signals": 2,
+            "min_buy_signals": 3,          # Updated to match the more conservative config
             "min_buy_confidence": 0.65,
             "min_weighted_buy_score": 0.40,
             "entry_buffer_pct": 0.01,
