@@ -519,9 +519,20 @@ class ProfessionalBuyLogic:
             # Calculate average signal strength
             avg_strength = np.mean([s.strength for s in triggered_signals])
             # If average strength is too low, don't buy
-            if avg_strength < 0.3:
+            if avg_strength < 0.4:  # Increased threshold from 0.3 to 0.4
                 should_buy = False
                 logger.info(f"Average signal strength too low: {avg_strength:.3f}")
+
+        # Ensure there's a clear bullish bias
+        if should_buy:
+            # Count bullish vs bearish signals
+            bullish_signals = [s for s in triggered_signals if s.weight > 0 and ("oversold" in s.name or "bullish" in s.name or "bounce" in s.name or "breakout" in s.name or "low" in s.name or "compression" in s.name)]
+            bearish_signals = [s for s in signals if s.triggered and s.weight > 0 and ("overbought" in s.name or "bearish" in s.name or "breakdown" in s.name)]
+            
+            # If more bearish than bullish signals, don't buy
+            if len(bearish_signals) >= len(bullish_signals):
+                should_buy = False
+                logger.info(f"Bearish signals ({len(bearish_signals)}) >= Bullish signals ({len(bullish_signals)}), blocking buy")
 
         return BuyDecision(
             should_buy=should_buy,

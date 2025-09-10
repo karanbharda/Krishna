@@ -118,5 +118,13 @@
         "qty": 1,
         "price": 104.19,
         "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-10 13:33:54.565128",
+        "asset": "NHPC.NS",
+        "action": "buy",
+        "qty": 2,
+        "price": 79.0,
+        "pnl": 0.0
     }
 ]

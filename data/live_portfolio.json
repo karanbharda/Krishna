@@ -1,7 +1,7 @@
 {
-  "cash": 253.18,
-  "total_value": 1881.89001,
-  "starting_balance": 253.18,
+  "cash": 506.29,
+  "total_value": 2135.00001,
+  "starting_balance": 506.29,
   "holdings": {
     "SJVN": {
       "qty": 1,
@@ -54,5 +54,5 @@
   "total_trades": 0,
   "winning_trades": 0,
   "losing_trades": 0,
-  "last_updated": "2025-09-09T10:46:28.565887"
+  "last_updated": "2025-09-10T14:38:00.459179"
 }

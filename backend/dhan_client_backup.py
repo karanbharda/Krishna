@@ -43,6 +43,10 @@ class DhanAPIClient:
         self.cache_expiry = {}
         self.cache_duration = 3600  # Cache for 1 hour
         
+        # Remove all hardcoded security ID mappings - will fetch dynamically from API
+        # Manual security ID mappings - takes precedence over dynamic search
+        # self.manual_security_id_mapping = {}  # Removed hardcoded mappings
+        
         # Instrument data cache
         self.instrument_cache = {}
         self.instrument_cache_expiry = {}
@@ -375,173 +379,12 @@ class DhanAPIClient:
         return None
     
     def _get_security_id_from_nse_database(self, symbol: str) -> Optional[str]:
-        """Get security ID from comprehensive NSE symbol database"""
-        # Comprehensive NSE symbol to security ID mapping
+        """Get security ID from comprehensive NSE symbol database - now returns None as we removed hardcoded mappings"""
+        # Removed all hardcoded NSE symbol to security ID mapping
         # This includes most actively traded NSE stocks
-        nse_security_mapping = {
-            # Banking & Financial Services
-            'HDFCBANK': '500180',
-            'ICICIBANK': '532174',
-            'SBIN': '500112',
-            'KOTAKBANK': '500247',
-            'AXISBANK': '532215',
-            'INDUSINDBK': '532187',
-            'BANDHANBNK': '540691',
-            'FEDERALBNK': '500469',
-            'IDFCFIRSTB': '539437',
-            'CANBK': '532483',
-            'BANKBARODA': '532134',
-            
-            # IT Services
-            'TCS': '532540',
-            'INFY': '500209',
-            'WIPRO': '507685',
-            'HCLTECH': '532281',
-            'TECHM': '532755',
-            'LTI': '540005',
-            'MINDTREE': '532819',
-            'MPHASIS': '526299',
-            'COFORGE': '532541',
-            
-            # Energy & Oil
-            'RELIANCE': '500325',
-            'ONGC': '500312',
-            'IOC': '530965',
-            'BPCL': '500547',
-            'HPCL': '500104',
-            'GAIL': '532155',
-            'NTPC': '532555',
-            'POWERGRID': '532898',
-            'COALINDIA': '533278',
-            'ADANIGREEN': '541450',
-            'ADANITRANS': '542066',
-            'ADANIPORTS': '532921',
-            
-            # FMCG & Consumer
-            'HINDUNILVR': '500696',
-            'ITC': '500875',
-            'NESTLEIND': '500790',
-            'BRITANNIA': '500825',
-            'DABUR': '500096',
-            'MARICO': '531642',
-            'GODREJCP': '532424',
-            'COLPAL': '500840',
-            'TATACONSUM': '500800',
-            'UBL': '532953',
-            
-            # Pharmaceuticals
-            'SUNPHARMA': '524715',
-            'DRREDDY': '500124',
-            'CIPLA': '500087',
-            'DIVISLAB': '532488',
-            'BIOCON': '532523',
-            'LUPIN': '500257',
-            'AUROPHARMA': '524804',
-            'CADILAHC': '532321',
-            'TORNTPHARM': '500825',
-            'GLENMARK': '532296',
-            
-            # Automotive
-            'MARUTI': '532500',
-            'HYUNDAI': '543066',
-            'M&M': '500520',
-            'TATAMOTORS': '500570',
-            'BAJAJ-AUTO': '532977',
-            'EICHERMOT': '505200',
-            'HEROMOTOCO': '500182',
-            'TVSMOTORS': '532343',
-            'ASHOKLEY': '500477',
-            'MOTHERSUMI': '533188',
-            
-            # Metals & Mining
-            'TATASTEEL': '500470',
-            'JSWSTEEL': '500228',
-            'HINDALCO': '500440',
-            'VEDL': '500295',
-            'SAIL': '500113',
-            'JINDALSTEL': '532286',
-            'NMDC': '526371',
-            'MOIL': '533286',
-            'WELCORP': '532144',
-            
-            # Telecom
-            'BHARTIARTL': '532454',
-            'IDEA': '532822',
-            'MTNL': '500455',
-            'LTTS': '540005',
-            
-            # Cement
-            'ULTRACEMCO': '532538',
-            'SHREECEM': '500387',
-            'ACC': '500410',
-            'AMBUJACEMENT': '500425',
-            'DALMIACEMEN': '532139',
-            'JKCEMENT': '532454',
-            
-            # Real Estate & Construction
-            'LT': '500510',
-            'DLF': '532868',
-            'GODREJPROP': '533150',
-            'OBEROIRLTY': '533273',
-            'PRESTIGE': '532811',
-            'SOBHA': '533129',
-            'BRIGADE': '532929',
-            'NBCC': '590174',  # NBCC (India) Limited - Infrastructure/Construction
-            
-            # Airlines & Tourism
-            'INDIGO': '539448',
-            'SPICEJET': '532906',
-            'IRCTC': '542830',
-            
-            # Textiles
-            'RNAM': '500261',
-            'WELSPUNIND': '514162',
-            'TRIDENT': '521064',
-            
-            # Chemicals
-            'UPL': '512070',
-            'PIDILITIND': '500331',
-            'AAVAS': '540376',
-            'DEEPAKNI': '532706',
-            'TATACHEM': '500770',
-            'GNFC': '532538',
-            
-            # Media & Entertainment
-            'ZEEL': '505537',
-            'SUNTV': '532733',
-            'PVR': '532689',
-            'BALRAMCHIN': '500335',
-            
-            # Agriculture
-            'RALLIS': '500355',
-            'COROMANDEL': '505200',
-            'CHAMBLFERT': '515145',
-            
-            # Logistics
-            'BLUEDART': '526612',
-            'GATI': '532345',
-            
-            # Specialty Stocks
-            'NSLNISP': '1333',
-            'IOB': '1584',
-            
-            # Additional Popular Stocks
-            'ASIANPAINT': '500820',
-            'TITAN': '500114',
-            'BAJFINANCE': '500034',
-            'BAJAJFINSV': '532978',
-            'HDFC': '500010',
-            'MCDOWELL-N': '500193',
-            'APOLLOHOSP': '500488',
-            'GRASIM': '500300',
-            'SBILIFE': '542933',
-            
-            # Manual corrections for known problematic symbols
-            'RAJOOENG': '539297',  # Corrected security ID for RAJOOENG
-            'NBCC': '538835',      # Corrected security ID for NBCC
-        }
-        
-        return nse_security_mapping.get(symbol)
+        # Now we fetch all data dynamically from https://api.dhan.co/v2/instrument/NSE_EQ
+        logger.debug("Using dynamic fetching instead of hardcoded NSE database mappings")
+        return None
     
     def _should_refresh_daily_instruments(self) -> bool:
         """Check if we need daily refresh of instrument master"""
@@ -718,16 +561,17 @@ class DhanAPIClient:
                 return corrected_id
             
             # Special handling for known problematic symbols
-            if symbol.upper() == "RAJOOENG":
-                # Use the manually corrected ID for RAJOOENG
-                manual_id = "539297"
-                logger.info(f"Using manual correction for RAJOOENG: {manual_id}")
-                # Validate and store if valid
-                if self._validate_security_id(manual_id, symbol):
-                    self._store_corrected_security_id(symbol, manual_id)
-                    return manual_id
-                else:
-                    logger.warning(f"Manual correction ID {manual_id} for RAJOOENG is also invalid")
+            # Remove hardcoded security ID for RAJOOENG - using dynamic fetching instead
+            # if symbol.upper() == "RAJOOENG":
+            #     # Use the manually corrected ID for RAJOOENG
+            #     manual_id = "539297"
+            #     logger.info(f"Using manual correction for RAJOOENG: {manual_id}")
+            #     # Validate and store if valid
+            #     if self._validate_security_id(manual_id, symbol):
+            #         self._store_corrected_security_id(symbol, manual_id)
+            #         return manual_id
+            #     else:
+            #         logger.warning(f"Manual correction ID {manual_id} for RAJOOENG is also invalid")
             
             # Ensure we have loaded daily instrument data
             if not self._load_daily_instrument_master():
@@ -864,7 +708,7 @@ class DhanAPIClient:
             return None
     
     def _get_instrument_data_from_dhan(self, exchange_segment: str = "NSE_EQ") -> Dict[str, str]:
-        """Fetch real instrument data from Dhan API with caching"""
+        """Fetch real instrument data from Dhan API v2 endpoint with caching"""
         try:
             # Check cache first
             if exchange_segment in self.instrument_cache:
@@ -879,7 +723,7 @@ class DhanAPIClient:
                 logger.debug("Using test credentials - skipping real instrument fetch")
                 return {}
             
-            # Fetch instruments from Dhan API
+            # Fetch instruments from Dhan API v2 endpoint: https://api.dhan.co/v2/instrument/NSE_EQ
             response = self._make_request('GET', f'/v2/instrument/{exchange_segment}')
             
             if response and isinstance(response, list):
@@ -895,7 +739,7 @@ class DhanAPIClient:
                 self.instrument_cache[exchange_segment] = instrument_mapping
                 self.instrument_cache_expiry[exchange_segment] = time.time() + self.instrument_cache_duration
                 
-                logger.info(f"✅ Fetched and cached {len(instrument_mapping)} instruments from Dhan API")
+                logger.info(f"✅ Fetched and cached {len(instrument_mapping)} instruments from Dhan API v2 endpoint")
                 return instrument_mapping
             
             logger.warning("No instrument data received from Dhan API")
@@ -1030,20 +874,10 @@ class DhanAPIClient:
         """Generate possible security IDs for a symbol with improved patterns"""
         possible_ids = []
         
+        # Remove all hardcoded security ID mappings - will fetch dynamically from API
         # Enhanced known corrections for specific symbols
         symbol_alternatives = {
-            'NBCC': [
-                '11536',   # Common format seen in documentation
-                '538835',  # BSE pattern adapted for NSE
-                '500891',  # Standard 500xxx series
-                '532891',  # Standard 532xxx series
-                '540891',  # Our original (might be wrong)
-                '543891',  # Alternative pattern
-                '1333',    # Short format pattern
-                '33891',   # Mid-range pattern
-            ],
-            'NSLNISP': ['1333'],
-            'IOB': ['1584'],
+            # All hardcoded mappings removed - using dynamic fetching instead
         }
         
         symbol_upper = symbol.upper()
@@ -1124,7 +958,7 @@ class DhanAPIClient:
                 return True  # Assume valid to avoid false negatives due to API issues
     
     def get_security_id(self, symbol: str) -> str:
-        """Get numeric security ID for a symbol using multi-layer approach"""
+        """Get numeric security ID for a symbol using multi-layer approach with dynamic fetching"""
         # Validate and clean symbol format
         original_symbol = symbol
         
@@ -1159,21 +993,14 @@ class DhanAPIClient:
             logger.info(f"✅ Found security ID via daily master for {symbol}: {security_id}")
             return security_id
         
-        # Method 2: Static NSE database (our backup)
-        security_id = self._get_security_id_from_nse_database(symbol)
-        if security_id:
-            self._cache_security_id(symbol, security_id)
-            logger.info(f"✅ Found security ID via static database for {symbol}: {security_id}")
-            return security_id
-        
-        # Method 3: Live API instrument data (real-time fallback)
+        # Method 2: Live API instrument data (real-time fallback) - now the primary method since we removed hardcoded mappings
         security_id = self._search_security_id_from_instruments(symbol)
         if security_id:
             self._cache_security_id(symbol, security_id)
             logger.info(f"✅ Found security ID via API instruments for {symbol}: {security_id}")
             return security_id
         
-        # Method 4: Dynamic validation with generated IDs (last resort)
+        # Method 3: Dynamic validation with generated IDs (last resort)
         security_id = self._search_security_id_dynamic(symbol)
         if security_id:
             self._cache_security_id(symbol, security_id)

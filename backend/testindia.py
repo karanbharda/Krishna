@@ -5374,12 +5374,50 @@ class StockTradingBot:
                         }
                     else:
                         logger.info(f"Professional buy decision for {ticker} blocked due to insufficient cash or zero quantity")
+                        return {
+                            "action": "hold",
+                            "ticker": ticker,
+                            "qty": 0,
+                            "price": current_price,
+                            "stop_loss": stop_loss,
+                            "take_profit": take_profit,
+                            "success": False,
+                            "confidence_score": professional_decision.get("confidence_score", 0.0),
+                            "signals": professional_decision.get("signals", 0),
+                            "reason": "insufficient_funds_or_zero_qty"
+                        }
                 
                 # If professional logic recommends hold or sell, continue with existing logic
                 elif professional_decision.get("action") == "hold":
                     logger.info(f"Professional buy logic recommends HOLD for {ticker}")
+                    # Return the hold decision instead of falling back to legacy logic
+                    return {
+                        "action": "hold",
+                        "ticker": ticker,
+                        "qty": 0,
+                        "price": current_price,
+                        "stop_loss": professional_decision.get("stop_loss", current_price * 0.95),
+                        "take_profit": professional_decision.get("take_profit", current_price * 1.05),
+                        "success": True,
+                        "confidence_score": professional_decision.get("confidence_score", 0.0),
+                        "signals": professional_decision.get("signals", 0),
+                        "reason": "professional_hold"
+                    }
                 elif professional_decision.get("action") == "sell":
                     logger.info(f"Professional buy logic recommends SELL for {ticker} (unexpected)")
+                    # Return the sell decision
+                    return {
+                        "action": "sell",
+                        "ticker": ticker,
+                        "qty": professional_decision.get("qty", 0),
+                        "price": current_price,
+                        "stop_loss": professional_decision.get("stop_loss", current_price * 0.95),
+                        "take_profit": professional_decision.get("take_profit", current_price * 1.05),
+                        "success": True,
+                        "confidence_score": professional_decision.get("confidence_score", 0.0),
+                        "signals": professional_decision.get("signals", 0),
+                        "reason": "professional_sell_signal"
+                    }
             except Exception as e:
                 logger.error(f"Error in professional buy evaluation for {ticker}: {e}")
                 # Continue with legacy logic on error
@@ -5389,7 +5427,7 @@ class StockTradingBot:
             "technical": 0.5,    # Technical analysis - real-time signals
             "sentiment": 0.25,   # Increased sentiment weight for market psychology
             "ml": 0.25,         # Balanced ML weight for predictions
-            "rl": 0.0           # Disabled - causing processing delays
+            "rl": 0.1           # Enabled RL - was 0.0 (disabled)
         }
         scores = {"buy": 0.0, "sell": 0.0}
 
@@ -7255,9 +7293,13 @@ class StockTradingBot:
         else:
             # PRODUCTION FIX: Regime-specific HOLD conditions
             if market_regime == "TRENDING":
-                # In trending markets, avoid HOLD - force decisions
-                hold_conditions = False
-                logger.info(f"TRENDING market: Forcing trading decision for {ticker}")
+                # In trending markets, still allow HOLD if conditions are met
+                hold_conditions = (
+                    abs(final_buy_score - final_sell_score) < 0.06
+                    or (support_level * 0.98 < current_ticker_price < resistance_level * 1.02)
+                    or (buy_signals < 2 and sell_signals < 2)
+                )
+                logger.info(f"TRENDING market: Applying standard HOLD conditions for {ticker}")
             elif market_regime == "VOLATILE":
                 # In volatile markets, only HOLD if very uncertain
                 hold_conditions = (abs(final_buy_score - final_sell_score) < 0.03)

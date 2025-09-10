@@ -45,3 +45,238 @@ Reinforcement Learning Results:
     Episode 80: Reward = -5710514.72, Avg Reward = -861082.22, Events = 98
     Episode 90: Reward = 969607.24, Avg Reward = -2799757.20, Events = 102
     Episode 100: Reward = -12413650.07, Avg Reward = 4158323.65, Events = 85
+
+[20250910_132438] Analysis for KOTHARIPET.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for KOTHARI PETROCHEM LTD (KOTHARIPET.NS): NEUTRAL
+Current Price: Rs.162.91
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0209 (higher values indicate higher risk)
+- Sector: Basic Materials
+- Industry: Specialty Chemicals
+
+Prediction Days: 30
+Current Price (USD): 1.85
+Predicted Price (USD): 161.49935928283764
+Predicted Change (%): 8629.70
+Confidence Score: -0.035377872694727586
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -1.7666514498776524
+  Average Reward: -53176.874360184585
+  Average Events/Episode: 122.8
+  Actions Distribution:
+    hold: 0.7682
+    buy: 0.2172
+    sell: 0.0146
+  RL Epoch Logs:
+    Episode 10: Reward = 643393.64, Avg Reward = 781196.33, Events = 113
+    Episode 20: Reward = -329247.77, Avg Reward = 529039.43, Events = 144
+    Episode 30: Reward = 1329743.99, Avg Reward = 85054.83, Events = 116
+    Episode 40: Reward = 792426.92, Avg Reward = -1721026.99, Events = 114
+    Episode 50: Reward = -202244.49, Avg Reward = -833880.05, Events = 119
+    Episode 60: Reward = 1099017.52, Avg Reward = 382565.36, Events = 134
+    Episode 70: Reward = 983610.06, Avg Reward = -221546.01, Events = 128
+    Episode 80: Reward = 703735.79, Avg Reward = 43746.68, Events = 129
+    Episode 90: Reward = -251678.63, Avg Reward = 147470.46, Events = 114
+    Episode 100: Reward = -30209.00, Avg Reward = 275611.22, Events = 107
+
+[20250910_133339] Analysis for NHPC.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for NHPC LTD (NHPC.NS): NEUTRAL
+Current Price: Rs.79.04
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0132 (higher values indicate higher risk)
+- Sector: Utilities
+- Industry: Utilities - Renewable
+
+Prediction Days: 30
+Current Price (USD): 0.9
+Predicted Price (USD): 78.11584742002931
+Predicted Change (%): 8579.54
+Confidence Score: -0.045309902106035915
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.29218656208734317
+  Average Reward: -34323.60523469177
+  Average Events/Episode: 126.6
+  Actions Distribution:
+    hold: 0.0607
+    buy: 0.9233
+    sell: 0.0160
+  RL Epoch Logs:
+    Episode 10: Reward = 940964.17, Avg Reward = 158948.72, Events = 114
+    Episode 20: Reward = -606968.04, Avg Reward = 125846.18, Events = 129
+    Episode 30: Reward = 30173.50, Avg Reward = -296177.05, Events = 127
+    Episode 40: Reward = 946306.61, Avg Reward = 269190.72, Events = 130
+    Episode 50: Reward = 445949.67, Avg Reward = 367822.83, Events = 124
+    Episode 60: Reward = -859219.16, Avg Reward = -252063.15, Events = 111
+    Episode 70: Reward = -1353050.94, Avg Reward = -166275.87, Events = 133
+    Episode 80: Reward = 1127858.46, Avg Reward = -21000.42, Events = 112
+    Episode 90: Reward = -2077549.85, Avg Reward = -348991.22, Events = 129
+    Episode 100: Reward = -109312.01, Avg Reward = -180536.79, Events = 110
+
+[20250910_134142] Analysis for IIFLCAPS.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for IIFL CAPITAL SERVICES LTD (IIFLCAPS.NS): NEUTRAL
+Current Price: Rs.305.50
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0354 (higher values indicate higher risk)
+- Sector: Financial Services
+- Industry: Capital Markets
+
+Prediction Days: 30
+Current Price (USD): 3.47
+Predicted Price (USD): 297.617196924868
+Predicted Change (%): 8476.86
+Confidence Score: -0.21737159346263213
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -1.9361554616292271
+  Average Reward: -42132.03435496065
+  Average Events/Episode: 128.36
+  Actions Distribution:
+    hold: 0.3091
+    buy: 0.6877
+    sell: 0.0032
+  RL Epoch Logs:
+    Episode 10: Reward = -318765.03, Avg Reward = 308009.20, Events = 122
+    Episode 20: Reward = -774960.23, Avg Reward = -140052.04, Events = 125
+    Episode 30: Reward = 373900.09, Avg Reward = -997963.13, Events = 125
+    Episode 40: Reward = -4415051.20, Avg Reward = -365890.91, Events = 142
+    Episode 50: Reward = -861007.04, Avg Reward = 253280.37, Events = 118
+    Episode 60: Reward = 1664094.52, Avg Reward = -42583.11, Events = 124
+    Episode 70: Reward = 1609812.61, Avg Reward = 845412.14, Events = 135
+    Episode 80: Reward = -1381045.93, Avg Reward = -64303.44, Events = 131
+    Episode 90: Reward = -313089.52, Avg Reward = 124280.88, Events = 142
+    Episode 100: Reward = -1074200.90, Avg Reward = -341510.31, Events = 127
+
+[20250910_145030] Analysis for IIFLCAPS.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for IIFLCAPS.NS (IIFLCAPS.NS): NEUTRAL
+Current Price: Rs.305.00
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0353 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 3.46
+Predicted Price (USD): 296.3377313009503
+Predicted Change (%): 8464.67
+Confidence Score: -0.5053159822740165
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -2.901174913610943
+  Average Reward: -155770.04827905982
+  Average Events/Episode: 138.31
+  Actions Distribution:
+    hold: 0.3789
+    buy: 0.6182
+    sell: 0.0028
+  RL Epoch Logs:
+    Episode 10: Reward = -8383003.75, Avg Reward = -1044120.09, Events = 154
+    Episode 20: Reward = -4709545.55, Avg Reward = -426186.37, Events = 128
+    Episode 30: Reward = -3933418.03, Avg Reward = -412432.05, Events = 137
+    Episode 40: Reward = -8659928.60, Avg Reward = -524940.91, Events = 142
+    Episode 50: Reward = 815924.87, Avg Reward = 611166.74, Events = 141
+    Episode 60: Reward = 64770.47, Avg Reward = -223472.00, Events = 144
+    Episode 70: Reward = -444970.65, Avg Reward = 152604.41, Events = 151
+    Episode 80: Reward = 635457.71, Avg Reward = 173625.42, Events = 146
+    Episode 90: Reward = 51912.37, Avg Reward = -178938.34, Events = 139
+    Episode 100: Reward = -159981.30, Avg Reward = 314992.71, Events = 139
+
+[20250910_145925] Analysis for KOTHARIPET.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for KOTHARIPET.NS (KOTHARIPET.NS): NEUTRAL
+Current Price: Rs.161.70
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0210 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.84
+Predicted Price (USD): 161.63644403163352
+Predicted Change (%): 8684.59
+Confidence Score: -0.02718842674167754
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.7075999259134551
+  Average Reward: -355377.7294403975
+  Average Events/Episode: 140.32
+  Actions Distribution:
+    hold: 0.4360
+    buy: 0.5626
+    sell: 0.0014
+  RL Epoch Logs:
+    Episode 10: Reward = 1610241.19, Avg Reward = -1444956.10, Events = 154
+    Episode 20: Reward = 2153717.33, Avg Reward = -686066.87, Events = 150
+    Episode 30: Reward = 328752.53, Avg Reward = 241578.16, Events = 150
+    Episode 40: Reward = 0.00, Avg Reward = -262852.81, Events = 151
+    Episode 50: Reward = -425231.27, Avg Reward = -62335.57, Events = 121
+    Episode 60: Reward = -1289449.10, Avg Reward = -305296.51, Events = 132
+    Episode 70: Reward = 376161.06, Avg Reward = -151150.70, Events = 145
+    Episode 80: Reward = -32063.25, Avg Reward = -813264.66, Events = 144
+    Episode 90: Reward = -146095.34, Avg Reward = 248093.49, Events = 142
+    Episode 100: Reward = -198406.79, Avg Reward = -317525.73, Events = 145

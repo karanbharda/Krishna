@@ -23,18 +23,18 @@ class ProfessionalBuyConfig:
     def get_conservative_config():
         """Get conservative professional buy configuration"""
         return {
-            "min_buy_signals": 3,
-            "min_buy_confidence": 0.65,
-            "min_weighted_buy_score": 0.40,
+            "min_buy_signals": 4,          # Increased from 3
+            "min_buy_confidence": 0.70,    # Increased from 0.65
+            "min_weighted_buy_score": 0.50, # Increased from 0.40
             "entry_buffer_pct": 0.015,
             "buy_stop_loss_pct": 0.04,
             "take_profit_ratio": 2.5,
-            "partial_entry_threshold": 0.30,
-            "full_entry_threshold": 0.70,
+            "partial_entry_threshold": 0.40,  # Increased from 0.30
+            "full_entry_threshold": 0.80,     # Increased from 0.70
             "downtrend_buy_multiplier": 0.5,
             "uptrend_buy_multiplier": 1.1,
             "enable_professional_buy_logic": True,
-            "fallback_to_legacy_buy": True
+            "fallback_to_legacy_buy": False   # Changed to False to prevent fallback
         }
     
     @staticmethod
