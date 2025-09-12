@@ -259,15 +259,15 @@ class ProfessionalBuyIntegration:
         return {
             "min_buy_signals": 2,          # Minimum 2 signals
             "max_buy_signals": 4,          # Maximum 4 signals
-            "min_buy_confidence": 0.50,    # Reduced from 0.70
-            "min_weighted_buy_score": 0.30, # Reduced from 0.50
+            "min_buy_confidence": 0.50,    # Updated from 0.40 to 0.50
+            "min_weighted_buy_score": 0.17, # Updated from 0.20 to 0.17
             "entry_buffer_pct": 0.01,
             "buy_stop_loss_pct": 0.05,
             "take_profit_ratio": 2.0,
-            "partial_entry_threshold": 0.40,  # Reduced from 0.40
-            "full_entry_threshold": 0.65,     # Reduced from 0.80
-            "downtrend_buy_multiplier": 0.7,
-            "uptrend_buy_multiplier": 1.2,
+            "partial_entry_threshold": 0.35,  # Changed from 0.40 to match conservative config
+            "full_entry_threshold": 0.70,     # Changed from 0.65 to match conservative config
+            "downtrend_buy_multiplier": 0.5,  # Changed from 0.7 to match conservative config
+            "uptrend_buy_multiplier": 1.1,    # Changed from 1.2 to match conservative config
             "enable_professional_buy_logic": True,
-            "fallback_to_legacy_buy": False   # Changed to False to prevent fallback
+            "fallback_to_legacy_buy": False
         }

@@ -7,8 +7,8 @@ class ProfessionalBuyConfig:
         return {
             "min_buy_signals": 3,          # Default 3 signals (minimum 2, maximum 4)
             "max_buy_signals": 4,          # Maximum 4 signals
-            "min_buy_confidence": 0.50,    # Reduced from 0.65
-            "min_weighted_buy_score": 0.30, # Reduced from 0.40
+            "min_buy_confidence": 0.50,    # Increased from 0.40 to 0.50
+            "min_weighted_buy_score": 0.17, # Increased from 0.15 to 0.17
             "entry_buffer_pct": 0.01,
             "buy_stop_loss_pct": 0.05,
             "take_profit_ratio": 2.0,
@@ -26,8 +26,8 @@ class ProfessionalBuyConfig:
         return {
             "min_buy_signals": 2,          # Minimum 2 signals
             "max_buy_signals": 4,          # Maximum 4 signals
-            "min_buy_confidence": 0.60,    # Increased from 0.50
-            "min_weighted_buy_score": 0.40, # Increased from 0.30
+            "min_buy_confidence": 0.50,    # Increased from 0.40 to 0.50
+            "min_weighted_buy_score": 0.17, # Increased from 0.20 to 0.17
             "entry_buffer_pct": 0.015,
             "buy_stop_loss_pct": 0.04,
             "take_profit_ratio": 2.5,
@@ -38,5 +38,3 @@ class ProfessionalBuyConfig:
             "enable_professional_buy_logic": True,
             "fallback_to_legacy_buy": False   # Changed to False to prevent fallback
         }
-    
-    # Removed aggressive configuration as requested

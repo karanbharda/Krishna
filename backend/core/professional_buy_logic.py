@@ -89,8 +89,8 @@ class ProfessionalBuyLogic:
         # Professional thresholds - adjusted for better balance
         self.min_signals_required = config.get("min_buy_signals", 2)  # Minimum 2 signals
         self.max_signals_required = config.get("max_buy_signals", 4)  # Maximum 4 signals
-        self.min_confidence_threshold = config.get("min_buy_confidence", 0.50)
-        self.min_weighted_score = config.get("min_weighted_buy_score", 0.30)
+        self.min_confidence_threshold = config.get("min_buy_confidence", 0.50)  # Updated default to 0.50
+        self.min_weighted_score = config.get("min_weighted_buy_score", 0.17)  # Updated default to 0.17
         
         # Entry configuration
         self.base_entry_buffer_pct = config.get("entry_buffer_pct", 0.01)
@@ -292,7 +292,7 @@ class ProfessionalBuyLogic:
         # RSI Oversold (Strong signal)
         rsi = technical.get("rsi", 50)
         if rsi < 30:
-            strength = min((30 - rsi) / 20, 1.0)  # Scale 30-10 to 0-1
+            strength = min((30 - rsi) / 20, 1.0)*1.2 # Scale 30-10 to 0-1
             signals.append(BuySignal(
                 name="rsi_oversold",
                 strength=strength,

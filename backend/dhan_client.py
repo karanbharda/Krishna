@@ -50,7 +50,7 @@ class DhanAPIClient:
         # Instrument data cache
         self.instrument_cache = {}
         self.instrument_cache_expiry = {}
-        self.instrument_cache_duration = 86400  # Cache instruments for 24 hours
+        self.instrument_cache_duration = 3600  # Reduce cache duration to 1 hour for fresher data
         
         # Daily instrument master (Dhan's recommended approach)
         self.daily_instruments_df = None
@@ -390,6 +390,11 @@ class DhanAPIClient:
                 # Parse CSV data directly into DataFrame
                 df = pd.read_csv(StringIO(response.text))
                 logger.info(f"✅ Loaded instruments: {len(df)}")
+                
+                # Log some sample data for debugging
+                if not df.empty:
+                    logger.debug(f"Sample instrument data: {df.head(3).to_dict('records')}")
+                
                 return df
             else:
                 logger.error(f"Failed to fetch instruments. Status: {response.status_code}")
@@ -438,14 +443,8 @@ class DhanAPIClient:
             # Create a more dynamic and comprehensive search without relying on hardcoded mappings
             search_symbol = symbol.upper()
             
-            # First try exact match
-            result = df[df[symbol_col].str.upper() == search_symbol]
-            if not result.empty:
-                security_id = str(result.iloc[0][security_id_col])
-                logger.info(f"✅ Found security ID for {symbol} (exact match): {security_id}")
-                return security_id
-            
-            # Try multiple variations dynamically
+            # Special handling for symbols with numeric suffixes like JAYNECOIND
+            # Try to find variations that might match
             variations = [
                 search_symbol,
                 search_symbol.replace('-', ' '),
@@ -461,6 +460,16 @@ class DhanAPIClient:
                 search_symbol.replace('L&T', 'LARSEN AND TOUBRO'),
                 search_symbol.replace('L&T', 'LARSEN & TOUBRO')
             ]
+            
+            # Add specific handling for JAYNECOIND and similar symbols
+            if search_symbol == "JAYNECOIND":
+                variations.extend([
+                    "JAYASWAL NUCLEUS",
+                    "JAYASWAL NUCLEUS LTD",
+                    "JAYASWAL NUCLEUS LIMITED",
+                    "JAYNECOIND EQ",
+                    "JAYNECOIND-EQ"
+                ])
             
             # Add variations with common suffixes/prefixes
             common_suffixes = [' LTD', ' LIMITED', ' CORPORATION', ' COMPANY', ' INDIA', ' INDUSTRIES', ' SOLUTIONS', ' SERVICES']
@@ -582,6 +591,18 @@ class DhanAPIClient:
             # Store in database for future use
             self._store_corrected_security_id(symbol, security_id)
             return security_id
+        
+        # Fallback: Try to search with a broader approach for problematic symbols
+        if symbol == "JAYNECOIND":
+            # Try alternative search for Jayaswal Nucleus
+            alternative_symbols = ["JAYASWAL NUCLEUS", "JAYASWAL", "JAYA NUCLEUS"]
+            for alt_symbol in alternative_symbols:
+                alt_security_id = self._search_security_id_in_instruments(alt_symbol)
+                if alt_security_id:
+                    logger.info(f"✅ Found alternative security ID for {symbol} using {alt_symbol}: {alt_security_id}")
+                    self._cache_security_id(symbol, alt_security_id)
+                    self._store_corrected_security_id(symbol, alt_security_id)
+                    return alt_security_id
         
         logger.error(f"❌ Security ID not found for {symbol} (original: {original_symbol})")
         raise ValueError(f"Security ID not found for {symbol}")
