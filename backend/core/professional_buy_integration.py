@@ -257,14 +257,15 @@ class ProfessionalBuyIntegration:
     def get_professional_config(self) -> Dict:
         """Get professional buy logic configuration"""
         return {
-            "min_buy_signals": 4,          # Increased from 3
-            "min_buy_confidence": 0.70,    # Increased from 0.65
-            "min_weighted_buy_score": 0.50, # Increased from 0.40
+            "min_buy_signals": 2,          # Minimum 2 signals
+            "max_buy_signals": 4,          # Maximum 4 signals
+            "min_buy_confidence": 0.50,    # Reduced from 0.70
+            "min_weighted_buy_score": 0.30, # Reduced from 0.50
             "entry_buffer_pct": 0.01,
             "buy_stop_loss_pct": 0.05,
             "take_profit_ratio": 2.0,
-            "partial_entry_threshold": 0.40,  # Increased from 0.50
-            "full_entry_threshold": 0.80,     # Increased from 0.75
+            "partial_entry_threshold": 0.40,  # Reduced from 0.40
+            "full_entry_threshold": 0.65,     # Reduced from 0.80
             "downtrend_buy_multiplier": 0.7,
             "uptrend_buy_multiplier": 1.2,
             "enable_professional_buy_logic": True,
