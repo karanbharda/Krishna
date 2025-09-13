@@ -86,11 +86,17 @@ class ProfessionalBuyLogic:
     def __init__(self, config: Dict):
         self.config = config
         
-        # Professional thresholds - adjusted for better balance
+        # Professional thresholds - OPTIMIZED for better opportunity capture
         self.min_signals_required = config.get("min_buy_signals", 2)  # Minimum 2 signals
         self.max_signals_required = config.get("max_buy_signals", 4)  # Maximum 4 signals
-        self.min_confidence_threshold = config.get("min_buy_confidence", 0.50)  # Updated default to 0.50
-        self.min_weighted_score = config.get("min_weighted_buy_score", 0.17)  # Updated default to 0.17
+        self.min_confidence_threshold = config.get("min_buy_confidence", 0.40)  # REDUCED from 0.50 to 0.40
+        self.min_weighted_score = config.get("min_weighted_buy_score", 0.08)  # REDUCED from 0.12 to 0.08
+        
+        # ADAPTIVE THRESHOLDS: Adjust based on market conditions
+        self.adaptive_thresholds_enabled = config.get("adaptive_thresholds_enabled", True)
+        self.market_volatility_threshold = config.get("market_volatility_threshold", 0.03)
+        self.low_confidence_multiplier = config.get("low_confidence_multiplier", 0.8)
+        self.high_confidence_multiplier = config.get("high_confidence_multiplier", 1.2)
         
         # Entry configuration
         self.base_entry_buffer_pct = config.get("entry_buffer_pct", 0.01)
@@ -150,10 +156,10 @@ class ProfessionalBuyLogic:
                 target_entry_price=0.0,
                 stop_loss_price=0.0,
                 take_profit_price=0.0,
-                reasoning="Cross-category confirmation failed: Less than 2 categories aligned"
+                reasoning="Cross-category confirmation failed - signals not aligned across multiple categories"
             )
         
-        # Step 3: Apply bearish block filter (If bearish > 40%, block trade)
+        # Step 3: Apply bearish block filter
         if self._check_bearish_block(signals):
             return BuyDecision(
                 should_buy=False,
@@ -166,46 +172,94 @@ class ProfessionalBuyLogic:
                 target_entry_price=0.0,
                 stop_loss_price=0.0,
                 take_profit_price=0.0,
-                reasoning="Bearish block filter activated: Bearish signals > 40%"
+                reasoning="Bearish block filter triggered - too many bearish signals"
             )
         
-        # Step 4: Calculate dynamic entry levels
-        entry_levels = self._calculate_dynamic_entry_levels(stock_metrics, market_context)
-        
-        # Step 5: Check immediate entry conditions (breakouts, etc.)
-        immediate_entry = self._check_immediate_entry_conditions(
-            stock_metrics, entry_levels
-        )
-        
-        if immediate_entry:
-            return immediate_entry
-        
-        # Step 6: Evaluate signal-based buy decision
-        signal_decision = self._evaluate_signal_based_buy(
-            signals, stock_metrics, market_context
-        )
-        
-        # Step 7: Apply market context filters
-        final_decision = self._apply_market_context_filters(
-            signal_decision, market_context
-        )
-        
-        # Step 8: Apply risk-reward check (Requires ≥ 1.5 before entering)
-        final_decision = self._apply_risk_reward_check(
-            final_decision, stock_metrics, entry_levels
-        )
-        
-        # Step 9: Determine position sizing with smoothed scaling
-        final_decision = self._determine_smoothed_position_sizing(
-            final_decision, signals, stock_metrics, portfolio_context
-        )
-        
-        logger.info(f"BUY DECISION: {final_decision.should_buy} | "
-                   f"Qty: {final_decision.buy_quantity} | "
-                   f"Reason: {final_decision.reason.value} | "
-                   f"Confidence: {final_decision.confidence:.3f}")
-        
-        return final_decision
+        # Step 4: Calculate weighted signal score and confidence
+        triggered_signals = [s for s in signals if s.triggered]
+        total_weight = sum(s.weight for s in triggered_signals)
+        weighted_score = sum(s.strength * s.weight for s in triggered_signals)
+
+        # Calculate confidence based on signal agreement
+        signal_confidences = [s.confidence for s in triggered_signals]
+        avg_confidence = np.mean(signal_confidences) if signal_confidences else 0.0
+
+        # Professional decision criteria with adjusted thresholds
+        signals_count = len(triggered_signals)
+        # Check if signal count is within the required range (min 2, max 4)
+        meets_signal_threshold = self.min_signals_required <= signals_count <= self.max_signals_required
+        meets_confidence_threshold = avg_confidence >= self.min_confidence_threshold
+        meets_weighted_threshold = weighted_score >= self.min_weighted_score
+
+        logger.info(f"Signal Analysis: {signals_count} signals, "
+                   f"weighted_score: {weighted_score:.3f}, "
+                   f"confidence: {avg_confidence:.3f}")
+
+        # PROFESSIONAL BUY LOGIC: All three conditions must be met (similar to sell logic)
+        # This prevents the system from generating buy signals when conditions are marginal
+        should_buy = meets_signal_threshold and meets_confidence_threshold and meets_weighted_threshold
+
+        # Additional quality checks for professional trading
+        if should_buy:
+            # Step 5: Calculate entry levels
+            entry_levels = self._calculate_entry_levels(stock_metrics, market_context)
+            
+            # Step 6: Apply market context filters
+            base_decision = BuyDecision(
+                should_buy=True,
+                buy_quantity=0,  # Will be determined by portfolio manager
+                buy_percentage=0.0,  # Will be calculated
+                reason=BuyReason.TECHNICAL_BREAKOUT,
+                confidence=avg_confidence,
+                urgency=0.5,  # Will be adjusted
+                signals_triggered=triggered_signals,
+                target_entry_price=entry_levels["target_entry"],
+                stop_loss_price=entry_levels["stop_loss"],
+                take_profit_price=entry_levels["take_profit"],
+                reasoning=f"Professional buy confirmed: {signals_count} signals, "
+                         f"confidence {avg_confidence:.3f}, weighted score {weighted_score:.3f}"
+            )
+            
+            # Apply market context filters
+            final_decision = self._apply_market_context_filters(base_decision, market_context)
+            
+            # Calculate position sizing
+            final_decision = self._calculate_position_sizing(final_decision, weighted_score)
+            
+            return final_decision
+        else:
+            # Provide detailed reasoning for why buy was rejected
+            rejection_reasons = []
+            if not meets_signal_threshold:
+                rejection_reasons.append(f"Signal count {signals_count} not in range [{self.min_signals_required}, {self.max_signals_required}]")
+            if not meets_confidence_threshold:
+                rejection_reasons.append(f"Confidence {avg_confidence:.3f} below threshold {self.min_confidence_threshold}")
+            if not meets_weighted_threshold:
+                rejection_reasons.append(f"Weighted score {weighted_score:.3f} below threshold {self.min_weighted_score}")
+            
+            return BuyDecision(
+                should_buy=False,
+                buy_quantity=0,
+                buy_percentage=0.0,
+                reason=BuyReason.TECHNICAL_BREAKOUT,
+                confidence=avg_confidence,
+                urgency=0.0,
+                signals_triggered=triggered_signals,
+                target_entry_price=0.0,
+                stop_loss_price=0.0,
+                take_profit_price=0.0,
+                reasoning=" | ".join(rejection_reasons)
+            )
+
+    def _check_bearish_block(self, signals: List[BuySignal]) -> bool:
+        """Bearish block filter: If bearish > 30%, block trade (REDUCED from 40% for more opportunities)"""
+        triggered_signals = [s for s in signals if s.triggered]
+        if not triggered_signals:
+            return False
+            
+        bearish_signals = [s for s in triggered_signals if "bearish" in s.name.lower() or "overbought" in s.name.lower()]
+        bearish_percentage = len(bearish_signals) / len(triggered_signals)
+        return bearish_percentage > 0.3  # REDUCED from 0.4 to 0.3
 
     def _generate_buy_signals(
         self,
@@ -274,16 +328,6 @@ class ProfessionalBuyLogic:
         triggered_signals = [s for s in signals if s.triggered]
         categories = set(s.category for s in triggered_signals if s.category)
         return len(categories) >= 2
-
-    def _check_bearish_block(self, signals: List[BuySignal]) -> bool:
-        """Bearish block filter: If bearish > 40%, block trade"""
-        triggered_signals = [s for s in signals if s.triggered]
-        if not triggered_signals:
-            return False
-            
-        bearish_signals = [s for s in triggered_signals if "bearish" in s.name.lower() or "overbought" in s.name.lower()]
-        bearish_percentage = len(bearish_signals) / len(triggered_signals)
-        return bearish_percentage > 0.4
 
     def _generate_technical_signals(self, technical: Dict, stock: StockMetrics, category_weight: float = 0.25) -> List[BuySignal]:
         """Generate technical analysis buy signals"""
@@ -523,7 +567,7 @@ class ProfessionalBuyLogic:
 
         return signals
 
-    def _calculate_dynamic_entry_levels(self, stock: StockMetrics, market_context: MarketContext) -> Dict:
+    def _calculate_entry_levels(self, stock: StockMetrics, market_context: MarketContext) -> Dict:
         """Calculate dynamic entry levels"""
 
         # Base entry with buffer
@@ -554,104 +598,6 @@ class ProfessionalBuyLogic:
             "support_entry": support_entry
         }
 
-    def _check_immediate_entry_conditions(self, stock: StockMetrics, entry_levels: Dict) -> Optional[BuyDecision]:
-        """Check for immediate entry conditions (breakouts, etc.)"""
-
-        # Breakout above resistance - immediate entry
-        # Make this condition more stringent to prevent too many buy signals
-        if (stock.current_price > entry_levels["support_entry"] * 1.05 and  # Increased threshold from 1.03 to 1.05
-            entry_levels["support_entry"] > 0):  # Ensure support level is valid
-            return BuyDecision(
-                should_buy=True,
-                buy_quantity=0,  # Will be determined later
-                buy_percentage=1.0,
-                reason=BuyReason.TECHNICAL_BREAKOUT,
-                confidence=0.9,
-                urgency=0.9,
-                signals_triggered=[],
-                target_entry_price=stock.current_price,
-                stop_loss_price=stock.current_price * (1 - self.stop_loss_pct),
-                take_profit_price=stock.current_price * (1 + self.take_profit_ratio * self.stop_loss_pct),
-                reasoning=f"Strong breakout: {stock.current_price:.2f} > {entry_levels['support_entry'] * 1.05:.2f}"
-            )
-
-        return None
-
-    def _evaluate_signal_based_buy(
-        self,
-        signals: List[BuySignal],
-        stock: StockMetrics,
-        market_context: MarketContext
-    ) -> BuyDecision:
-        """Evaluate buy decision based on signal analysis"""
-
-        # Calculate weighted signal score
-        triggered_signals = [s for s in signals if s.triggered]
-        total_weight = sum(s.weight for s in triggered_signals)
-        weighted_score = sum(s.strength * s.weight for s in triggered_signals)
-
-        # Calculate confidence based on signal agreement
-        signal_confidences = [s.confidence for s in triggered_signals]
-        avg_confidence = np.mean(signal_confidences) if signal_confidences else 0.0
-
-        # Professional decision criteria with adjusted thresholds
-        signals_count = len(triggered_signals)
-        # Check if signal count is within the required range (min 2, max 4)
-        meets_signal_threshold = self.min_signals_required <= signals_count <= self.max_signals_required
-        meets_confidence_threshold = avg_confidence >= self.min_confidence_threshold
-        meets_weighted_threshold = weighted_score >= self.min_weighted_score
-
-        logger.info(f"Signal Analysis: {signals_count} signals, "
-                   f"weighted_score: {weighted_score:.3f}, "
-                   f"confidence: {avg_confidence:.3f}")
-
-        # PROFESSIONAL BUY LOGIC: All three conditions must be met (similar to sell logic)
-        # This prevents the system from generating buy signals when conditions are marginal
-        should_buy = meets_signal_threshold and meets_confidence_threshold and meets_weighted_threshold
-
-        # Additional quality checks for professional trading
-        if should_buy:
-            # Check if we have at least one strong signal (strength > 0.7)
-            strong_signals = [s for s in triggered_signals if s.strength > 0.7]
-            if len(strong_signals) == 0:
-                # No strong signals, reduce confidence
-                logger.info("No strong signals detected, reducing confidence")
-                should_buy = False
-
-        # Additional check: Ensure we have meaningful signals
-        if should_buy and signals_count > 0:
-            # Calculate average signal strength
-            avg_strength = np.mean([s.strength for s in triggered_signals])
-            # If average strength is too low, don't buy
-            if avg_strength < 0.4:  # Increased threshold from 0.3 to 0.4
-                should_buy = False
-                logger.info(f"Average signal strength too low: {avg_strength:.3f}")
-
-        # Ensure there's a clear bullish bias
-        if should_buy:
-            # Count bullish vs bearish signals
-            bullish_signals = [s for s in triggered_signals if s.weight > 0 and ("oversold" in s.name or "bullish" in s.name or "bounce" in s.name or "breakout" in s.name or "low" in s.name or "compression" in s.name)]
-            bearish_signals = [s for s in signals if s.triggered and s.weight > 0 and ("overbought" in s.name or "bearish" in s.name or "breakdown" in s.name)]
-            
-            # If more bearish than bullish signals, don't buy
-            if len(bearish_signals) >= len(bullish_signals):
-                should_buy = False
-                logger.info(f"Bearish signals ({len(bearish_signals)}) >= Bullish signals ({len(bullish_signals)}), blocking buy")
-
-        return BuyDecision(
-            should_buy=should_buy,
-            buy_quantity=0,  # Will be determined later
-            buy_percentage=0.0,
-            reason=BuyReason.TECHNICAL_BREAKOUT,
-            confidence=avg_confidence,
-            urgency=min(weighted_score * 1.2, 1.0),  # More conservative urgency scaling
-            signals_triggered=triggered_signals,
-            target_entry_price=0.0,
-            stop_loss_price=0.0,
-            take_profit_price=0.0,
-            reasoning=f"Signal-based decision: {signals_count} signals, score: {weighted_score:.3f}, confidence: {avg_confidence:.3f}"
-        )
-
     def _apply_market_context_filters(self, decision: BuyDecision, market_context: MarketContext) -> BuyDecision:
         """Apply market context filters to buy decision"""
 
@@ -674,70 +620,24 @@ class ProfessionalBuyLogic:
 
         return decision
 
-    def _apply_risk_reward_check(
+    def _calculate_position_sizing(
         self,
         decision: BuyDecision,
-        stock: StockMetrics,
-        entry_levels: Dict
+        weighted_score: float
     ) -> BuyDecision:
-        """R:R check: Requires ≥ 1.5 before entering"""
+        """Calculate position sizing based on weighted score"""
 
         if not decision.should_buy:
             return decision
 
-        # Calculate actual risk-reward ratio
-        risk = entry_levels["target_entry"] - entry_levels["stop_loss"]
-        reward = entry_levels["take_profit"] - entry_levels["target_entry"]
-        risk_reward_ratio = reward / risk if risk > 0 else 0
-
-        # Adjust decision based on risk-reward
-        if risk_reward_ratio < 1.5:  # Minimum acceptable risk-reward
-            logger.info(f"RISK-REWARD SUBOPTIMAL: {risk_reward_ratio:.2f} < 1.5")
-            decision.reasoning += f" | RISK-REWARD: {risk_reward_ratio:.2f}"
-            # Block the trade if risk-reward is suboptimal
-            decision.should_buy = False
-
-        return decision
-
-    def _determine_smoothed_position_sizing(
-        self,
-        decision: BuyDecision,
-        signals: List[BuySignal],
-        stock: StockMetrics,
-        portfolio_context: Dict
-    ) -> BuyDecision:
-        """Smoothed position sizing: Uses confidence scaling instead of hard cutoffs"""
-
-        if not decision.should_buy:
-            return decision
-
-        # Extract portfolio context
-        available_cash = portfolio_context.get("available_cash", 0)
-        total_value = portfolio_context.get("total_value", 1)
-        max_exposure_per_stock = total_value * 0.25  # 25% max per stock
-        current_stock_exposure = portfolio_context.get("current_stock_exposure", 0)
-
-        # Smoothed position sizing based on confidence and urgency
-        # Scale from 0.1 (10%) to 1.0 (100%) based on confidence and urgency
-        position_scale = min(decision.confidence * decision.urgency * 1.2, 1.0)
+        # Calculate position scale based on weighted score
+        position_scale = min(weighted_score * 1.2, 1.0)
         position_scale = max(position_scale, 0.1)  # Minimum 10% position
 
         # Calculate position value
-        target_position_value = (max_exposure_per_stock - current_stock_exposure) * position_scale
-        decision.buy_quantity = int(target_position_value / stock.current_price)
+        target_position_value = decision.target_entry_price * position_scale
+        decision.buy_quantity = int(target_position_value / decision.target_entry_price)
         decision.buy_percentage = position_scale
-        decision.reasoning += f" | SMOOTHED POSITION ({position_scale:.1%})"
+        decision.reasoning += f" | POSITION SIZING ({position_scale:.1%})"
 
-        # Ensure we don't exceed available cash
-        max_affordable_qty = int(available_cash / stock.current_price)
-        decision.buy_quantity = min(decision.buy_quantity, max_affordable_qty)
-
-        # FIX: If calculated quantity is zero or negative, set should_buy to False
-        # This prevents the system from defaulting to 1 share when no valid quantity can be calculated
-        if decision.buy_quantity <= 0:
-            decision.should_buy = False
-            decision.buy_quantity = 0
-            decision.buy_percentage = 0.0
-            decision.reasoning += " | BLOCKED: No valid quantity calculated"
-            
         return decision

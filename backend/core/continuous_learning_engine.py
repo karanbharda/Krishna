@@ -72,7 +72,7 @@ class TradingEnvironment(gym.Env):
         
         # Observation space: [price_features, technical_indicators, portfolio_state]
         self.observation_space = spaces.Box(
-            low=-np.inf, high=np.inf, shape=(20,), dtype=np.float32
+            low=-np.inf, high=np.inf, shape=(25,), dtype=np.float32
         )
         
         self.reset()
@@ -136,7 +136,7 @@ class TradingEnvironment(gym.Env):
     def _get_observation(self) -> np.ndarray:
         """Get current observation state"""
         if self.current_step >= len(self.historical_data):
-            return np.zeros(20, dtype=np.float32)
+            return np.zeros(25, dtype=np.float32)
         
         row = self.historical_data.iloc[self.current_step]
         
@@ -172,16 +172,16 @@ class TradingEnvironment(gym.Env):
         
         # Combine all features
         observation = np.array(
-            price_features + technical_features + portfolio_features + market_features + [0] * 6,  # Pad to 20
+            price_features + technical_features + portfolio_features + market_features + [0] * 9,  # Pad to 25
             dtype=np.float32
-        )[:20]  # Ensure exactly 20 features
+        )[:25]  # Ensure exactly 25 features
         
         return observation
 
 class DQNAgent:
     """Deep Q-Network agent for trading decisions"""
     
-    def __init__(self, state_size: int = 20, action_size: int = 3, learning_rate: float = 0.001):
+    def __init__(self, state_size: int = 25, action_size: int = 3, learning_rate: float = 0.001):
         if not RL_AVAILABLE:
             raise ImportError("RL dependencies not available")
         
@@ -319,6 +319,20 @@ class ContinuousLearningEngine:
             'pattern_analysis_frequency': 20
         }
 
+        # ENHANCED REWARD SHAPING: Multi-objective reward function
+        self.reward_components = {
+            'pnl_reward': 0.4,          # Profit/loss component
+            'risk_adjusted_reward': 0.3, # Risk-adjusted returns
+            'consistency_reward': 0.2,   # Consistency of performance
+            'signal_quality_reward': 0.1 # Quality of signals used
+        }
+        
+        # Advanced learning parameters
+        self.reward_shaping_enabled = True
+        self.risk_penalty_multiplier = 2.0
+        self.consistency_bonus_multiplier = 1.5
+        self.signal_quality_weight = 0.3
+
         # Initialize RL components if available
         if RL_AVAILABLE:
             self._initialize_rl_components()
@@ -386,6 +400,200 @@ class ContinuousLearningEngine:
 
         except Exception as e:
             logger.error(f"Error in learning from decision outcome: {e}")
+
+    async def _rl_learning_step(self, decision_data: Dict[str, Any], outcome_data: Dict[str, Any]):
+        """Perform ENHANCED RL learning step with advanced reward shaping"""
+        
+        if not self.rl_agent or not RL_AVAILABLE:
+            return
+        
+        try:
+            # Convert decision to RL format
+            state = self._decision_to_state(decision_data)
+            action = self._action_to_int(decision_data.get('action', 'HOLD'))
+            
+            # ENHANCED REWARD CALCULATION
+            reward = self._calculate_enhanced_reward(decision_data, outcome_data)
+            
+            next_state = state  # Simplified - in practice, this would be the next market state
+            done = True  # Each decision is treated as a complete episode
+            
+            # Store experience with enhanced reward
+            self.rl_agent.remember(state, action, reward, next_state, done)
+            
+            # Train if enough experiences
+            if len(self.rl_agent.memory) >= self.learning_config['min_experiences']:
+                self.rl_agent.replay()
+            
+            # Update target network periodically
+            if self.learning_metrics.total_episodes % self.learning_config['target_update_frequency'] == 0:
+                self.rl_agent.update_target_network()
+            
+            # Update learning metrics
+            self.learning_metrics.total_episodes += 1
+            self.learning_metrics.exploration_rate = self.rl_agent.epsilon
+            
+        except Exception as e:
+            logger.error(f"Error in enhanced RL learning step: {e}")
+
+    def _calculate_enhanced_reward(self, decision_data: Dict[str, Any], outcome_data: Dict[str, Any]) -> float:
+        """Calculate sophisticated multi-objective reward"""
+        
+        base_reward = outcome_data.get('profit_loss_pct', 0.0) * 100  # Scale reward
+        
+        if not self.reward_shaping_enabled:
+            return base_reward
+        
+        # Component 1: P&L Reward (40% weight)
+        pnl_reward = base_reward * self.reward_components['pnl_reward']
+        
+        # Component 2: Risk-Adjusted Reward (30% weight)
+        risk_score = decision_data.get('risk_assessment', {}).get('composite_risk_score', 0.5)
+        risk_adjusted_reward = pnl_reward * (1 - risk_score * self.risk_penalty_multiplier)
+        risk_adjusted_reward *= self.reward_components['risk_adjusted_reward']
+        
+        # Component 3: Consistency Reward (20% weight)
+        # Reward for consistent performance over time
+        recent_performance = self._calculate_recent_consistency()
+        consistency_reward = recent_performance * self.consistency_bonus_multiplier
+        consistency_reward *= self.reward_components['consistency_reward']
+        
+        # Component 4: Signal Quality Reward (10% weight)
+        signal_quality = self._calculate_signal_quality(decision_data)
+        signal_quality_reward = signal_quality * self.signal_quality_weight
+        signal_quality_reward *= self.reward_components['signal_quality_reward']
+        
+        # Combine all components
+        total_reward = pnl_reward + risk_adjusted_reward + consistency_reward + signal_quality_reward
+        
+        # Apply bounds to prevent extreme rewards
+        total_reward = max(min(total_reward, 100.0), -100.0)
+        
+        logger.debug(f"Enhanced reward: {total_reward:.2f} "
+                    f"(PNL: {pnl_reward:.2f}, Risk: {risk_adjusted_reward:.2f}, "
+                    f"Consistency: {consistency_reward:.2f}, Quality: {signal_quality_reward:.2f})")
+        
+        return total_reward
+    
+    def _calculate_recent_consistency(self) -> float:
+        """Calculate recent performance consistency"""
+        # Look at last 10 trades for consistency
+        recent_trades = getattr(self.performance_tracker, 'performance_history', [])[-10:]
+        
+        if len(recent_trades) < 3:
+            return 0.0
+        
+        # Calculate win rate consistency
+        recent_pnls = [trade.get('outcome', {}).get('profit_loss', 0) for trade in recent_trades]
+        winning_trades = sum(1 for pnl in recent_pnls if pnl > 0)
+        win_rate = winning_trades / len(recent_pnls)
+        
+        # Calculate volatility of returns
+        returns_std = np.std(recent_pnls) if recent_pnls else 1.0
+        volatility_penalty = 1 / (1 + returns_std)
+        
+        consistency_score = win_rate * volatility_penalty
+        return consistency_score
+    
+    def _calculate_signal_quality(self, decision_data: Dict[str, Any]) -> float:
+        """Calculate quality of signals used in decision"""
+        
+        signal_consensus = decision_data.get('signal_consensus', 0.0)
+        confidence = decision_data.get('confidence', 0.0)
+        
+        # Factor in signal diversity and strength
+        signals_triggered = decision_data.get('signals_triggered', [])
+        signal_diversity = len(set(s.get('category', '') for s in signals_triggered)) / 5.0  # Max 5 categories
+        
+        # Average signal strength
+        avg_strength = np.mean([s.get('strength', 0) for s in signals_triggered]) if signals_triggered else 0.0
+        
+        quality_score = (signal_consensus * 0.4 + confidence * 0.3 + 
+                        signal_diversity * 0.2 + avg_strength * 0.1)
+        
+        return quality_score
+
+    def _decision_to_state(self, decision_data: Dict[str, Any]) -> np.ndarray:
+        """ENHANCED state representation with more features"""
+        
+        # Extract enhanced features
+        signal_consensus = decision_data.get('signal_consensus', 0.0)
+        confidence = decision_data.get('confidence', 0.0)
+        risk_score = decision_data.get('risk_assessment', {}).get('composite_risk_score', 0.5)
+        market_context = decision_data.get('market_context', {})
+        
+        # Add more sophisticated features
+        signals_triggered = decision_data.get('signals_triggered', [])
+        signal_count = len(signals_triggered)
+        avg_signal_strength = np.mean([s.get('strength', 0) for s in signals_triggered]) if signals_triggered else 0.0
+        signal_diversity = len(set(s.get('category', '') for s in signals_triggered))
+        
+        # Time-based features
+        current_time = datetime.now()
+        market_open = current_time.replace(hour=9, minute=15, second=0, microsecond=0)
+        time_factor = (current_time - market_open).total_seconds() / (6.5 * 3600)  # 6.5 hour trading day
+        
+        # Create enhanced state vector (expanded to 25 features)
+        state = np.array([
+            signal_consensus,
+            confidence,
+            risk_score,
+            market_context.get('volatility', 0.02),
+            market_context.get('trend_strength', 0.0),
+            market_context.get('stress_level', 0.3),
+            signal_count / 10.0,  # Normalize
+            avg_signal_strength,
+            signal_diversity / 5.0,  # Normalize
+            time_factor,
+            market_context.get('volume_profile', 0.5),
+            market_context.get('sector_performance', 0.0),
+            # Add more features as needed
+        ] + [0.0] * 13, dtype=np.float32)[:25]  # Pad/trim to 25 features
+        
+        return state
+
+    def _action_to_int(self, action: str) -> int:
+        """Convert action string to integer"""
+        action_map = {'HOLD': 0, 'BUY': 1, 'SELL': 2}
+        return action_map.get(action, 0)
+
+    async def _update_signal_weights(self):
+        """Update signal weights based on recent performance"""
+
+        try:
+            # Get recent performance by signal type
+            signal_performance = await self.performance_tracker.get_signal_performance()
+
+            if not signal_performance:
+                return
+
+            # Adjust weights based on performance
+            total_adjustment = 0
+            for signal_type, performance in signal_performance.items():
+                if signal_type in self.signal_weights:
+                    # Increase weight for better performing signals
+                    if performance['avg_return'] > 0.02:  # > 2% average return
+                        adjustment = 0.05
+                    elif performance['avg_return'] > 0:
+                        adjustment = 0.02
+                    elif performance['avg_return'] < -0.02:  # < -2% average return
+                        adjustment = -0.05
+                    else:
+                        adjustment = -0.02
+
+                    self.signal_weights[signal_type] += adjustment
+                    total_adjustment += adjustment
+
+            # Normalize weights to sum to 1.0
+            total_weight = sum(self.signal_weights.values())
+            if total_weight > 0:
+                for signal_type in self.signal_weights:
+                    self.signal_weights[signal_type] /= total_weight
+
+            logger.info(f"Updated signal weights: {self.signal_weights}")
+
+        except Exception as e:
+            logger.error(f"Error updating signal weights: {e}")
 
     async def _analyze_decision_patterns(self, decision_data: Dict[str, Any], outcome_data: Dict[str, Any]):
         """Analyze patterns in decision outcomes"""
@@ -488,103 +696,6 @@ class ContinuousLearningEngine:
                 discovered_at=datetime.now()
             )
             self.discovered_patterns.append(new_pattern)
-
-    async def _rl_learning_step(self, decision_data: Dict[str, Any], outcome_data: Dict[str, Any]):
-        """Perform RL learning step"""
-
-        if not self.rl_agent or not RL_AVAILABLE:
-            return
-
-        try:
-            # Convert decision to RL format
-            state = self._decision_to_state(decision_data)
-            action = self._action_to_int(decision_data.get('action', 'HOLD'))
-            reward = outcome_data.get('profit_loss_pct', 0.0) * 100  # Scale reward
-            next_state = state  # Simplified - in practice, this would be the next market state
-            done = True  # Each decision is treated as a complete episode
-
-            # Store experience
-            self.rl_agent.remember(state, action, reward, next_state, done)
-
-            # Train if enough experiences
-            if len(self.rl_agent.memory) >= self.learning_config['min_experiences']:
-                self.rl_agent.replay()
-
-            # Update target network periodically
-            if self.learning_metrics.total_episodes % self.learning_config['target_update_frequency'] == 0:
-                self.rl_agent.update_target_network()
-
-            # Update learning metrics
-            self.learning_metrics.total_episodes += 1
-            self.learning_metrics.exploration_rate = self.rl_agent.epsilon
-
-        except Exception as e:
-            logger.error(f"Error in RL learning step: {e}")
-
-    def _decision_to_state(self, decision_data: Dict[str, Any]) -> np.ndarray:
-        """Convert decision data to RL state representation"""
-
-        # Extract relevant features
-        signal_consensus = decision_data.get('signal_consensus', 0.0)
-        confidence = decision_data.get('confidence', 0.0)
-        risk_score = decision_data.get('risk_assessment', {}).get('composite_risk_score', 0.5)
-        market_context = decision_data.get('market_context', {})
-
-        # Create state vector (20 features to match environment)
-        state = np.array([
-            signal_consensus,
-            confidence,
-            risk_score,
-            market_context.get('volatility', 0.02),
-            market_context.get('trend_strength', 0.0),
-            market_context.get('stress_level', 0.3),
-            # Add more features as needed, pad to 20
-        ] + [0.0] * 14, dtype=np.float32)[:20]
-
-        return state
-
-    def _action_to_int(self, action: str) -> int:
-        """Convert action string to integer"""
-        action_map = {'HOLD': 0, 'BUY': 1, 'SELL': 2}
-        return action_map.get(action, 0)
-
-    async def _update_signal_weights(self):
-        """Update signal weights based on recent performance"""
-
-        try:
-            # Get recent performance by signal type
-            signal_performance = await self.performance_tracker.get_signal_performance()
-
-            if not signal_performance:
-                return
-
-            # Adjust weights based on performance
-            total_adjustment = 0
-            for signal_type, performance in signal_performance.items():
-                if signal_type in self.signal_weights:
-                    # Increase weight for better performing signals
-                    if performance['avg_return'] > 0.02:  # > 2% average return
-                        adjustment = 0.05
-                    elif performance['avg_return'] > 0:
-                        adjustment = 0.02
-                    elif performance['avg_return'] < -0.02:  # < -2% average return
-                        adjustment = -0.05
-                    else:
-                        adjustment = -0.02
-
-                    self.signal_weights[signal_type] += adjustment
-                    total_adjustment += adjustment
-
-            # Normalize weights to sum to 1.0
-            total_weight = sum(self.signal_weights.values())
-            if total_weight > 0:
-                for signal_type in self.signal_weights:
-                    self.signal_weights[signal_type] /= total_weight
-
-            logger.info(f"Updated signal weights: {self.signal_weights}")
-
-        except Exception as e:
-            logger.error(f"Error updating signal weights: {e}")
 
     async def _periodic_learning_update(self):
         """Perform periodic learning updates"""

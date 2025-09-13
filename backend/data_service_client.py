@@ -1,8 +1,3 @@
-"""
-Data Service Client - Connects to Fyers Data Service
-Provides clean interface for trading bot to get market data
-"""
-
 import asyncio
 import logging
 import requests
@@ -42,6 +37,23 @@ class DataServiceClient:
         self.max_cache_size = 1000  # Prevent memory bloat
         self.cache_hits = 0
         self.cache_misses = 0
+
+        # ENHANCED DATA VALIDATION & ERROR HANDLING
+        self.data_validation_enabled = True
+        self.max_retries = 3
+        self.retry_delay = 1.0  # seconds
+        self.data_freshness_threshold = 300  # 5 minutes
+        self.outlier_detection_enabled = True
+        self.outlier_threshold_std = 3.0  # 3 standard deviations
+        
+        # Data quality tracking
+        self.data_quality_stats = {
+            'total_requests': 0,
+            'successful_requests': 0,
+            'failed_requests': 0,
+            'stale_data_warnings': 0,
+            'outlier_detections': 0
+        }
 
         # Architectural Fix: Thread-safe health checking
         self._health_check_lock = threading.Lock()
@@ -105,40 +117,132 @@ class DataServiceClient:
         return elapsed > self.health_check_interval
     
     def get_symbol_data(self, symbol: str) -> Dict[str, Any]:
-        """Get data for a specific symbol"""
+        """Get data for a specific symbol with ENHANCED VALIDATION"""
+        self.data_quality_stats['total_requests'] += 1
+        
+        for attempt in range(self.max_retries):
+            try:
+                # Check health periodically
+                if self.should_check_health():
+                    self.health_check()
+
+                if not self.is_healthy:
+                    logger.warning("Data service is not healthy, attempting to reconnect")
+                    if not self.health_check():
+                        raise DataServiceError("Data service is not healthy and reconnection failed")
+
+                # Check cache first
+                cache_key = f"symbol_{symbol}"
+                if cache_key in self.cache:
+                    cached_data, timestamp = self.cache[cache_key]
+                    if (datetime.now() - timestamp).total_seconds() < self.cache_ttl:
+                        if self._validate_cached_data(cached_data, cache_key):
+                            return cached_data
+
+                response = self.session.get(f"{self.base_url}/data/{symbol}")
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # ENHANCED VALIDATION: Check data quality
+                    if not self._validate_symbol_data(data, symbol):
+                        if attempt < self.max_retries - 1:
+                            logger.warning(f"Data validation failed for {symbol}, retrying...")
+                            time.sleep(self.retry_delay)
+                            continue
+                        else:
+                            raise DataServiceError(f"Data validation failed for {symbol} after {self.max_retries} attempts")
+                    
+                    # Cache the result
+                    self.cache[cache_key] = (data, datetime.now())
+                    self.data_quality_stats['successful_requests'] += 1
+                    return data
+                    
+                elif response.status_code == 404:
+                    raise DataServiceError(f"Symbol {symbol} not found in data service")
+                else:
+                    if attempt < self.max_retries - 1:
+                        logger.warning(f"HTTP {response.status_code} for {symbol}, retrying...")
+                        time.sleep(self.retry_delay)
+                        continue
+                    raise DataServiceError(f"HTTP error {response.status_code} getting data for {symbol}")
+
+            except DataServiceError:
+                raise  # Re-raise our custom exceptions
+            except Exception as e:
+                if attempt < self.max_retries - 1:
+                    logger.warning(f"Unexpected error fetching data for {symbol}: {e}, retrying...")
+                    time.sleep(self.retry_delay)
+                    continue
+                logger.error(f"Unexpected error fetching data for {symbol}: {e}")
+                self.data_quality_stats['failed_requests'] += 1
+                raise DataServiceError(f"Unexpected error: {str(e)}")
+    
+    def _validate_cached_data(self, data: Dict[str, Any], cache_key: str) -> bool:
+        """Validate cached data quality"""
+        if not self.data_validation_enabled:
+            return True
+            
+        # Check data freshness
+        if 'timestamp' in data:
+            data_time = datetime.fromisoformat(data['timestamp'])
+            if (datetime.now() - data_time).total_seconds() > self.data_freshness_threshold:
+                self.data_quality_stats['stale_data_warnings'] += 1
+                logger.warning(f"Stale cached data detected for {cache_key}")
+                return False
+        
+        # Validate required fields
+        required_fields = ['price', 'symbol']
+        for field in required_fields:
+            if field not in data:
+                logger.warning(f"Missing required field {field} in cached data for {cache_key}")
+                return False
+                
+        return True
+
+    def _validate_symbol_data(self, data: Dict[str, Any], symbol: str) -> bool:
+        """Validate symbol data quality"""
+        if not self.data_validation_enabled:
+            return True
+            
+        # Check required fields
+        required_fields = ['price', 'symbol']
+        for field in required_fields:
+            if field not in data:
+                logger.warning(f"Missing required field {field} in data for {symbol}")
+                return False
+        
+        # Validate price is numeric
         try:
-            # Check health periodically
-            if self.should_check_health():
-                self.health_check()
+            price = float(data['price'])
+            if price <= 0:
+                logger.warning(f"Invalid price {price} for {symbol}")
+                return False
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric price {data.get('price')} for {symbol}")
+            return False
+            
+        # Check for outliers if enabled
+        if self.outlier_detection_enabled:
+            if not self._check_for_outliers(data, symbol):
+                self.data_quality_stats['outlier_detections'] += 1
+                logger.warning(f"Outlier detected in data for {symbol}")
+                return False
+                
+        return True
 
-            if not self.is_healthy:
-                logger.warning("Data service is not healthy, attempting to reconnect")
-                if not self.health_check():
-                    raise DataServiceError("Data service is not healthy and reconnection failed")
-
-            # Check cache first
-            cache_key = f"symbol_{symbol}"
-            if cache_key in self.cache:
-                cached_data, timestamp = self.cache[cache_key]
-                if (datetime.now() - timestamp).total_seconds() < self.cache_ttl:
-                    return cached_data
-
-            response = self.session.get(f"{self.base_url}/data/{symbol}")
-            if response.status_code == 200:
-                data = response.json()
-                # Cache the result
-                self.cache[cache_key] = (data, datetime.now())
-                return data
-            elif response.status_code == 404:
-                raise DataServiceError(f"Symbol {symbol} not found in data service")
-            else:
-                raise DataServiceError(f"HTTP error {response.status_code} getting data for {symbol}")
-
-        except DataServiceError:
-            raise  # Re-raise our custom exceptions
-        except Exception as e:
-            logger.error(f"Unexpected error fetching data for {symbol}: {e}")
-            raise DataServiceError(f"Unexpected error: {str(e)}")
+    def _check_for_outliers(self, data: Dict[str, Any], symbol: str) -> bool:
+        """Check for price outliers using standard deviation"""
+        # This is a simplified implementation
+        # In a real system, you would compare against historical data
+        try:
+            price = float(data['price'])
+            # Simple check: price should be within reasonable bounds
+            # This would be more sophisticated with historical data
+            if price < 0.01 or price > 1000000:  # Reasonable bounds for Indian stocks
+                return False
+            return True
+        except (ValueError, TypeError):
+            return False
     
     def get_all_data(self) -> Dict[str, Any]:
         """Get all available market data"""
