@@ -1,5 +1,5 @@
 {
-    "cash": 506.29,
+    "cash": 372.14,
     "holdings": {
         "SJVN": {
             "qty": 1,
@@ -41,14 +41,24 @@
             "avg_price": 300.5,
             "last_price": 300.5
         },
+        "NHPC": {
+            "qty": 2,
+            "avg_price": 79.01,
+            "last_price": 79.01
+        },
+        "JAYNECOIND": {
+            "qty": 2,
+            "avg_price": 67.1,
+            "last_price": 67.1
+        },
         "SHANTI": {
             "qty": 3,
             "avg_price": 9.76667,
             "last_price": 9.76667
         }
     },
-    "starting_balance": 506.29,
+    "starting_balance": 372.14,
     "realized_pnl": 0.0,
     "unrealized_pnl": 0.0,
-    "last_updated": "2025-09-10T14:38:00.458096"
+    "last_updated": "2025-09-13T12:21:43.857415"
 }

@@ -68,7 +68,15 @@ class IntegratedRiskManager:
         self.volatility_adjustment_enabled = config.get("volatility_adjustment_enabled", True)
         
         # Initialize risk components
-        self.drawdown_protector = DrawdownProtector(self.portfolio_drawdown_limit)
+        # Fix: Pass proper config dictionary to DrawdownProtector instead of float
+        drawdown_config = {
+            "max_drawdown_limit": self.portfolio_drawdown_limit,
+            "daily_loss_limit": config.get("daily_loss_limit", 0.05),
+            "recovery_threshold": config.get("recovery_threshold", 0.02),
+            "scaling_factor": config.get("scaling_factor", 0.5),
+            "monitoring_window": config.get("monitoring_window", 20)
+        }
+        self.drawdown_protector = DrawdownProtector(drawdown_config)
         self.correlation_manager = CorrelationManager()
         self.fee_optimizer = FeeOptimizer()
         

@@ -17,7 +17,17 @@ class ProfessionalBuyConfig:
             "downtrend_buy_multiplier": 0.7,
             "uptrend_buy_multiplier": 1.2,
             "enable_professional_buy_logic": True,
-            "fallback_to_legacy_buy": True
+            "fallback_to_legacy_buy": True,
+            # OPTIMIZED BUY LOGIC: Enhanced parameters
+            "signal_sensitivity_multiplier": 1.2,
+            "early_entry_buffer_pct": 0.005,
+            "aggressive_entry_threshold": 0.75,
+            "dynamic_signal_thresholds": True,
+            "signal_strength_boost": 0.1,
+            "ml_signal_weight_boost": 0.15,
+            "ml_confidence_multiplier": 1.3,
+            "momentum_confirmation_window": 3,
+            "momentum_strength_threshold": 0.02
         }
     
     @staticmethod
@@ -36,5 +46,15 @@ class ProfessionalBuyConfig:
             "downtrend_buy_multiplier": 0.5,
             "uptrend_buy_multiplier": 1.1,
             "enable_professional_buy_logic": True,
-            "fallback_to_legacy_buy": False   # Changed to False to prevent fallback
+            "fallback_to_legacy_buy": False,   # Changed to False to prevent fallback
+            # OPTIMIZED BUY LOGIC: Enhanced parameters (conservative settings)
+            "signal_sensitivity_multiplier": 1.0,  # No boost for conservative approach
+            "early_entry_buffer_pct": 0.01,        # Later entries for conservative approach
+            "aggressive_entry_threshold": 0.85,    # Higher threshold for aggressive entries
+            "dynamic_signal_thresholds": True,
+            "signal_strength_boost": 0.05,         # Lower boost for conservative approach
+            "ml_signal_weight_boost": 0.1,         # Lower ML weight boost
+            "ml_confidence_multiplier": 1.1,       # Lower ML confidence boost
+            "momentum_confirmation_window": 5,     # Longer confirmation window
+            "momentum_strength_threshold": 0.03    # Higher momentum threshold
         }

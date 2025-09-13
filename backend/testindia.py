@@ -5188,11 +5188,20 @@ class StockTradingBot:
         try:
             from core import AdaptiveThresholdManager, IntegratedRiskManager
             self.adaptive_threshold_manager = AdaptiveThresholdManager()
-            self.risk_manager = IntegratedRiskManager()
+            # Fix: Initialize IntegratedRiskManager with proper configuration
+            self.risk_manager = IntegratedRiskManager({
+                "max_portfolio_risk_pct": 0.02,  # 2% max portfolio risk (industry standard)
+                "max_single_stock_exposure": 0.05    # 5% max position risk
+            })
             self.production_core_enabled = True
             logger.info("Production core components initialized successfully")
         except ImportError as e:
             logger.warning(f"Production core components not available: {e}")
+            self.adaptive_threshold_manager = None
+            self.risk_manager = None
+            self.production_core_enabled = False
+        except Exception as e:
+            logger.error(f"Failed to initialize production core components: {e}")
             self.adaptive_threshold_manager = None
             self.risk_manager = None
             self.production_core_enabled = False

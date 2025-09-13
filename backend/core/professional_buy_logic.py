@@ -81,6 +81,7 @@ class ProfessionalBuyLogic:
     - Market independence
     - Risk-reward optimization
     - Market context awareness
+    - OPTIMIZED BUY LOGIC: Enhanced signal detection and entry timing
     """
     
     def __init__(self, config: Dict):
@@ -91,6 +92,23 @@ class ProfessionalBuyLogic:
         self.max_signals_required = config.get("max_buy_signals", 4)  # Maximum 4 signals
         self.min_confidence_threshold = config.get("min_buy_confidence", 0.40)  # REDUCED from 0.50 to 0.40
         self.min_weighted_score = config.get("min_weighted_buy_score", 0.08)  # REDUCED from 0.12 to 0.08
+        
+        # OPTIMIZED BUY LOGIC: Enhanced parameters for better entry timing
+        self.signal_sensitivity_multiplier = config.get("signal_sensitivity_multiplier", 1.2)
+        self.early_entry_buffer_pct = config.get("early_entry_buffer_pct", 0.005)  # Reduced for earlier entries
+        self.aggressive_entry_threshold = config.get("aggressive_entry_threshold", 0.75)
+        
+        # OPTIMIZED BUY LOGIC: Dynamic signal thresholds
+        self.dynamic_signal_thresholds = config.get("dynamic_signal_thresholds", True)
+        self.signal_strength_boost = config.get("signal_strength_boost", 0.1)
+        
+        # OPTIMIZED BUY LOGIC: Enhanced ML integration
+        self.ml_signal_weight_boost = config.get("ml_signal_weight_boost", 0.15)
+        self.ml_confidence_multiplier = config.get("ml_confidence_multiplier", 1.3)
+        
+        # OPTIMIZED BUY LOGIC: Improved momentum detection
+        self.momentum_confirmation_window = config.get("momentum_confirmation_window", 3)
+        self.momentum_strength_threshold = config.get("momentum_strength_threshold", 0.02)
         
         # ADAPTIVE THRESHOLDS: Adjust based on market conditions
         self.adaptive_thresholds_enabled = config.get("adaptive_thresholds_enabled", True)
@@ -120,7 +138,7 @@ class ProfessionalBuyLogic:
             "Market": 0.15
         }
         
-        logger.info("Professional Buy Logic initialized with adjusted parameters")
+        logger.info("Professional Buy Logic initialized with enhanced optimization parameters")
     
     def evaluate_buy_decision(
         self,
@@ -137,7 +155,7 @@ class ProfessionalBuyLogic:
         """
         logger.info(f"=== PROFESSIONAL BUY EVALUATION: {ticker} ===")
         
-        # Step 1: Generate all buy signals
+        # Step 1: Generate all buy signals with enhanced sensitivity
         signals = self._generate_buy_signals(
             stock_metrics, market_context, technical_analysis, 
             sentiment_analysis, ml_analysis
@@ -201,8 +219,8 @@ class ProfessionalBuyLogic:
 
         # Additional quality checks for professional trading
         if should_buy:
-            # Step 5: Calculate entry levels
-            entry_levels = self._calculate_entry_levels(stock_metrics, market_context)
+            # Step 5: Calculate entry levels with enhanced timing
+            entry_levels = self._calculate_optimized_entry_levels(stock_metrics, market_context)
             
             # Step 6: Apply market context filters
             base_decision = BuyDecision(
@@ -223,8 +241,8 @@ class ProfessionalBuyLogic:
             # Apply market context filters
             final_decision = self._apply_market_context_filters(base_decision, market_context)
             
-            # Calculate position sizing
-            final_decision = self._calculate_position_sizing(final_decision, weighted_score)
+            # Calculate position sizing with enhanced optimization
+            final_decision = self._calculate_enhanced_position_sizing(final_decision, weighted_score, triggered_signals)
             
             return final_decision
         else:
@@ -330,13 +348,13 @@ class ProfessionalBuyLogic:
         return len(categories) >= 2
 
     def _generate_technical_signals(self, technical: Dict, stock: StockMetrics, category_weight: float = 0.25) -> List[BuySignal]:
-        """Generate technical analysis buy signals"""
+        """Generate technical analysis buy signals with enhanced sensitivity"""
         signals = []
 
-        # RSI Oversold (Strong signal)
+        # OPTIMIZED BUY LOGIC: Enhanced RSI signal detection
         rsi = technical.get("rsi", 50)
-        if rsi < 30:
-            strength = min((30 - rsi) / 20, 1.0)*1.2 # Scale 30-10 to 0-1
+        if rsi < 35:  # Slightly higher threshold for earlier entries
+            strength = min((35 - rsi) / 25, 1.0) * self.signal_sensitivity_multiplier
             signals.append(BuySignal(
                 name="rsi_oversold",
                 strength=strength,
@@ -347,11 +365,11 @@ class ProfessionalBuyLogic:
                 category="Technical"
             ))
 
-        # MACD Bullish Crossover
+        # OPTIMIZED BUY LOGIC: Enhanced MACD signal detection
         macd = technical.get("macd", 0)
         macd_signal = technical.get("macd_signal", 0)
-        if macd > macd_signal and macd > 0:
-            strength = min(abs(macd - macd_signal) / abs(macd_signal) if macd_signal != 0 else 1, 1.0)
+        if macd > macd_signal:  # Removed requirement for positive MACD for earlier entries
+            strength = min(abs(macd - macd_signal) / abs(macd_signal) if macd_signal != 0 else 1, 1.0) * self.signal_sensitivity_multiplier
             signals.append(BuySignal(
                 name="macd_bullish",
                 strength=strength,
@@ -362,28 +380,28 @@ class ProfessionalBuyLogic:
                 category="Technical"
             ))
 
-        # Moving Average Support
+        # OPTIMIZED BUY LOGIC: Enhanced moving average signals
         sma_20 = technical.get("sma_20", stock.current_price)
         sma_50 = technical.get("sma_50", stock.current_price)
-        if stock.current_price > sma_20 and sma_20 > sma_50:
-            strength = (stock.current_price - sma_20) / sma_20
+        if stock.current_price > sma_20 * 0.99:  # Slightly relaxed condition
+            strength = (stock.current_price - sma_20 * 0.99) / (sma_20 * 0.01)
             signals.append(BuySignal(
                 name="ma_support",
-                strength=min(strength, 1.0),
+                strength=min(strength, 1.0) * self.signal_sensitivity_multiplier,
                 weight=category_weight * 0.06,  # 6% of Technical category weight
                 triggered=True,
-                reasoning="Price above key moving averages",
+                reasoning="Price near key moving averages",
                 confidence=0.75,
                 category="Technical"
             ))
 
-        # Support Level Bounce
+        # OPTIMIZED BUY LOGIC: Enhanced support level detection
         support = technical.get("support_level", stock.current_price * 1.1)
-        if support > 0 and stock.current_price > support * 1.02:
+        if support > 0 and stock.current_price > support * 1.01:
             strength = (stock.current_price - support) / support
             signals.append(BuySignal(
                 name="support_bounce",
-                strength=min(strength * 2, 1.0),  # Amplify support bounces
+                strength=min(strength * 2, 1.0) * self.signal_sensitivity_multiplier,  # Amplify support bounces
                 weight=category_weight * 0.09,  # 9% of Technical category weight
                 triggered=True,
                 reasoning=f"Support bounce at {support:.2f}",
@@ -391,13 +409,13 @@ class ProfessionalBuyLogic:
                 category="Technical"
             ))
 
-        # Breakout Signal
+        # OPTIMIZED BUY LOGIC: Enhanced breakout signal detection
         resistance = technical.get("resistance_level", stock.current_price * 0.9)
-        if stock.current_price > resistance * 1.01:
+        if stock.current_price > resistance * 1.005:  # Earlier breakout detection
             strength = (stock.current_price - resistance) / resistance
             signals.append(BuySignal(
                 name="breakout",
-                strength=min(strength * 1.5, 1.0),  # Amplify breakouts
+                strength=min(strength * 1.5, 1.0) * self.signal_sensitivity_multiplier,  #Amplify breakouts
                 weight=category_weight * 0.10,  # 10% of Technical category weight
                 triggered=True,
                 reasoning=f"Breakout above resistance {resistance:.2f}",
@@ -502,34 +520,37 @@ class ProfessionalBuyLogic:
         return signals
 
     def _generate_ml_signals(self, ml_analysis: Dict, category_weight: float = 0.20) -> List[BuySignal]:
-        """Generate ML/AI-based buy signals"""
+        """Generate ML/AI-based buy signals with enhanced weighting"""
         signals = []
 
-        # ML Prediction Signal
+        # OPTIMIZED BUY LOGIC: Enhanced ML signal detection
         ml_prediction = ml_analysis.get("prediction_direction", 0)
-        if ml_prediction > 0.02:  # Positive prediction
-            strength = min(ml_prediction / 0.10, 1.0)
+        if ml_prediction > 0.01:  # Lower threshold for earlier entries
+            strength = min(ml_prediction / 0.10, 1.0) * self.signal_sensitivity_multiplier
             signals.append(BuySignal(
                 name="ml_bullish_prediction",
                 strength=strength,
-                weight=category_weight * 0.10,  # 10% of ML category weight
+                # OPTIMIZED BUY LOGIC: Boost ML signal weight
+                weight=category_weight * (0.10 + self.ml_signal_weight_boost),  #Increased weight for ML signals
                 triggered=True,
-                reasoning=f"ML bullish prediction: {ml_prediction:.1%}",
-                confidence=ml_analysis.get("confidence", 0.5),
+                # OPTIMIZED BUY LOGIC: Boost ML confidence
+                confidence=ml_analysis.get("confidence", 0.5) * self.ml_confidence_multiplier,
                 category="ML"
             ))
 
-        # RL Recommendation
+        # OPTIMIZED BUY LOGIC: Enhanced RL recommendation
         rl_recommendation = ml_analysis.get("rl_recommendation", "HOLD")
-        if rl_recommendation == "BUY":
+        if rl_recommendation in ["BUY", "STRONG_BUY"]:
             rl_confidence = ml_analysis.get("rl_confidence", 0.5)
+            # Boost confidence for strong recommendations
+            confidence_multiplier = 1.5 if rl_recommendation == "STRONG_BUY" else 1.2
             signals.append(BuySignal(
                 name="rl_buy_recommendation",
-                strength=rl_confidence,
-                weight=category_weight * 0.05,  # 5% of ML category weight
+                strength=rl_confidence * self.signal_sensitivity_multiplier,
+                # OPTIMIZED BUY LOGIC: Boost RL signal weight
+                weight=category_weight * (0.05 + self.ml_signal_weight_boost * 0.5),
                 triggered=True,
-                reasoning="RL algorithm recommends BUY",
-                confidence=rl_confidence,
+                confidence=rl_confidence * confidence_multiplier,
                 category="ML"
             ))
 
@@ -567,28 +588,28 @@ class ProfessionalBuyLogic:
 
         return signals
 
-    def _calculate_entry_levels(self, stock: StockMetrics, market_context: MarketContext) -> Dict:
-        """Calculate dynamic entry levels"""
+    def _calculate_optimized_entry_levels(self, stock: StockMetrics, market_context: MarketContext) -> Dict:
+        """Calculate optimized entry levels for better timing"""
+        
+        #OPTIMIZED BUY LOGIC: Earlier entry opportunities
+        base_entry = stock.current_price * (1 - self.early_entry_buffer_pct)
 
-        # Base entry with buffer
-        base_entry = stock.current_price * (1 - self.base_entry_buffer_pct)
+        # Volatility-adjusted entry with enhanced sensitivity
+        volatility_multiplier = 1 + (stock.volatility / 0.02) * 0.5  # Reduced multiplier for earlier entries
+        volatility_entry = stock.current_price * (1 - self.early_entry_buffer_pct * volatility_multiplier)
 
-        # Volatility-adjusted entry
-        volatility_multiplier = 1 + (stock.volatility / 0.02)  # Adjust for volatility
-        volatility_entry = stock.current_price * (1 - self.base_entry_buffer_pct * volatility_multiplier)
+        # Support-based entry with buffer
+        support_entry = stock.support_level * 1.005 if stock.support_level > 0 else stock.current_price  # Reduced buffer
 
-        # Support-based entry
-        support_entry = stock.support_level * 1.01 if stock.support_level > 0 else stock.current_price
-
-        # Choose the most conservative (lowest) entry
+        # Choose the most aggressive (lowest) entry for better timing
         target_entry = min(base_entry, volatility_entry, support_entry)
 
-        # Stop-loss based on ATR
-        stop_loss = target_entry * (1 - self.stop_loss_pct)
+        # Stop-loss based on ATR with dynamic adjustment
+        stop_loss = target_entry * (1 - self.stop_loss_pct * (1 - min(stock.volatility / 0.03, 1)))
 
-        # Take-profit based on risk-reward ratio
+        # Take-profit based on risk-reward ratio with enhanced targets
         risk = target_entry - stop_loss
-        take_profit = target_entry + (risk * self.take_profit_ratio)
+        take_profit = target_entry + (risk * self.take_profit_ratio * 1.2)  # Increased profit target
 
         return {
             "target_entry": target_entry,
@@ -620,24 +641,41 @@ class ProfessionalBuyLogic:
 
         return decision
 
-    def _calculate_position_sizing(
+    def _calculate_enhanced_position_sizing(
         self,
         decision: BuyDecision,
-        weighted_score: float
+        weighted_score: float,
+        triggered_signals: List[BuySignal]
     ) -> BuyDecision:
-        """Calculate position sizing based on weighted score"""
+        """Calculate enhanced position sizing based on signal quality and ML predictions"""
 
         if not decision.should_buy:
             return decision
 
-        # Calculate position scale based on weighted score
-        position_scale = min(weighted_score * 1.2, 1.0)
+       # Base position scale based on weighted score
+        position_scale = min(weighted_score * 1.5, 1.0)  # Increased multiplier for better scaling
         position_scale = max(position_scale, 0.1)  # Minimum 10% position
+
+        # OPTIMIZED BUY LOGIC: Boost position size for high-confidence ML signals
+        ml_signals = [s for s in triggered_signals if s.category == "ML"]
+        if ml_signals:
+            ml_confidence = np.mean([s.confidence for s in ml_signals])
+            if ml_confidence > 0.7:
+                position_scale *= 1.3  # 30% boost for high-confidence ML signals
+            elif ml_confidence > 0.5:
+                position_scale *= 1.1  # 10% boost for medium-confidence ML signals
+
+        # OPTIMIZED BUY LOGIC: Adjust for aggressive entry opportunities
+        if weighted_score > self.aggressive_entry_threshold:
+            position_scale *= 1.2  # 20% boost for high-conviction setups
+
+        # Cap position size
+        position_scale = min(position_scale, 1.0)
 
         # Calculate position value
         target_position_value = decision.target_entry_price * position_scale
         decision.buy_quantity = int(target_position_value / decision.target_entry_price)
         decision.buy_percentage = position_scale
-        decision.reasoning += f" | POSITION SIZING ({position_scale:.1%})"
+        decision.reasoning += f" | ENHANCED POSITION SIZING ({position_scale:.1%})"
 
         return decision

@@ -57,6 +57,7 @@ class RiskAgent:
     - Stress testing and scenario analysis
     - Real-time risk monitoring
     - Regulatory compliance checks
+    - ENHANCED RISK MANAGEMENT: Adaptive risk parameters based on market conditions
     """
     
     def __init__(self, config: Dict[str, Any]):
@@ -69,6 +70,13 @@ class RiskAgent:
         self.max_sector_concentration = config.get("max_sector_concentration", 0.40)  # 40% per sector
         self.min_liquidity_score = config.get("min_liquidity_score", 0.3)
         
+        # ENHANCED RISK MANAGEMENT: Dynamic risk parameters
+        self.base_max_portfolio_var = self.max_portfolio_var
+        self.base_max_position_size = self.max_position_size
+        self.volatility_threshold_low = config.get("volatility_threshold_low", 0.02)
+        self.volatility_threshold_high = config.get("volatility_threshold_high", 0.04)
+        self.volatility_adjustment_factor = config.get("volatility_adjustment_factor", 0.5)
+        
         # Risk models
         self.lookback_period = config.get("lookback_period", 252)  # 1 year
         self.confidence_level = config.get("confidence_level", 0.95)
@@ -78,7 +86,7 @@ class RiskAgent:
         self.risk_alerts_generated = 0
         self.risk_violations = []
         
-        logger.info(f"Risk Agent {self.agent_id} initialized")
+        logger.info(f"Risk Agent {self.agent_id} initialized with enhanced adaptive risk management")
     
     async def assess_portfolio_risk(self, portfolio_data: Dict[str, Any], 
                                   market_data: Dict[str, Any]) -> RiskMetrics:
@@ -226,6 +234,9 @@ class RiskAgent:
         try:
             violations = []
             
+            # ENHANCED RISK MANAGEMENT: Dynamically adjust risk parameters based on market conditions
+            self._adjust_risk_parameters(market_data)
+            
             # Check portfolio VaR limit
             risk_metrics = await self.assess_portfolio_risk(portfolio_data, market_data)
             if risk_metrics.var_95 > self.max_portfolio_var:
@@ -316,6 +327,63 @@ class RiskAgent:
         except Exception as e:
             logger.error(f"Optimal position size calculation error: {e}")
             return 0.05  # Default 5% position
+    
+    def _adjust_risk_parameters(self, market_data: Dict[str, Any]):
+        """
+        ENHANCED RISK MANAGEMENT: Dynamically adjust risk parameters based on market volatility
+        """
+        try:
+            # Calculate market volatility from available data
+            market_volatility = self._calculate_market_volatility(market_data)
+            
+            # Adjust risk parameters based on volatility
+            if market_volatility < self.volatility_threshold_low:
+                # Low volatility - increase risk tolerance
+                self.max_portfolio_var = self.base_max_portfolio_var * (1 + self.volatility_adjustment_factor)
+                self.max_position_size = self.base_max_position_size * (1 + self.volatility_adjustment_factor * 0.5)
+                logger.info(f"Low volatility detected ({market_volatility:.2%}). Increased risk limits.")
+            elif market_volatility > self.volatility_threshold_high:
+                # High volatility - decrease risk tolerance
+                self.max_portfolio_var = self.base_max_portfolio_var * (1 - self.volatility_adjustment_factor)
+                self.max_position_size = self.base_max_position_size * (1 - self.volatility_adjustment_factor * 0.5)
+                logger.info(f"High volatility detected ({market_volatility:.2%}). Reduced risk limits.")
+            else:
+                # Normal volatility - use base parameters
+                self.max_portfolio_var = self.base_max_portfolio_var
+                self.max_position_size = self.base_max_position_size
+                logger.info(f"Normal volatility detected ({market_volatility:.2%}). Using base risk limits.")
+                
+        except Exception as e:
+            logger.error(f"Error adjusting risk parameters: {e}")
+            # Revert to base parameters on error
+            self.max_portfolio_var = self.base_max_portfolio_var
+            self.max_position_size = self.base_max_position_size
+    
+    def _calculate_market_volatility(self, market_data: Dict[str, Any]) -> float:
+        """
+        Calculate overall market volatility from available data
+        """
+        try:
+            volatilities = []
+            
+            # Extract volatility data from market data
+            for symbol_data in market_data.values():
+                if isinstance(symbol_data, dict):
+                    volatility = symbol_data.get("volatility")
+                    if volatility is not None:
+                        volatilities.append(volatility)
+            
+            # If we have volatility data, return the average
+            if volatilities:
+                return np.mean(volatilities)
+            
+            # If no volatility data, estimate from price movements
+            # This is a simplified estimation
+            return 0.02  # Default 2% daily volatility
+            
+        except Exception as e:
+            logger.error(f"Error calculating market volatility: {e}")
+            return 0.02  # Default 2% daily volatility
     
     def _calculate_var(self, returns: np.ndarray, confidence_level: float) -> float:
         """Calculate Value at Risk using historical simulation"""
