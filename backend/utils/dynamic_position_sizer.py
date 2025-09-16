@@ -49,6 +49,11 @@ class DynamicPositionSizer:
         # Volatility parameters
         self.volatility_target = 0.15  # Target 15% portfolio volatility
         self.volatility_lookback = 30
+        self.volatility_regime_adjustments = {
+            "NORMAL": 1.0,
+            "VOLATILE": 0.8,
+            "TRENDING": 1.2
+        }
         
         # Risk management
         self.stop_loss_atr_multiplier = 2.0
@@ -67,7 +72,8 @@ class DynamicPositionSizer:
                               volatility: float,
                               historical_data: pd.DataFrame,
                               portfolio_data: Dict,
-                              method: SizingMethod = SizingMethod.ADAPTIVE) -> Dict:
+                              method: SizingMethod = SizingMethod.ADAPTIVE,
+                              market_regime: str = "NORMAL") -> Dict:
         """
         Calculate optimal position size based on multiple factors
         """
@@ -77,7 +83,7 @@ class DynamicPositionSizer:
             
             # Calculate base position sizes using different methods
             kelly_size = self._calculate_kelly_size(symbol, historical_data, signal_strength)
-            volatility_size = self._calculate_volatility_size(current_price, volatility)
+            volatility_size = self._calculate_volatility_size(current_price, volatility, market_regime)
             risk_parity_size = self._calculate_risk_parity_size(volatility, portfolio_data)
             
             # Select sizing method
@@ -92,6 +98,15 @@ class DynamicPositionSizer:
                 base_size = self._adaptive_sizing(kelly_size, volatility_size, risk_parity_size, signal_strength)
             else:
                 base_size = self._calculate_fixed_size()
+            
+            # ENHANCEMENT: Adjust Kelly limits based on market conditions
+            # Make Kelly fraction more responsive to market regime
+            if market_regime == "HIGH_VOLATILITY":
+                self.kelly_max_position = 0.10  # More conservative in high volatility
+            elif market_regime == "LOW_VOLATILITY":
+                self.kelly_max_position = 0.25  # More aggressive in low volatility
+            else:
+                self.kelly_max_position = 0.20  # Default
             
             # Apply risk management constraints
             constrained_size = self._apply_risk_constraints(
@@ -129,6 +144,7 @@ class DynamicPositionSizer:
                     'risk_parity_size': risk_parity_size
                 },
                 'constraints_applied': actual_size < base_size,
+                'market_regime': market_regime,
                 'timestamp': datetime.now().isoformat()
             }
             
@@ -186,22 +202,28 @@ class DynamicPositionSizer:
             logger.error(f"Error in Kelly calculation: {e}")
             return self.kelly_min_position
     
-    def _calculate_volatility_size(self, current_price: float, volatility: float) -> float:
+    def _calculate_volatility_size(self, current_price: float, volatility: float, market_regime: str = "NORMAL") -> float:
         """
         Calculate position size based on volatility targeting
+        Enhanced to be more responsive to market regime
         """
         try:
             if volatility <= 0:
                 volatility = 0.20  # Default 20% volatility assumption
             
+            # ENHANCEMENT: Improve Risk Parameter Tuning
+            # Make volatility targets more responsive to market regime
+            regime_adjustment = self.volatility_regime_adjustments.get(market_regime, 1.0)
+            adjusted_volatility_target = self.volatility_target * regime_adjustment
+            
             # Target portfolio volatility approach
-            target_position_vol = self.volatility_target
+            target_position_vol = adjusted_volatility_target
             volatility_size = target_position_vol / volatility
             
             # Bounds
             volatility_size = max(0.01, min(0.30, volatility_size))
             
-            logger.debug(f"Volatility size: {volatility_size:.3f} (vol: {volatility:.3f})")
+            logger.debug(f"Volatility size: {volatility_size:.3f} (vol: {volatility:.3f}, regime: {market_regime}, adj: {regime_adjustment})")
             return volatility_size
             
         except Exception as e:

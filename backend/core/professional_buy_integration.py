@@ -79,7 +79,7 @@ class ProfessionalBuyIntegration:
             )
             
             # Convert to legacy format
-            result = self._convert_to_legacy_format(buy_decision, stock_metrics)
+            result = self._convert_to_legacy_format(buy_decision, stock_metrics, portfolio_context)
             
             # Add ticker information
             result["ticker"] = ticker
@@ -186,7 +186,7 @@ class ProfessionalBuyIntegration:
                 volume_profile=0.5
             )
     
-    def _convert_to_legacy_format(self, buy_decision: BuyDecision, stock_metrics: StockMetrics) -> Dict:
+    def _convert_to_legacy_format(self, buy_decision: BuyDecision, stock_metrics: StockMetrics, portfolio_context: Dict = None) -> Dict:
         """Convert professional buy decision to legacy format"""
         
         if not buy_decision.should_buy:
@@ -205,7 +205,24 @@ class ProfessionalBuyIntegration:
             }
         
         # Calculate quantity based on portfolio context if available
-        qty = buy_decision.buy_quantity
+        qty = 1  # Default to 1 share
+        if portfolio_context and "available_cash" in portfolio_context and "total_value" in portfolio_context:
+            available_cash = portfolio_context.get("available_cash", 0)
+            total_value = portfolio_context.get("total_value", 0)
+            current_price = stock_metrics.current_price
+            
+            # Calculate target position value based on position scale
+            position_scale = buy_decision.buy_percentage
+            target_position_value = total_value * position_scale * 0.1  # Limit to 10% of portfolio for safety
+            
+            # Ensure we don't exceed available cash
+            target_position_value = min(target_position_value, available_cash)
+            
+            # Convert to quantity
+            if current_price > 0:
+                calculated_qty = int(target_position_value / current_price)
+                qty = max(1, calculated_qty)  # Minimum 1 share
+        
         if qty <= 0:
             # Instead of defaulting to a small position, return hold decision
             return {
@@ -259,8 +276,8 @@ class ProfessionalBuyIntegration:
         return {
             "min_buy_signals": 2,          # Minimum 2 signals
             "max_buy_signals": 4,          # Maximum 4 signals
-            "min_buy_confidence": 0.50,    # Updated from 0.40 to 0.50
-            "min_weighted_buy_score": 0.17, # Updated from 0.20 to 0.17
+            "min_buy_confidence": 0.40,    # Updated from 0.40 (keeping as is)
+            "min_weighted_buy_score": 0.04, # Updated from 0.17 to 0.04 (FIXED: Lowered threshold to match config files)
             "entry_buffer_pct": 0.01,
             "buy_stop_loss_pct": 0.05,
             "take_profit_ratio": 2.0,

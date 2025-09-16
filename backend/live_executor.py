@@ -253,25 +253,54 @@ class LiveTradingExecutor:
                 logger.warning(f"No available cash for {symbol}: Rs.{available_cash:.2f}")
                 return 0
             
-            # Maximum capital per trade
-            max_trade_amount = available_cash * self.max_capital_per_trade
+            # Standardize Position Sizing Usage: Use DynamicPositionSizer consistently
+            from utils.dynamic_position_sizer import get_position_sizer
+            import pandas as pd
             
-            # Adjust based on signal strength (0.0 to 1.0)
-            adjusted_amount = max_trade_amount * min(signal_strength, 1.0)
+            position_sizer = get_position_sizer(initial_capital=available_cash)
             
-            # Calculate quantity
-            quantity = int(adjusted_amount / current_price)
+            # Create mock historical data for the position sizer
+            # In a real implementation, this would come from actual historical data
+            historical_data = pd.DataFrame({
+                'Close': [current_price] * 50  # Mock data
+            })
+            
+            portfolio_data = {
+                'total_value': total_value,
+                'cash': available_cash,
+                'holdings': {}  # Would be populated with actual holdings in a full implementation
+            }
+            
+            # Calculate position size using the DynamicPositionSizer
+            position_result = position_sizer.calculate_position_size(
+                symbol=symbol,
+                signal_strength=signal_strength,
+                current_price=current_price,
+                volatility=0.20,  # Default volatility assumption
+                historical_data=historical_data,
+                portfolio_data=portfolio_data
+            )
+            
+            quantity = position_result['quantity']
+            
+            # Add Position Sizing Logging
+            logger.info(f"Position sizing for {symbol}: {quantity} shares (Rs.{quantity * current_price:.2f})")
+            logger.info(f"  Method used: {position_result['method_used']}")
+            logger.info(f"  Base size: {position_result['base_size']:.3f}")
+            logger.info(f"  Constrained size: {position_result['constrained_size']:.3f}")
+            logger.info(f"  Constraints applied: {position_result['constraints_applied']}")
+            
+            # Enhance Cash Constraint Handling: Ensure position sizer always respects available cash constraints
+            if quantity * current_price > available_cash:
+                quantity = int(available_cash / current_price)
+                logger.info(f"  [CASH ADJUST] Reduced quantity to {quantity} shares to fit available cash")
             
             # Minimum quantity check
             if quantity < 1:
                 logger.warning(f"Calculated quantity too small for {symbol}: {quantity}")
                 return 0
             
-            # Maximum position size check (don't exceed 50% of available cash)
-            max_quantity = int((available_cash * 0.5) / current_price)
-            quantity = min(quantity, max_quantity)
-            
-            logger.info(f"Position size for {symbol}: {quantity} shares (Rs.{quantity * current_price:.2f})")
+            logger.info(f"Final position size for {symbol}: {quantity} shares (Rs.{quantity * current_price:.2f})")
             return quantity
             
         except Exception as e:

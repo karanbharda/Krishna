@@ -2287,7 +2287,7 @@ class TradingExecutor:
             return ticker.split('.')[0]
         return ticker
 
-    def get_security_id(self, symbol, exchange="NSE"):
+    def get_security_id(self, ticker):
         """Fetch security ID for a ticker using dynamic resolution system."""
         try:
             # Import the dynamic security ID method from dhan_client
@@ -2298,15 +2298,17 @@ class TradingExecutor:
             temp_client = DhanAPIClient("temp", "temp")
             
             # Use the dynamic security ID resolution
-            security_id = temp_client.get_security_id(symbol)
-            logger.info(f"Found security ID for {symbol}: {security_id}")
+            security_id = temp_client.get_security_id(ticker)
+            logger.info(f"Found security ID for {ticker}: {security_id}")
             return security_id
             
         except ValueError as e:
-            logger.error(f"Security ID not found for {symbol}: {e}")
+            logger.error(f"Security ID not found for {ticker}: {e}")
             return None
         except Exception as e:
-            logger.error(f"Error fetching security ID for {symbol}: {e}")
+            logger.error(f"Error fetching security ID for {ticker}: {e}")
+            return None
+
             return None
         
 class PerformanceReport:
@@ -6990,24 +6992,25 @@ class StockTradingBot:
         # PRODUCTION FIX: Weighted signal threshold system
         # Define minimum weighted signal threshold based on market regime
         # Enhanced market regime detection
+        # FIXED: Lowered all thresholds to allow more trades to execute
         if market_regime == "STRONG_UPTREND":
-            min_weighted_signal_threshold = 0.12  # Most aggressive in strong uptrends
+            min_weighted_signal_threshold = 0.04  # Most aggressive in strong uptrends (FIXED: Reduced from 0.12 to 0.04)
         elif market_regime == "WEAK_UPTREND":
-            min_weighted_signal_threshold = 0.15  # Moderately aggressive in weak uptrends
+            min_weighted_signal_threshold = 0.06  # Moderately aggressive in weak uptrends (FIXED: Reduced from 0.15 to 0.06)
         elif market_regime == "STRONG_DOWNTREND":
-            min_weighted_signal_threshold = 0.30  # Most conservative in strong downtrends
+            min_weighted_signal_threshold = 0.12  # Most conservative in strong downtrends (FIXED: Reduced from 0.30 to 0.12)
         elif market_regime == "WEAK_DOWNTREND":
-            min_weighted_signal_threshold = 0.25  # Moderately conservative in weak downtrends
+            min_weighted_signal_threshold = 0.10  # Moderately conservative in weak downtrends (FIXED: Reduced from 0.25 to 0.10)
         elif market_regime == "HIGH_VOLATILITY":
-            min_weighted_signal_threshold = 0.28  # Conservative in highly volatile markets
+            min_weighted_signal_threshold = 0.11  # Conservative in highly volatile markets (FIXED: Reduced from 0.28 to 0.11)
         elif market_regime == "LOW_VOLATILITY":
-            min_weighted_signal_threshold = 0.18  # More opportunities in low volatility
+            min_weighted_signal_threshold = 0.07  # More opportunities in low volatility (FIXED: Reduced from 0.18 to 0.07)
         else:  # RANGE_BOUND
-            min_weighted_signal_threshold = 0.20  # Moderate threshold for range-bound markets
+            min_weighted_signal_threshold = 0.08  # Moderate threshold for range-bound markets (FIXED: Reduced from 0.20 to 0.08)
 
         # Use more flexible signal system - either condition can trigger buy, with special handling for volatile markets
         volatile_market_adjustment = False
-        if market_regime == "VOLATILE" and weighted_signal_score >= 0.25:  # Strong signals in volatile market
+        if market_regime == "VOLATILE" and weighted_signal_score >= 0.10:  # Strong signals in volatile market (FIXED: Reduced from 0.25 to 0.10)
             # Allow lower buy score threshold when weighted signals are strong
             adjusted_buy_threshold = confidence_threshold * 0.75  # 25% reduction for strong signals
             volatile_market_adjustment = True
@@ -7045,64 +7048,74 @@ class StockTradingBot:
                 
                 volatility_adjustment = max(0.6, min(1.0, 1.0 / (1 + volatility)))
                 
-                # Enhanced position sizing with the optimized Kelly fraction
-                position_size_pct = kelly_fraction * market_condition_factor * volatility_adjustment
-                target_position_value = total_value * position_size_pct
-                logger.info(f"  Initial Position Value: Rs.{target_position_value:.2f} ({position_size_pct:.3f}% of portfolio)")
-                logger.info(f"  Kelly Adjustments - Market: {market_condition_factor:.2f}, Volatility: {volatility_adjustment:.2f}")
-
-                volatility_factor = max(0.4, min(1.6, 1.0 / (1 + atr / current_ticker_price))) if current_ticker_price > 0 else 1.0
-                target_position_value *= volatility_factor
-                logger.info(f"  After Volatility Factor ({volatility_factor:.3f}): Rs.{target_position_value:.2f}")
-
-                confidence_factor = 0.6 + (final_buy_score / 0.4) * 0.4
-                confidence_factor = min(max(confidence_factor, 0.6), 1.0)
-                target_position_value *= confidence_factor
-                logger.info(f"  After Confidence Factor ({confidence_factor:.3f}): Rs.{target_position_value:.2f}")
-
-                # Apply exposure limits (REMOVED SECTOR LIMITS) - Very aggressive minimum
-                before_limits = target_position_value
-                target_position_value = max(200, min(target_position_value, max_exposure_per_stock - current_stock_exposure))
-                logger.info(f"  After Stock Exposure Limit: Rs.{target_position_value:.2f} (was Rs.{before_limits:.2f})")
-                logger.info(f"  Sector Exposure Limit: DISABLED (removed constraint)")
-
-                # Convert to quantity
-                buy_qty_before_limits = target_position_value / current_ticker_price if current_ticker_price > 0 else 0
-                logger.info(f"  Calculated Quantity (before volume/cash limits): {buy_qty_before_limits:.2f} shares")
-
-                buy_qty = min(buy_qty_before_limits, max_qty_by_volume, available_cash / current_ticker_price)
-                logger.info(f"  After Volume/Cash Limits: {buy_qty:.2f} shares")
-                logger.info(f"    - Max by Volume: {max_qty_by_volume:.2f}")
-                logger.info(f"    - Max by Cash: {available_cash / current_ticker_price:.2f}")
-
-                # CASH-CONSTRAINT-AWARE FIX: Ensure final quantity respects available cash
-                if buy_qty < 1 and available_cash >= current_ticker_price:
-                    buy_qty = 1  # Force minimum 1 share if we can afford it
-                    # Double-check that even 1 share doesn't exceed available cash
-                    if buy_qty * current_ticker_price > available_cash:
-                        buy_qty = 0
-                        logger.info(f"  [CASH BLOCK] Even 1 share (Rs.{current_ticker_price:.2f}) exceeds available cash (Rs.{available_cash:.2f})")
-                elif buy_qty >= 1:
-                    # Round to nearest integer but ensure we don't exceed available cash
-                    buy_qty = int(buy_qty + 0.5)  # Round to nearest integer
-                    # Check if rounded quantity exceeds available cash
-                    if buy_qty * current_ticker_price > available_cash:
-                        # Reduce quantity to maximum affordable amount
-                        buy_qty = int(available_cash / current_ticker_price)
-                        logger.info(f"  [CASH ADJUST] Reduced quantity to {buy_qty} shares to fit available cash")
-                else:
-                    buy_qty = 0  # Set to 0 for small positions
+                # ENHANCEMENT: Standardize Position Sizing Usage
+                # Instead of the current approach, use the DynamicPositionSizer consistently
+                from utils.dynamic_position_sizer import get_position_sizer
+                import pandas as pd
                 
-                # Final validation: ensure quantity is either 0 or affordable
-                if buy_qty > 0 and buy_qty * current_ticker_price > available_cash:
-                    # If we still exceed cash, reduce to maximum possible or set to 0
-                    max_affordable_qty = int(available_cash / current_ticker_price)
-                    if max_affordable_qty >= 1:
-                        buy_qty = max_affordable_qty
-                        logger.info(f"  [FINAL CASH ADJUST] Set to maximum affordable quantity: {buy_qty} shares")
-                    else:
-                        buy_qty = 0
-                        logger.info(f"  [CASH BLOCK] Insufficient cash for even 1 share")
+                # Create a DataFrame with historical data for the position sizer
+                # This is a simplified version - in practice, you'd use real historical data
+                historical_data = pd.DataFrame({
+                    'Close': df['Close'].tail(50).values if len(df) >= 50 else df['Close'].values
+                })
+                
+                # Prepare portfolio data for the position sizer
+                portfolio_data = {
+                    'total_value': total_value,
+                    'cash': available_cash,
+                    'holdings': self.portfolio.holdings
+                }
+                
+                # Get the position sizer instance
+                position_sizer = get_position_sizer(initial_capital=available_cash)
+                
+                # Calculate position size using the DynamicPositionSizer
+                position_result = position_sizer.calculate_position_size(
+                    symbol=ticker,
+                    signal_strength=final_buy_score,
+                    current_price=current_ticker_price,
+                    volatility=volatility,
+                    historical_data=historical_data,
+                    portfolio_data=portfolio_data
+                )
+                
+                # Extract the calculated quantity
+                buy_qty = position_result['quantity']
+                
+                # ENHANCEMENT: Add Position Sizing Logging
+                logger.info(f"=== POSITION SIZING for {ticker} ===")
+                logger.info(f"  Method used: {position_result['method_used']}")
+                logger.info(f"  Base size: {position_result['base_size']:.3f}")
+                logger.info(f"  Constrained size: {position_result['constrained_size']:.3f}")
+                logger.info(f"  Actual size: {position_result['actual_size']:.3f}")
+                logger.info(f"  Position value: Rs.{position_result['position_value']:,.2f}")
+                logger.info(f"  Quantity: {position_result['quantity']} shares")
+                logger.info(f"  Stop loss: Rs.{position_result['stop_loss']:.2f}")
+                logger.info(f"  Constraints applied: {position_result['constraints_applied']}")
+                
+                # ENHANCEMENT: Enhance Cash Constraint Handling
+                # Ensure the position sizer always respects available cash constraints
+                if buy_qty * current_ticker_price > available_cash:
+                    buy_qty = int(available_cash / current_ticker_price)
+                    logger.info(f"  [CASH ADJUST] Reduced quantity to {buy_qty} shares to fit available cash")
+                
+                # Log the sizing components for debugging
+                sizing_components = position_result.get('sizing_components', {})
+                if sizing_components:
+                    logger.info(f"  Sizing components:")
+                    logger.info(f"    Kelly size: {sizing_components.get('kelly_size', 0):.3f}")
+                    logger.info(f"    Volatility size: {sizing_components.get('volatility_size', 0):.3f}")
+                    logger.info(f"    Risk parity size: {sizing_components.get('risk_parity_size', 0):.3f}")
+                
+                # Log risk metrics
+                risk_metrics = position_result.get('risk_metrics', {})
+                if risk_metrics:
+                    logger.info(f"  Risk metrics:")
+                    logger.info(f"    Portfolio risk: {risk_metrics.get('portfolio_risk_pct', 0):.2%}")
+                    logger.info(f"    Max loss: {risk_metrics.get('max_loss_pct', 0):.2%}")
+                    logger.info(f"    Stop loss price: Rs.{risk_metrics.get('stop_loss_price', 0):.2f}")
+                    logger.info(f"    Sharpe estimate: {risk_metrics.get('sharpe_estimate', 0):.3f}")
+                
                 logger.info(f"  FINAL BUY QUANTITY: {buy_qty} shares (Rs.{buy_qty * current_ticker_price:.2f})")
         else:
             logger.info(f"[SKIP] BUY PRE-CHECKS FAILED for {ticker}")

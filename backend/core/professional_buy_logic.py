@@ -91,7 +91,7 @@ class ProfessionalBuyLogic:
         self.min_signals_required = config.get("min_buy_signals", 2)  # Minimum 2 signals
         self.max_signals_required = config.get("max_buy_signals", 4)  # Maximum 4 signals
         self.min_confidence_threshold = config.get("min_buy_confidence", 0.40)  # REDUCED from 0.50 to 0.40
-        self.min_weighted_score = config.get("min_weighted_buy_score", 0.08)  # REDUCED from 0.12 to 0.08
+        self.min_weighted_score = config.get("min_weighted_buy_score", 0.04)  # REDUCED from 0.12 to 0.04 (FIXED: Lowered threshold)
         
         # OPTIMIZED BUY LOGIC: Enhanced parameters for better entry timing
         self.signal_sensitivity_multiplier = config.get("signal_sensitivity_multiplier", 1.2)
@@ -358,7 +358,7 @@ class ProfessionalBuyLogic:
             signals.append(BuySignal(
                 name="rsi_oversold",
                 strength=strength,
-                weight=category_weight * 0.08,  # 8% of Technical category weight
+                weight=category_weight * 0.12,  # Increased from 0.08 to 0.12 (FIXED: Stronger weight for RSI signals)
                 triggered=True,
                 reasoning=f"RSI oversold at {rsi:.1f}",
                 confidence=0.8,
@@ -373,7 +373,7 @@ class ProfessionalBuyLogic:
             signals.append(BuySignal(
                 name="macd_bullish",
                 strength=strength,
-                weight=category_weight * 0.07,  # 7% of Technical category weight
+                weight=category_weight * 0.10,  # Increased from 0.07 to 0.10 (FIXED: Stronger weight for MACD signals)
                 triggered=True,
                 reasoning="MACD bullish crossover",
                 confidence=0.7,
@@ -388,7 +388,7 @@ class ProfessionalBuyLogic:
             signals.append(BuySignal(
                 name="ma_support",
                 strength=min(strength, 1.0) * self.signal_sensitivity_multiplier,
-                weight=category_weight * 0.06,  # 6% of Technical category weight
+                weight=category_weight * 0.09,  # Increased from 0.06 to 0.09 (FIXED: Stronger weight for MA signals)
                 triggered=True,
                 reasoning="Price near key moving averages",
                 confidence=0.75,
@@ -402,7 +402,7 @@ class ProfessionalBuyLogic:
             signals.append(BuySignal(
                 name="support_bounce",
                 strength=min(strength * 2, 1.0) * self.signal_sensitivity_multiplier,  # Amplify support bounces
-                weight=category_weight * 0.09,  # 9% of Technical category weight
+                weight=category_weight * 0.12,  # Increased from 0.09 to 0.12 (FIXED: Stronger weight for support signals)
                 triggered=True,
                 reasoning=f"Support bounce at {support:.2f}",
                 confidence=0.85,
@@ -416,7 +416,7 @@ class ProfessionalBuyLogic:
             signals.append(BuySignal(
                 name="breakout",
                 strength=min(strength * 1.5, 1.0) * self.signal_sensitivity_multiplier,  #Amplify breakouts
-                weight=category_weight * 0.10,  # 10% of Technical category weight
+                weight=category_weight * 0.15,  # Increased from 0.10 to 0.15 (FIXED: Stronger weight for breakout signals)
                 triggered=True,
                 reasoning=f"Breakout above resistance {resistance:.2f}",
                 confidence=0.9,
@@ -436,7 +436,7 @@ class ProfessionalBuyLogic:
             signals.append(BuySignal(
                 name="low_pe_ratio",
                 strength=strength,
-                weight=category_weight * 0.08,  # 8% of Value category weight
+                weight=category_weight * 0.10,  # Increased from 0.08 to 0.10 (FIXED: Stronger weight for P/E signals)
                 triggered=True,
                 reasoning=f"Low P/E ratio: {pe_ratio:.1f}",
                 confidence=0.6,
@@ -450,7 +450,7 @@ class ProfessionalBuyLogic:
             signals.append(BuySignal(
                 name="low_pb_ratio",
                 strength=strength,
-                weight=category_weight * 0.07,  # 7% of Value category weight
+                weight=category_weight * 0.09,  # Increased from 0.07 to 0.09 (FIXED: Stronger weight for P/B signals)
                 triggered=True,
                 reasoning=f"Low P/B ratio: {pb_ratio:.2f}",
                 confidence=0.65,
@@ -463,7 +463,7 @@ class ProfessionalBuyLogic:
             signals.append(BuySignal(
                 name="volatility_compression",
                 strength=strength,
-                weight=category_weight * 0.05,  # 5% of Value category weight
+                weight=category_weight * 0.07,  # Increased from 0.05 to 0.07 (FIXED: Stronger weight for volatility signals)
                 triggered=True,
                 reasoning=f"Low volatility: {stock.volatility:.1%}",
                 confidence=0.5,
@@ -476,7 +476,7 @@ class ProfessionalBuyLogic:
             signals.append(BuySignal(
                 name="low_atr_opportunity",
                 strength=strength,
-                weight=category_weight * 0.05,  # 5% of Value category weight
+                weight=category_weight * 0.07,  # Increased from 0.05 to 0.07 (FIXED: Stronger weight for ATR signals)
                 triggered=True,
                 reasoning=f"Low ATR: {stock.atr:.2f}",
                 confidence=0.55,
@@ -496,7 +496,7 @@ class ProfessionalBuyLogic:
             signals.append(BuySignal(
                 name="positive_sentiment",
                 strength=strength,
-                weight=category_weight * 0.12,  # 12% of Sentiment category weight
+                weight=category_weight * 0.15,  # Increased from 0.12 to 0.15 (FIXED: Stronger weight for sentiment signals)
                 triggered=True,
                 reasoning=f"Positive sentiment: {sentiment_score:.2f}",
                 confidence=0.6,
@@ -510,7 +510,7 @@ class ProfessionalBuyLogic:
             signals.append(BuySignal(
                 name="news_improvement",
                 strength=strength,
-                weight=category_weight * 0.08,  # 8% of Sentiment category weight
+                weight=category_weight * 0.10,  # Increased from 0.08 to 0.10 (FIXED: Stronger weight for news signals)
                 triggered=True,
                 reasoning="Improving news sentiment",
                 confidence=0.5,
@@ -531,7 +531,7 @@ class ProfessionalBuyLogic:
                 name="ml_bullish_prediction",
                 strength=strength,
                 # OPTIMIZED BUY LOGIC: Boost ML signal weight
-                weight=category_weight * (0.10 + self.ml_signal_weight_boost),  #Increased weight for ML signals
+                weight=category_weight * (0.15 + self.ml_signal_weight_boost),  # Increased from 0.10 to 0.15 (FIXED: Stronger ML signal weight)
                 triggered=True,
                 # OPTIMIZED BUY LOGIC: Boost ML confidence
                 confidence=ml_analysis.get("confidence", 0.5) * self.ml_confidence_multiplier,
@@ -548,7 +548,7 @@ class ProfessionalBuyLogic:
                 name="rl_buy_recommendation",
                 strength=rl_confidence * self.signal_sensitivity_multiplier,
                 # OPTIMIZED BUY LOGIC: Boost RL signal weight
-                weight=category_weight * (0.05 + self.ml_signal_weight_boost * 0.5),
+                weight=category_weight * (0.10 + self.ml_signal_weight_boost * 0.5),  # Increased from 0.05 to 0.10 (FIXED: Stronger RL signal weight)
                 triggered=True,
                 confidence=rl_confidence * confidence_multiplier,
                 category="ML"
@@ -566,7 +566,7 @@ class ProfessionalBuyLogic:
             signals.append(BuySignal(
                 name="low_market_stress",
                 strength=strength,
-                weight=category_weight * 0.06,  # 6% of Market category weight
+                weight=category_weight * 0.08,  # Increased from 0.06 to 0.08 (FIXED: Stronger weight for market stress signals)
                 triggered=True,
                 reasoning=f"Low market stress: {market_context.market_stress:.1%}",
                 confidence=0.7,
@@ -579,7 +579,7 @@ class ProfessionalBuyLogic:
             signals.append(BuySignal(
                 name="sector_strength",
                 strength=strength,
-                weight=category_weight * 0.04,  # 4% of Market category weight
+                weight=category_weight * 0.06,  # Increased from 0.04 to 0.06 (FIXED: Stronger weight for sector signals)
                 triggered=True,
                 reasoning="Sector outperforming market",
                 confidence=0.6,
@@ -672,9 +672,8 @@ class ProfessionalBuyLogic:
         # Cap position size
         position_scale = min(position_scale, 1.0)
 
-        # Calculate position value
-        target_position_value = decision.target_entry_price * position_scale
-        decision.buy_quantity = int(target_position_value / decision.target_entry_price)
+        # Set position scale (the actual quantity will be calculated in the integration layer)
+        decision.buy_quantity = 1  # Placeholder - actual quantity calculated in integration layer
         decision.buy_percentage = position_scale
         decision.reasoning += f" | ENHANCED POSITION SIZING ({position_scale:.1%})"
 

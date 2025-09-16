@@ -423,8 +423,8 @@ class DhanAPIClient:
             
             # Search for symbol in the DataFrame
             # Handle different column names that might be present
-            symbol_columns = ['SYMBOL_NAME', 'TradingSymbol', 'tradingSymbol', 'symbol']
-            security_id_columns = ['SECURITY_ID', 'SecurityId', 'securityId']
+            symbol_columns = ['SYMBOL_NAME', 'TradingSymbol', 'tradingSymbol', 'symbol', 'Symbol']
+            security_id_columns = ['SECURITY_ID', 'SecurityId', 'securityId', 'SecurityID']
             
             symbol_col = None
             security_id_col = None
@@ -471,6 +471,17 @@ class DhanAPIClient:
                     "JAYNECOIND-EQ"
                 ])
             
+            # Add specific handling for ASHOKLEY
+            if search_symbol == "ASHOKLEY":
+                variations.extend([
+                    "ASHOK LEYLAND",
+                    "ASHOK LEYLAND LTD",
+                    "ASHOK LEYLAND LIMITED",
+                    "ASHOKLEY EQ",
+                    "ASHOKLEY-EQ",
+                    "ASHOK LEYLAND EQ"
+                ])
+            
             # Add variations with common suffixes/prefixes
             common_suffixes = [' LTD', ' LIMITED', ' CORPORATION', ' COMPANY', ' INDIA', ' INDUSTRIES', ' SOLUTIONS', ' SERVICES']
             common_prefixes = ['THE ', 'M/S ']
@@ -508,7 +519,9 @@ class DhanAPIClient:
                 'DBI': 'IDBI Bank Ltd',
                 'MOTHERSON': 'Samvardhana Motherson International Ltd',
                 'GMRAIRPORT': 'GMR Airports Ltd',
-                'GMRI': 'GMR Airports Ltd'
+                'GMRI': 'GMR Airports Ltd',
+                'ASHOKLEY': 'ASHOK LEYLAND'  # Add specific mapping for ASHOKLEY
+                'IEX':' Indian Energy Exchange Ltd'
             }
             
             # Apply abbreviation mapping if available
@@ -571,6 +584,11 @@ class DhanAPIClient:
         if not symbol:
             logger.error(f"Invalid symbol after cleaning: '{original_symbol}'")
             raise ValueError(f"Invalid symbol format: '{original_symbol}'")
+        
+        # Special handling for ASHOKLEY -> ASHOKA LEYLAND mapping
+        if symbol == "ASHOKLEY":
+            logger.info("Special handling for ASHOKLEY -> ASHOK LEYLAND")
+            symbol = "ASHOK LEYLAND"
         
         # Check cache first
         cached_id = self._get_cached_security_id(symbol)
