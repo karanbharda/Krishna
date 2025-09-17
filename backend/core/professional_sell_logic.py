@@ -94,23 +94,26 @@ class ProfessionalSellLogic:
     def __init__(self, config: Dict):
         self.config = config
         
-        # Professional thresholds
+        # Professional thresholds - BALANCED with buy logic
         self.min_signals_required = config.get("min_sell_signals", 2)
-        self.min_confidence_threshold = config.get("min_sell_confidence", 0.65)
-        self.min_weighted_score = config.get("min_weighted_sell_score", 0.40)
+        self.min_confidence_threshold = config.get("min_sell_confidence", 0.40)  # BALANCED with buy thresholds
+        self.min_weighted_score = config.get("min_weighted_sell_score", 0.04)   # BALANCED with buy thresholds
         
         # Stop-loss configuration
         self.base_stop_loss_pct = config.get("stop_loss_pct", 0.05)
         self.trailing_stop_pct = config.get("trailing_stop_pct", 0.03)
         self.profit_protection_threshold = config.get("profit_protection_threshold", 0.05)
         
-        # Position sizing
-        self.partial_exit_threshold = config.get("partial_exit_threshold", 0.50)
-        self.full_exit_threshold = config.get("full_exit_threshold", 0.75)
+        # Position sizing - More granular thresholds
+        self.conservative_exit_threshold = config.get("conservative_exit_threshold", 0.15)
+        self.partial_exit_threshold = config.get("partial_exit_threshold", 0.30)
+        self.aggressive_exit_threshold = config.get("aggressive_exit_threshold", 0.50)
+        self.full_exit_threshold = config.get("full_exit_threshold", 0.70)
+        self.emergency_exit_threshold = config.get("emergency_exit_threshold", 0.90)
         
-        # Market context filters
-        self.uptrend_sell_multiplier = config.get("uptrend_sell_multiplier", 1.5)
-        self.downtrend_sell_multiplier = config.get("downtrend_sell_multiplier", 0.8)
+        # Market context filters - Less restrictive
+        self.uptrend_sell_multiplier = config.get("uptrend_sell_multiplier", 1.1)  # LESS restrictive
+        self.downtrend_sell_multiplier = config.get("downtrend_sell_multiplier", 0.9)  # LESS restrictive
         
         logger.info("Professional Sell Logic initialized with institutional parameters")
     
@@ -127,6 +130,10 @@ class ProfessionalSellLogic:
         Main entry point for professional sell evaluation
         """
         logger.info(f"=== PROFESSIONAL SELL EVALUATION: {ticker} ===")
+        logger.info(f"Current Price: {position_metrics.current_price:.2f}")
+        logger.info(f"Entry Price: {position_metrics.entry_price:.2f}")
+        logger.info(f"Unrealized P&L: {position_metrics.unrealized_pnl:.2f} ({position_metrics.unrealized_pnl_pct:.2%})")
+        logger.info(f"Market Context: {market_context.trend.value} (strength: {market_context.trend_strength:.2f})")
         
         # Step 1: Generate all sell signals
         signals = self._generate_sell_signals(
@@ -134,8 +141,18 @@ class ProfessionalSellLogic:
             sentiment_analysis, ml_analysis
         )
         
+        # Log signal generation
+        logger.info(f"Generated {len(signals)} total signals, {len([s for s in signals if s.triggered])} triggered signals")
+        for signal in signals:
+            if signal.triggered:
+                logger.info(f"  Triggered Signal: {signal.name} (strength: {signal.strength:.3f}, weight: {signal.weight:.3f}, confidence: {signal.confidence:.3f})")
+        
         # Step 2: Calculate dynamic stop-loss levels
         stop_levels = self._calculate_dynamic_stops(position_metrics, market_context)
+        logger.info(f"Stop Levels - Base: {stop_levels['base_stop']:.2f}, "
+                   f"Volatility: {stop_levels['volatility_stop']:.2f}, "
+                   f"Trailing: {stop_levels['trailing_stop']:.2f}, "
+                   f"Active: {stop_levels['active_stop']:.2f}")
         
         # Step 3: Check immediate exit conditions (stop-loss, etc.)
         immediate_exit = self._check_immediate_exit_conditions(
@@ -143,6 +160,7 @@ class ProfessionalSellLogic:
         )
         
         if immediate_exit:
+            logger.info(f"Immediate exit condition triggered: {immediate_exit.reason.value}")
             return immediate_exit
         
         # Step 4: Evaluate signal-based sell decision
@@ -150,12 +168,18 @@ class ProfessionalSellLogic:
             signals, position_metrics, market_context
         )
         
-        # Step 5: Apply market context filters
+        logger.info(f"Signal-based decision: Should Sell: {signal_decision.should_sell}, "
+                   f"Confidence: {signal_decision.confidence:.3f}, "
+                   f"Urgency: {signal_decision.urgency:.3f}")
+        
+        # Step 5: Apply market context filters (LESS restrictive)
         final_decision = self._apply_market_context_filters(
             signal_decision, market_context
         )
         
-        # Step 6: Determine position sizing
+        logger.info(f"After market context filters: Should Sell: {final_decision.should_sell}")
+        
+        # Step 6: Determine position sizing (MORE granular)
         final_decision = self._determine_position_sizing(
             final_decision, signals, position_metrics
         )
@@ -264,16 +288,52 @@ class ProfessionalSellLogic:
         """Generate risk management sell signals"""
         signals = []
 
-        # Unrealized Loss Signal
-        if position.unrealized_pnl_pct < -0.02:  # 2% loss threshold
-            strength = min(abs(position.unrealized_pnl_pct) / 0.10, 1.0)  # Scale to 10% max
+        # Stop-Loss Trigger
+        stop_loss_level = position.entry_price * (1 - self.base_stop_loss_pct)
+        if position.current_price <= stop_loss_level:
             signals.append(SellSignal(
-                name="unrealized_loss",
+                name="stop_loss",
+                strength=1.0,
+                weight=0.15,  # 15% of total weight
+                triggered=True,
+                reasoning=f"Stop-loss triggered at {stop_loss_level:.2f}",
+                confidence=1.0
+            ))
+
+        # Trailing Stop
+        trailing_stop = position.highest_price_since_entry * (1 - self.trailing_stop_pct)
+        if position.current_price <= trailing_stop:
+            signals.append(SellSignal(
+                name="trailing_stop",
+                strength=0.9,
+                weight=0.12,  # 12% of total weight
+                triggered=True,
+                reasoning=f"Trailing stop triggered at {trailing_stop:.2f}",
+                confidence=0.9
+            ))
+
+        # Profit Protection (lock in gains)
+        profit_protect_level = position.highest_price_since_entry * (1 - self.profit_protection_threshold)
+        if position.unrealized_pnl_pct > 0.05 and position.current_price <= profit_protect_level:  # 5% gain threshold
+            signals.append(SellSignal(
+                name="profit_protection",
+                strength=0.8,
+                weight=0.10,  # 10% of total weight
+                triggered=True,
+                reasoning=f"Profit protection at {profit_protect_level:.2f}",
+                confidence=0.8
+            ))
+
+        # Large Loss Signal
+        if position.unrealized_pnl_pct < -0.05:  # 5% loss
+            strength = min(abs(position.unrealized_pnl_pct) / 0.10, 1.0)  # Scale to 10% max loss
+            signals.append(SellSignal(
+                name="large_loss",
                 strength=strength,
                 weight=0.10,  # 10% of total weight
                 triggered=True,
-                reasoning=f"Unrealized loss: {position.unrealized_pnl_pct:.1%}",
-                confidence=0.9
+                reasoning=f"Large loss: {position.unrealized_pnl_pct:.1%}",
+                confidence=0.85
             ))
 
         # Volatility Spike Signal
@@ -405,20 +465,18 @@ class ProfessionalSellLogic:
         volatility_multiplier = 1 + (position.volatility / 0.02)  # Adjust for volatility
         volatility_stop = position.entry_price * (1 - self.base_stop_loss_pct * volatility_multiplier)
 
-        # Trailing stop based on highest price
+        # Trailing stop
         trailing_stop = position.highest_price_since_entry * (1 - self.trailing_stop_pct)
 
-        # Profit protection stop (lock in profits after 5%+ gains)
-        profit_protection_stop = None
+        # Profit protection stop (lock in 50% of peak gains)
+        profit_protection_stop = 0.0
         if position.unrealized_pnl_pct > self.profit_protection_threshold:
-            # Lock in 50% of profits
-            profit_to_lock = position.unrealized_pnl_pct * 0.5
-            profit_protection_stop = position.entry_price * (1 + profit_to_lock)
+            # Lock in profits after threshold is met
+            protected_gain = position.highest_price_since_entry * self.profit_protection_threshold
+            profit_protection_stop = position.highest_price_since_entry - protected_gain
 
-        # Choose the most restrictive (highest) stop
-        active_stop = max(base_stop, volatility_stop, trailing_stop)
-        if profit_protection_stop:
-            active_stop = max(active_stop, profit_protection_stop)
+        # Use the most conservative stop
+        active_stop = min(base_stop, volatility_stop)
 
         return {
             "base_stop": base_stop,
@@ -481,8 +539,16 @@ class ProfessionalSellLogic:
         logger.info(f"Signal Analysis: {signals_count} signals, "
                    f"weighted_score: {weighted_score:.3f}, "
                    f"confidence: {avg_confidence:.3f}")
+        logger.info(f"Threshold Checks - Signals: {meets_signal_threshold} "
+                   f"(required: {self.min_signals_required}), "
+                   f"Confidence: {meets_confidence_threshold} "
+                   f"(threshold: {self.min_confidence_threshold:.3f}), "
+                   f"Weighted Score: {meets_weighted_threshold} "
+                   f"(threshold: {self.min_weighted_score:.3f})")
 
         should_sell = meets_signal_threshold and meets_confidence_threshold and meets_weighted_threshold
+
+        logger.info(f"Signal-based decision: Should Sell: {should_sell}")
 
         return SellDecision(
             should_sell=should_sell,
@@ -499,26 +565,35 @@ class ProfessionalSellLogic:
         )
 
     def _apply_market_context_filters(self, decision: SellDecision, market_context: MarketContext) -> SellDecision:
-        """Apply market context filters to sell decision"""
+        """Apply market context filters to sell decision (LESS restrictive)"""
 
         if not decision.should_sell:
+            logger.info("Market context filters skipped - no sell decision")
             return decision
 
-        # Don't sell in strong uptrends unless urgency is very high
+        logger.info(f"Applying market context filters - Market Trend: {market_context.trend.value}")
+
+        # Less restrictive in uptrends - allow sells with moderate urgency
         if market_context.trend in [MarketTrend.STRONG_UPTREND, MarketTrend.UPTREND]:
-            if decision.urgency < 0.8:  # High urgency threshold in uptrends
-                logger.info(f"SELL BLOCKED: Market in {market_context.trend.value}, urgency {decision.urgency:.3f} < 0.8")
+            if decision.urgency < 0.5:  # LOWERED from 0.8 to 0.5 for less restriction
+                logger.info(f"SELL MODERATED: Market in {market_context.trend.value}, urgency {decision.urgency:.3f} < 0.5")
                 decision.should_sell = False
-                decision.reasoning += " | BLOCKED: Strong uptrend"
+                decision.reasoning += " | MODERATED: Uptrend with low urgency"
                 return decision
             else:
-                # Reduce position size in uptrends
-                decision.confidence *= self.downtrend_sell_multiplier
+                # Reduce position size in uptrends but not as much
+                original_confidence = decision.confidence
+                decision.confidence *= self.downtrend_sell_multiplier  # Use downtrend multiplier for less restriction
+                logger.info(f"Uptrend adjustment - confidence reduced from {original_confidence:.3f} to {decision.confidence:.3f}")
 
-        # Be more aggressive in downtrends
+        # Be less aggressive in downtrends (allow more sells)
         elif market_context.trend in [MarketTrend.DOWNTREND, MarketTrend.STRONG_DOWNTREND]:
-            decision.confidence *= self.uptrend_sell_multiplier
-            decision.urgency = min(decision.urgency * 1.2, 1.0)
+            original_confidence = decision.confidence
+            original_urgency = decision.urgency
+            decision.confidence *= self.uptrend_sell_multiplier  # Use uptrend multiplier for less restriction
+            decision.urgency = min(decision.urgency * 1.1, 1.0)  # LESS aggressive adjustment
+            logger.info(f"Downtrend adjustment - confidence changed from {original_confidence:.3f} to {decision.confidence:.3f}, "
+                       f"urgency increased from {original_urgency:.3f} to {decision.urgency:.3f}")
 
         return decision
 
@@ -528,32 +603,73 @@ class ProfessionalSellLogic:
         signals: List[SellSignal],
         position: PositionMetrics
     ) -> SellDecision:
-        """Determine how much of the position to sell"""
+        """Determine how much of the position to sell (MORE granular)"""
 
         if not decision.should_sell:
+            logger.info("Position sizing skipped - no sell decision")
             return decision
 
+        logger.info(f"Determining position sizing for {position.quantity} shares")
+        logger.info(f"Decision confidence: {decision.confidence:.3f}")
+        logger.info(f"Decision urgency: {decision.urgency:.3f}")
+        logger.info(f"Unrealized P&L: {position.unrealized_pnl_pct:.2%}")
+
+        # Emergency exit conditions (highest priority)
+        if (decision.confidence >= self.emergency_exit_threshold or
+            decision.urgency >= 0.95 or
+            position.unrealized_pnl_pct < -0.10):  # 10% loss
+
+            decision.sell_quantity = position.quantity
+            decision.sell_percentage = 1.0
+            decision.reasoning += " | EMERGENCY EXIT"
+            logger.info(f"Emergency exit triggered - selling 100% ({position.quantity} shares)")
+
         # Full exit conditions
-        if (decision.confidence >= self.full_exit_threshold or
-            decision.urgency >= 0.9 or
-            position.unrealized_pnl_pct < -0.08):  # 8% loss
+        elif (decision.confidence >= self.full_exit_threshold or
+              decision.urgency >= 0.85 or
+              position.unrealized_pnl_pct < -0.08):  # 8% loss
 
             decision.sell_quantity = position.quantity
             decision.sell_percentage = 1.0
             decision.reasoning += " | FULL EXIT"
+            logger.info(f"Full exit triggered - selling 100% ({position.quantity} shares)")
+
+        # Aggressive exit conditions
+        elif decision.confidence >= self.aggressive_exit_threshold:
+            # Scale exit size based on confidence and urgency
+            exit_percentage = min(decision.confidence * decision.urgency * 1.2, 0.9)  # INCREASED scaling
+            decision.sell_quantity = int(position.quantity * exit_percentage)
+            decision.sell_percentage = exit_percentage
+            decision.reasoning += f" | AGGRESSIVE EXIT ({exit_percentage:.1%})"
+            logger.info(f"Aggressive exit triggered - selling {exit_percentage:.1%} ({decision.sell_quantity} shares)")
 
         # Partial exit conditions
         elif decision.confidence >= self.partial_exit_threshold:
             # Scale exit size based on confidence and urgency
             exit_percentage = min(decision.confidence * decision.urgency, 0.75)
-            decision.sell_quantity = int(position.quantity * exit_percentage)
+            decision.sell_quantity = max(1, int(position.quantity * exit_percentage))
             decision.sell_percentage = exit_percentage
             decision.reasoning += f" | PARTIAL EXIT ({exit_percentage:.1%})"
+            logger.info(f"Partial exit triggered - selling {exit_percentage:.1%} ({decision.sell_quantity} shares)")
+
+        # Conservative exit conditions
+        elif decision.confidence >= self.conservative_exit_threshold:
+            # Scale exit size based on confidence and urgency
+            exit_percentage = min(decision.confidence * decision.urgency * 0.5, 0.5)  # REDUCED scaling
+            decision.sell_quantity = max(1, int(position.quantity * exit_percentage))
+            decision.sell_percentage = exit_percentage
+            decision.reasoning += f" | CONSERVATIVE EXIT ({exit_percentage:.1%})"
+            logger.info(f"Conservative exit triggered - selling {exit_percentage:.1%} ({decision.sell_quantity} shares)")
 
         else:
-            # Conservative exit
-            decision.sell_quantity = max(int(position.quantity * 0.25), 1)
-            decision.sell_percentage = 0.25
-            decision.reasoning += " | CONSERVATIVE EXIT (25%)"
+            # Minimal exit
+            decision.sell_quantity = max(1, int(position.quantity * 0.1))  # 10% minimum
+            decision.sell_percentage = 0.1
+            decision.reasoning += " | MINIMAL EXIT (10%)"
+            logger.info(f"Minimal exit triggered - selling 10% ({decision.sell_quantity} shares)")
+
+        # Ensure we don't sell more than we have
+        decision.sell_quantity = min(decision.sell_quantity, position.quantity)
+        logger.info(f"Final sell quantity: {decision.sell_quantity} shares ({decision.sell_percentage:.1%})")
 
         return decision

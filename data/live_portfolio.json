@@ -1,12 +1,17 @@
 {
-  "cash": 372.14,
-  "total_value": 2293.07001,
-  "starting_balance": 372.14,
+  "cash": 43.34,
+  "total_value": 2293.06002,
+  "starting_balance": 43.34,
   "holdings": {
     "SJVN": {
       "qty": 1,
       "avg_price": 93.39,
       "last_price": 93.39
+    },
+    "SUZLON": {
+      "qty": 1,
+      "avg_price": 58.97,
+      "last_price": 58.97
     },
     "NSLNISP": {
       "qty": 2,
@@ -19,9 +24,9 @@
       "last_price": 104.29
     },
     "ASHOKLEY": {
-      "qty": 1,
-      "avg_price": 137.6,
-      "last_price": 137.6
+      "qty": 3,
+      "avg_price": 135.80667,
+      "last_price": 135.80667
     },
     "ONGC": {
       "qty": 1,
@@ -64,5 +69,5 @@
   "total_trades": 0,
   "winning_trades": 0,
   "losing_trades": 0,
-  "last_updated": "2025-09-13T12:21:43.858201"
+  "last_updated": "2025-09-17T15:24:54.627190"
 }

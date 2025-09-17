@@ -515,3 +515,379 @@ Reinforcement Learning Results:
     Episode 80: Reward = -96837.05, Avg Reward = 187306.62, Events = 148
     Episode 90: Reward = 1891706.72, Avg Reward = -86661.20, Events = 149
     Episode 100: Reward = -1400562.41, Avg Reward = -283464.58, Events = 157
+
+[20250917_125443] Analysis for ORIENTBELL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for ORIENTBELL.NS (ORIENTBELL.NS): NEUTRAL
+Current Price: Rs.305.05
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0268 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 3.47
+Predicted Price (USD): 306.91332858727543
+Predicted Change (%): 8744.76
+Confidence Score: -0.41667971015233274
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 2.0385772712720063
+  Average Reward: 182090.4698853421
+  Average Events/Episode: 117.2
+  Actions Distribution:
+    hold: 0.7901
+    buy: 0.1826
+    sell: 0.0273
+  RL Epoch Logs:
+    Episode 10: Reward = -1987839.74, Avg Reward = 414691.98, Events = 106
+    Episode 20: Reward = -5217634.44, Avg Reward = 853757.45, Events = 120
+    Episode 30: Reward = 5997464.51, Avg Reward = 97960.13, Events = 120
+    Episode 40: Reward = 2978796.70, Avg Reward = 959989.34, Events = 106
+    Episode 50: Reward = -5853105.47, Avg Reward = 28433.48, Events = 116
+    Episode 60: Reward = 578956.69, Avg Reward = 1105104.04, Events = 112
+    Episode 70: Reward = 1425284.72, Avg Reward = -472907.83, Events = 110
+    Episode 80: Reward = 1702960.98, Avg Reward = 1159026.32, Events = 122
+    Episode 90: Reward = 463032.89, Avg Reward = -981736.37, Events = 94
+    Episode 100: Reward = -664067.89, Avg Reward = -1343413.85, Events = 117
+
+[20250917_130451] Analysis for ONGC.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for ONGC.NS (ONGC.NS): NEUTRAL
+Current Price: Rs.236.39
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0074 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 2.69
+Predicted Price (USD): 230.99885769913308
+Predicted Change (%): 8487.32
+Confidence Score: -0.029991208247340584
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 2.646381534919841
+  Average Reward: 424451.65710218693
+  Average Events/Episode: 119.65
+  Actions Distribution:
+    hold: 0.1376
+    buy: 0.7450
+    sell: 0.1174
+  RL Epoch Logs:
+    Episode 10: Reward = 1601560.86, Avg Reward = 142602.39, Events = 123
+    Episode 20: Reward = -1868897.23, Avg Reward = 1291084.40, Events = 127
+    Episode 30: Reward = -916968.52, Avg Reward = 965309.33, Events = 106
+    Episode 40: Reward = 12329.10, Avg Reward = 203738.49, Events = 126
+    Episode 50: Reward = 2015418.17, Avg Reward = 1923823.56, Events = 114
+    Episode 60: Reward = -2064367.03, Avg Reward = 588243.11, Events = 119
+    Episode 70: Reward = 4358720.86, Avg Reward = -103282.76, Events = 111
+    Episode 80: Reward = 2493057.22, Avg Reward = -1253250.02, Events = 130
+    Episode 90: Reward = -238317.03, Avg Reward = -391876.83, Events = 125
+    Episode 100: Reward = 2430010.99, Avg Reward = 878124.91, Events = 128
+
+[20250917_131414] Analysis for JAYNECOIND.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for JAYNECOIND.NS (JAYNECOIND.NS): NEUTRAL
+Current Price: Rs.71.65
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0348 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 0.82
+Predicted Price (USD): 70.17732031672794
+Predicted Change (%): 8458.21
+Confidence Score: -0.17121341678498192
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.5286604452132743
+  Average Reward: -15937.194641091204
+  Average Events/Episode: 122.22
+  Actions Distribution:
+    hold: 0.0430
+    buy: 0.8876
+    sell: 0.0694
+  RL Epoch Logs:
+    Episode 10: Reward = -1467604.56, Avg Reward = -111364.03, Events = 130
+    Episode 20: Reward = -426766.03, Avg Reward = -89169.81, Events = 137
+    Episode 30: Reward = -196151.47, Avg Reward = 590349.77, Events = 112
+    Episode 40: Reward = -957996.04, Avg Reward = 138284.42, Events = 128
+    Episode 50: Reward = -233429.16, Avg Reward = -167506.74, Events = 115
+    Episode 60: Reward = -743961.59, Avg Reward = 15454.78, Events = 130
+    Episode 70: Reward = -615431.21, Avg Reward = -194798.21, Events = 119
+    Episode 80: Reward = 718232.66, Avg Reward = 32097.38, Events = 124
+    Episode 90: Reward = 299161.07, Avg Reward = 144737.96, Events = 125
+    Episode 100: Reward = -1822131.03, Avg Reward = -517457.46, Events = 107
+
+[20250917_132504] Analysis for SJVN.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for SJVN.NS (SJVN.NS): NEUTRAL
+Current Price: Rs.94.30
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0186 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.07
+Predicted Price (USD): 94.4325930145348
+Predicted Change (%): 8725.48
+Confidence Score: -0.002706012191755036
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.3490203757655399
+  Average Reward: 46398.61857041055
+  Average Events/Episode: 122.44
+  Actions Distribution:
+    hold: 0.0097
+    buy: 0.0032
+    sell: 0.9870
+  RL Epoch Logs:
+    Episode 10: Reward = 2060856.15, Avg Reward = 161267.73, Events = 125
+    Episode 20: Reward = -200253.56, Avg Reward = -153768.03, Events = 121
+    Episode 30: Reward = -65560.02, Avg Reward = 296851.54, Events = 118
+    Episode 40: Reward = 1695593.86, Avg Reward = -384564.26, Events = 119
+    Episode 50: Reward = -597360.05, Avg Reward = 318305.12, Events = 125
+    Episode 60: Reward = 73191.59, Avg Reward = 228674.54, Events = 127
+    Episode 70: Reward = 528600.47, Avg Reward = -331521.59, Events = 113
+    Episode 80: Reward = -1126659.90, Avg Reward = 285226.27, Events = 122
+    Episode 90: Reward = 836517.82, Avg Reward = 331747.76, Events = 133
+    Episode 100: Reward = -720296.90, Avg Reward = -288232.89, Events = 116
+
+[20250917_143731] Analysis for ONGC.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for ONGC.NS (ONGC.NS): NEUTRAL
+Current Price: Rs.236.25
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0074 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 2.69
+Predicted Price (USD): 233.27001520642344
+Predicted Change (%): 8571.75
+Confidence Score: -0.01725433379551955
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.3357435160367895
+  Average Reward: -24688.477001769566
+  Average Events/Episode: 137.9
+  Actions Distribution:
+    hold: 0.1630
+    buy: 0.8326
+    sell: 0.0044
+  RL Epoch Logs:
+    Episode 10: Reward = 1088413.72, Avg Reward = 166593.53, Events = 132
+    Episode 20: Reward = 1317212.22, Avg Reward = -1009687.56, Events = 151
+    Episode 30: Reward = 1949816.32, Avg Reward = -1005612.23, Events = 150
+    Episode 40: Reward = 1330294.85, Avg Reward = 372878.99, Events = 137
+    Episode 50: Reward = 1845232.98, Avg Reward = 177199.90, Events = 128
+    Episode 60: Reward = 189600.82, Avg Reward = 933553.21, Events = 133
+    Episode 70: Reward = 95792.11, Avg Reward = 142734.46, Events = 155
+    Episode 80: Reward = -1096559.12, Avg Reward = -50219.39, Events = 123
+    Episode 90: Reward = -2370582.06, Avg Reward = -101170.90, Events = 132
+    Episode 100: Reward = 171794.31, Avg Reward = 126845.21, Events = 136
+
+[20250917_144833] Analysis for JAYNECOIND.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for JAYNECOIND.NS (JAYNECOIND.NS): NEUTRAL
+Current Price: Rs.71.18
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0349 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 0.81
+Predicted Price (USD): 70.57284554350434
+Predicted Change (%): 8612.70
+Confidence Score: -0.017778295361091434
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.055999999999999994
+  Average Reward: -67186.45673698805
+  Average Events/Episode: 138.92
+  Actions Distribution:
+    hold: 0.8954
+    buy: 0.0100
+    sell: 0.0946
+  RL Epoch Logs:
+    Episode 10: Reward = -45757.43, Avg Reward = -537812.73, Events = 130
+    Episode 20: Reward = -1934690.05, Avg Reward = 32847.96, Events = 124
+    Episode 30: Reward = -520044.26, Avg Reward = 295883.92, Events = 143
+    Episode 40: Reward = 736927.51, Avg Reward = 12685.46, Events = 136
+    Episode 50: Reward = -1092004.47, Avg Reward = -252687.24, Events = 140
+    Episode 60: Reward = -79610.56, Avg Reward = -149687.90, Events = 115
+    Episode 70: Reward = 10618.01, Avg Reward = 164215.09, Events = 147
+    Episode 80: Reward = 307999.75, Avg Reward = -176798.26, Events = 141
+    Episode 90: Reward = -459250.24, Avg Reward = -112691.73, Events = 121
+    Episode 100: Reward = -775.62, Avg Reward = 52180.87, Events = 132
+
+[20250917_150732] Analysis for JAYNECOIND.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for JAYNECOIND.NS (JAYNECOIND.NS): NEUTRAL
+Current Price: Rs.71.61
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0348 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 0.82
+Predicted Price (USD): 70.13904571533203
+Predicted Change (%): 8453.54
+Confidence Score: -0.17708397083417227
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.5913443864240835
+  Average Reward: -51457.51953125
+  Average Events/Episode: 144.63
+  Actions Distribution:
+    hold: 0.9596
+    buy: 0.0028
+    sell: 0.0377
+  RL Epoch Logs:
+    Episode 10: Reward = 1421311.62, Avg Reward = -105338.04, Events = 179
+    Episode 20: Reward = 839241.19, Avg Reward = -58511.91, Events = 148
+    Episode 30: Reward = -923726.12, Avg Reward = 381632.09, Events = 159
+    Episode 40: Reward = -554849.69, Avg Reward = -393267.53, Events = 133
+    Episode 50: Reward = -937690.94, Avg Reward = -3691.24, Events = 142
+    Episode 60: Reward = 1168328.38, Avg Reward = 47367.08, Events = 140
+    Episode 70: Reward = -1238916.00, Avg Reward = -626049.50, Events = 144
+    Episode 80: Reward = 369525.56, Avg Reward = 498171.91, Events = 144
+    Episode 90: Reward = -131417.94, Avg Reward = -155531.70, Events = 147
+    Episode 100: Reward = -251868.20, Avg Reward = -99356.48, Events = 124
+
+[20250917_151934] Analysis for SJVN.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for SJVN.NS (SJVN.NS): NEUTRAL
+Current Price: Rs.94.31
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0186 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.07
+Predicted Price (USD): 93.46376560474208
+Predicted Change (%): 8634.93
+Confidence Score: 0.005642926461391751
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.7697002079793019
+  Average Reward: -59484.77606616279
+  Average Events/Episode: 145.28
+  Actions Distribution:
+    hold: 0.3073
+    buy: 0.5953
+    sell: 0.0974
+  RL Epoch Logs:
+    Episode 10: Reward = -805825.03, Avg Reward = 57789.35, Events = 145
+    Episode 20: Reward = 568743.80, Avg Reward = -663946.36, Events = 144
+    Episode 30: Reward = -235880.84, Avg Reward = 259486.45, Events = 148
+    Episode 40: Reward = -1168292.61, Avg Reward = 41130.69, Events = 140
+    Episode 50: Reward = 1070840.84, Avg Reward = 209383.96, Events = 151
+    Episode 60: Reward = -494634.61, Avg Reward = -540380.14, Events = 138
+    Episode 70: Reward = 1351251.02, Avg Reward = 30444.90, Events = 158
+    Episode 80: Reward = 6514.71, Avg Reward = 40274.96, Events = 128
+    Episode 90: Reward = 260209.73, Avg Reward = 30944.44, Events = 160
+    Episode 100: Reward = 2163298.99, Avg Reward = -59976.00, Events = 131

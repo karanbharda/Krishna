@@ -259,6 +259,9 @@ class LiveTradingExecutor:
             
             position_sizer = get_position_sizer(initial_capital=available_cash)
             
+            # Determine market regime (simplified - in practice this would come from market analysis)
+            market_regime = "NORMAL"  # Default assumption
+            
             # Create mock historical data for the position sizer
             # In a real implementation, this would come from actual historical data
             historical_data = pd.DataFrame({
@@ -278,7 +281,8 @@ class LiveTradingExecutor:
                 current_price=current_price,
                 volatility=0.20,  # Default volatility assumption
                 historical_data=historical_data,
-                portfolio_data=portfolio_data
+                portfolio_data=portfolio_data,
+                market_regime=market_regime
             )
             
             quantity = position_result['quantity']

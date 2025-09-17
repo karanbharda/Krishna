@@ -95,7 +95,7 @@ class DynamicPositionSizer:
                 base_size = risk_parity_size
             elif method == SizingMethod.ADAPTIVE:
                 # Combine multiple methods with weights
-                base_size = self._adaptive_sizing(kelly_size, volatility_size, risk_parity_size, signal_strength)
+                base_size = self._adaptive_sizing(kelly_size, volatility_size, risk_parity_size, signal_strength, market_regime)
             else:
                 base_size = self._calculate_fixed_size()
             
@@ -268,15 +268,29 @@ class DynamicPositionSizer:
             return 0.10
     
     def _adaptive_sizing(self, kelly_size: float, volatility_size: float, 
-                        risk_parity_size: float, signal_strength: float) -> float:
+                        risk_parity_size: float, signal_strength: float, 
+                        market_regime: str = "NORMAL") -> float:
         """
         Combine multiple sizing methods adaptively
+        Enhanced to consider market regime
         """
         try:
-            # Weight based on signal strength and market conditions
-            kelly_weight = 0.4 * signal_strength
-            volatility_weight = 0.3
-            risk_parity_weight = 0.3 * (1 - signal_strength)
+            # Adjust weights based on market regime
+            if market_regime == "HIGH_VOLATILITY":
+                # In high volatility, rely more on risk parity and less on Kelly
+                kelly_weight = 0.2 * signal_strength
+                volatility_weight = 0.4
+                risk_parity_weight = 0.4 * (1 - signal_strength)
+            elif market_regime == "LOW_VOLATILITY":
+                # In low volatility, can be more aggressive with Kelly
+                kelly_weight = 0.5 * signal_strength
+                volatility_weight = 0.2
+                risk_parity_weight = 0.3 * (1 - signal_strength)
+            else:
+                # Normal market conditions
+                kelly_weight = 0.4 * signal_strength
+                volatility_weight = 0.3
+                risk_parity_weight = 0.3 * (1 - signal_strength)
             
             # Normalize weights
             total_weight = kelly_weight + volatility_weight + risk_parity_weight
@@ -291,7 +305,7 @@ class DynamicPositionSizer:
                            volatility_weight * volatility_size + 
                            risk_parity_weight * risk_parity_size)
             
-            logger.debug(f"Adaptive sizing: {adaptive_size:.3f} (weights: K:{kelly_weight:.2f}, V:{volatility_weight:.2f}, R:{risk_parity_weight:.2f})")
+            logger.debug(f"Adaptive sizing: {adaptive_size:.3f} (weights: K:{kelly_weight:.2f}, V:{volatility_weight:.2f}, R:{risk_parity_weight:.2f}, regime: {market_regime})")
             return adaptive_size
             
         except Exception as e:
@@ -548,9 +562,10 @@ class DynamicPositionSizer:
             'sizing_methods': [method.value for method in SizingMethod]
         }
     
-    def optimize_parameters(self):
+    def optimize_parameters(self, market_regime: str = "NORMAL"):
         """
         Optimize sizing parameters based on performance
+        Enhanced to be more responsive to market conditions
         """
         try:
             if len(self.trade_history) < 20:
@@ -559,16 +574,22 @@ class DynamicPositionSizer:
             # Simple parameter optimization based on Sharpe ratio
             current_sharpe = self.performance_metrics.get('sharpe_ratio', 0)
             
-            # Adjust Kelly fraction based on performance
+            # Adjust Kelly fraction based on performance and market regime
             if current_sharpe < 0.5:  # Poor performance
                 self.kelly_max_position *= 0.9  # Reduce Kelly
             elif current_sharpe > 1.5:  # Good performance  
                 self.kelly_max_position *= 1.05  # Slightly increase Kelly
             
+            # Adjust based on market regime
+            if market_regime == "HIGH_VOLATILITY":
+                self.kelly_max_position *= 0.8  # Be more conservative
+            elif market_regime == "LOW_VOLATILITY":
+                self.kelly_max_position *= 1.1  # Can be more aggressive
+            
             # Keep within bounds
             self.kelly_max_position = max(0.05, min(0.25, self.kelly_max_position))
             
-            logger.info(f"Parameters optimized: Kelly max = {self.kelly_max_position:.3f}")
+            logger.info(f"Parameters optimized: Kelly max = {self.kelly_max_position:.3f}, Market Regime = {market_regime}")
             
         except Exception as e:
             logger.error(f"Error optimizing parameters: {e}")

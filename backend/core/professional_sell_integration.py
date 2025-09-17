@@ -50,7 +50,7 @@ class ProfessionalSellIntegration:
         # Check if sell is disabled by configuration
         enable_sell = str(os.getenv("ENABLE_SELL", "true")).lower() not in ("false", "0", "no", "off")
         if not enable_sell:
-            logger.info("Sell signals globally disabled by configuration (ENABLE_SELL=false)")
+            logger.info(f"Sell signals globally disabled by configuration (ENABLE_SELL=false) for {ticker}")
             return {
                 "action": "hold",
                 "ticker": ticker,
@@ -68,6 +68,7 @@ class ProfessionalSellIntegration:
         try:
             # Check if we have a position
             if ticker not in portfolio_holdings:
+                logger.info(f"No position found for {ticker}, returning no position decision")
                 return self._no_position_decision()
             
             # Build position metrics
@@ -93,11 +94,31 @@ class ProfessionalSellIntegration:
                 ml_analysis=ml_analysis
             )
             
+            # Log detailed decision information
+            logger.info(f"Professional Sell Decision for {ticker}:")
+            logger.info(f"  Should Sell: {sell_decision.should_sell}")
+            logger.info(f"  Confidence: {sell_decision.confidence:.3f}")
+            logger.info(f"  Sell Percentage: {sell_decision.sell_percentage:.3f}")
+            logger.info(f"  Reason: {sell_decision.reason}")
+            logger.info(f"  Signals Triggered: {len(sell_decision.signals_triggered)}")
+            logger.info(f"  Reasoning: {sell_decision.reasoning}")
+            
             # Convert to legacy format
-            return self._convert_to_legacy_format(sell_decision, position_metrics)
+            result = self._convert_to_legacy_format(sell_decision, position_metrics)
+            
+            # Log the final result
+            logger.info(f"Final Sell Decision for {ticker}: {result['action']} - {result['reason']}")
+            if result['action'] == 'sell':
+                logger.info(f"  Quantity: {result['qty']}")
+                logger.info(f"  Price: {result['price']}")
+                logger.info(f"  Stop Loss: {result['stop_loss']}")
+                logger.info(f"  Take Profit: {result['take_profit']}")
+            
+            return result
             
         except Exception as e:
-            logger.error(f"Error in professional sell evaluation: {e}")
+            logger.error(f"Error in professional sell evaluation for {ticker}: {e}")
+            logger.exception("Full traceback:")
             if self.fallback_to_legacy:
                 logger.info("Falling back to legacy sell logic")
                 return self._legacy_sell_decision(ticker, current_price, portfolio_holdings, analysis_data)
@@ -274,15 +295,18 @@ class ProfessionalSellIntegration:
         """Get professional sell logic configuration"""
         return {
             "min_sell_signals": 2,
-            "min_sell_confidence": 0.65,
-            "min_weighted_sell_score": 0.40,
+            "min_sell_confidence": 0.40,              # BALANCED with buy thresholds
+            "min_weighted_sell_score": 0.04,          # BALANCED with buy thresholds
             "stop_loss_pct": 0.05,
             "trailing_stop_pct": 0.03,
             "profit_protection_threshold": 0.05,
-            "partial_exit_threshold": 0.50,
-            "full_exit_threshold": 0.75,
-            "uptrend_sell_multiplier": 1.5,
-            "downtrend_sell_multiplier": 0.8,
+            "conservative_exit_threshold": 0.15,      # MORE granular thresholds
+            "partial_exit_threshold": 0.30,           # MORE granular thresholds
+            "aggressive_exit_threshold": 0.50,        # MORE granular thresholds
+            "full_exit_threshold": 0.70,              # BALANCED thresholds
+            "emergency_exit_threshold": 0.90,         # NEW emergency threshold
+            "uptrend_sell_multiplier": 1.1,           # LESS restrictive in uptrends
+            "downtrend_sell_multiplier": 0.9,         # LESS restrictive in downtrends
             "enable_professional_sell_logic": True,
             "fallback_to_legacy_sell": False
         }

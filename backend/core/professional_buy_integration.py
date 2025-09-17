@@ -49,6 +49,24 @@ class ProfessionalBuyIntegration:
         Main integration point for professional buy evaluation
         Returns a decision compatible with existing trading modules
         """
+        # Check if buy is disabled by configuration
+        enable_buy = str(os.getenv("ENABLE_BUY", "true")).lower() not in ("false", "0", "no", "off")
+        if not enable_buy:
+            logger.info(f"Buy signals globally disabled by configuration (ENABLE_BUY=false) for {ticker}")
+            return {
+                "action": "hold",
+                "ticker": ticker,
+                "qty": 0,
+                "price": current_price,
+                "stop_loss": 0.0,
+                "take_profit": 0.0,
+                "success": True,
+                "confidence_score": 0.0,
+                "signals": 0,
+                "reason": "buy_disabled",
+                "professional_reasoning": "Buy functionality disabled by configuration"
+            }
+        
         try:
             # Build stock metrics
             stock_metrics = self._build_stock_metrics(
@@ -78,16 +96,34 @@ class ProfessionalBuyIntegration:
                 portfolio_context=portfolio_context
             )
             
+            # Log detailed decision information
+            logger.info(f"Professional Buy Decision for {ticker}:")
+            logger.info(f"  Should Buy: {buy_decision.should_buy}")
+            logger.info(f"  Confidence: {buy_decision.confidence:.3f}")
+            logger.info(f"  Buy Percentage: {buy_decision.buy_percentage:.3f}")
+            logger.info(f"  Reason: {buy_decision.reason}")
+            logger.info(f"  Signals Triggered: {len(buy_decision.signals_triggered)}")
+            logger.info(f"  Reasoning: {buy_decision.reasoning}")
+            
             # Convert to legacy format
             result = self._convert_to_legacy_format(buy_decision, stock_metrics, portfolio_context)
             
             # Add ticker information
             result["ticker"] = ticker
             
+            # Log the final result
+            logger.info(f"Final Buy Decision for {ticker}: {result['action']} - {result['reason']}")
+            if result['action'] == 'buy':
+                logger.info(f"  Quantity: {result['qty']}")
+                logger.info(f"  Price: {result['price']}")
+                logger.info(f"  Stop Loss: {result['stop_loss']}")
+                logger.info(f"  Take Profit: {result['take_profit']}")
+            
             return result
             
         except Exception as e:
-            logger.error(f"Error in professional buy evaluation: {e}")
+            logger.error(f"Error in professional buy evaluation for {ticker}: {e}")
+            logger.exception("Full traceback:")
             return self._error_decision(str(e))
     
     def _build_stock_metrics(

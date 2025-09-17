@@ -126,5 +126,21 @@
         "qty": 2,
         "price": 79.0,
         "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-16 13:30:49.198404",
+        "asset": "ASHOKLEY.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 134.87,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-16 13:48:24.944727",
+        "asset": "ASHOKLEY.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 134.94,
+        "pnl": 0.0
     }
 ]

@@ -154,6 +154,8 @@ class ProfessionalBuyLogic:
         Main entry point for professional buy evaluation
         """
         logger.info(f"=== PROFESSIONAL BUY EVALUATION: {ticker} ===")
+        logger.info(f"Current Price: {stock_metrics.current_price:.2f}")
+        logger.info(f"Market Context: {market_context.trend.value} (strength: {market_context.trend_strength:.2f})")
         
         # Step 1: Generate all buy signals with enhanced sensitivity
         signals = self._generate_buy_signals(
@@ -161,8 +163,16 @@ class ProfessionalBuyLogic:
             sentiment_analysis, ml_analysis
         )
         
+        # Log signal generation
+        logger.info(f"Generated {len(signals)} total signals, {len([s for s in signals if s.triggered])} triggered signals")
+        for signal in signals:
+            if signal.triggered:
+                logger.info(f"  Triggered Signal: {signal.name} (strength: {signal.strength:.3f}, weight: {signal.weight:.3f}, confidence: {signal.confidence:.3f})")
+        
         # Step 2: Apply cross-category confirmation (at least 2 categories must align)
-        if not self._check_cross_category_confirmation(signals):
+        cross_category_confirmed = self._check_cross_category_confirmation(signals)
+        logger.info(f"Cross-category confirmation: {cross_category_confirmed}")
+        if not cross_category_confirmed:
             return BuyDecision(
                 should_buy=False,
                 buy_quantity=0,
@@ -178,7 +188,9 @@ class ProfessionalBuyLogic:
             )
         
         # Step 3: Apply bearish block filter
-        if self._check_bearish_block(signals):
+        bearish_blocked = self._check_bearish_block(signals)
+        logger.info(f"Bearish block filter: {bearish_blocked}")
+        if bearish_blocked:
             return BuyDecision(
                 should_buy=False,
                 buy_quantity=0,
@@ -212,6 +224,9 @@ class ProfessionalBuyLogic:
         logger.info(f"Signal Analysis: {signals_count} signals, "
                    f"weighted_score: {weighted_score:.3f}, "
                    f"confidence: {avg_confidence:.3f}")
+        logger.info(f"Threshold Checks - Signals: {meets_signal_threshold}, "
+                   f"Confidence: {meets_confidence_threshold}, "
+                   f"Weighted Score: {meets_weighted_threshold}")
 
         # PROFESSIONAL BUY LOGIC: All three conditions must be met (similar to sell logic)
         # This prevents the system from generating buy signals when conditions are marginal
@@ -219,6 +234,7 @@ class ProfessionalBuyLogic:
 
         # Additional quality checks for professional trading
         if should_buy:
+            logger.info("All threshold checks passed, proceeding with buy decision")
             # Step 5: Calculate entry levels with enhanced timing
             entry_levels = self._calculate_optimized_entry_levels(stock_metrics, market_context)
             
@@ -244,8 +260,13 @@ class ProfessionalBuyLogic:
             # Calculate position sizing with enhanced optimization
             final_decision = self._calculate_enhanced_position_sizing(final_decision, weighted_score, triggered_signals)
             
+            logger.info(f"Final Buy Decision: Should Buy: {final_decision.should_buy}, "
+                       f"Confidence: {final_decision.confidence:.3f}, "
+                       f"Buy Percentage: {final_decision.buy_percentage:.3f}")
+            
             return final_decision
         else:
+            logger.info("Threshold checks failed, generating hold decision")
             # Provide detailed reasoning for why buy was rejected
             rejection_reasons = []
             if not meets_signal_threshold:
@@ -255,6 +276,8 @@ class ProfessionalBuyLogic:
             if not meets_weighted_threshold:
                 rejection_reasons.append(f"Weighted score {weighted_score:.3f} below threshold {self.min_weighted_score}")
             
+            logger.info(f"Rejection Reasons: {' | '.join(rejection_reasons)}")
+            
             return BuyDecision(
                 should_buy=False,
                 buy_quantity=0,
@@ -262,7 +285,7 @@ class ProfessionalBuyLogic:
                 reason=BuyReason.TECHNICAL_BREAKOUT,
                 confidence=avg_confidence,
                 urgency=0.0,
-                signals_triggered=triggered_signals,
+                signals_triggered=signals,
                 target_entry_price=0.0,
                 stop_loss_price=0.0,
                 take_profit_price=0.0,
@@ -623,21 +646,30 @@ class ProfessionalBuyLogic:
         """Apply market context filters to buy decision"""
 
         if not decision.should_buy:
+            logger.info("Market context filters skipped - no buy decision")
             return decision
+
+        logger.info(f"Applying market context filters - Market Trend: {market_context.trend.value}")
 
         # Be more conservative in downtrends
         if market_context.trend in [MarketTrend.DOWNTREND, MarketTrend.STRONG_DOWNTREND]:
+            original_confidence = decision.confidence
             decision.confidence *= self.downtrend_buy_multiplier
+            logger.info(f"Downtrend filter applied - confidence reduced from {original_confidence:.3f} to {decision.confidence:.3f}")
             if decision.confidence < self.min_confidence_threshold:
-                logger.info(f"BUY BLOCKED: Market in {market_context.trend.value}, confidence {decision.confidence:.3f} < threshold")
+                logger.info(f"BUY BLOCKED: Market in {market_context.trend.value}, confidence {decision.confidence:.3f} < threshold {self.min_confidence_threshold}")
                 decision.should_buy = False
                 decision.reasoning += " | BLOCKED: Downtrend"
                 return decision
 
         # Be more aggressive in uptrends
         elif market_context.trend in [MarketTrend.STRONG_UPTREND, MarketTrend.UPTREND]:
+            original_confidence = decision.confidence
+            original_urgency = decision.urgency
             decision.confidence *= self.uptrend_buy_multiplier
             decision.urgency = min(decision.urgency * 1.2, 1.0)
+            logger.info(f"Uptrend filter applied - confidence increased from {original_confidence:.3f} to {decision.confidence:.3f}, "
+                       f"urgency increased from {original_urgency:.3f} to {decision.urgency:.3f}")
 
         return decision
 
@@ -650,27 +682,39 @@ class ProfessionalBuyLogic:
         """Calculate enhanced position sizing based on signal quality and ML predictions"""
 
         if not decision.should_buy:
+            logger.info("Position sizing skipped - no buy decision")
             return decision
+
+        logger.info(f"Calculating enhanced position sizing - Weighted Score: {weighted_score:.3f}")
 
        # Base position scale based on weighted score
         position_scale = min(weighted_score * 1.5, 1.0)  # Increased multiplier for better scaling
         position_scale = max(position_scale, 0.1)  # Minimum 10% position
+        logger.info(f"Base position scale from weighted score: {position_scale:.3f}")
 
         # OPTIMIZED BUY LOGIC: Boost position size for high-confidence ML signals
         ml_signals = [s for s in triggered_signals if s.category == "ML"]
         if ml_signals:
             ml_confidence = np.mean([s.confidence for s in ml_signals])
+            logger.info(f"ML signals detected - average confidence: {ml_confidence:.3f}")
             if ml_confidence > 0.7:
+                original_scale = position_scale
                 position_scale *= 1.3  # 30% boost for high-confidence ML signals
+                logger.info(f"High-confidence ML boost applied - position scale increased from {original_scale:.3f} to {position_scale:.3f}")
             elif ml_confidence > 0.5:
+                original_scale = position_scale
                 position_scale *= 1.1  # 10% boost for medium-confidence ML signals
+                logger.info(f"Medium-confidence ML boost applied - position scale increased from {original_scale:.3f} to {position_scale:.3f}")
 
         # OPTIMIZED BUY LOGIC: Adjust for aggressive entry opportunities
         if weighted_score > self.aggressive_entry_threshold:
+            original_scale = position_scale
             position_scale *= 1.2  # 20% boost for high-conviction setups
+            logger.info(f"Aggressive entry boost applied - position scale increased from {original_scale:.3f} to {position_scale:.3f}")
 
         # Cap position size
         position_scale = min(position_scale, 1.0)
+        logger.info(f"Final position scale (capped): {position_scale:.3f}")
 
         # Set position scale (the actual quantity will be calculated in the integration layer)
         decision.buy_quantity = 1  # Placeholder - actual quantity calculated in integration layer

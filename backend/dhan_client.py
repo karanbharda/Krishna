@@ -520,7 +520,7 @@ class DhanAPIClient:
                 'MOTHERSON': 'Samvardhana Motherson International Ltd',
                 'GMRAIRPORT': 'GMR Airports Ltd',
                 'GMRI': 'GMR Airports Ltd',
-                'ASHOKLEY': 'ASHOK LEYLAND'  # Add specific mapping for ASHOKLEY
+                'ASHOKLEY': 'ASHOK LEYLAND' , # Add specific mapping for ASHOKLEY
                 'IEX':' Indian Energy Exchange Ltd'
             }
             

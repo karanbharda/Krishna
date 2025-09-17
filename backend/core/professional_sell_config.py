@@ -16,8 +16,8 @@ class ProfessionalSellConfig:
         return {
             # Signal Requirements (Professional Standards)
             "min_sell_signals": 2,                    # Minimum 2 signals required (vs 1 in legacy)
-            "min_sell_confidence": 0.65,              # 65% minimum confidence (vs 40% in legacy)
-            "min_weighted_sell_score": 0.40,          # 40% weighted score threshold
+            "min_sell_confidence": 0.40,              # REDUCED from 0.65 to 0.40 to balance with buy thresholds
+            "min_weighted_sell_score": 0.04,          # REDUCED from 0.40 to 0.04 to balance with buy thresholds
             
             # Stop-Loss Configuration (Dynamic & Trailing)
             "stop_loss_pct": 0.05,                    # Base 5% stop-loss
@@ -25,15 +25,16 @@ class ProfessionalSellConfig:
             "profit_protection_threshold": 0.05,      # Lock profits after 5% gain
             "volatility_stop_multiplier": 1.5,        # Adjust stops for volatility
             
-            # Position Sizing (Partial vs Full Exits)
-            "partial_exit_threshold": 0.50,           # 50% confidence for partial exit
-            "full_exit_threshold": 0.75,              # 75% confidence for full exit
-            "conservative_exit_percentage": 0.25,     # 25% conservative exit
-            "aggressive_exit_percentage": 1.0,        # 100% aggressive exit
+            # Position Sizing (Partial vs Full Exits) - More granular thresholds
+            "conservative_exit_threshold": 0.15,      # 15% confidence for conservative exit
+            "partial_exit_threshold": 0.30,           # REDUCED from 0.50 to 0.30 for more granular exits
+            "aggressive_exit_threshold": 0.50,        # 50% confidence for aggressive exit
+            "full_exit_threshold": 0.70,              # REDUCED from 0.75 to 0.70 for balanced thresholds
+            "emergency_exit_threshold": 0.90,         # 90% confidence for emergency exits
             
-            # Market Context Filters (Trend Awareness)
-            "uptrend_sell_multiplier": 1.5,           # Require 1.5x signals in uptrends
-            "downtrend_sell_multiplier": 0.8,         # Reduce threshold in downtrends
+            # Market Context Filters (Less restrictive in uptrends)
+            "uptrend_sell_multiplier": 1.1,           # REDUCED from 1.5 to 1.1 for less restriction in uptrends
+            "downtrend_sell_multiplier": 0.9,         # INCREASED from 0.8 to 0.9 for less restriction in downtrends
             "sideways_sell_multiplier": 1.0,          # Normal threshold in sideways
             "strong_trend_threshold": 0.05,           # 5% for strong trend classification
             
@@ -69,6 +70,8 @@ class ProfessionalSellConfig:
             "enable_detailed_logging": True,          # Detailed decision logging
             "log_signal_breakdown": True,             # Log individual signals
             "audit_trail_enabled": True,              # Enable audit trail
+            "conservative_exit_percentage": 0.25,     # 25% conservative exit
+            "aggressive_exit_percentage": 1.0,        # 100% aggressive exit
         }
     
     @staticmethod
@@ -77,12 +80,12 @@ class ProfessionalSellConfig:
         config = ProfessionalSellConfig.get_default_config()
         config.update({
             "min_sell_signals": 3,                    # Require 3 signals
-            "min_sell_confidence": 0.75,              # 75% confidence
-            "min_weighted_sell_score": 0.50,          # 50% weighted score
+            "min_sell_confidence": 0.50,              # 50% confidence (less conservative than before)
+            "min_weighted_sell_score": 0.10,          # 10% weighted score (less conservative than before)
             "stop_loss_pct": 0.04,                    # Tighter 4% stop-loss
             "trailing_stop_pct": 0.025,               # Tighter 2.5% trailing
-            "uptrend_sell_multiplier": 2.0,           # Very high threshold in uptrends
-            "partial_exit_threshold": 0.40,           # Lower threshold for partial exits
+            "uptrend_sell_multiplier": 1.2,           # Less high threshold in uptrends
+            "partial_exit_threshold": 0.25,           # Lower threshold for partial exits
         })
         return config
     
@@ -92,12 +95,12 @@ class ProfessionalSellConfig:
         config = ProfessionalSellConfig.get_default_config()
         config.update({
             "min_sell_signals": 2,                    # Keep 2 signals
-            "min_sell_confidence": 0.55,              # Lower 55% confidence
-            "min_weighted_sell_score": 0.35,          # Lower 35% weighted score
+            "min_sell_confidence": 0.30,              # Lower 30% confidence
+            "min_weighted_sell_score": 0.02,          # Lower 2% weighted score
             "stop_loss_pct": 0.06,                    # Wider 6% stop-loss
             "trailing_stop_pct": 0.04,                # Wider 4% trailing
-            "uptrend_sell_multiplier": 1.2,           # Lower threshold in uptrends
-            "full_exit_threshold": 0.65,              # Lower threshold for full exits
+            "uptrend_sell_multiplier": 1.0,           # Lower threshold in uptrends
+            "full_exit_threshold": 0.60,              # Lower threshold for full exits
         })
         return config
     
@@ -107,12 +110,12 @@ class ProfessionalSellConfig:
         config = ProfessionalSellConfig.get_default_config()
         config.update({
             "min_sell_signals": 1,                    # Only 1 signal for speed
-            "min_sell_confidence": 0.45,              # Lower confidence for speed
-            "min_weighted_sell_score": 0.25,          # Lower weighted score
+            "min_sell_confidence": 0.25,              # Lower confidence for speed
+            "min_weighted_sell_score": 0.01,          # Lower weighted score
             "stop_loss_pct": 0.02,                    # Tight 2% stop-loss
             "trailing_stop_pct": 0.015,               # Tight 1.5% trailing
             "profit_protection_threshold": 0.02,      # Lock profits after 2% gain
-            "partial_exit_threshold": 0.30,           # Quick partial exits
+            "partial_exit_threshold": 0.15,           # Quick partial exits
             "time_decay_threshold": 5,                # 5 days max holding
         })
         return config
@@ -123,12 +126,12 @@ class ProfessionalSellConfig:
         config = ProfessionalSellConfig.get_default_config()
         config.update({
             "min_sell_signals": 2,                    # 2 signals for swing
-            "min_sell_confidence": 0.70,              # Higher confidence
+            "min_sell_confidence": 0.50,              # Higher confidence
             "stop_loss_pct": 0.08,                    # Wider 8% stop-loss
             "trailing_stop_pct": 0.05,                # Wider 5% trailing
             "profit_protection_threshold": 0.10,      # Lock profits after 10% gain
             "time_decay_threshold": 60,               # 60 days max holding
-            "uptrend_sell_multiplier": 1.8,           # Higher threshold in uptrends
+            "uptrend_sell_multiplier": 1.1,           # Lower threshold in uptrends
         })
         return config
     

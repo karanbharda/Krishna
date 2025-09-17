@@ -5186,6 +5186,18 @@ class StockTradingBot:
             logger.error(f"Failed to initialize professional buy integration: {e}")
             self.professional_buy_integration = None
 
+        # Initialize professional sell integration
+        try:
+            from core.professional_sell_integration import ProfessionalSellIntegration
+            from core.professional_sell_config import ProfessionalSellConfig
+            # Use default configuration for professional sell logic
+            professional_sell_config = ProfessionalSellConfig.get_default_config()
+            self.professional_sell_integration = ProfessionalSellIntegration(professional_sell_config)
+            logger.info("Professional sell integration initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize professional sell integration: {e}")
+            self.professional_sell_integration = None
+
         # Initialize production core components
         try:
             from core import AdaptiveThresholdManager, IntegratedRiskManager
@@ -5333,10 +5345,19 @@ class StockTradingBot:
         # Use Fyers for historical data (1y) - SAME LOGIC
         history = get_stock_data_fyers_or_yf(ticker, period="1y")
 
+        logger.info(f"=== TRADING DECISION FOR {ticker} ===")
+        logger.info(f"Current Price: Rs.{current_price:.2f}")
+        logger.info(f"Available Cash: Rs.{available_cash:.2f}")
+        logger.info(f"Total Portfolio Value: Rs.{total_value:.2f}")
+        logger.info(f"Support Level: Rs.{support_level:.2f}")
+        logger.info(f"Resistance Level: Rs.{resistance_level:.2f}")
+        logger.info(f"Volatility: {volatility:.4f}")
+
         # PROFESSIONAL BUY LOGIC INTEGRATION
         # Use professional buy logic if available, otherwise fall back to legacy logic
         if self.professional_buy_integration is not None:
             try:
+                logger.info(f"Using professional buy logic for {ticker}")
                 # Prepare data for professional buy evaluation
                 portfolio_data = {
                     "total_value": total_value,
@@ -5359,6 +5380,8 @@ class StockTradingBot:
                     portfolio_context=portfolio_data,
                     analysis_data=analysis_data
                 )
+                
+                logger.info(f"Professional Buy Decision: {professional_decision}")
                 
                 # If professional logic recommends a buy, execute it
                 if professional_decision.get("action") == "buy":
@@ -5431,6 +5454,71 @@ class StockTradingBot:
                     }
             except Exception as e:
                 logger.error(f"Error in professional buy evaluation for {ticker}: {e}")
+                logger.exception("Full traceback:")
+                # Continue with legacy logic on error
+
+        # PROFESSIONAL SELL LOGIC INTEGRATION
+        # Use professional sell logic if available, otherwise fall back to legacy logic
+        if self.professional_sell_integration is not None and ticker in self.portfolio.holdings:
+            try:
+                logger.info(f"Using professional sell logic for {ticker}")
+                # Prepare data for professional sell evaluation
+                portfolio_holdings = self.portfolio.holdings
+                analysis_data = {
+                    "technical_indicators": technical_indicators,
+                    "sentiment": sentiment_data,
+                    "ml_analysis": ml_analysis,
+                    "deep_learning_analysis": analysis.get("deep_learning_analysis", {}),
+                    "fundamental_analysis": analysis.get("fundamental_analysis", {})
+                }
+                
+                # Evaluate professional sell decision
+                professional_sell_decision = self.professional_sell_integration.evaluate_professional_sell(
+                    ticker=ticker,
+                    current_price=current_price,
+                    portfolio_holdings=portfolio_holdings,
+                    analysis_data=analysis_data,
+                    price_history=history
+                )
+                
+                logger.info(f"Professional Sell Decision: {professional_sell_decision}")
+                
+                # If professional logic recommends a sell, execute it
+                if professional_sell_decision.get("action") == "sell":
+                    sell_qty = professional_sell_decision.get("qty", 0)
+                    stop_loss = professional_sell_decision.get("stop_loss", current_price * 0.95)
+                    take_profit = professional_sell_decision.get("take_profit", current_price * 1.05)
+                    
+                    # Ensure we have shares to sell
+                    if sell_qty > 0 and ticker in portfolio_holdings and portfolio_holdings[ticker]["qty"] > 0:
+                        logger.info(f"Executing PROFESSIONAL SELL for {ticker}: {sell_qty} units at Rs.{current_price:.2f}")
+                        success_result = self.executor.execute_trade("sell", ticker, sell_qty, current_price, stop_loss, take_profit)
+                        
+                        return {
+                            "action": "sell",
+                            "ticker": ticker,
+                            "qty": sell_qty,
+                            "price": current_price,
+                            "stop_loss": stop_loss,
+                            "take_profit": take_profit,
+                            "success": success_result,
+                            "confidence_score": professional_sell_decision.get("confidence_score", 0.0),
+                            "signals": professional_sell_decision.get("signals", 0),
+                            "reason": "professional_sell",
+                            "sell_percentage": professional_sell_decision.get("sell_percentage", 1.0),
+                            "urgency": professional_sell_decision.get("urgency", 1.0)
+                        }
+                    else:
+                        logger.info(f"Professional sell decision for {ticker} blocked due to no position or zero quantity")
+                        # Continue with legacy logic if professional sell is not executable
+                
+                # If professional logic recommends hold, continue with existing logic
+                elif professional_sell_decision.get("action") == "hold":
+                    logger.info(f"Professional sell logic recommends HOLD for {ticker}")
+                    # Continue with legacy logic for sell decisions
+            except Exception as e:
+                logger.error(f"Error in professional sell evaluation for {ticker}: {e}")
+                logger.exception("Full traceback:")
                 # Continue with legacy logic on error
 
         # PRODUCTION FIX: Rebalanced signal weights for better action-oriented trading
@@ -6624,6 +6712,14 @@ class StockTradingBot:
             for signal in sell_signal_weights.keys()
         )
 
+        # Log detailed sell signal breakdown
+        logger.info(f"=== WEIGHTED SELL SIGNAL BREAKDOWN for {ticker} ===")
+        for signal, strength in sell_signal_strengths.items():
+            weight = sell_signal_weights[signal]
+            contribution = strength * weight
+            logger.info(f"  {signal}: strength={strength:.3f} × weight={weight:.3f} = {contribution:.3f}")
+        logger.info(f"  TOTAL WEIGHTED SELL SIGNAL SCORE: {weighted_sell_signal_score:.3f}")
+
         # Convert to legacy sell_signals for compatibility
         sell_signals = int(weighted_sell_signal_score * 7)
 
@@ -7069,6 +7165,9 @@ class StockTradingBot:
                 # Get the position sizer instance
                 position_sizer = get_position_sizer(initial_capital=available_cash)
                 
+                # Determine market regime from context
+                market_regime = market_regime or "NORMAL"
+                
                 # Calculate position size using the DynamicPositionSizer
                 position_result = position_sizer.calculate_position_size(
                     symbol=ticker,
@@ -7076,7 +7175,8 @@ class StockTradingBot:
                     current_price=current_ticker_price,
                     volatility=volatility,
                     historical_data=historical_data,
-                    portfolio_data=portfolio_data
+                    portfolio_data=portfolio_data,
+                    market_regime=market_regime
                 )
                 
                 # Extract the calculated quantity
@@ -7175,8 +7275,19 @@ class StockTradingBot:
                         logger.info(f"  [STRONG SELL] Selling full position: {sell_qty} shares")
                     else:
                         # Moderate sell signal - partial position
-                        # Scale sell quantity based on signal strength (30% to 100%)
-                        sell_factor = min(max(final_sell_score * 2.0, 0.3), 1.0)
+                        # Scale sell quantity based on signal strength (MORE GRANULAR AND CONSISTENT)
+                        # Implement more granular exit strategies based on confidence levels
+                        if weighted_sell_signal_score >= 0.70:  # Very High confidence
+                            sell_factor = min(max(final_sell_score * 3.0, 0.8), 1.0)  # 80-100%
+                        elif weighted_sell_signal_score >= 0.50:  # High confidence
+                            sell_factor = min(max(final_sell_score * 2.5, 0.6), 0.9)  # 60-90%
+                        elif weighted_sell_signal_score >= 0.30:  # Medium confidence
+                            sell_factor = min(max(final_sell_score * 2.0, 0.4), 0.7)  # 40-70%
+                        elif weighted_sell_signal_score >= 0.15:  # Low confidence
+                            sell_factor = min(max(final_sell_score * 1.5, 0.2), 0.5)  # 20-50%
+                        else:  # Very low confidence
+                            sell_factor = min(max(final_sell_score * 1.0, 0.1), 0.3)  # 10-30%
+                        
                         sell_qty = max(1, int(holding_qty * sell_factor))  # Minimum 1 share
                         logger.info(f"  [PARTIAL SELL] Selling {sell_qty} of {holding_qty} shares ({sell_factor:.2f} factor)")
                     
@@ -7357,6 +7468,20 @@ class StockTradingBot:
                         f"Sell Score={final_sell_score:.2f}, Buy Signals={buy_signals}, "
                         f"Sell Signals={sell_signals}, Buy Qty={buy_qty:.0f}, Sell Qty={sell_qty:.0f}, "
                         f"Backoff={backoff}, Cash=Rs.{available_cash:.2f}, ATR=Rs.{atr:.2f}")
+
+        # Log the final trade decision with detailed reasoning
+        if trade:
+            logger.info(f"=== FINAL TRADE DECISION for {ticker} ===")
+            logger.info(f"Action: {trade['action'].upper()}")
+            logger.info(f"Quantity: {trade['qty']}")
+            logger.info(f"Price: Rs.{trade['price']:.2f}")
+            logger.info(f"Confidence Score: {trade['confidence_score']:.3f}")
+            logger.info(f"Signals: {trade['signals']}")
+            logger.info(f"Reason: {trade['reason']}")
+            if trade['action'] in ['buy', 'sell']:
+                logger.info(f"Stop Loss: Rs.{trade['stop_loss']:.2f}")
+                logger.info(f"Take Profit: Rs.{trade['take_profit']:.2f}")
+                logger.info(f"Position Value: Rs.{trade['qty'] * trade['price']:.2f}")
 
         # Log strategy trigger for paper trading
         if self.portfolio.mode == "paper":
