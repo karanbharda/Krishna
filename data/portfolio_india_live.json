@@ -1,5 +1,5 @@
 {
-    "cash": 43.34,
+    "cash": 71.83,
     "holdings": {
         "SJVN": {
             "qty": 1,
@@ -62,8 +62,8 @@
             "last_price": 9.76667
         }
     },
-    "starting_balance": 43.34,
+    "starting_balance": 71.83,
     "realized_pnl": 0.0,
     "unrealized_pnl": 0.0,
-    "last_updated": "2025-09-17T15:24:54.625911"
+    "last_updated": "2025-09-17T15:51:45.695930"
 }

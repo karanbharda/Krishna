@@ -4,14 +4,33 @@ import PropTypes from 'prop-types';
 import { formatCurrency, formatPercentage } from '../services/apiService';
 
 const SidebarContainer = styled.div`
-  width: 300px;
-  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
-  color: white;
-  padding: 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 320px;
+  max-width: 85vw;
+  height: 100vh;
+  color: #ffffff;
+  padding: 20px 18px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  z-index: 9998;
+
+  /* Glassmorphism */
+  background: rgba(17, 25, 40, 0.65);
+  border-right: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+
+  /* Slide in/out */
+  transform: translateX(${props => (props.$open ? '0' : '-105%')});
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+
+  @media (max-width: 768px) {
+    width: 85vw;
+  }
 `;
 
 const SidebarHeader = styled.div`
@@ -186,7 +205,38 @@ const RefreshButton = styled(ActionButton)`
   }
 `;
 
+const ToggleButton = styled.button`
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(17, 25, 40, 0.55);
+  color: #ecf0f1;
+  z-index: 9999;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, background 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    background: rgba(17, 25, 40, 0.7);
+  }
+
+  i {
+    font-size: 1.2rem;
+  }
+`;
+
 const Sidebar = ({ botData, onStartBot, onStopBot, onRefresh }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
   const calculateMetrics = () => {
     const totalValue = botData.portfolio.totalValue;
     const cash = botData.portfolio.cash;
@@ -216,7 +266,12 @@ const Sidebar = ({ botData, onStartBot, onStopBot, onRefresh }) => {
   const positionsCount = Object.keys(botData.portfolio.holdings).length;
 
   return (
-    <SidebarContainer>
+    <>
+      <ToggleButton onClick={() => setIsOpen(prev => !prev)} aria-label={isOpen ? 'Close sidebar' : 'Open sidebar'}>
+        <i className={`fas ${isOpen ? 'fa-times' : 'fa-bars'}`}></i>
+      </ToggleButton>
+
+      <SidebarContainer $open={isOpen}>
       <SidebarHeader>
         <h2>📈 Trading Dashboard</h2>
       </SidebarHeader>
@@ -275,6 +330,7 @@ const Sidebar = ({ botData, onStartBot, onStopBot, onRefresh }) => {
         </QuickActions>
       </SidebarSection>
     </SidebarContainer>
+    </>
   );
 };
 

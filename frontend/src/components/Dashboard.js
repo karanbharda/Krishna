@@ -654,59 +654,7 @@ const Dashboard = ({ botData }) => {
         </ChartContainer>
       </ChartsSection>
 
-      {/* Recent Activity */}
-      <ActivitySection>
-        <h3>Recent Trading Activity</h3>
-        <ActivityList>
-          {recentTrades.length > 0 ? (
-            recentTrades.map((trade, index) => {
-              // Handle different possible data structures
-              const action = trade.action || 'unknown';
-              const asset = trade.asset || trade.ticker || 'Unknown';
-              const qty = trade.qty || trade.quantity || 0;
-              const price = trade.price || 0;
-              const timestamp = trade.timestamp || new Date().toISOString();
-
-              // Format the asset name (remove .NS suffix for display)
-              const displayAsset = asset.replace('.NS', '');
-
-              // Format the timestamp
-              const tradeDate = new Date(timestamp);
-              const formattedTime = tradeDate.toLocaleDateString('en-IN') + ' ' +
-                tradeDate.toLocaleTimeString('en-IN', {
-                  hour: '2-digit',
-                  minute: '2-digit'
-                });
-
-              return (
-                <ActivityItem key={`trade-${index}-${trade.asset}-${trade.timestamp}-${trade.qty}-${trade.price}`} type={action}>
-                  <ActivityDetails>
-                    <ActivityTitle type={action}>
-                      {action.toUpperCase()} {displayAsset}
-                    </ActivityTitle>
-                    <ActivityTime>
-                      {formattedTime}
-                    </ActivityTime>
-                  </ActivityDetails>
-                  <ActivityValues>
-                    <div><strong>Qty:</strong> {qty}</div>
-                    <div><strong>Price:</strong> {formatCurrency(price)}</div>
-                    <div><strong>Total:</strong> {formatCurrency(qty * price)}</div>
-                  </ActivityValues>
-                </ActivityItem>
-              );
-            })
-          ) : (
-            <NoActivity>
-              <div>📈</div>
-              <div style={{ marginTop: '10px' }}>No recent trades</div>
-              <div style={{ fontSize: '0.8rem', marginTop: '5px' }}>
-                Start trading to see your activity here
-              </div>
-            </NoActivity>
-          )}
-        </ActivityList>
-      </ActivitySection>
+      {/* Recent Trading Activity removed from Dashboard as requested */}
     </DashboardContainer>
   );
 };
