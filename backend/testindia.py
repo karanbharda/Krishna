@@ -1262,7 +1262,8 @@ Rs. Current Price: Rs.{current_price:.2f}
                     trade_time = datetime.strptime(trade["timestamp"], "%Y-%m-%d %H:%M:%S.%f")
                     if trade_time >= cutoff:
                         recent_trades.append(trade)
-                except:
+                except (ValueError, TypeError, KeyError) as e:
+                    logger.warning(f"Error parsing trade timestamp: {e}")
                     continue
 
             performance_text = f"""
@@ -2854,7 +2855,8 @@ class Stock:
                 return 1.1  # 10% higher weight during pre/post market
             else:
                 return 1.0  # Normal weight during off-market hours
-        except:
+        except (AttributeError, ValueError, TypeError) as e:
+            logger.warning(f"Error calculating market hours multiplier: {e}")
             return 1.0  # Default multiplier if calculation fails
 
     def multi_level_search(self, ticker, search_function, max_levels=3):
@@ -2924,7 +2926,8 @@ class Stock:
                     response = requests.get(url, timeout=10)
                     response.raise_for_status()
                     data = response.json()
-                except:
+                except (requests.exceptions.RequestException, requests.exceptions.HTTPError, ValueError, KeyError) as e:
+                    logger.warning(f"NewsAPI request with sources failed: {e}")
                     # Fallback without specific sources but keep 24-hour filter
                     fallback_url = f"https://newsapi.org/v2/everything?q={quote(query)}&from={yesterday}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
                     # Check fallback URL length too
@@ -5325,40 +5328,70 @@ class StockTradingBot:
             return False
 
     def make_trading_decision(self, analysis):
+        """Crystal clear trading decision logic - no fallbacks, pure professional logic"""
         if not analysis.get("success"):
             logger.warning(f"Skipping trading decision for {analysis.get('stock_data', {}).get('symbol')} due to failed analysis")
             return None
 
         ticker = analysis["stock_data"]["symbol"]
-        # Note: recommendation variable removed as it was unused after circular logic fix
-        current_price = analysis["stock_data"]["current_price"]["INR"]  # Changed to INR
+        current_price = analysis["stock_data"]["current_price"]["INR"]
         ml_analysis = analysis["ml_analysis"]
         technical_indicators = analysis["technical_indicators"]
         sentiment_data = analysis["sentiment_analysis"]
-        risk_level = analysis["risk_level"]
-        support_level = analysis["support_level"]
-        resistance_level = analysis["resistance_level"]
-        volatility = technical_indicators["volatility"]
         metrics = self.portfolio.get_metrics()
         available_cash = metrics["cash"]
         total_value = metrics["total_value"]
-        # Use Fyers for historical data (1y) - SAME LOGIC
         history = get_stock_data_fyers_or_yf(ticker, period="1y")
 
         logger.info(f"=== TRADING DECISION FOR {ticker} ===")
         logger.info(f"Current Price: Rs.{current_price:.2f}")
         logger.info(f"Available Cash: Rs.{available_cash:.2f}")
         logger.info(f"Total Portfolio Value: Rs.{total_value:.2f}")
-        logger.info(f"Support Level: Rs.{support_level:.2f}")
-        logger.info(f"Resistance Level: Rs.{resistance_level:.2f}")
-        logger.info(f"Volatility: {volatility:.4f}")
 
-        # PROFESSIONAL BUY LOGIC INTEGRATION
-        # Use professional buy logic if available, otherwise fall back to legacy logic
-        if self.professional_buy_integration is not None:
+        # STEP 1: Check for SELL decision first (if we own the stock)
+        if ticker in self.portfolio.holdings and self.professional_sell_integration:
             try:
-                logger.info(f"Using professional buy logic for {ticker}")
-                # Prepare data for professional buy evaluation
+                portfolio_holdings = self.portfolio.holdings
+                analysis_data = {
+                    "technical_indicators": technical_indicators,
+                    "sentiment": sentiment_data,
+                    "ml_analysis": ml_analysis,
+                    "deep_learning_analysis": analysis.get("deep_learning_analysis", {}),
+                    "fundamental_analysis": analysis.get("fundamental_analysis", {})
+                }
+                
+                sell_decision = self.professional_sell_integration.evaluate_professional_sell(
+                    ticker=ticker,
+                    current_price=current_price,
+                    portfolio_holdings=portfolio_holdings,
+                    analysis_data=analysis_data,
+                    price_history=history
+                )
+                
+                if sell_decision.get("action") == "sell":
+                    sell_qty = sell_decision.get("qty", 0)
+                    if sell_qty > 0 and portfolio_holdings[ticker]["qty"] >= sell_qty:
+                        logger.info(f"SELL DECISION: {ticker} - {sell_qty} units at Rs.{current_price:.2f}")
+                        success_result = self.executor.execute_trade(
+                            "sell", ticker, sell_qty, current_price,
+                            sell_decision.get("stop_loss", current_price * 0.95),
+                            sell_decision.get("take_profit", current_price * 1.05)
+                        )
+                        return {
+                            "action": "sell",
+                            "ticker": ticker,
+                            "qty": sell_qty,
+                            "price": current_price,
+                            "success": success_result,
+                            "confidence_score": sell_decision.get("confidence_score", 0.0),
+                            "reason": "professional_sell"
+                        }
+            except Exception as e:
+                logger.error(f"Error in sell evaluation for {ticker}: {e}")
+
+        # STEP 2: Check for BUY decision (if we have cash and don't own too much)
+        if self.professional_buy_integration and available_cash > 1000:  # Minimum cash threshold
+            try:
                 portfolio_data = {
                     "total_value": total_value,
                     "available_cash": available_cash,
@@ -5373,581 +5406,48 @@ class StockTradingBot:
                     "fundamental_analysis": analysis.get("fundamental_analysis", {})
                 }
                 
-                # Evaluate professional buy decision
-                professional_decision = self.professional_buy_integration.evaluate_professional_buy(
+                buy_decision = self.professional_buy_integration.evaluate_professional_buy(
                     ticker=ticker,
                     current_price=current_price,
                     portfolio_context=portfolio_data,
                     analysis_data=analysis_data
                 )
                 
-                logger.info(f"Professional Buy Decision: {professional_decision}")
-                
-                # If professional logic recommends a buy, execute it
-                if professional_decision.get("action") == "buy":
-                    buy_qty = professional_decision.get("qty", 0)
-                    stop_loss = professional_decision.get("stop_loss", current_price * 0.95)
-                    take_profit = professional_decision.get("take_profit", current_price * 1.15)
-                    
-                    # Ensure we have enough cash
-                    if buy_qty > 0 and buy_qty * current_price <= available_cash:
-                        logger.info(f"Executing PROFESSIONAL BUY for {ticker}: {buy_qty} units at Rs.{current_price:.2f}")
-                        success_result = self.executor.execute_trade("buy", ticker, buy_qty, current_price, stop_loss, take_profit)
-                        
+                if buy_decision.get("action") == "buy":
+                    buy_qty = buy_decision.get("qty", 0)
+                    trade_value = buy_qty * current_price
+                    if buy_qty > 0 and trade_value <= available_cash:
+                        logger.info(f"BUY DECISION: {ticker} - {buy_qty} units at Rs.{current_price:.2f}")
+                        success_result = self.executor.execute_trade(
+                            "buy", ticker, buy_qty, current_price,
+                            buy_decision.get("stop_loss", current_price * 0.95),
+                            buy_decision.get("take_profit", current_price * 1.15)
+                        )
                         return {
                             "action": "buy",
                             "ticker": ticker,
                             "qty": buy_qty,
                             "price": current_price,
-                            "stop_loss": stop_loss,
-                            "take_profit": take_profit,
                             "success": success_result,
-                            "confidence_score": professional_decision.get("confidence_score", 0.0),
-                            "signals": professional_decision.get("signals", 0),
+                            "confidence_score": buy_decision.get("confidence_score", 0.0),
                             "reason": "professional_buy"
                         }
-                    else:
-                        logger.info(f"Professional buy decision for {ticker} blocked due to insufficient cash or zero quantity")
-                        return {
-                            "action": "hold",
-                            "ticker": ticker,
-                            "qty": 0,
-                            "price": current_price,
-                            "stop_loss": stop_loss,
-                            "take_profit": take_profit,
-                            "success": False,
-                            "confidence_score": professional_decision.get("confidence_score", 0.0),
-                            "signals": professional_decision.get("signals", 0),
-                            "reason": "insufficient_funds_or_zero_qty"
-                        }
-                
-                # If professional logic recommends hold or sell, continue with existing logic
-                elif professional_decision.get("action") == "hold":
-                    logger.info(f"Professional buy logic recommends HOLD for {ticker}")
-                    # Return the hold decision instead of falling back to legacy logic
-                    return {
-                        "action": "hold",
-                        "ticker": ticker,
-                        "qty": 0,
-                        "price": current_price,
-                        "stop_loss": professional_decision.get("stop_loss", current_price * 0.95),
-                        "take_profit": professional_decision.get("take_profit", current_price * 1.05),
-                        "success": True,
-                        "confidence_score": professional_decision.get("confidence_score", 0.0),
-                        "signals": professional_decision.get("signals", 0),
-                        "reason": "professional_hold"
-                    }
-                elif professional_decision.get("action") == "sell":
-                    logger.info(f"Professional buy logic recommends SELL for {ticker} (unexpected)")
-                    # Return the sell decision
-                    return {
-                        "action": "sell",
-                        "ticker": ticker,
-                        "qty": professional_decision.get("qty", 0),
-                        "price": current_price,
-                        "stop_loss": professional_decision.get("stop_loss", current_price * 0.95),
-                        "take_profit": professional_decision.get("take_profit", current_price * 1.05),
-                        "success": True,
-                        "confidence_score": professional_decision.get("confidence_score", 0.0),
-                        "signals": professional_decision.get("signals", 0),
-                        "reason": "professional_sell_signal"
-                    }
             except Exception as e:
-                logger.error(f"Error in professional buy evaluation for {ticker}: {e}")
-                logger.exception("Full traceback:")
-                # Continue with legacy logic on error
+                logger.error(f"Error in buy evaluation for {ticker}: {e}")
 
-        # PROFESSIONAL SELL LOGIC INTEGRATION
-        # Use professional sell logic if available, otherwise fall back to legacy logic
-        if self.professional_sell_integration is not None and ticker in self.portfolio.holdings:
-            try:
-                logger.info(f"Using professional sell logic for {ticker}")
-                # Prepare data for professional sell evaluation
-                portfolio_holdings = self.portfolio.holdings
-                analysis_data = {
-                    "technical_indicators": technical_indicators,
-                    "sentiment": sentiment_data,
-                    "ml_analysis": ml_analysis,
-                    "deep_learning_analysis": analysis.get("deep_learning_analysis", {}),
-                    "fundamental_analysis": analysis.get("fundamental_analysis", {})
-                }
-                
-                # Evaluate professional sell decision
-                professional_sell_decision = self.professional_sell_integration.evaluate_professional_sell(
-                    ticker=ticker,
-                    current_price=current_price,
-                    portfolio_holdings=portfolio_holdings,
-                    analysis_data=analysis_data,
-                    price_history=history
-                )
-                
-                logger.info(f"Professional Sell Decision: {professional_sell_decision}")
-                
-                # If professional logic recommends a sell, execute it
-                if professional_sell_decision.get("action") == "sell":
-                    sell_qty = professional_sell_decision.get("qty", 0)
-                    stop_loss = professional_sell_decision.get("stop_loss", current_price * 0.95)
-                    take_profit = professional_sell_decision.get("take_profit", current_price * 1.05)
-                    
-                    # Ensure we have shares to sell
-                    if sell_qty > 0 and ticker in portfolio_holdings and portfolio_holdings[ticker]["qty"] > 0:
-                        logger.info(f"Executing PROFESSIONAL SELL for {ticker}: {sell_qty} units at Rs.{current_price:.2f}")
-                        success_result = self.executor.execute_trade("sell", ticker, sell_qty, current_price, stop_loss, take_profit)
-                        
-                        return {
-                            "action": "sell",
-                            "ticker": ticker,
-                            "qty": sell_qty,
-                            "price": current_price,
-                            "stop_loss": stop_loss,
-                            "take_profit": take_profit,
-                            "success": success_result,
-                            "confidence_score": professional_sell_decision.get("confidence_score", 0.0),
-                            "signals": professional_sell_decision.get("signals", 0),
-                            "reason": "professional_sell",
-                            "sell_percentage": professional_sell_decision.get("sell_percentage", 1.0),
-                            "urgency": professional_sell_decision.get("urgency", 1.0)
-                        }
-                    else:
-                        logger.info(f"Professional sell decision for {ticker} blocked due to no position or zero quantity")
-                        # Continue with legacy logic if professional sell is not executable
-                
-                # If professional logic recommends hold, continue with existing logic
-                elif professional_sell_decision.get("action") == "hold":
-                    logger.info(f"Professional sell logic recommends HOLD for {ticker}")
-                    # Continue with legacy logic for sell decisions
-            except Exception as e:
-                logger.error(f"Error in professional sell evaluation for {ticker}: {e}")
-                logger.exception("Full traceback:")
-                # Continue with legacy logic on error
-
-        # PRODUCTION FIX: Rebalanced signal weights for better action-oriented trading
-        weights = {
-            "technical": 0.5,    # Technical analysis - real-time signals
-            "sentiment": 0.25,   # Increased sentiment weight for market psychology
-            "ml": 0.25,         # Balanced ML weight for predictions
-            "rl": 0.1           # Enabled RL - was 0.0 (disabled)
+        # STEP 3: Default to HOLD
+        logger.info(f"HOLD DECISION: {ticker} - No clear buy/sell signal")
+        return {
+            "action": "hold",
+            "ticker": ticker,
+            "qty": 0,
+            "price": current_price,
+            "success": True,
+            "confidence_score": 0.5,
+            "reason": "no_clear_signal"
         }
-        scores = {"buy": 0.0, "sell": 0.0}
 
-        # PRODUCTION FIX: Direct technical analysis scoring (no circular dependency)
-        buy_technical_score = 0.0
-        sell_technical_score = 0.0
-
-        # BUY SIGNALS - Direct technical analysis
-        # RSI oversold conditions (stronger signal)
-        if technical_indicators["rsi"] < 30:
-            buy_technical_score += 0.4  # Strong oversold
-        elif technical_indicators["rsi"] < 40:
-            buy_technical_score += 0.2  # Moderate oversold
-
-        # MACD bullish momentum
-        if technical_indicators["macd"] > technical_indicators["signal_line"]:
-            buy_technical_score += 0.3
-
-        # Bollinger Band oversold (potential bounce)
-        if current_price < technical_indicators["bb_lower"]:
-            buy_technical_score += 0.3
-
-        # Moving average bullish trend
-        if technical_indicators["sma_50"] > technical_indicators["sma_200"]:
-            buy_technical_score += 0.3
-
-        # Volume confirmation for buy signals
-        if hasattr(technical_indicators, 'volume_ratio') and technical_indicators.get('volume_ratio', 1.0) > 1.2:
-            buy_technical_score += 0.2
-
-         # Price above short-term moving average
-        if current_price > technical_indicators["sma_50"]:
-            buy_technical_score += 0.2
-
-        # SELL SIGNALS - Direct technical analysis
-        # RSI overbought conditions
-        if technical_indicators["rsi"] > 70:
-            sell_technical_score += 0.4  # Strong overbought
-        elif technical_indicators["rsi"] > 60:
-            sell_technical_score += 0.2  # Moderate overbought
-
-        # MACD bearish momentum
-        if technical_indicators["macd"] < technical_indicators["signal_line"]:
-            sell_technical_score += 0.3
-
-        # Bollinger Band overbought
-        if current_price > technical_indicators["bb_upper"]:
-            sell_technical_score += 0.3
-
-        # Moving average bearish trend
-        if technical_indicators["sma_50"] < technical_indicators["sma_200"]:
-            sell_technical_score += 0.3
-
-        # Price below short-term moving average
-        if current_price < technical_indicators["sma_50"]:
-            sell_technical_score += 0.2
-
-        # Apply technical scores
-        scores["buy"] += buy_technical_score * weights["technical"]
-        scores["sell"] += sell_technical_score * weights["technical"]
-
-        # PRODUCTION FIX: Enhanced breakout detection with volume confirmation
-        price_near_resistance = abs(current_price - resistance_level) / resistance_level < 0.02
-        price_near_support = abs(current_price - support_level) / support_level < 0.02
-        volume_spike = technical_indicators.get("volume_ratio", 1.0) > 1.2
-
-        # Strong breakout signals with volume confirmation
-        if current_price > resistance_level * 1.01 and not price_near_resistance:  # Breakout above resistance
-            breakout_strength = 0.4 if volume_spike else 0.2  # Stronger with volume
-            scores["buy"] += breakout_strength * weights["technical"]
-            logger.info(f"Breakout detected above resistance: {resistance_level:.2f}, Volume spike: {volume_spike}")
-
-        elif current_price < support_level * 0.99 and not price_near_support:  # Breakdown below support
-            breakdown_strength = 0.4 if volume_spike else 0.2  # Stronger with volume
-            scores["sell"] += breakdown_strength * weights["technical"]
-            logger.info(f"Breakdown detected below support: {support_level:.2f}, Volume spike: {volume_spike}")
-
-        # Additional momentum signals
-        if technical_indicators.get("rsi", 50) < 25:  # Extremely oversold
-            scores["buy"] += 0.2 * weights["technical"]
-        elif technical_indicators.get("rsi", 50) > 75:  # Extremely overbought
-            scores["sell"] += 0.2 * weights["technical"]
-
-        # ENHANCED: Use weighted sentiment for better accuracy
-        sentiment_score = 0.0
-
-        # ENHANCED: Professional sentiment processing with comprehensive analysis integration
-        sentiment_score = 0.0
-        sentiment_confidence = 0.0
-        
-        # Try weighted aggregation first (preferred method)
-        if "weighted_aggregated" in sentiment_data and sentiment_data["weighted_aggregated"]["total_weight"] > 0:
-            weighted = sentiment_data["weighted_aggregated"]
-            total_weighted = weighted["positive"] + weighted["negative"] + weighted["neutral"]
-
-            if total_weighted > 0:
-                positive_ratio = weighted["positive"] / total_weighted
-                negative_ratio = weighted["negative"] / total_weighted
-                neutral_ratio = weighted["neutral"] / total_weighted
-                
-                # Use comprehensive analysis for confidence scoring
-                if "comprehensive_analysis" in sentiment_data:
-                    comprehensive = sentiment_data["comprehensive_analysis"]
-                    sentiment_confidence = comprehensive.get("confidence_score", 0.0)
-                    
-                    # Also use bullish/bearish strength from comprehensive analysis
-                    bullish_strength = comprehensive.get("sentiment_strength", {}).get("bullish", 0)
-                    bearish_strength = comprehensive.get("sentiment_strength", {}).get("bearish", 0)
-                    
-                    logger.debug(f"Comprehensive sentiment - Bullish: {bullish_strength:.3f}, Bearish: {bearish_strength:.3f}, Confidence: {sentiment_confidence:.3f}")
-                    
-                    # Use comprehensive analysis if available and confident
-                    if sentiment_confidence > 0.4 and (bullish_strength > 0 or bearish_strength > 0):
-                        total_strength = bullish_strength + bearish_strength
-                        if total_strength > 0:
-                            bullish_ratio = bullish_strength / total_strength
-                            sentiment_score = (bullish_ratio - 0.5) * 2  # Convert to -1 to +1 scale
-                            logger.debug(f"Using comprehensive analysis: bullish_ratio={bullish_ratio:.3f}, sentiment_score={sentiment_score:.3f}")
-                        else:
-                            sentiment_score = 0
-                    else:
-                        # Fall back to ratio-based calculation
-                        sentiment_score = (positive_ratio - negative_ratio)
-                        logger.debug(f"Using ratio-based sentiment: pos={positive_ratio:.3f}, neg={negative_ratio:.3f}, score={sentiment_score:.3f}")
-                else:
-                    # Standard ratio calculation
-                    sentiment_score = (positive_ratio - negative_ratio)
-                    sentiment_confidence = max(positive_ratio, negative_ratio, neutral_ratio)
-                    logger.debug(f"Standard weighted sentiment: pos={positive_ratio:.3f}, neg={negative_ratio:.3f}, score={sentiment_score:.3f}")
-                
-                logger.debug(f"Using WEIGHTED sentiment - Total: {total_weighted:.1f}, Weight: {weighted['total_weight']:.2f}")
-            else:
-                positive_ratio = negative_ratio = 0
-                sentiment_score = 0
-                logger.debug("Weighted sentiment data empty")
-        else:
-            # Fallback to regular aggregation
-            aggregated = sentiment_data.get("aggregated", {"positive": 0, "negative": 0, "neutral": 0})
-            total_sentiment = aggregated["positive"] + aggregated["negative"] + aggregated["neutral"]
-
-            if total_sentiment > 0:
-                positive_ratio = aggregated["positive"] / total_sentiment
-                negative_ratio = aggregated["negative"] / total_sentiment
-                sentiment_score = (positive_ratio - negative_ratio)
-                sentiment_confidence = max(positive_ratio, negative_ratio)
-                logger.debug(f"Using REGULAR aggregated sentiment - Positive: {positive_ratio:.3f}, Negative: {negative_ratio:.3f}")
-            else:
-                positive_ratio = negative_ratio = 0
-                sentiment_score = 0
-                sentiment_confidence = 0
-                logger.debug("No sentiment data available")
-
-        # ENHANCED: Advanced sentiment scoring with progressive thresholds and confidence weighting
-        
-        # Apply confidence multiplier to sentiment score
-        confidence_adjusted_score = sentiment_score * (0.5 + sentiment_confidence * 0.5)  # 50-100% of score based on confidence
-        
-        logger.debug(f"Sentiment processing - Raw: {sentiment_score:.3f}, Confidence: {sentiment_confidence:.3f}, Adjusted: {confidence_adjusted_score:.3f}")
-        
-        # Progressive sentiment thresholds with confidence consideration
-        final_sentiment_score = 0.0
-        
-        if confidence_adjusted_score > 0.4:  # Strong positive sentiment
-            base_strength = 0.8 + (confidence_adjusted_score - 0.4) * 1.5
-            final_sentiment_score = min(base_strength, 1.0)
-            logger.debug(f"Strong positive sentiment: {confidence_adjusted_score:.3f} -> {final_sentiment_score:.3f}")
-        elif confidence_adjusted_score > 0.25:  # Moderate positive sentiment
-            final_sentiment_score = (confidence_adjusted_score - 0.25) * 4  # 0.0 to 0.6
-            logger.debug(f"Moderate positive sentiment: {confidence_adjusted_score:.3f} -> {final_sentiment_score:.3f}")
-        elif confidence_adjusted_score > 0.1:  # Weak positive sentiment
-            final_sentiment_score = (confidence_adjusted_score - 0.1) * 2  # 0.0 to 0.3
-            logger.debug(f"Weak positive sentiment: {confidence_adjusted_score:.3f} -> {final_sentiment_score:.3f}")
-        elif confidence_adjusted_score > 0.05:  # Very weak positive
-            final_sentiment_score = (confidence_adjusted_score - 0.05) * 1.5  # 0.0 to 0.075
-            logger.debug(f"Very weak positive sentiment: {confidence_adjusted_score:.3f} -> {final_sentiment_score:.3f}")
-        elif confidence_adjusted_score < -0.4:  # Strong negative sentiment (for sell signals)
-            final_sentiment_score = confidence_adjusted_score  # Keep negative for sell logic
-            logger.debug(f"Strong negative sentiment: {confidence_adjusted_score:.3f} -> {final_sentiment_score:.3f}")
-        elif confidence_adjusted_score < -0.25:  # Moderate negative
-            final_sentiment_score = confidence_adjusted_score * 0.7  # Reduce impact
-            logger.debug(f"Moderate negative sentiment: {confidence_adjusted_score:.3f} -> {final_sentiment_score:.3f}")
-        elif confidence_adjusted_score < -0.1:  # Weak negative
-            final_sentiment_score = confidence_adjusted_score * 0.5  # Further reduce
-            logger.debug(f"Weak negative sentiment: {confidence_adjusted_score:.3f} -> {final_sentiment_score:.3f}")
-        else:  # Neutral sentiment (-0.1 to +0.05)
-            final_sentiment_score = 0.0
-            logger.debug(f"Neutral sentiment: {confidence_adjusted_score:.3f} -> 0.000")
-        
-        # Store the final processed sentiment score for use in signal strength calculation
-        processed_sentiment_score = final_sentiment_score
-        
-        # Apply enhanced sentiment to buy/sell scores
-        if processed_sentiment_score > 0:
-            sentiment_contribution = processed_sentiment_score * weights["sentiment"]
-            scores["buy"] += sentiment_contribution
-            logger.debug(f"Enhanced sentiment BUY contribution: {sentiment_contribution:.3f}")
-        elif processed_sentiment_score < 0:
-            sentiment_contribution = abs(processed_sentiment_score) * weights["sentiment"]
-            scores["sell"] += sentiment_contribution
-            logger.debug(f"Enhanced sentiment SELL contribution: {sentiment_contribution:.3f}")
-        else:
-            logger.debug("No sentiment contribution (neutral after processing)")
-        
-        # Store processed sentiment for later use in signal strength calculation
-        sentiment_score = processed_sentiment_score
-
-        # ENHANCED: Professional ML scoring with multiple validation layers
-        ml_score = 0.0
-        if ml_analysis.get("success") and weights["ml"] > 0:  # Fixed: Check ML analysis success directly
-            ensemble_r2 = ml_analysis.get("r2_score", 0)
-            predicted_price = ml_analysis.get("predicted_price", current_price)
-            
-            # Debug ML data availability
-            logger.debug(f"ML Analysis - R2: {ensemble_r2:.3f}, Predicted: {predicted_price:.2f}, Current: {current_price:.2f}")
-
-            # More aggressive ML usage - lower accuracy threshold
-            if ensemble_r2 > -0.5:  # Significantly lowered threshold to allow more ML signals
-                price_change_pct = ((predicted_price - current_price) / current_price) if current_price > 0 else 0
-                
-                # Enhanced ML signal generation with multiple trigger points
-                if price_change_pct > 0.005:  # Lower threshold (0.5% vs 1%)
-                    # Progressive scoring based on prediction confidence
-                    base_ml_score = min(price_change_pct * 4, 1.0)  # More reasonable amplification
-                    confidence_factor = min(max(ensemble_r2, 0.1) * 2, 1.0)  # Boost confidence impact, ensure minimum
-                    ml_score = base_ml_score * confidence_factor
-                    scores["buy"] += ml_score * weights["ml"]
-                    logger.debug(f"ML BUY signal: price_change={price_change_pct:.3f}, base_score={base_ml_score:.3f}, confidence={confidence_factor:.3f}, final={ml_score:.3f}")
-                elif price_change_pct < -0.005:  # Lower sell threshold too
-                    base_ml_score = min(abs(price_change_pct) * 4, 1.0)
-                    confidence_factor = min(max(ensemble_r2, 0.1) * 2, 1.0)
-                    ml_score = base_ml_score * confidence_factor
-                    scores["sell"] += ml_score * weights["ml"]
-                    logger.debug(f"ML SELL signal: price_change={price_change_pct:.3f}, base_score={base_ml_score:.3f}, confidence={confidence_factor:.3f}, final={ml_score:.3f}")
-                else:
-                    # Still provide minimal signal for very small predictions
-                    if abs(price_change_pct) > 0.002:  # 0.2% threshold
-                        ml_score = abs(price_change_pct) * 2 * max(ensemble_r2, 0.1)
-                        if price_change_pct > 0:
-                            scores["buy"] += ml_score * weights["ml"] * 0.5  # Reduced weight for weak signals
-                        else:
-                            scores["sell"] += ml_score * weights["ml"] * 0.5
-                        logger.debug(f"ML weak signal: {price_change_pct:.3f}% -> {ml_score:.3f}")
-            else:
-                logger.debug(f"ML accuracy too low: {ensemble_r2:.3f} < -0.5 threshold")
-
-        # RL Score - DISABLED for performance (weight set to 0.0)
-        # This eliminates the 100-episode RL training that was causing 60+ second delays
-        if weights["rl"] > 0 and ml_analysis.get("rl_metrics", {}).get("success"):
-            rl_recommendation = ml_analysis["rl_metrics"]["recommendation"]
-            if rl_recommendation == "SELL":
-                scores["sell"] += 0.5 * weights["rl"]  # Increased signal strength
-            elif rl_recommendation == "BUY":
-                scores["buy"] += 0.5 * weights["rl"]  # Increased signal strength
-
-        final_buy_score = scores["buy"]
-        final_sell_score = scores["sell"]
-
-        # PRODUCTION FIX: Market Regime Detection for adaptive strategies
-        def detect_market_regime(price_data, volatility):
-            """Detect market regime: Trending, Range-bound, or Volatile"""
-            try:
-                if len(price_data) < 20:
-                    return "RANGE_BOUND"  # Default for insufficient data
-
-                # Calculate trend strength
-                sma_20 = price_data[-20:].mean()
-                sma_50 = price_data[-50:].mean() if len(price_data) >= 50 else sma_20
-                price_change_20d = (current_price - price_data[-20]) / price_data[-20] if price_data[-20] > 0 else 0
-
-                # Regime classification
-                if volatility > 0.04:  # High volatility threshold
-                    return "VOLATILE"
-                elif abs(price_change_20d) > 0.15:  # Strong trend (15%+ move in 20 days)
-                    return "TRENDING"
-                elif abs(price_change_20d) < 0.05 and volatility < 0.02:  # Low movement, low volatility
-                    return "RANGE_BOUND"
-                else:
-                    return "TRENDING" if abs(sma_20 - sma_50) / sma_50 > 0.03 else "RANGE_BOUND"
-            except:
-                return "RANGE_BOUND"  # Safe default
-
-        market_regime = detect_market_regime(history['Close'].values, volatility)
-        logger.info(f"Market regime detected for {ticker}: {market_regime}")
-
-        # CRITICAL FIX: Initialize signal_strengths FIRST to prevent undefined variable error
-        signal_strengths = {}
-
-        # ENHANCED: Dynamic confidence thresholds based on market volatility and recent performance
-        def calculate_dynamic_thresholds(volatility, market_regime, portfolio_metrics, signal_quality):
-            """Calculate adaptive confidence thresholds based on multiple factors"""
-            
-            # Get recent portfolio performance
-            recent_trades = [t for t in self.portfolio.trade_log if 
-                           datetime.strptime(t["timestamp"], "%Y-%m-%d %H:%M:%S.%f") > datetime.now() - timedelta(days=7)]
-            
-            # Calculate recent performance metrics
-            if recent_trades:
-                recent_success_rate = len([t for t in recent_trades if t.get("success", False)]) / len(recent_trades)
-                
-                # Calculate recent P&L
-                recent_pnl = 0
-                for trade in recent_trades:
-                    if trade["action"] == "sell" and trade["asset"] in self.portfolio.holdings:
-                        avg_price = self.portfolio.holdings[trade["asset"]].get("avg_price", trade["price"])
-                        trade_pnl = (trade["price"] - avg_price) * trade["qty"]
-                        recent_pnl += trade_pnl
-                
-                recent_pnl_rate = recent_pnl / total_value if total_value > 0 else 0
-            else:
-                recent_success_rate = 0.5  # Neutral when no recent trades
-                recent_pnl_rate = 0.0
-            
-            logger.debug(f"Recent performance - Success rate: {recent_success_rate:.3f}, P&L rate: {recent_pnl_rate:.3f}")
-            
-            # Base thresholds by market regime
-            base_thresholds = {
-                "TRENDING": {"buy": 0.20, "sell": 0.25},     # Aggressive in trends
-                "VOLATILE": {"buy": 0.35, "sell": 0.40},     # Conservative in volatility
-                "RANGE_BOUND": {"buy": 0.25, "sell": 0.30}  # Moderate in ranges
-            }
-            
-            # Get base threshold
-            regime_thresholds = base_thresholds.get(market_regime, base_thresholds["RANGE_BOUND"])
-            base_buy_threshold = regime_thresholds["buy"]
-            base_sell_threshold = regime_thresholds["sell"]
-            
-            # Volatility adjustments
-            volatility_factor = min(max(volatility * 50, 0.5), 3.0)  # 0.5 to 3.0 range
-            
-            if volatility_factor > 2.0:  # Very high volatility
-                volatility_adjustment = 0.15
-            elif volatility_factor > 1.5:  # High volatility
-                volatility_adjustment = 0.10
-            elif volatility_factor > 1.0:  # Medium volatility
-                volatility_adjustment = 0.05
-            elif volatility_factor < 0.8:  # Low volatility
-                volatility_adjustment = -0.05  # Lower thresholds
-            else:  # Normal volatility
-                volatility_adjustment = 0.0
-            
-            logger.debug(f"Volatility factor: {volatility_factor:.2f}, adjustment: {volatility_adjustment:+.3f}")
-            
-            # Performance-based adjustments
-            if recent_success_rate > 0.7:  # Good recent performance
-                performance_adjustment = -0.03  # Lower thresholds (more confident)
-            elif recent_success_rate > 0.5:  # Average performance
-                performance_adjustment = 0.0
-            else:  # Poor recent performance
-                performance_adjustment = 0.05  # Higher thresholds (more conservative)
-            
-            # P&L-based adjustments
-            if recent_pnl_rate > 0.02:  # Good recent profits (>2%)
-                pnl_adjustment = -0.02
-            elif recent_pnl_rate < -0.02:  # Recent losses (>2%)
-                pnl_adjustment = 0.03
-            else:
-                pnl_adjustment = 0.0
-            
-            # Signal quality adjustments
-            avg_signal_strength = sum(signal_strengths.values()) / len(signal_strengths) if signal_strengths else 0
-            if avg_signal_strength > 0.7:  # Very strong signals
-                signal_adjustment = -0.03
-            elif avg_signal_strength > 0.5:  # Good signals
-                signal_adjustment = -0.01
-            elif avg_signal_strength > 0.3:  # Moderate signals
-                signal_adjustment = 0.0
-            else:  # Weak signals
-                signal_adjustment = 0.04
-            
-            logger.debug(f"Performance adj: {performance_adjustment:+.3f}, P&L adj: {pnl_adjustment:+.3f}, Signal adj: {signal_adjustment:+.3f}")
-            
-            # Calculate final thresholds
-            final_buy_threshold = base_buy_threshold + volatility_adjustment + performance_adjustment + pnl_adjustment + signal_adjustment
-            final_sell_threshold = base_sell_threshold + volatility_adjustment + performance_adjustment + pnl_adjustment + signal_adjustment
-            
-            # Apply bounds to prevent extreme thresholds
-            final_buy_threshold = max(0.05, min(final_buy_threshold, 0.70))
-            final_sell_threshold = max(0.10, min(final_sell_threshold, 0.75))
-            
-            return {
-                "buy": final_buy_threshold,
-                "sell": final_sell_threshold,
-                "reasoning": {
-                    "base_regime": market_regime,
-                    "volatility_factor": volatility_factor,
-                    "recent_success_rate": recent_success_rate,
-                    "recent_pnl_rate": recent_pnl_rate,
-                    "avg_signal_strength": avg_signal_strength,
-                    "adjustments": {
-                        "volatility": volatility_adjustment,
-                        "performance": performance_adjustment,
-                        "pnl": pnl_adjustment,
-                        "signal_quality": signal_adjustment
-                    }
-                }
-            }
-        
-        # Calculate dynamic thresholds (signal_strengths already initialized above)
-        metrics = self.portfolio.get_metrics()
-        dynamic_thresholds = calculate_dynamic_thresholds(
-            volatility, market_regime, metrics, signal_strengths
-        )
-        
-        # Use dynamic thresholds
-        confidence_threshold = dynamic_thresholds["buy"]
-        sell_confidence_threshold = dynamic_thresholds["sell"]
-        
-        # Log threshold calculation details
-        logger.info(f"=== DYNAMIC CONFIDENCE THRESHOLDS for {ticker} ====")
-        logger.info(f"  Market Regime: {market_regime}")
-        logger.info(f"  Volatility: {volatility:.4f}")
-        logger.info(f"  Final Buy Threshold: {confidence_threshold:.3f}")
-        logger.info(f"  Final Sell Threshold: {sell_confidence_threshold:.3f}")
-        
-        reasoning = dynamic_thresholds["reasoning"]
-        logger.info(f"  Recent Success Rate: {reasoning['recent_success_rate']:.3f}")
-        logger.info(f"  Recent P&L Rate: {reasoning['recent_pnl_rate']:.3f}")
-        logger.info(f"  Avg Signal Strength: {reasoning['avg_signal_strength']:.3f}")
-        
-        adjustments = reasoning["adjustments"]
-        logger.info(f"  Adjustments - Vol: {adjustments['volatility']:+.3f}, Perf: {adjustments['performance']:+.3f}, P&L: {adjustments['pnl']:+.3f}, Signal: {adjustments['signal_quality']:+.3f}")
+    def analyze_stock(self, ticker, benchmark_tickers=None, prediction_days=30, training_period="2y", bot_running=True):
 
         # Calculate unrealized PnL
         current_prices = self.portfolio.get_current_prices()
