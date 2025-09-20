@@ -1,0 +1,23 @@
+{
+    "cash": 254.61,
+    "starting_balance": 10000.0,
+    "realized_pnl": 0.0,
+    "unrealized_pnl": 0.5899999999999892,
+    "holdings": {
+        "SUZLON.NS": {
+            "qty": 3,
+            "avg_price": 57.86,
+            "last_price": 57.86
+        },
+        "RAJOOENG.NS": {
+            "qty": 4,
+            "avg_price": 102.9,
+            "last_price": 102.9
+        },
+        "TEST.NS": {
+            "qty": 4,
+            "avg_price": 100.0,
+            "last_price": 100.0
+        }
+    }
+}

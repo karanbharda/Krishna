@@ -37,8 +37,8 @@ class DualPortfolioManager:
         
         # Config files (keeping configs in JSON for flexibility)
         self.config_files = {
-            "paper": os.path.join(data_dir, "paper_config.json"),
-            "live": os.path.join(data_dir, "live_config.json")
+            "paper": os.path.join(self.data_dir, "paper_config.json"),
+            "live": os.path.join(self.data_dir, "live_config.json")
         }
         
         # Current session data

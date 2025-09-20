@@ -1802,6 +1802,33 @@ def apply_risk_level_settings(bot, risk_level, custom_stop_loss=None, custom_all
     except Exception as e:
         logger.error(f"Error applying risk level settings: {e}")
 
+def load_config_from_file(mode: str) -> dict:
+    """Load configuration from the appropriate JSON file"""
+    try:
+        import os
+        import json
+        
+        # Get the data directory path
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_dir)
+        data_dir = os.path.join(project_root, "data")
+        
+        # Determine the config file path
+        config_file = os.path.join(data_dir, f"{mode}_config.json")
+        
+        if os.path.exists(config_file):
+            with open(config_file, 'r') as f:
+                config_data = json.load(f)
+                logger.info(f"Loaded configuration from {config_file}")
+                return config_data
+        else:
+            logger.info(f"Config file {config_file} not found, using defaults")
+            return {}
+            
+    except Exception as e:
+        logger.error(f"Error loading config from file: {e}")
+        return {}
+
 def initialize_bot():
     """Initialize the trading bot with default configuration"""
     global trading_bot
@@ -1812,12 +1839,13 @@ def initialize_bot():
         load_dotenv()
         
         # Default configuration
+        default_mode = os.getenv("MODE", "paper")
         config = {
             "tickers": [],  # Empty by default - users can add tickers manually
             "starting_balance": 10000,  # Rs.10 thousand
             "current_portfolio_value": 10000,
             "current_pnl": 0,
-            "mode": os.getenv("MODE", "paper"),  # Default to paper mode for web interface
+            "mode": default_mode,  # Default to paper mode for web interface
             "riskLevel": "MEDIUM",  # Default risk level
             "dhan_client_id": os.getenv("DHAN_CLIENT_ID"),
             "dhan_access_token": os.getenv("DHAN_ACCESS_TOKEN"),
@@ -1831,9 +1859,24 @@ def initialize_bot():
             "max_trade_limit": 150
         }
         
+        # Load saved configuration from file and merge with defaults
+        saved_config = load_config_from_file(default_mode)
+        if saved_config:
+            # Update config with saved values, keeping defaults for missing keys
+            config.update({
+                "mode": saved_config.get("mode", config["mode"]),
+                "riskLevel": saved_config.get("riskLevel", config["riskLevel"]),
+                "stop_loss_pct": saved_config.get("stop_loss_pct", config["stop_loss_pct"]),
+                "max_capital_per_trade": saved_config.get("max_capital_per_trade", config["max_capital_per_trade"]),
+                "max_trade_limit": saved_config.get("max_trade_limit", config["max_trade_limit"])
+            })
+            logger.info(f"Merged saved config: Risk Level={config['riskLevel']}, "
+                       f"Stop Loss={config['stop_loss_pct']*100}%, "
+                       f"Max Allocation={config['max_capital_per_trade']*100}%")
+        
         trading_bot = WebTradingBot(config)
 
-        # Apply default risk level settings
+        # Apply risk level settings from loaded config
         apply_risk_level_settings(trading_bot, config["riskLevel"])
 
         logger.info("Trading bot initialized successfully")
@@ -2420,6 +2463,40 @@ async def get_settings():
         logger.error(f"Error getting settings: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+def save_config_to_file(mode: str, config_data: dict):
+    """Save configuration to the appropriate JSON file"""
+    try:
+        import os
+        import json
+        
+        # Get the data directory path
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_dir)
+        data_dir = os.path.join(project_root, "data")
+        
+        # Determine the config file path
+        config_file = os.path.join(data_dir, f"{mode}_config.json")
+        
+        # Prepare config data for saving
+        config_to_save = {
+            "mode": mode,
+            "riskLevel": config_data.get("riskLevel", "MEDIUM"),
+            "stop_loss_pct": config_data.get("stop_loss_pct", 0.05),
+            "max_capital_per_trade": config_data.get("max_capital_per_trade", 0.25),
+            "max_trade_limit": config_data.get("max_trade_limit", 150),
+            "created_at": datetime.now().isoformat()
+        }
+        
+        # Save to file
+        with open(config_file, 'w') as f:
+            json.dump(config_to_save, f, indent=2)
+            
+        logger.info(f"Configuration saved to {config_file}")
+        
+    except Exception as e:
+        logger.error(f"Error saving config to file: {e}")
+        raise
+
 @app.post("/api/settings", response_model=MessageResponse)
 async def update_settings(request: SettingsRequest):
     """Update bot settings"""
@@ -2462,6 +2539,10 @@ async def update_settings(request: SettingsRequest):
                     trading_bot.executor.max_capital_per_trade = request.max_capital_per_trade
             if request.max_trade_limit is not None:
                 trading_bot.config['max_trade_limit'] = request.max_trade_limit
+
+            # Save the updated configuration to the appropriate config file
+            current_mode = trading_bot.config.get('mode', 'paper')
+            save_config_to_file(current_mode, trading_bot.config)
 
             logger.info(f"Settings updated: Mode={trading_bot.config.get('mode')}, "
                        f"Risk Level={trading_bot.config.get('riskLevel')}, "

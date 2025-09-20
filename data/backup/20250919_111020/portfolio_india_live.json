@@ -1,0 +1,64 @@
+{
+    "cash": 31.29,
+    "holdings": {
+        "SJVN": {
+            "qty": 1,
+            "avg_price": 93.39,
+            "last_price": 93.39
+        },
+        "SUZLON": {
+            "qty": 1,
+            "avg_price": 58.97,
+            "last_price": 58.97
+        },
+        "NSLNISP": {
+            "qty": 2,
+            "avg_price": 37.87,
+            "last_price": 37.87
+        },
+        "PNB": {
+            "qty": 1,
+            "avg_price": 104.29,
+            "last_price": 104.29
+        },
+        "ASHOKLEY": {
+            "qty": 3,
+            "avg_price": 135.80667,
+            "last_price": 135.80667
+        },
+        "ONGC": {
+            "qty": 1,
+            "avg_price": 236.09,
+            "last_price": 236.09
+        },
+        "RVNL": {
+            "qty": 1,
+            "avg_price": 313.15,
+            "last_price": 313.15
+        },
+        "IOB": {
+            "qty": 1,
+            "avg_price": 38.15,
+            "last_price": 38.15
+        },
+        "ORIENTBELL": {
+            "qty": 2,
+            "avg_price": 300.5,
+            "last_price": 300.5
+        },
+        "NHPC": {
+            "qty": 2,
+            "avg_price": 79.01,
+            "last_price": 79.01
+        },
+        "JAYNECOIND": {
+            "qty": 2,
+            "avg_price": 67.1,
+            "last_price": 67.1
+        }
+    },
+    "starting_balance": 71.84,
+    "realized_pnl": 0.0,
+    "unrealized_pnl": 0.0,
+    "last_updated": "2025-09-18T13:04:35.710915"
+}

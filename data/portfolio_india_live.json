@@ -1,6 +1,11 @@
 {
-    "cash": 71.83,
+    "cash": 3611.89,
     "holdings": {
+        "KRBL": {
+            "qty": 3,
+            "avg_price": 396.1,
+            "last_price": 396.1
+        },
         "SJVN": {
             "qty": 1,
             "avg_price": 93.39,
@@ -10,6 +15,11 @@
             "qty": 1,
             "avg_price": 58.97,
             "last_price": 58.97
+        },
+        "IDFCFIRSTB": {
+            "qty": 3,
+            "avg_price": 71.77,
+            "last_price": 71.77
         },
         "NSLNISP": {
             "qty": 2,
@@ -36,6 +46,11 @@
             "avg_price": 313.15,
             "last_price": 313.15
         },
+        "PAISALO": {
+            "qty": 1,
+            "avg_price": 40.54,
+            "last_price": 40.54
+        },
         "IOB": {
             "qty": 1,
             "avg_price": 38.15,
@@ -55,15 +70,10 @@
             "qty": 2,
             "avg_price": 67.1,
             "last_price": 67.1
-        },
-        "SHANTI": {
-            "qty": 3,
-            "avg_price": 9.76667,
-            "last_price": 9.76667
         }
     },
-    "starting_balance": 71.83,
+    "starting_balance": 3611.89,
     "realized_pnl": 0.0,
     "unrealized_pnl": 0.0,
-    "last_updated": "2025-09-17T15:51:45.695930"
+    "last_updated": "2025-09-20T11:21:09.014144"
 }
