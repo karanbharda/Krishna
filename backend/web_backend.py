@@ -58,6 +58,16 @@ except ImportError as e:
     logger.error(f"❌ Live trading import failed: {e}")
     LIVE_TRADING_AVAILABLE = False
 
+# Import new agents for full-market RL scanning
+try:
+    from core.data_agent import data_agent
+    from core.rl_agent import rl_agent
+    from core.tracker_agent import tracker_agent
+    from core.risk_engine import risk_engine
+    logger.info("✅ RL scanning agents loaded successfully")
+except ImportError as e:
+    logger.error(f"❌ RL agents import failed: {e}")
+
 # Architectural Fix: Graceful MCP dependency handling
 try:
     from mcp_server import MCPTradingServer, TradingAgent, ExplanationAgent, MCP_SERVER_AVAILABLE
@@ -285,6 +295,16 @@ class BotStatus(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+# New endpoint models for RL scanning
+class AnalyzeRequest(BaseModel):
+    tickers: List[str]
+    horizon: str = "day"
+
+class UpdateRiskRequest(BaseModel):
+    stop_loss_pct: float
+    capital_risk_pct: float
+    drawdown_limit_pct: float
 
 # Logger already configured above
 
@@ -3386,3 +3406,102 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(f"Failed to start web server: {e}")
         sys.exit(1)
+
+# New API endpoints for RL scanning system
+@app.post("/api/scan_all")
+async def scan_all():
+    """Trigger full market scan"""
+    try:
+        logger.info("Manual market scan triggered via API")
+        data_agent.kickoff_scan()
+        return {"status": "scan_started", "message": "Full market scan initiated"}
+    except Exception as e:
+        logger.error(f"Scan failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/analyze")
+async def analyze_stocks(request: AnalyzeRequest):
+    """Analyze custom tickers and return entry/exit points with confidence"""
+    try:
+        from testindia import Stock  # Import your existing analysis logic
+        results = {}
+        
+        for ticker in request.tickers:
+            try:
+                # Use existing Stock class for analysis
+                stock = Stock(ticker)
+                
+                # Get basic analysis (simplified - enhance based on your Stock class methods)
+                price_data = stock.get_current_price()
+                sentiment = stock.get_sentiment_score()
+                
+                # Calculate entry/exit based on current implementation
+                entry_price = price_data * 0.98  # 2% below current
+                exit_price = price_data * 1.05   # 5% above current
+                confidence = min(sentiment * 0.8, 0.95)  # Cap at 95%
+                
+                results[ticker] = {
+                    "entry": round(entry_price, 2),
+                    "exit": round(exit_price, 2),
+                    "confidence": round(confidence, 3),
+                    "current_price": round(price_data, 2),
+                    "horizon": request.horizon
+                }
+            except Exception as e:
+                logger.error(f"Analysis failed for {ticker}: {e}")
+                results[ticker] = {"error": str(e)}
+        
+        return results
+    except Exception as e:
+        logger.error(f"Analyze endpoint error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/update_risk")
+async def update_risk(request: UpdateRiskRequest):
+    """Update risk settings in live_config.json"""
+    try:
+        risk_engine.update_risk_profile(
+            request.stop_loss_pct,
+            request.capital_risk_pct,
+            request.drawdown_limit_pct
+        )
+        return {
+            "status": "updated", 
+            "message": "Risk profile updated in live_config.json",
+            "new_settings": risk_engine.get_risk_settings()
+        }
+    except Exception as e:
+        logger.error(f"Risk update failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/shortlist")
+async def get_shortlist():
+    """Get current shortlist from RL filtering"""
+    try:
+        from datetime import datetime
+        date_str = datetime.now().strftime("%Y%m%d")
+        shortlist_file = f"logs/shortlist_{date_str}.json"
+        
+        if os.path.exists(shortlist_file):
+            with open(shortlist_file, 'r') as f:
+                data = json.load(f)
+                return data
+        else:
+            return {"message": "No shortlist available for today", "shortlist": []}
+    except Exception as e:
+        logger.error(f"Error getting shortlist: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/tracking_stats")
+async def get_tracking_stats():
+    """Get monitoring and tracking statistics"""
+    try:
+        return {
+            "data_agent_stats": data_agent.get_cache_stats(),
+            "rl_agent_stats": rl_agent.get_model_stats(),
+            "tracker_stats": tracker_agent.get_monitoring_stats(),
+            "risk_settings": risk_engine.get_risk_settings()
+        }
+    except Exception as e:
+        logger.error(f"Error getting tracking stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

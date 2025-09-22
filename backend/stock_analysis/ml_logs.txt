@@ -891,3 +891,50 @@ Reinforcement Learning Results:
     Episode 80: Reward = 6514.71, Avg Reward = 40274.96, Events = 128
     Episode 90: Reward = 260209.73, Avg Reward = 30944.44, Events = 160
     Episode 100: Reward = 2163298.99, Avg Reward = -59976.00, Events = 131
+
+[20250922_115607] Analysis for TATAPOWER.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for TATAPOWER.NS (TATAPOWER.NS): NEUTRAL
+Current Price: Rs.397.40
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0100 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 4.51
+Predicted Price (USD): 392.29048245807627
+Predicted Change (%): 8598.24
+Confidence Score: 0.014925232113935705
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 4.7198037576061465
+  Average Reward: -21537.091010775697
+  Average Events/Episode: 32.48
+  Actions Distribution:
+    hold: 0.5094
+    buy: 0.4277
+    sell: 0.0629
+  RL Epoch Logs:
+    Episode 10: Reward = -396311.92, Avg Reward = 406819.89, Events = 38
+    Episode 20: Reward = 1902789.28, Avg Reward = 303652.91, Events = 41
+    Episode 30: Reward = -878397.08, Avg Reward = 68621.12, Events = 35
+    Episode 40: Reward = -1034325.37, Avg Reward = -10636.05, Events = 36
+    Episode 50: Reward = 754133.28, Avg Reward = -275463.20, Events = 41
+    Episode 60: Reward = -14947.88, Avg Reward = -49240.71, Events = 28
+    Episode 70: Reward = -415348.42, Avg Reward = -116933.65, Events = 34
+    Episode 80: Reward = -72191.19, Avg Reward = -96014.82, Events = 31
+    Episode 90: Reward = 294237.76, Avg Reward = -398760.18, Events = 29
+    Episode 100: Reward = -422429.40, Avg Reward = -47416.22, Events = 27

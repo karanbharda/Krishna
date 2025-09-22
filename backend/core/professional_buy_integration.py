@@ -52,7 +52,7 @@ class ProfessionalBuyIntegration:
         # Check if buy is disabled by configuration
         enable_buy = str(os.getenv("ENABLE_BUY", "true")).lower() not in ("false", "0", "no", "off")
         if not enable_buy:
-            logger.info(f"Buy signals globally disabled by configuration (ENABLE_BUY=false) for {ticker}")
+            logger.info(f"❌ BUY DISABLED: Buy signals globally disabled by configuration (ENABLE_BUY=false) for {ticker}")
             return {
                 "action": "hold",
                 "ticker": ticker,
@@ -68,6 +68,8 @@ class ProfessionalBuyIntegration:
             }
         
         try:
+            logger.info(f"=== STARTING PROFESSIONAL BUY EVALUATION FOR {ticker} ===")
+            
             # Build stock metrics
             stock_metrics = self._build_stock_metrics(
                 ticker, current_price, analysis_data, price_history
@@ -112,12 +114,23 @@ class ProfessionalBuyIntegration:
             result["ticker"] = ticker
             
             # Log the final result
-            logger.info(f"Final Buy Decision for {ticker}: {result['action']} - {result['reason']}")
             if result['action'] == 'buy':
-                logger.info(f"  Quantity: {result['qty']}")
-                logger.info(f"  Price: {result['price']}")
-                logger.info(f"  Stop Loss: {result['stop_loss']}")
-                logger.info(f"  Take Profit: {result['take_profit']}")
+                logger.info(f"🟢 BUY DECISION FINALIZED: {result['qty']} shares of {ticker}")
+                logger.info(f"   Price: ₹{result['price']:.2f}")
+                logger.info(f"   Stop Loss: ₹{result['stop_loss']:.2f}")
+                logger.info(f"   Take Profit: ₹{result['take_profit']:.2f}")
+                logger.info(f"   Confidence: {result['confidence_score']:.3f}")
+                logger.info(f"   Reason: {result['reason']}")
+                logger.info(f"   Professional Reasoning: {result['professional_reasoning']}")
+            elif result['action'] == 'hold':
+                logger.info(f"🟡 HOLD DECISION: {ticker}")
+                logger.info(f"   Reason: {result['reason']}")
+                logger.info(f"   Professional Reasoning: {result['professional_reasoning']}")
+                logger.info(f"   Confidence: {result['confidence_score']:.3f}")
+            else:
+                logger.info(f"🔴 UNEXPECTED DECISION: {result['action']} for {ticker}")
+            
+            logger.info(f"=== END PROFESSIONAL BUY EVALUATION FOR {ticker} ===")
             
             return result
             
@@ -306,21 +319,21 @@ class ProfessionalBuyIntegration:
             "reason": "error",
             "professional_reasoning": f"Error: {error_msg}"
         }
-    
+
     def get_professional_config(self) -> Dict:
         """Get professional buy logic configuration"""
         return {
-            "min_buy_signals": 2,          # Minimum 2 signals
-            "max_buy_signals": 4,          # Maximum 4 signals
-            "min_buy_confidence": 0.40,    # Updated from 0.40 (keeping as is)
-            "min_weighted_buy_score": 0.04, # Updated from 0.17 to 0.04 (FIXED: Lowered threshold to match config files)
+            "min_buy_signals": 4,
+            "max_buy_signals": 5,
+            "min_buy_confidence": 0.40,
+            "min_weighted_buy_score": 0.04,
             "entry_buffer_pct": 0.01,
             "buy_stop_loss_pct": 0.05,
             "take_profit_ratio": 2.0,
-            "partial_entry_threshold": 0.35,  # Changed from 0.40 to match conservative config
-            "full_entry_threshold": 0.70,     # Changed from 0.65 to match conservative config
-            "downtrend_buy_multiplier": 0.5,  # Changed from 0.7 to match conservative config
-            "uptrend_buy_multiplier": 1.1,    # Changed from 1.2 to match conservative config
+            "partial_entry_threshold": 0.35,
+            "full_entry_threshold": 0.70,
+            "downtrend_buy_multiplier": 0.5,
+            "uptrend_buy_multiplier": 1.1,
             "enable_professional_buy_logic": True,
             "fallback_to_legacy_buy": False
         }

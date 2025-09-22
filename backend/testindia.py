@@ -5350,6 +5350,7 @@ class StockTradingBot:
 
         # STEP 1: Check for SELL decision first (if we own the stock)
         if ticker in self.portfolio.holdings and self.professional_sell_integration:
+            logger.info(f"💼 POSITION DETECTED: {ticker} - Checking for sell opportunities")
             try:
                 portfolio_holdings = self.portfolio.holdings
                 analysis_data = {
@@ -5371,12 +5372,20 @@ class StockTradingBot:
                 if sell_decision.get("action") == "sell":
                     sell_qty = sell_decision.get("qty", 0)
                     if sell_qty > 0 and portfolio_holdings[ticker]["qty"] >= sell_qty:
-                        logger.info(f"SELL DECISION: {ticker} - {sell_qty} units at Rs.{current_price:.2f}")
+                        logger.info(f"🔴 SELL SIGNAL CONFIRMED: {ticker}")
+                        logger.info(f"   Quantity: {sell_qty} units")
+                        logger.info(f"   Current Price: Rs.{current_price:.2f}")
+                        logger.info(f"   Stop Loss: Rs.{sell_decision.get('stop_loss', current_price * 0.95):.2f}")
+                        logger.info(f"   Take Profit: Rs.{sell_decision.get('take_profit', current_price * 1.05):.2f}")
+                        logger.info(f"   Confidence Score: {sell_decision.get('confidence_score', 0.0):.3f}")
+                        logger.info(f"   Reason: {sell_decision.get('reason', 'professional_sell')}")
+                        
                         success_result = self.executor.execute_trade(
                             "sell", ticker, sell_qty, current_price,
                             sell_decision.get("stop_loss", current_price * 0.95),
                             sell_decision.get("take_profit", current_price * 1.05)
                         )
+                        logger.info(f"✅ SELL ORDER EXECUTED: {sell_qty} {ticker} at Rs.{current_price:.2f}")
                         return {
                             "action": "sell",
                             "ticker": ticker,
@@ -5386,11 +5395,19 @@ class StockTradingBot:
                             "confidence_score": sell_decision.get("confidence_score", 0.0),
                             "reason": "professional_sell"
                         }
+                    else:
+                        logger.info(f"⚠️  SELL SIGNAL INVALID: Insufficient quantity or invalid parameters")
+                else:
+                    logger.info(f"🟡 NO SELL SIGNAL: Professional logic recommends holding {ticker}")
+                    logger.info(f"   Reason: {sell_decision.get('reason', 'no_clear_signal')}")
+                    logger.info(f"   Professional Reasoning: {sell_decision.get('professional_reasoning', 'No specific reasoning provided')}")
             except Exception as e:
-                logger.error(f"Error in sell evaluation for {ticker}: {e}")
+                logger.error(f"❌ ERROR IN SELL EVALUATION for {ticker}: {e}")
+                logger.exception("Full traceback:")
 
         # STEP 2: Check for BUY decision (if we have cash and don't own too much)
         if self.professional_buy_integration and available_cash > 1000:  # Minimum cash threshold
+            logger.info(f"💰 CASH AVAILABLE: Rs.{available_cash:.2f} - Checking for buy opportunities")
             try:
                 portfolio_data = {
                     "total_value": total_value,
@@ -5417,12 +5434,20 @@ class StockTradingBot:
                     buy_qty = buy_decision.get("qty", 0)
                     trade_value = buy_qty * current_price
                     if buy_qty > 0 and trade_value <= available_cash:
-                        logger.info(f"BUY DECISION: {ticker} - {buy_qty} units at Rs.{current_price:.2f}")
+                        logger.info(f"🟢 BUY SIGNAL CONFIRMED: {ticker}")
+                        logger.info(f"   Quantity: {buy_qty} units")
+                        logger.info(f"   Current Price: Rs.{current_price:.2f}")
+                        logger.info(f"   Stop Loss: Rs.{buy_decision.get('stop_loss', current_price * 0.95):.2f}")
+                        logger.info(f"   Take Profit: Rs.{buy_decision.get('take_profit', current_price * 1.15):.2f}")
+                        logger.info(f"   Confidence Score: {buy_decision.get('confidence_score', 0.0):.3f}")
+                        logger.info(f"   Reason: {buy_decision.get('reason', 'professional_buy')}")
+                        
                         success_result = self.executor.execute_trade(
                             "buy", ticker, buy_qty, current_price,
                             buy_decision.get("stop_loss", current_price * 0.95),
                             buy_decision.get("take_profit", current_price * 1.15)
                         )
+                        logger.info(f"✅ BUY ORDER EXECUTED: {buy_qty} {ticker} at Rs.{current_price:.2f}")
                         return {
                             "action": "buy",
                             "ticker": ticker,
@@ -5432,11 +5457,19 @@ class StockTradingBot:
                             "confidence_score": buy_decision.get("confidence_score", 0.0),
                             "reason": "professional_buy"
                         }
+                    else:
+                        logger.info(f"⚠️  BUY SIGNAL INVALID: Insufficient cash or invalid parameters")
+                else:
+                    logger.info(f"🟡 NO BUY SIGNAL: Professional logic recommends holding {ticker}")
+                    logger.info(f"   Reason: {buy_decision.get('reason', 'no_clear_signal')}")
+                    logger.info(f"   Professional Reasoning: {buy_decision.get('professional_reasoning', 'No specific reasoning provided')}")
             except Exception as e:
-                logger.error(f"Error in buy evaluation for {ticker}: {e}")
+                logger.error(f"❌ ERROR IN BUY EVALUATION for {ticker}: {e}")
+                logger.exception("Full traceback:")
 
         # STEP 3: Default to HOLD
-        logger.info(f"HOLD DECISION: {ticker} - No clear buy/sell signal")
+        logger.info(f"🟡 HOLD DECISION: {ticker} - No clear buy/sell signal")
+        logger.info(f"=== END TRADING DECISION FOR {ticker} ===")
         return {
             "action": "hold",
             "ticker": ticker,

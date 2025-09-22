@@ -6,6 +6,7 @@ import time
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 import json
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -24,12 +25,9 @@ class DataServiceClient:
         self.health_check_interval = 30  # seconds
         self.is_healthy = False
 
-        # Critical Fix: Safe handling of global constants
-        try:
-            from web_backend import CACHE_TTL_SECONDS
-            cache_ttl_default = CACHE_TTL_SECONDS
-        except ImportError:
-            cache_ttl_default = 5  # Safe fallback
+        # Critical Fix: Safe handling of global constants without circular import
+        # Use environment variable with fallback instead of importing from web_backend
+        cache_ttl_default = int(os.getenv("CACHE_TTL_SECONDS", "5"))
 
         # Advanced Optimization: Enhanced caching with TTL and size limits
         self.cache = {}

@@ -13,6 +13,7 @@ from .drawdown_protector import DrawdownProtector
 from .correlation_manager import CorrelationManager
 from .fee_optimizer import FeeOptimizer
 from .professional_sell_logic import MarketContext
+from .risk_engine import risk_engine
 
 logger = logging.getLogger(__name__)
 
@@ -52,19 +53,22 @@ class IntegratedRiskManager:
         if config is None:
             config = {}
             
-        # ENHANCED RISK MANAGEMENT: Portfolio-level controls
-        self.max_portfolio_risk_pct = config.get("max_portfolio_risk_pct", 0.05)  # 5% max portfolio risk
-        self.max_single_stock_exposure = config.get("max_single_stock_exposure", 0.10)  # 10% max per stock
+        # Load dynamic risk settings from live_config.json via risk_engine
+        risk_settings = risk_engine.get_risk_settings()
+        
+        # ENHANCED RISK MANAGEMENT: Portfolio-level controls using dynamic config
+        self.max_portfolio_risk_pct = config.get("max_portfolio_risk_pct", risk_settings["capital_risk_pct"])
+        self.max_single_stock_exposure = config.get("max_single_stock_exposure", risk_settings["capital_risk_pct"] * 0.5)
         self.max_sector_exposure = config.get("max_sector_exposure", 0.25)  # 25% max per sector
         self.correlation_risk_multiplier = config.get("correlation_risk_multiplier", 0.8)
         
-        # Dynamic Stop Loss Configuration
+        # Dynamic Stop Loss Configuration from live_config
         self.dynamic_stop_loss_enabled = config.get("dynamic_stop_loss_enabled", True)
         self.trailing_stop_enabled = config.get("trailing_stop_enabled", False)
-        self.atr_stop_multiplier = config.get("atr_stop_multiplier", 1.5)
+        self.atr_stop_multiplier = config.get("atr_stop_multiplier", risk_settings["stop_loss_pct"] * 20)
         
         # Risk Metrics Tracking
-        self.portfolio_drawdown_limit = config.get("portfolio_drawdown_limit", 0.15)  # 15% max drawdown
+        self.portfolio_drawdown_limit = config.get("portfolio_drawdown_limit", risk_settings["drawdown_limit_pct"])
         self.volatility_adjustment_enabled = config.get("volatility_adjustment_enabled", True)
         
         # Initialize risk components
@@ -80,7 +84,7 @@ class IntegratedRiskManager:
         self.correlation_manager = CorrelationManager()
         self.fee_optimizer = FeeOptimizer()
         
-        logger.info("Integrated Risk Manager initialized with enhanced configuration")
+        logger.info("Integrated Risk Manager initialized with dynamic config from live_config.json")
     
     def assess_position_risk(
         self, 

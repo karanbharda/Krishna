@@ -141,11 +141,22 @@ class ProfessionalSellLogic:
             sentiment_analysis, ml_analysis
         )
         
-        # Log signal generation
-        logger.info(f"Generated {len(signals)} total signals, {len([s for s in signals if s.triggered])} triggered signals")
-        for signal in signals:
-            if signal.triggered:
-                logger.info(f"  Triggered Signal: {signal.name} (strength: {signal.strength:.3f}, weight: {signal.weight:.3f}, confidence: {signal.confidence:.3f})")
+        # Log signal generation with detailed information
+        logger.info(f"Generated {len(signals)} total signals")
+        triggered_signals = [s for s in signals if s.triggered]
+        logger.info(f"{len(triggered_signals)} triggered signals:")
+        
+        # Log each triggered signal
+        for signal in triggered_signals:
+            logger.info(f"  - {signal.name}: strength={signal.strength:.3f}, weight={signal.weight:.3f}, confidence={signal.confidence:.3f}")
+            logger.info(f"    Reasoning: {signal.reasoning}")
+        
+        # Log non-triggered signals for completeness
+        non_triggered_signals = [s for s in signals if not s.triggered]
+        if non_triggered_signals:
+            logger.info(f"{len(non_triggered_signals)} non-triggered signals:")
+            for signal in non_triggered_signals:
+                logger.info(f"  - {signal.name}: Not triggered - {signal.reasoning}")
         
         # Step 2: Calculate dynamic stop-loss levels
         stop_levels = self._calculate_dynamic_stops(position_metrics, market_context)
@@ -168,9 +179,10 @@ class ProfessionalSellLogic:
             signals, position_metrics, market_context
         )
         
-        logger.info(f"Signal-based decision: Should Sell: {signal_decision.should_sell}, "
-                   f"Confidence: {signal_decision.confidence:.3f}, "
-                   f"Urgency: {signal_decision.urgency:.3f}")
+        logger.info(f"Signal-based decision analysis:")
+        logger.info(f"  Should Sell: {signal_decision.should_sell}")
+        logger.info(f"  Confidence: {signal_decision.confidence:.3f}")
+        logger.info(f"  Urgency: {signal_decision.urgency:.3f}")
         
         # Step 5: Apply market context filters (LESS restrictive)
         final_decision = self._apply_market_context_filters(
@@ -536,19 +548,29 @@ class ProfessionalSellLogic:
         meets_confidence_threshold = avg_confidence >= self.min_confidence_threshold
         meets_weighted_threshold = weighted_score >= self.min_weighted_score
 
-        logger.info(f"Signal Analysis: {signals_count} signals, "
-                   f"weighted_score: {weighted_score:.3f}, "
-                   f"confidence: {avg_confidence:.3f}")
-        logger.info(f"Threshold Checks - Signals: {meets_signal_threshold} "
-                   f"(required: {self.min_signals_required}), "
-                   f"Confidence: {meets_confidence_threshold} "
-                   f"(threshold: {self.min_confidence_threshold:.3f}), "
-                   f"Weighted Score: {meets_weighted_threshold} "
-                   f"(threshold: {self.min_weighted_score:.3f})")
+        logger.info(f"Signal Analysis Summary:")
+        logger.info(f"  Signal Count: {signals_count} (Required: ≥{self.min_signals_required}) - {'✅ PASS' if meets_signal_threshold else '❌ FAIL'}")
+        logger.info(f"  Average Confidence: {avg_confidence:.3f} (Threshold: {self.min_confidence_threshold}) - {'✅ PASS' if meets_confidence_threshold else '❌ FAIL'}")
+        logger.info(f"  Weighted Score: {weighted_score:.3f} (Threshold: {self.min_weighted_score}) - {'✅ PASS' if meets_weighted_threshold else '❌ FAIL'}")
 
         should_sell = meets_signal_threshold and meets_confidence_threshold and meets_weighted_threshold
 
         logger.info(f"Signal-based decision: Should Sell: {should_sell}")
+        
+        if should_sell:
+            logger.info("✅ ALL THRESHOLD CHECKS PASSED - Proceeding with sell decision")
+        else:
+            logger.info("❌ THRESHOLD CHECKS FAILED - Generating hold decision")
+            rejection_reasons = []
+            if not meets_signal_threshold:
+                rejection_reasons.append(f"Signal count {signals_count} below minimum {self.min_signals_required}")
+            if not meets_confidence_threshold:
+                rejection_reasons.append(f"Confidence {avg_confidence:.3f} below threshold {self.min_confidence_threshold}")
+            if not meets_weighted_threshold:
+                rejection_reasons.append(f"Weighted score {weighted_score:.3f} below threshold {self.min_weighted_score}")
+            
+            detailed_reasoning = " | ".join(rejection_reasons)
+            logger.info(f"Rejection Reasons: {detailed_reasoning}")
 
         return SellDecision(
             should_sell=should_sell,
@@ -561,7 +583,7 @@ class ProfessionalSellLogic:
             stop_loss_price=0.0,
             take_profit_price=0.0,
             trailing_stop_price=0.0,
-            reasoning=f"Signal-based decision: {signals_count} signals, score: {weighted_score:.3f}"
+            reasoning=f"Signal-based decision: {signals_count} signals, score: {weighted_score:.3f}" + (f" | Rejection: {detailed_reasoning}" if not should_sell else "")
         )
 
     def _apply_market_context_filters(self, decision: SellDecision, market_context: MarketContext) -> SellDecision:

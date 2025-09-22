@@ -163,16 +163,38 @@ class ProfessionalBuyLogic:
             sentiment_analysis, ml_analysis
         )
         
-        # Log signal generation
-        logger.info(f"Generated {len(signals)} total signals, {len([s for s in signals if s.triggered])} triggered signals")
-        for signal in signals:
-            if signal.triggered:
-                logger.info(f"  Triggered Signal: {signal.name} (strength: {signal.strength:.3f}, weight: {signal.weight:.3f}, confidence: {signal.confidence:.3f})")
+        # Log signal generation with detailed information
+        logger.info(f"Generated {len(signals)} total signals")
+        triggered_signals = [s for s in signals if s.triggered]
+        logger.info(f"{len(triggered_signals)} triggered signals:")
+        
+        # Group signals by category for better visualization
+        category_signals = {}
+        for signal in triggered_signals:
+            category = signal.category or "Uncategorized"
+            if category not in category_signals:
+                category_signals[category] = []
+            category_signals[category].append(signal)
+        
+        for category, signals_list in category_signals.items():
+            logger.info(f"  {category} Signals:")
+            for signal in signals_list:
+                logger.info(f"    - {signal.name}: strength={signal.strength:.3f}, weight={signal.weight:.3f}, confidence={signal.confidence:.3f}")
+                logger.info(f"      Reasoning: {signal.reasoning}")
+        
+        # Log non-triggered signals for completeness
+        non_triggered_signals = [s for s in signals if not s.triggered]
+        if non_triggered_signals:
+            logger.info(f"{len(non_triggered_signals)} non-triggered signals:")
+            for signal in non_triggered_signals:
+                logger.info(f"  - {signal.name}: Not triggered - {signal.reasoning}")
         
         # Step 2: Apply cross-category confirmation (at least 2 categories must align)
         cross_category_confirmed = self._check_cross_category_confirmation(signals)
-        logger.info(f"Cross-category confirmation: {cross_category_confirmed}")
+        categories_triggered = set(s.category for s in triggered_signals if s.category)
+        logger.info(f"Cross-category confirmation: {cross_category_confirmed} (Categories: {', '.join(categories_triggered) if categories_triggered else 'None'})")
         if not cross_category_confirmed:
+            logger.info("❌ BUY REJECTED: Cross-category confirmation failed - signals not aligned across multiple categories")
             return BuyDecision(
                 should_buy=False,
                 buy_quantity=0,
@@ -189,8 +211,11 @@ class ProfessionalBuyLogic:
         
         # Step 3: Apply bearish block filter
         bearish_blocked = self._check_bearish_block(signals)
-        logger.info(f"Bearish block filter: {bearish_blocked}")
+        bearish_signals = [s for s in triggered_signals if "bearish" in s.name.lower() or "overbought" in s.name.lower()]
+        bearish_percentage = len(bearish_signals) / len(triggered_signals) if triggered_signals else 0
+        logger.info(f"Bearish block filter: {bearish_blocked} ({len(bearish_signals)} bearish signals, {bearish_percentage:.1%} of triggered signals)")
         if bearish_blocked:
+            logger.info("❌ BUY REJECTED: Bearish block filter triggered - too many bearish signals")
             return BuyDecision(
                 should_buy=False,
                 buy_quantity=0,
@@ -221,12 +246,10 @@ class ProfessionalBuyLogic:
         meets_confidence_threshold = avg_confidence >= self.min_confidence_threshold
         meets_weighted_threshold = weighted_score >= self.min_weighted_score
 
-        logger.info(f"Signal Analysis: {signals_count} signals, "
-                   f"weighted_score: {weighted_score:.3f}, "
-                   f"confidence: {avg_confidence:.3f}")
-        logger.info(f"Threshold Checks - Signals: {meets_signal_threshold}, "
-                   f"Confidence: {meets_confidence_threshold}, "
-                   f"Weighted Score: {meets_weighted_threshold}")
+        logger.info(f"Signal Analysis Summary:")
+        logger.info(f"  Signal Count: {signals_count} (Required: {self.min_signals_required}-{self.max_signals_required}) - {'✅ PASS' if meets_signal_threshold else '❌ FAIL'}")
+        logger.info(f"  Average Confidence: {avg_confidence:.3f} (Threshold: {self.min_confidence_threshold}) - {'✅ PASS' if meets_confidence_threshold else '❌ FAIL'}")
+        logger.info(f"  Weighted Score: {weighted_score:.3f} (Threshold: {self.min_weighted_score}) - {'✅ PASS' if meets_weighted_threshold else '❌ FAIL'}")
 
         # PROFESSIONAL BUY LOGIC: All three conditions must be met (similar to sell logic)
         # This prevents the system from generating buy signals when conditions are marginal
@@ -234,7 +257,7 @@ class ProfessionalBuyLogic:
 
         # Additional quality checks for professional trading
         if should_buy:
-            logger.info("All threshold checks passed, proceeding with buy decision")
+            logger.info("✅ ALL THRESHOLD CHECKS PASSED - Proceeding with buy decision")
             # Step 5: Calculate entry levels with enhanced timing
             entry_levels = self._calculate_optimized_entry_levels(stock_metrics, market_context)
             
@@ -266,7 +289,7 @@ class ProfessionalBuyLogic:
             
             return final_decision
         else:
-            logger.info("Threshold checks failed, generating hold decision")
+            logger.info("❌ THRESHOLD CHECKS FAILED - Generating hold decision")
             # Provide detailed reasoning for why buy was rejected
             rejection_reasons = []
             if not meets_signal_threshold:
@@ -276,7 +299,8 @@ class ProfessionalBuyLogic:
             if not meets_weighted_threshold:
                 rejection_reasons.append(f"Weighted score {weighted_score:.3f} below threshold {self.min_weighted_score}")
             
-            logger.info(f"Rejection Reasons: {' | '.join(rejection_reasons)}")
+            detailed_reasoning = " | ".join(rejection_reasons)
+            logger.info(f"Rejection Reasons: {detailed_reasoning}")
             
             return BuyDecision(
                 should_buy=False,
@@ -289,7 +313,7 @@ class ProfessionalBuyLogic:
                 target_entry_price=0.0,
                 stop_loss_price=0.0,
                 take_profit_price=0.0,
-                reasoning=" | ".join(rejection_reasons)
+                reasoning=detailed_reasoning
             )
 
     def _check_bearish_block(self, signals: List[BuySignal]) -> bool:

@@ -50,7 +50,7 @@ class ProfessionalSellIntegration:
         # Check if sell is disabled by configuration
         enable_sell = str(os.getenv("ENABLE_SELL", "true")).lower() not in ("false", "0", "no", "off")
         if not enable_sell:
-            logger.info(f"Sell signals globally disabled by configuration (ENABLE_SELL=false) for {ticker}")
+            logger.info(f"❌ SELL DISABLED: Sell signals globally disabled by configuration (ENABLE_SELL=false) for {ticker}")
             return {
                 "action": "hold",
                 "ticker": ticker,
@@ -66,6 +66,8 @@ class ProfessionalSellIntegration:
             }
         
         try:
+            logger.info(f"=== STARTING PROFESSIONAL SELL EVALUATION FOR {ticker} ===")
+            
             # Check if we have a position
             if ticker not in portfolio_holdings:
                 logger.info(f"No position found for {ticker}, returning no position decision")
@@ -107,12 +109,23 @@ class ProfessionalSellIntegration:
             result = self._convert_to_legacy_format(sell_decision, position_metrics)
             
             # Log the final result
-            logger.info(f"Final Sell Decision for {ticker}: {result['action']} - {result['reason']}")
             if result['action'] == 'sell':
-                logger.info(f"  Quantity: {result['qty']}")
-                logger.info(f"  Price: {result['price']}")
-                logger.info(f"  Stop Loss: {result['stop_loss']}")
-                logger.info(f"  Take Profit: {result['take_profit']}")
+                logger.info(f"🔴 SELL DECISION FINALIZED: {result['qty']} shares of {ticker}")
+                logger.info(f"   Price: ₹{result['price']:.2f}")
+                logger.info(f"   Stop Loss: ₹{result['stop_loss']:.2f}")
+                logger.info(f"   Take Profit: ₹{result['take_profit']:.2f}")
+                logger.info(f"   Confidence: {result['confidence_score']:.3f}")
+                logger.info(f"   Reason: {result['reason']}")
+                logger.info(f"   Professional Reasoning: {result['professional_reasoning']}")
+            elif result['action'] == 'hold':
+                logger.info(f"🟡 HOLD DECISION: {ticker}")
+                logger.info(f"   Reason: {result['reason']}")
+                logger.info(f"   Professional Reasoning: {result['professional_reasoning']}")
+                logger.info(f"   Confidence: {result['confidence_score']:.3f}")
+            else:
+                logger.info(f"🔴 UNEXPECTED DECISION: {result['action']} for {ticker}")
+            
+            logger.info(f"=== END PROFESSIONAL SELL EVALUATION FOR {ticker} ===")
             
             return result
             
