@@ -5182,7 +5182,7 @@ class StockTradingBot:
             from core.professional_buy_integration import ProfessionalBuyIntegration
             from core.professional_buy_config import ProfessionalBuyConfig
             # Use conservative configuration for more professional trading
-            professional_config = ProfessionalBuyConfig.get_conservative_config()
+            professional_config = ProfessionalBuyConfig.get_config()
             self.professional_buy_integration = ProfessionalBuyIntegration(professional_config)
             logger.info("Professional buy integration initialized successfully")
         except Exception as e:
@@ -5194,7 +5194,7 @@ class StockTradingBot:
             from core.professional_sell_integration import ProfessionalSellIntegration
             from core.professional_sell_config import ProfessionalSellConfig
             # Use default configuration for professional sell logic
-            professional_sell_config = ProfessionalSellConfig.get_default_config()
+            professional_sell_config = ProfessionalSellConfig.get_config()
             self.professional_sell_integration = ProfessionalSellIntegration(professional_sell_config)
             logger.info("Professional sell integration initialized successfully")
         except Exception as e:

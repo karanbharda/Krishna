@@ -301,25 +301,6 @@ class ProfessionalSellIntegration:
             "confidence_score": 0.0,
             "signals": 0,
             "reason": "error",
-            "professional_reasoning": f"Error: {error_msg}"
-        }
-    
-    def get_professional_config(self) -> Dict:
-        """Get professional sell logic configuration"""
-        return {
-            "min_sell_signals": 2,
-            "min_sell_confidence": 0.40,              # BALANCED with buy thresholds
-            "min_weighted_sell_score": 0.04,          # BALANCED with buy thresholds
-            "stop_loss_pct": 0.05,
-            "trailing_stop_pct": 0.03,
-            "profit_protection_threshold": 0.05,
-            "conservative_exit_threshold": 0.15,      # MORE granular thresholds
-            "partial_exit_threshold": 0.30,           # MORE granular thresholds
-            "aggressive_exit_threshold": 0.50,        # MORE granular thresholds
-            "full_exit_threshold": 0.70,              # BALANCED thresholds
-            "emergency_exit_threshold": 0.90,         # NEW emergency threshold
-            "uptrend_sell_multiplier": 1.1,           # LESS restrictive in uptrends
-            "downtrend_sell_multiplier": 0.9,         # LESS restrictive in downtrends
-            "enable_professional_sell_logic": True,
-            "fallback_to_legacy_sell": False
+            "professional_reasoning": f"Error: {error_msg}",
+            "error_msg": error_msg
         }

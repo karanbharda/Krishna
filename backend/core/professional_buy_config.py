@@ -1,19 +1,41 @@
+import json
+import os
+
 class ProfessionalBuyConfig:
     """Configuration for Professional Buy Logic"""
     
     @staticmethod
-    def get_default_config():
-        """Get default professional buy configuration"""
+    def _load_live_config():
+        """Load configuration from live_config.json"""
+        try:
+            config_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'live_config.json')
+            with open(config_path, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"⚠️ Failed to load live_config.json: {e}")
+            return {}
+    
+    @staticmethod
+    def get_config():
+        """Get professional buy configuration - production-ready settings with live_config.json integration"""
+        # Load live configuration from frontend
+        live_config = ProfessionalBuyConfig._load_live_config()
+        
+        # Extract values from live_config.json (with defaults)
+        stop_loss_pct = live_config.get('stop_loss_pct', 0.05)  # Default 5%
+        max_capital_per_trade = live_config.get('max_capital_per_trade', 0.25)  # Default 25%
+        
         return {
             "min_buy_signals": 4,          # Minimum 4 signals
             "max_buy_signals": 5,          # Maximum 5 signals
-            "min_buy_confidence": 0.40,    # REDUCED from 0.50 to 0.40
-            "min_weighted_buy_score": 0.04, # REDUCED from 0.12 to 0.04 (FIXED: Lowered threshold to allow more trades)
+            "min_buy_confidence": 0.40,    # 40% minimum confidence
+            "min_weighted_buy_score": 0.04, # 4% minimum weighted score
             "entry_buffer_pct": 0.01,
-            "buy_stop_loss_pct": 0.05,
+            "buy_stop_loss_pct": stop_loss_pct,  # From live_config.json
+            "max_capital_per_trade": max_capital_per_trade,  # From live_config.json
             "take_profit_ratio": 2.0,
-            "partial_entry_threshold": 0.40, # Reduced from 0.50
-            "full_entry_threshold": 0.65,    # Reduced from 0.75
+            "partial_entry_threshold": 0.40,
+            "full_entry_threshold": 0.65,
             "downtrend_buy_multiplier": 0.7,
             "uptrend_buy_multiplier": 1.2,
             "enable_professional_buy_logic": True,
@@ -28,33 +50,4 @@ class ProfessionalBuyConfig:
             "ml_confidence_multiplier": 1.3,
             "momentum_confirmation_window": 3,
             "momentum_strength_threshold": 0.02
-        }
-    
-    @staticmethod
-    def get_conservative_config():
-        """Get conservative professional buy configuration"""
-        return {
-            "min_buy_signals": 4,          # Minimum 2 signals
-            "max_buy_signals": 5,         # Maximum 4 signals
-            "min_buy_confidence": 0.40,    # REDUCED from 0.50 to 0.40
-            "min_weighted_buy_score": 0.04, # REDUCED from 0.20 to 0.04 (FIXED: Lowered threshold to allow more trades)
-            "entry_buffer_pct": 0.015,
-            "buy_stop_loss_pct": 0.04,
-            "take_profit_ratio": 2.5,
-            "partial_entry_threshold": 0.35,  # Reduced from 0.40
-            "full_entry_threshold": 0.70,     # Reduced from 0.80
-            "downtrend_buy_multiplier": 0.5,
-            "uptrend_buy_multiplier": 1.1,
-            "enable_professional_buy_logic": True,
-            "fallback_to_legacy_buy": False,   # Changed to False to prevent fallback
-            # OPTIMIZED BUY LOGIC: Enhanced parameters (conservative settings)
-            "signal_sensitivity_multiplier": 1.0,  # No boost for conservative approach
-            "early_entry_buffer_pct": 0.01,        # Later entries for conservative approach
-            "aggressive_entry_threshold": 0.85,    # Higher threshold for aggressive entries
-            "dynamic_signal_thresholds": True,
-            "signal_strength_boost": 0.05,         # Lower boost for conservative approach
-            "ml_signal_weight_boost": 0.1,         # Lower ML weight boost
-            "ml_confidence_multiplier": 1.1,       # Lower ML confidence boost
-            "momentum_confirmation_window": 5,     # Longer confirmation window
-            "momentum_strength_threshold": 0.03    # Higher momentum threshold
         }

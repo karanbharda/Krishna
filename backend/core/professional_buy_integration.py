@@ -319,21 +319,3 @@ class ProfessionalBuyIntegration:
             "reason": "error",
             "professional_reasoning": f"Error: {error_msg}"
         }
-
-    def get_professional_config(self) -> Dict:
-        """Get professional buy logic configuration"""
-        return {
-            "min_buy_signals": 4,
-            "max_buy_signals": 5,
-            "min_buy_confidence": 0.40,
-            "min_weighted_buy_score": 0.04,
-            "entry_buffer_pct": 0.01,
-            "buy_stop_loss_pct": 0.05,
-            "take_profit_ratio": 2.0,
-            "partial_entry_threshold": 0.35,
-            "full_entry_threshold": 0.70,
-            "downtrend_buy_multiplier": 0.5,
-            "uptrend_buy_multiplier": 1.1,
-            "enable_professional_buy_logic": True,
-            "fallback_to_legacy_buy": False
-        }
