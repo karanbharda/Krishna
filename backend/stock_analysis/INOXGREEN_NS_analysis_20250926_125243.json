@@ -1,0 +1,283 @@
+{
+    "success": true,
+    "stock_data": {
+        "symbol": "INOXGREEN.NS",
+        "name": "INOXGREEN.NS",
+        "current_price": {
+            "INR": 207.72,
+            "USD": 2.34,
+            "EUR": 2.01,
+            "BTC": 2.137e-05,
+            "ETH": 0.0005954
+        },
+        "sector": "N/A",
+        "industry": "N/A",
+        "pe_ratio": "N/A",
+        "dividends": "N/A"
+    },
+    "recommendation": "NEUTRAL",
+    "buy_score": 0.0,
+    "sell_score": 0.0,
+    "technical_indicators": {
+        "sma_50": 166.003,
+        "sma_200": 153.6505,
+        "ema_50": 169.42484004569022,
+        "rsi": 79.64198143447153,
+        "macd": 12.489434862891471,
+        "signal_line": 8.691927452767786,
+        "macd_histogram": 3.7975074101236856,
+        "bb_upper": 214.9998696972544,
+        "bb_lower": 135.66613030274564,
+        "volatility": 0.022660907244637936,
+        "momentum": 0.34585979007386286,
+        "volume_trend": "MODERATE"
+    },
+    "fundamental_analysis": {
+        "market_cap": "N/A",
+        "pe_ratio": "N/A",
+        "dividend_yield": "N/A",
+        "52w_high": "N/A",
+        "52w_low": "N/A",
+        "balance_sheet": {},
+        "income_statement": {},
+        "cash_flow": {}
+    },
+    "sentiment_analysis": {
+        "newsapi": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "gnews": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "reddit": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "google_news": {
+            "positive": 6.0,
+            "negative": 2.0,
+            "neutral": 4.0
+        },
+        "aggregated": {
+            "positive": 6.0,
+            "negative": 2.0,
+            "neutral": 4.0
+        },
+        "weighted_aggregated": {
+            "positive": 15.600000000000001,
+            "negative": 5.2,
+            "neutral": 10.4,
+            "total_weight": 11.31
+        },
+        "comprehensive_analysis": {
+            "sentiment_strength": {
+                "bullish": 1.3793103448275863,
+                "bearish": 0.45977011494252873,
+                "neutral": 0.9195402298850575
+            },
+            "confidence_score": 0.5,
+            "market_context_applied": 1.3,
+            "sources_coverage": {
+                "global_financial": true,
+                "indian_focus": true,
+                "broad_market": true,
+                "social_sentiment": true
+            }
+        }
+    },
+    "mpt_metrics": {
+        "annual_return": 0.1508513800912991,
+        "annual_volatility": 0.5658845883560166,
+        "sharpe_ratio": 0.1605475426627832,
+        "beta": "N/A",
+        "alpha": "N/A"
+    },
+    "institutional_holders": {},
+    "mutual_fund_holders": {},
+    "support_level": 145.967975,
+    "resistance_level": 218.106,
+    "risk_level": "MEDIUM",
+    "timeframe": "MEDIUM_TERM",
+    "explanation": "Recommendation for INOXGREEN.NS (INOXGREEN.NS): NEUTRAL\nCurrent Price: Rs.207.72\n\nBuy Score: 0.000, Sell Score: 0.000\n\nNeutral Factors:\n- Price is stable relative to moving averages.\n- Sentiment is balanced, with no strong bullish or bearish signals.\n\nRisk Assessment:\n- Volatility: 0.0227 (higher values indicate higher risk)\n- Sector: N/A\n- Industry: N/A\n",
+    "ml_analysis": {
+        "success": true,
+        "predicted_price": 204.4460800955234,
+        "confidence": -0.001068118943350127,
+        "mse": 51.34113319640722,
+        "mae": 3.5100344427767496,
+        "r2_score": -0.001068118943350127,
+        "best_ml_model": "stacking",
+        "best_model_metrics": {
+            "mse": 51.34113319640722,
+            "mae": 3.5100344427767496,
+            "r2": -0.001068118943350127
+        },
+        "all_model_scores": {
+            "xgb": {
+                "mse": 90.60341187440594,
+                "mae": 6.520971826770137,
+                "r2": -0.7666183320883189,
+                "prediction": 203.7909698486328
+            },
+            "lgb": {
+                "mse": 56.95802329210788,
+                "mae": 3.9942243340385812,
+                "r2": -0.11058828829574896,
+                "prediction": 207.31741361014338
+            },
+            "cb": {
+                "mse": 59.312713437235615,
+                "mae": 4.581414707759393,
+                "r2": -0.15650089457305683,
+                "prediction": 206.97485928532893
+            },
+            "et": {
+                "mse": 54.30967613175652,
+                "mae": 3.8666696071172013,
+                "r2": -0.05894985055461599,
+                "prediction": 206.02674637067582
+            },
+            "svr": {
+                "mse": 64.84741164563707,
+                "mae": 5.3730751686402005,
+                "r2": -0.26441845656390317,
+                "prediction": 204.74723196002017
+            },
+            "mlp": {
+                "mse": 802.2928926391955,
+                "mae": 16.232780850084325,
+                "r2": -14.643399100745636,
+                "prediction": 202.90525902671774
+            },
+            "ensemble": {
+                "mse": 71.34697776636013,
+                "mae": 5.453615322632211,
+                "r2": -0.391149364616308,
+                "prediction": 205.29374616524225
+            },
+            "stacking": {
+                "mse": 51.34113319640722,
+                "mae": 3.5100344427767496,
+                "r2": -0.001068118943350127,
+                "prediction": 205.80161919282017
+            }
+        },
+        "lstm_metrics": {
+            "mse": 0.02846289426088333,
+            "r2": -0.9120349884033203,
+            "adv_mse": 0.04085477069020271,
+            "adv_r2": -1.744476556777954
+        },
+        "transformer_metrics": {
+            "mse": 0.015120536088943481,
+            "r2": -0.015743255615234375,
+            "adv_mse": 0.016098598018288612,
+            "adv_r2": -0.08144593238830566
+        },
+        "rl_metrics": {
+            "success": true,
+            "recommendation": "HOLD",
+            "performance_pct": 2.9333638514653138,
+            "final_net_worth": 102933.36385146531,
+            "average_reward": 120665.52860029793,
+            "average_events_per_episode": 117.2,
+            "actions_distribution": {
+                "hold": 0.44880546075085326,
+                "buy": 0.5477815699658704,
+                "sell": 0.0034129692832764505
+            },
+            "epoch_logs": [
+                {
+                    "episode": 10,
+                    "total_reward": 1287204.2180439252,
+                    "average_reward": -237815.3913656542,
+                    "events_triggered": 126
+                },
+                {
+                    "episode": 20,
+                    "total_reward": 3431427.9576653605,
+                    "average_reward": 441171.7950911876,
+                    "events_triggered": 119
+                },
+                {
+                    "episode": 30,
+                    "total_reward": -259456.80410491262,
+                    "average_reward": -70269.6664976716,
+                    "events_triggered": 132
+                },
+                {
+                    "episode": 40,
+                    "total_reward": -1361103.4147225064,
+                    "average_reward": -39739.993952480705,
+                    "events_triggered": 112
+                },
+                {
+                    "episode": 50,
+                    "total_reward": 547234.0505781171,
+                    "average_reward": -64531.664222133186,
+                    "events_triggered": 119
+                },
+                {
+                    "episode": 60,
+                    "total_reward": 2170688.0886408123,
+                    "average_reward": 510482.13417399034,
+                    "events_triggered": 120
+                },
+                {
+                    "episode": 70,
+                    "total_reward": 2166706.524620696,
+                    "average_reward": -67124.11140141552,
+                    "events_triggered": 130
+                },
+                {
+                    "episode": 80,
+                    "total_reward": -7294734.690118982,
+                    "average_reward": 384081.55867426144,
+                    "events_triggered": 104
+                },
+                {
+                    "episode": 90,
+                    "total_reward": 179217.11492358323,
+                    "average_reward": -22608.89531489844,
+                    "events_triggered": 120
+                },
+                {
+                    "episode": 100,
+                    "total_reward": -361866.18461656116,
+                    "average_reward": 373009.5208177939,
+                    "events_triggered": 101
+                }
+            ]
+        },
+        "ensemble_components": {
+            "best_ml_model": 205.80161919282017,
+            "lstm": 200.84103393554688,
+            "transformer": 206.69558715820312,
+            "ensemble_average": 205.35723068244766
+        },
+        "industry_level_features": {
+            "top_5_ml_models": [
+                "xgb",
+                "lgb",
+                "cb",
+                "et",
+                "svr",
+                "mlp",
+                "ensemble",
+                "stacking"
+            ],
+            "ensemble_methods": [
+                "VotingRegressor",
+                "StackingRegressor"
+            ],
+            "advanced_scaling": "RobustScaler",
+            "model_selection": "Best R2 Score"
+        }
+    },
+    "timestamp": "2025-09-26 12:52:43"
+}

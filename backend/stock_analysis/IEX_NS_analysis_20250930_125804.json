@@ -1,0 +1,283 @@
+{
+    "success": true,
+    "stock_data": {
+        "symbol": "IEX.NS",
+        "name": "IEX.NS",
+        "current_price": {
+            "INR": 138.6,
+            "USD": 1.56,
+            "EUR": 1.33,
+            "BTC": 1.37e-05,
+            "ETH": 0.00037203
+        },
+        "sector": "N/A",
+        "industry": "N/A",
+        "pe_ratio": "N/A",
+        "dividends": "N/A"
+    },
+    "recommendation": "NEUTRAL",
+    "buy_score": 0.0,
+    "sell_score": 0.0,
+    "technical_indicators": {
+        "sma_50": 143.875,
+        "sma_200": 172.8043,
+        "ema_50": 150.1365118317926,
+        "rsi": 37.13064005097316,
+        "macd": -1.950470891482155,
+        "signal_line": -1.5357563182009049,
+        "macd_histogram": -0.41471457328125005,
+        "bb_upper": 150.41650437954107,
+        "bb_lower": 136.76449562045897,
+        "volatility": 0.01104898259720794,
+        "momentum": -0.021117310544530046,
+        "volume_trend": "MODERATE"
+    },
+    "fundamental_analysis": {
+        "market_cap": "N/A",
+        "pe_ratio": "N/A",
+        "dividend_yield": "N/A",
+        "52w_high": "N/A",
+        "52w_low": "N/A",
+        "balance_sheet": {},
+        "income_statement": {},
+        "cash_flow": {}
+    },
+    "sentiment_analysis": {
+        "newsapi": {
+            "positive": 2.0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "gnews": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "reddit": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "google_news": {
+            "positive": 4.0,
+            "negative": 1.0,
+            "neutral": 6.0
+        },
+        "aggregated": {
+            "positive": 6.0,
+            "negative": 1.0,
+            "neutral": 6.0
+        },
+        "weighted_aggregated": {
+            "positive": 18.200000000000003,
+            "negative": 2.6,
+            "neutral": 15.600000000000001,
+            "total_weight": 11.31
+        },
+        "comprehensive_analysis": {
+            "sentiment_strength": {
+                "bullish": 1.6091954022988508,
+                "bearish": 0.22988505747126436,
+                "neutral": 1.3793103448275863
+            },
+            "confidence_score": 0.5,
+            "market_context_applied": 1.3,
+            "sources_coverage": {
+                "global_financial": true,
+                "indian_focus": true,
+                "broad_market": true,
+                "social_sentiment": true
+            }
+        }
+    },
+    "mpt_metrics": {
+        "annual_return": -0.2860598107384116,
+        "annual_volatility": 0.4372247440376933,
+        "sharpe_ratio": -0.7914918253313167,
+        "beta": "N/A",
+        "alpha": "N/A"
+    },
+    "institutional_holders": {},
+    "mutual_fund_holders": {},
+    "support_level": 136.68125,
+    "resistance_level": 151.06875,
+    "risk_level": "LOW",
+    "timeframe": "SHORT_TERM",
+    "explanation": "Recommendation for IEX.NS (IEX.NS): NEUTRAL\nCurrent Price: Rs.138.60\n\nBuy Score: 0.000, Sell Score: 0.000\n\nNeutral Factors:\n- Price is stable relative to moving averages.\n- Sentiment is balanced, with no strong bullish or bearish signals.\n\nRisk Assessment:\n- Volatility: 0.0110 (higher values indicate higher risk)\n- Sector: N/A\n- Industry: N/A\n",
+    "ml_analysis": {
+        "success": true,
+        "predicted_price": 138.2666853281771,
+        "confidence": -0.034212378515558806,
+        "mse": 10.204283258316552,
+        "mae": 1.183471137038582,
+        "r2_score": -0.034212378515558806,
+        "best_ml_model": "stacking",
+        "best_model_metrics": {
+            "mse": 10.204283258316552,
+            "mae": 1.183471137038582,
+            "r2": -0.034212378515558806
+        },
+        "all_model_scores": {
+            "xgb": {
+                "mse": 13.5781842043784,
+                "mae": 2.1575602025219434,
+                "r2": -0.37615997385094846,
+                "prediction": 137.6484832763672
+            },
+            "lgb": {
+                "mse": 14.76145844634326,
+                "mae": 2.3483520246155214,
+                "r2": -0.496085777284649,
+                "prediction": 137.94373388090222
+            },
+            "cb": {
+                "mse": 12.882015912397808,
+                "mae": 1.9471125250811578,
+                "r2": -0.3056027532338541,
+                "prediction": 137.97825034645908
+            },
+            "et": {
+                "mse": 14.468633989288023,
+                "mae": 2.3662372577988697,
+                "r2": -0.46640778123609694,
+                "prediction": 138.3352876940045
+            },
+            "svr": {
+                "mse": 41.16517574038655,
+                "mae": 4.503316922643422,
+                "r2": -3.172123924507728,
+                "prediction": 141.31934850700196
+            },
+            "mlp": {
+                "mse": 188.73746361683507,
+                "mae": 6.505955808730275,
+                "r2": -18.128694903983185,
+                "prediction": 136.0270938900281
+            },
+            "ensemble": {
+                "mse": 18.47807169743033,
+                "mae": 2.3942986978507195,
+                "r2": -0.8727675424930492,
+                "prediction": 138.20869846333625
+            },
+            "stacking": {
+                "mse": 10.204283258316552,
+                "mae": 1.183471137038582,
+                "r2": -0.034212378515558806,
+                "prediction": 138.17626142886718
+            }
+        },
+        "lstm_metrics": {
+            "mse": 0.008068312890827656,
+            "r2": -0.3264625072479248,
+            "adv_mse": 0.012794386595487595,
+            "adv_r2": -1.103447675704956
+        },
+        "transformer_metrics": {
+            "mse": 0.006880221422761679,
+            "r2": -0.13113558292388916,
+            "adv_mse": 0.008088737726211548,
+            "adv_r2": -0.32982051372528076
+        },
+        "rl_metrics": {
+            "success": true,
+            "recommendation": "SELL",
+            "performance_pct": -7.2570090218652625,
+            "final_net_worth": 92742.99097813474,
+            "average_reward": 33358.75422054996,
+            "average_events_per_episode": 118.95,
+            "actions_distribution": {
+                "hold": 0.155668358714044,
+                "buy": 0.049069373942470386,
+                "sell": 0.7952622673434856
+            },
+            "epoch_logs": [
+                {
+                    "episode": 10,
+                    "total_reward": -1130691.3546196255,
+                    "average_reward": -416784.6834329582,
+                    "events_triggered": 113
+                },
+                {
+                    "episode": 20,
+                    "total_reward": -819321.2544816356,
+                    "average_reward": 1010463.4257281056,
+                    "events_triggered": 118
+                },
+                {
+                    "episode": 30,
+                    "total_reward": 536964.9187425652,
+                    "average_reward": -292433.9065561827,
+                    "events_triggered": 148
+                },
+                {
+                    "episode": 40,
+                    "total_reward": -1344527.9275736127,
+                    "average_reward": -47006.19600099876,
+                    "events_triggered": 114
+                },
+                {
+                    "episode": 50,
+                    "total_reward": -552582.6478652591,
+                    "average_reward": 165567.66702706064,
+                    "events_triggered": 121
+                },
+                {
+                    "episode": 60,
+                    "total_reward": 262762.2937890421,
+                    "average_reward": -690813.9963892456,
+                    "events_triggered": 136
+                },
+                {
+                    "episode": 70,
+                    "total_reward": 604689.014185729,
+                    "average_reward": 206365.0374753579,
+                    "events_triggered": 130
+                },
+                {
+                    "episode": 80,
+                    "total_reward": 1216648.4318723779,
+                    "average_reward": 444343.7967716057,
+                    "events_triggered": 112
+                },
+                {
+                    "episode": 90,
+                    "total_reward": 816313.9249099023,
+                    "average_reward": 162639.69113258144,
+                    "events_triggered": 124
+                },
+                {
+                    "episode": 100,
+                    "total_reward": 2305515.7397929253,
+                    "average_reward": -208753.29354982654,
+                    "events_triggered": 129
+                }
+            ]
+        },
+        "ensemble_components": {
+            "best_ml_model": 138.17626142886718,
+            "lstm": 137.15785217285156,
+            "transformer": 139.4659423828125,
+            "ensemble_average": 138.20464468587082
+        },
+        "industry_level_features": {
+            "top_5_ml_models": [
+                "xgb",
+                "lgb",
+                "cb",
+                "et",
+                "svr",
+                "mlp",
+                "ensemble",
+                "stacking"
+            ],
+            "ensemble_methods": [
+                "VotingRegressor",
+                "StackingRegressor"
+            ],
+            "advanced_scaling": "RobustScaler",
+            "model_selection": "Best R2 Score"
+        }
+    },
+    "timestamp": "2025-09-30 12:58:04"
+}

@@ -1,0 +1,109 @@
+{
+    "cash": 2139.13,
+    "holdings": {
+        "KRBL": {
+            "qty": 3,
+            "avg_price": 396.1,
+            "last_price": 396.1
+        },
+        "SJVN": {
+            "qty": 1,
+            "avg_price": 93.39,
+            "last_price": 93.39
+        },
+        "SUZLON": {
+            "qty": 1,
+            "avg_price": 58.97,
+            "last_price": 58.97
+        },
+        "INOXWIND": {
+            "qty": 1,
+            "avg_price": 153.32,
+            "last_price": 153.32
+        },
+        "IDFCFIRSTB": {
+            "qty": 3,
+            "avg_price": 71.77,
+            "last_price": 71.77
+        },
+        "NBCC": {
+            "qty": 1,
+            "avg_price": 113.11,
+            "last_price": 113.11
+        },
+        "NSLNISP": {
+            "qty": 2,
+            "avg_price": 37.87,
+            "last_price": 37.87
+        },
+        "PNB": {
+            "qty": 1,
+            "avg_price": 104.29,
+            "last_price": 104.29
+        },
+        "IREDA": {
+            "qty": 2,
+            "avg_price": 159.34,
+            "last_price": 159.34
+        },
+        "ASHOKLEY": {
+            "qty": 3,
+            "avg_price": 135.80667,
+            "last_price": 135.80667
+        },
+        "ONGC": {
+            "qty": 1,
+            "avg_price": 236.09,
+            "last_price": 236.09
+        },
+        "TATAPOWER": {
+            "qty": 1,
+            "avg_price": 397.0,
+            "last_price": 397.0
+        },
+        "RVNL": {
+            "qty": 1,
+            "avg_price": 313.15,
+            "last_price": 313.15
+        },
+        "PAISALO": {
+            "qty": 1,
+            "avg_price": 40.54,
+            "last_price": 40.54
+        },
+        "SUVEN": {
+            "qty": 1,
+            "avg_price": 225.05,
+            "last_price": 225.05
+        },
+        "IOB": {
+            "qty": 1,
+            "avg_price": 38.15,
+            "last_price": 38.15
+        },
+        "ORIENTBELL": {
+            "qty": 2,
+            "avg_price": 300.5,
+            "last_price": 300.5
+        },
+        "AWL": {
+            "qty": 1,
+            "avg_price": 263.55,
+            "last_price": 263.55
+        },
+        "NHPC": {
+            "qty": 2,
+            "avg_price": 79.01,
+            "last_price": 79.01
+        },
+        "JAYNECOIND": {
+            "qty": 2,
+            "avg_price": 67.1,
+            "last_price": 67.1
+        }
+    },
+    "starting_balance": 2139.13,
+    "realized_pnl": 0.0,
+    "unrealized_pnl": 0.0,
+    "last_updated": "2025-09-24T14:58:52.383642"
+}

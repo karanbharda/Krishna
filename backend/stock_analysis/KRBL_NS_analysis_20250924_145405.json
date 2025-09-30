@@ -1,0 +1,283 @@
+{
+    "success": true,
+    "stock_data": {
+        "symbol": "KRBL.NS",
+        "name": "KRBL.NS",
+        "current_price": {
+            "INR": 368.3,
+            "USD": 4.15,
+            "EUR": 3.52,
+            "BTC": 3.687e-05,
+            "ETH": 0.00099481
+        },
+        "sector": "N/A",
+        "industry": "N/A",
+        "pe_ratio": "N/A",
+        "dividends": "N/A"
+    },
+    "recommendation": "NEUTRAL",
+    "buy_score": 0.0,
+    "sell_score": 0.0,
+    "technical_indicators": {
+        "sma_50": 422.81800000000004,
+        "sma_200": 338.069,
+        "ema_50": 415.24962243729595,
+        "rsi": 29.508259000503784,
+        "macd": -14.794791251083552,
+        "signal_line": -5.40499377366805,
+        "macd_histogram": -9.389797477415502,
+        "bb_upper": 491.7705843545265,
+        "bb_lower": 363.3844156454736,
+        "volatility": 0.0317500772120104,
+        "momentum": -0.18300798580301686,
+        "volume_trend": "MODERATE"
+    },
+    "fundamental_analysis": {
+        "market_cap": "N/A",
+        "pe_ratio": "N/A",
+        "dividend_yield": "N/A",
+        "52w_high": "N/A",
+        "52w_low": "N/A",
+        "balance_sheet": {},
+        "income_statement": {},
+        "cash_flow": {}
+    },
+    "sentiment_analysis": {
+        "newsapi": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "gnews": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "reddit": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "google_news": {
+            "positive": 6.0,
+            "negative": 3.0,
+            "neutral": 1.0
+        },
+        "aggregated": {
+            "positive": 6.0,
+            "negative": 3.0,
+            "neutral": 1.0
+        },
+        "weighted_aggregated": {
+            "positive": 15.600000000000001,
+            "negative": 7.800000000000001,
+            "neutral": 2.6,
+            "total_weight": 11.31
+        },
+        "comprehensive_analysis": {
+            "sentiment_strength": {
+                "bullish": 1.3793103448275863,
+                "bearish": 0.6896551724137931,
+                "neutral": 0.22988505747126436
+            },
+            "confidence_score": 0.6,
+            "market_context_applied": 1.3,
+            "sources_coverage": {
+                "global_financial": true,
+                "indian_focus": true,
+                "broad_market": true,
+                "social_sentiment": true
+            }
+        }
+    },
+    "mpt_metrics": {
+        "annual_return": 0.2753059443784664,
+        "annual_volatility": 0.40152422692775797,
+        "sharpe_ratio": 0.5362215526217902,
+        "beta": "N/A",
+        "alpha": "N/A"
+    },
+    "institutional_holders": {},
+    "mutual_fund_holders": {},
+    "support_level": 321.16555,
+    "resistance_level": 443.9589000000001,
+    "risk_level": "HIGH",
+    "timeframe": "MEDIUM_TERM",
+    "explanation": "Recommendation for KRBL.NS (KRBL.NS): NEUTRAL\nCurrent Price: Rs.368.30\n\nBuy Score: 0.000, Sell Score: 0.000\n\nNeutral Factors:\n- Price is stable relative to moving averages.\n- Sentiment is balanced, with no strong bullish or bearish signals.\n\nRisk Assessment:\n- Volatility: 0.0318 (higher values indicate higher risk)\n- Sector: N/A\n- Industry: N/A\n",
+    "ml_analysis": {
+        "success": true,
+        "predicted_price": 370.0848022297102,
+        "confidence": -0.1178590357036684,
+        "mse": 157.3636136049697,
+        "mae": 6.050342924249835,
+        "r2_score": -0.1178590357036684,
+        "best_ml_model": "stacking",
+        "best_model_metrics": {
+            "mse": 157.3636136049697,
+            "mae": 6.050342924249835,
+            "r2": -0.1178590357036684
+        },
+        "all_model_scores": {
+            "xgb": {
+                "mse": 188.7335959648031,
+                "mae": 8.331522985419967,
+                "r2": -0.3407010093179359,
+                "prediction": 371.0273132324219
+            },
+            "lgb": {
+                "mse": 185.37783771197377,
+                "mae": 7.968293549200245,
+                "r2": -0.3168628131897051,
+                "prediction": 369.2448894597251
+            },
+            "cb": {
+                "mse": 171.10589011315525,
+                "mae": 6.849656111664449,
+                "r2": -0.21547962037311152,
+                "prediction": 364.9934032299767
+            },
+            "et": {
+                "mse": 159.5913765590119,
+                "mae": 6.2646101370444525,
+                "r2": -0.13368432650967055,
+                "prediction": 373.42167743085236
+            },
+            "svr": {
+                "mse": 304.4803196616978,
+                "mae": 12.631154037147448,
+                "r2": -1.1629274311289786,
+                "prediction": 368.13287576347824
+            },
+            "mlp": {
+                "mse": 457.3136305101963,
+                "mae": 16.043489958883125,
+                "r2": -2.2486046952351324,
+                "prediction": 346.5931745966872
+            },
+            "ensemble": {
+                "mse": 182.4611719996605,
+                "mae": 8.257238749242374,
+                "r2": -0.29614378516318096,
+                "prediction": 365.56889175734443
+            },
+            "stacking": {
+                "mse": 157.3636136049697,
+                "mae": 6.050342924249835,
+                "r2": -0.1178590357036684,
+                "prediction": 370.0848022297102
+            }
+        },
+        "lstm_metrics": {
+            "mse": "N/A",
+            "r2": "N/A",
+            "adv_mse": "N/A",
+            "adv_r2": "N/A"
+        },
+        "transformer_metrics": {
+            "mse": "N/A",
+            "r2": "N/A",
+            "adv_mse": "N/A",
+            "adv_r2": "N/A"
+        },
+        "rl_metrics": {
+            "success": true,
+            "recommendation": "HOLD",
+            "performance_pct": 0.5082346633600392,
+            "final_net_worth": 100508.23466336004,
+            "average_reward": 153636.17324424017,
+            "average_events_per_episode": 142.27,
+            "actions_distribution": {
+                "hold": 0.4603399433427762,
+                "buy": 0.5354107648725213,
+                "sell": 0.00424929178470255
+            },
+            "epoch_logs": [
+                {
+                    "episode": 10,
+                    "total_reward": 7199433.143603597,
+                    "average_reward": 2126289.0116409115,
+                    "events_triggered": 138
+                },
+                {
+                    "episode": 20,
+                    "total_reward": 2448632.018849262,
+                    "average_reward": 871589.1314198903,
+                    "events_triggered": 129
+                },
+                {
+                    "episode": 30,
+                    "total_reward": 4312698.4839231055,
+                    "average_reward": 1023428.7396007307,
+                    "events_triggered": 140
+                },
+                {
+                    "episode": 40,
+                    "total_reward": 1848945.653039816,
+                    "average_reward": 1887407.7773010414,
+                    "events_triggered": 133
+                },
+                {
+                    "episode": 50,
+                    "total_reward": -1291400.61224682,
+                    "average_reward": 236253.12290999433,
+                    "events_triggered": 131
+                },
+                {
+                    "episode": 60,
+                    "total_reward": -2322812.2976964577,
+                    "average_reward": -1403176.6997361567,
+                    "events_triggered": 133
+                },
+                {
+                    "episode": 70,
+                    "total_reward": -2964958.269731663,
+                    "average_reward": 1066902.567725496,
+                    "events_triggered": 149
+                },
+                {
+                    "episode": 80,
+                    "total_reward": 1009692.4831410458,
+                    "average_reward": -1682872.3383008272,
+                    "events_triggered": 138
+                },
+                {
+                    "episode": 90,
+                    "total_reward": 2083088.9012157195,
+                    "average_reward": -1627214.2811512852,
+                    "events_triggered": 147
+                },
+                {
+                    "episode": 100,
+                    "total_reward": 258129.6928835362,
+                    "average_reward": -962245.2989673924,
+                    "events_triggered": 136
+                }
+            ]
+        },
+        "ensemble_components": {
+            "best_ml_model": 370.0848022297102,
+            "lstm": 370.0848022297102,
+            "transformer": 370.0848022297102,
+            "ensemble_average": 366.1333784625245
+        },
+        "industry_level_features": {
+            "top_5_ml_models": [
+                "xgb",
+                "lgb",
+                "cb",
+                "et",
+                "svr",
+                "mlp",
+                "ensemble",
+                "stacking"
+            ],
+            "ensemble_methods": [
+                "VotingRegressor",
+                "StackingRegressor"
+            ],
+            "advanced_scaling": "RobustScaler",
+            "model_selection": "Best R2 Score"
+        }
+    },
+    "timestamp": "2025-09-24 14:54:05"
+}

@@ -1,0 +1,283 @@
+{
+    "success": true,
+    "stock_data": {
+        "symbol": "SUZLON.NS",
+        "name": "SUZLON.NS",
+        "current_price": {
+            "INR": 54.78,
+            "USD": 0.62,
+            "EUR": 0.53,
+            "BTC": 5.42e-06,
+            "ETH": 0.00014747
+        },
+        "sector": "N/A",
+        "industry": "N/A",
+        "pe_ratio": "N/A",
+        "dividends": "N/A"
+    },
+    "recommendation": "NEUTRAL",
+    "buy_score": 0.0,
+    "sell_score": 0.0,
+    "technical_indicators": {
+        "sma_50": 60.0028,
+        "sma_200": 59.5729,
+        "ema_50": 59.407305301889465,
+        "rsi": 32.53498045322911,
+        "macd": -1.0189772601527736,
+        "signal_line": -0.772240333216673,
+        "macd_histogram": -0.2467369269361006,
+        "bb_upper": 60.66294881190052,
+        "bb_lower": 54.67605118809949,
+        "volatility": 0.014381656164342638,
+        "momentum": -0.08071824131565702,
+        "volume_trend": "MODERATE"
+    },
+    "fundamental_analysis": {
+        "market_cap": "N/A",
+        "pe_ratio": "N/A",
+        "dividend_yield": "N/A",
+        "52w_high": "N/A",
+        "52w_low": "N/A",
+        "balance_sheet": {},
+        "income_statement": {},
+        "cash_flow": {}
+    },
+    "sentiment_analysis": {
+        "newsapi": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "gnews": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "reddit": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "google_news": {
+            "positive": 9.0,
+            "negative": 0,
+            "neutral": 1.0
+        },
+        "aggregated": {
+            "positive": 9.0,
+            "negative": 0,
+            "neutral": 1.0
+        },
+        "weighted_aggregated": {
+            "positive": 23.400000000000002,
+            "negative": 0.0,
+            "neutral": 2.6,
+            "total_weight": 11.31
+        },
+        "comprehensive_analysis": {
+            "sentiment_strength": {
+                "bullish": 2.0689655172413794,
+                "bearish": 0.0,
+                "neutral": 0.22988505747126436
+            },
+            "confidence_score": 0.8999999999999999,
+            "market_context_applied": 1.3,
+            "sources_coverage": {
+                "global_financial": true,
+                "indian_focus": true,
+                "broad_market": true,
+                "social_sentiment": true
+            }
+        }
+    },
+    "mpt_metrics": {
+        "annual_return": -0.2936704572697551,
+        "annual_volatility": 0.42635053468105466,
+        "sharpe_ratio": -0.8295297613132577,
+        "beta": "N/A",
+        "alpha": "N/A"
+    },
+    "institutional_holders": {},
+    "mutual_fund_holders": {},
+    "support_level": 56.594255,
+    "resistance_level": 63.00294,
+    "risk_level": "LOW",
+    "timeframe": "LONG_TERM",
+    "explanation": "Recommendation for SUZLON.NS (SUZLON.NS): NEUTRAL\nCurrent Price: Rs.54.78\n\nBuy Score: 0.000, Sell Score: 0.000\n\nNeutral Factors:\n- Price is stable relative to moving averages.\n- Sentiment is balanced, with no strong bullish or bearish signals.\n\nRisk Assessment:\n- Volatility: 0.0144 (higher values indicate higher risk)\n- Sector: N/A\n- Industry: N/A\n",
+    "ml_analysis": {
+        "success": true,
+        "predicted_price": 54.91560767097547,
+        "confidence": -0.13511267765950108,
+        "mse": 1.9543203793134527,
+        "mae": 0.8930381755513273,
+        "r2_score": -0.13511267765950108,
+        "best_ml_model": "cb",
+        "best_model_metrics": {
+            "mse": 1.9543203793134527,
+            "mae": 0.8930381755513273,
+            "r2": -0.13511267765950108
+        },
+        "all_model_scores": {
+            "xgb": {
+                "mse": 2.5422081941774644,
+                "mae": 1.098828867909918,
+                "r2": -0.47657097628713396,
+                "prediction": 54.84953689575195
+            },
+            "lgb": {
+                "mse": 2.669961830632562,
+                "mae": 1.131322225180695,
+                "r2": -0.550773125480414,
+                "prediction": 55.10958799842671
+            },
+            "cb": {
+                "mse": 1.9543203793134527,
+                "mae": 0.8930381755513273,
+                "r2": -0.13511267765950108,
+                "prediction": 55.634422957994765
+            },
+            "et": {
+                "mse": 2.3476474388081328,
+                "mae": 1.0190114865270214,
+                "r2": -0.3635657687825584,
+                "prediction": 56.129043483080494
+            },
+            "svr": {
+                "mse": 7.6918107388268915,
+                "mae": 2.0262924956348507,
+                "r2": -3.4675744960849766,
+                "prediction": 56.6781140802437
+            },
+            "mlp": {
+                "mse": 20.54334964553323,
+                "mae": 2.791166798775886,
+                "r2": -10.932033698808633,
+                "prediction": 58.58317949568675
+            },
+            "ensemble": {
+                "mse": 2.8594281665853942,
+                "mae": 1.128461761602306,
+                "r2": -0.6608193810515226,
+                "prediction": 56.16398088970637
+            },
+            "stacking": {
+                "mse": 1.969002160997016,
+                "mae": 0.8323324402409386,
+                "r2": -0.14364018251287458,
+                "prediction": 55.8464214026506
+            }
+        },
+        "lstm_metrics": {
+            "mse": 0.010085132904350758,
+            "r2": -0.770927906036377,
+            "adv_mse": 0.02173914946615696,
+            "adv_r2": -2.8173487186431885
+        },
+        "transformer_metrics": {
+            "mse": 0.005853492300957441,
+            "r2": -0.02786087989807129,
+            "adv_mse": 0.006644628942012787,
+            "adv_r2": -0.16678273677825928
+        },
+        "rl_metrics": {
+            "success": true,
+            "recommendation": "HOLD",
+            "performance_pct": -2.130575173365389,
+            "final_net_worth": 97869.42482663461,
+            "average_reward": -31517.531916441236,
+            "average_events_per_episode": 103.38,
+            "actions_distribution": {
+                "hold": 0.01160541586073501,
+                "buy": 0.09671179883945841,
+                "sell": 0.8916827852998066
+            },
+            "epoch_logs": [
+                {
+                    "episode": 10,
+                    "total_reward": 473072.45223677927,
+                    "average_reward": 171753.0605806425,
+                    "events_triggered": 92
+                },
+                {
+                    "episode": 20,
+                    "total_reward": -1855858.3766194452,
+                    "average_reward": 4824.372333553712,
+                    "events_triggered": 119
+                },
+                {
+                    "episode": 30,
+                    "total_reward": -369692.33016163023,
+                    "average_reward": -158795.641335698,
+                    "events_triggered": 110
+                },
+                {
+                    "episode": 40,
+                    "total_reward": 630661.3581195209,
+                    "average_reward": -9509.1928657645,
+                    "events_triggered": 108
+                },
+                {
+                    "episode": 50,
+                    "total_reward": -219196.46776168092,
+                    "average_reward": -74867.49211832296,
+                    "events_triggered": 106
+                },
+                {
+                    "episode": 60,
+                    "total_reward": -548574.7288999067,
+                    "average_reward": -362930.4822645645,
+                    "events_triggered": 117
+                },
+                {
+                    "episode": 70,
+                    "total_reward": 730037.7164680378,
+                    "average_reward": 71663.34487420437,
+                    "events_triggered": 109
+                },
+                {
+                    "episode": 80,
+                    "total_reward": 734032.0153298213,
+                    "average_reward": 78942.27963573956,
+                    "events_triggered": 83
+                },
+                {
+                    "episode": 90,
+                    "total_reward": 236094.22391389398,
+                    "average_reward": -20649.739191635686,
+                    "events_triggered": 103
+                },
+                {
+                    "episode": 100,
+                    "total_reward": 265510.8192811874,
+                    "average_reward": -15605.828812566771,
+                    "events_triggered": 113
+                }
+            ]
+        },
+        "ensemble_components": {
+            "best_ml_model": 55.634422957994765,
+            "lstm": 53.708980560302734,
+            "transformer": 55.403419494628906,
+            "ensemble_average": 56.12428590044267
+        },
+        "industry_level_features": {
+            "top_5_ml_models": [
+                "xgb",
+                "lgb",
+                "cb",
+                "et",
+                "svr",
+                "mlp",
+                "ensemble",
+                "stacking"
+            ],
+            "ensemble_methods": [
+                "VotingRegressor",
+                "StackingRegressor"
+            ],
+            "advanced_scaling": "RobustScaler",
+            "model_selection": "Best R2 Score"
+        }
+    },
+    "timestamp": "2025-09-30 11:43:55"
+}

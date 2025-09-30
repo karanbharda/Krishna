@@ -938,3 +938,802 @@ Reinforcement Learning Results:
     Episode 80: Reward = -72191.19, Avg Reward = -96014.82, Events = 31
     Episode 90: Reward = 294237.76, Avg Reward = -398760.18, Events = 29
     Episode 100: Reward = -422429.40, Avg Reward = -47416.22, Events = 27
+
+[20250930_103754] Analysis for MRPL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for MRPL (MRPL.NS): NEUTRAL
+Current Price: Rs.132.87
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0155 (higher values indicate higher risk)
+- Sector: Energy
+- Industry: Oil & Gas Refining & Marketing
+
+Prediction Days: 30
+Current Price (USD): 1.5
+Predicted Price (USD): 132.071544246167
+Predicted Change (%): 8704.77
+Confidence Score: -0.0385629922082924
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: SELL
+  Performance (%): -5.949099869188154
+  Average Reward: 64134.02869385555
+  Average Events/Episode: 91.93
+  Actions Distribution:
+    hold: 0.0221
+    buy: 0.7987
+    sell: 0.1792
+  RL Epoch Logs:
+    Episode 10: Reward = -576408.63, Avg Reward = 47481.50, Events = 88
+    Episode 20: Reward = -191068.80, Avg Reward = 585582.84, Events = 79
+    Episode 30: Reward = 347732.41, Avg Reward = -40541.65, Events = 95
+    Episode 40: Reward = -100996.90, Avg Reward = 527553.64, Events = 99
+    Episode 50: Reward = -213928.76, Avg Reward = -145354.26, Events = 104
+    Episode 60: Reward = -743012.02, Avg Reward = -132357.61, Events = 88
+    Episode 70: Reward = -678552.53, Avg Reward = -558313.10, Events = 84
+    Episode 80: Reward = 2054688.81, Avg Reward = 216378.05, Events = 95
+    Episode 90: Reward = -889727.12, Avg Reward = 80548.24, Events = 83
+    Episode 100: Reward = 1676334.48, Avg Reward = 60362.63, Events = 95
+
+[20250930_104419] Analysis for BPCL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BHARAT PETROLEUM CORP  LT (BPCL.NS): NEUTRAL
+Current Price: Rs.340.10
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0126 (higher values indicate higher risk)
+- Sector: Energy
+- Industry: Oil & Gas Refining & Marketing
+
+Prediction Days: 30
+Current Price (USD): 3.83
+Predicted Price (USD): 334.39627702575285
+Predicted Change (%): 8630.97
+Confidence Score: -0.02166860032474749
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 3.2770173514624767
+  Average Reward: 246407.32151408464
+  Average Events/Episode: 92.41
+  Actions Distribution:
+    hold: 0.2331
+    buy: 0.7625
+    sell: 0.0044
+  RL Epoch Logs:
+    Episode 10: Reward = -690198.00, Avg Reward = -621516.70, Events = 111
+    Episode 20: Reward = 2379552.55, Avg Reward = -54829.16, Events = 107
+    Episode 30: Reward = 1710682.09, Avg Reward = -862111.75, Events = 87
+    Episode 40: Reward = 252093.04, Avg Reward = 701713.91, Events = 102
+    Episode 50: Reward = 207113.29, Avg Reward = -129113.47, Events = 84
+    Episode 60: Reward = 376684.56, Avg Reward = 762865.75, Events = 93
+    Episode 70: Reward = 500683.63, Avg Reward = 765637.38, Events = 94
+    Episode 80: Reward = 391364.55, Avg Reward = 703901.28, Events = 85
+    Episode 90: Reward = 976090.77, Avg Reward = 731615.38, Events = 91
+    Episode 100: Reward = 425739.37, Avg Reward = 465910.59, Events = 102
+
+[20250930_105052] Analysis for IEX.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for INDIAN ENERGY EXC LTD (IEX.NS): NEUTRAL
+Current Price: Rs.139.08
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0110 (higher values indicate higher risk)
+- Sector: Financial Services
+- Industry: Capital Markets
+
+Prediction Days: 30
+Current Price (USD): 1.57
+Predicted Price (USD): 137.74183268374517
+Predicted Change (%): 8673.37
+Confidence Score: -0.033693871012351106
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -4.6973205636126805
+  Average Reward: 66876.62172990692
+  Average Events/Episode: 93.12
+  Actions Distribution:
+    hold: 0.1634
+    buy: 0.1183
+    sell: 0.7183
+  RL Epoch Logs:
+    Episode 10: Reward = 1335836.72, Avg Reward = -287874.46, Events = 83
+    Episode 20: Reward = 655554.83, Avg Reward = 680975.96, Events = 99
+    Episode 30: Reward = 285445.68, Avg Reward = -279659.08, Events = 89
+    Episode 40: Reward = 596876.95, Avg Reward = -419136.40, Events = 106
+    Episode 50: Reward = 1149955.58, Avg Reward = -36740.84, Events = 101
+    Episode 60: Reward = 1696941.32, Avg Reward = 534385.81, Events = 99
+    Episode 70: Reward = 656809.76, Avg Reward = 140103.04, Events = 107
+    Episode 80: Reward = 548149.42, Avg Reward = 283918.33, Events = 99
+    Episode 90: Reward = -366184.13, Avg Reward = 3783.66, Events = 94
+    Episode 100: Reward = 1189268.39, Avg Reward = 49010.21, Events = 87
+
+[20250930_111912] Analysis for IEX.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for IEX.NS (IEX.NS): NEUTRAL
+Current Price: Rs.138.79
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0110 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.56
+Predicted Price (USD): 138.7057165031692
+Predicted Change (%): 8791.39
+Confidence Score: 0.00803861631172309
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 1.7741768245618441
+  Average Reward: 34013.99033484064
+  Average Events/Episode: 97.97
+  Actions Distribution:
+    hold: 0.7890
+    buy: 0.1907
+    sell: 0.0203
+  RL Epoch Logs:
+    Episode 10: Reward = -300821.83, Avg Reward = -321142.00, Events = 102
+    Episode 20: Reward = 1666675.14, Avg Reward = 208133.60, Events = 102
+    Episode 30: Reward = -323220.06, Avg Reward = -164717.59, Events = 102
+    Episode 40: Reward = 512073.52, Avg Reward = -98010.05, Events = 95
+    Episode 50: Reward = -318065.76, Avg Reward = -7819.44, Events = 99
+    Episode 60: Reward = 538424.84, Avg Reward = 328498.95, Events = 113
+    Episode 70: Reward = 507428.21, Avg Reward = 118169.23, Events = 106
+    Episode 80: Reward = -237154.06, Avg Reward = 88652.94, Events = 76
+    Episode 90: Reward = 193904.53, Avg Reward = 269274.17, Events = 119
+    Episode 100: Reward = 37159.18, Avg Reward = -80899.90, Events = 97
+
+[20250930_112715] Analysis for ALLCARGO.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for ALLCARGO.NS (ALLCARGO.NS): NEUTRAL
+Current Price: Rs.32.21
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0172 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 0.36
+Predicted Price (USD): 32.28957685882581
+Predicted Change (%): 8869.33
+Confidence Score: -0.009010822917134842
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.25449521072742937
+  Average Reward: -12107.484623742052
+  Average Events/Episode: 100.5
+  Actions Distribution:
+    hold: 0.2375
+    buy: 0.0160
+    sell: 0.7465
+  RL Epoch Logs:
+    Episode 10: Reward = -70288.77, Avg Reward = -52659.50, Events = 100
+    Episode 20: Reward = 56607.46, Avg Reward = -818.90, Events = 104
+    Episode 30: Reward = 192517.40, Avg Reward = 9371.27, Events = 101
+    Episode 40: Reward = -67455.82, Avg Reward = 15409.89, Events = 96
+    Episode 50: Reward = -103404.12, Avg Reward = -34017.59, Events = 104
+    Episode 60: Reward = 30913.69, Avg Reward = -54363.22, Events = 99
+    Episode 70: Reward = 0.00, Avg Reward = 25391.87, Events = 107
+    Episode 80: Reward = -49164.76, Avg Reward = -2411.83, Events = 114
+    Episode 90: Reward = -109610.34, Avg Reward = -14943.91, Events = 113
+    Episode 100: Reward = 36878.74, Avg Reward = -12032.91, Events = 103
+
+[20250930_113536] Analysis for BPCL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BPCL.NS (BPCL.NS): NEUTRAL
+Current Price: Rs.340.00
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0126 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 3.83
+Predicted Price (USD): 330.7631061697034
+Predicted Change (%): 8536.11
+Confidence Score: -0.31389473378443955
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 5.739724459861769
+  Average Reward: 495172.5228212725
+  Average Events/Episode: 102.15
+  Actions Distribution:
+    hold: 0.5678
+    buy: 0.4244
+    sell: 0.0079
+  RL Epoch Logs:
+    Episode 10: Reward = 356064.87, Avg Reward = 544141.14, Events = 97
+    Episode 20: Reward = 2845399.68, Avg Reward = 1752020.47, Events = 115
+    Episode 30: Reward = 3495267.60, Avg Reward = 90049.00, Events = 101
+    Episode 40: Reward = -976337.98, Avg Reward = -705797.02, Events = 104
+    Episode 50: Reward = 2263557.91, Avg Reward = 24681.04, Events = 92
+    Episode 60: Reward = 857155.03, Avg Reward = 131825.09, Events = 110
+    Episode 70: Reward = 880039.18, Avg Reward = 318822.90, Events = 104
+    Episode 80: Reward = 2776779.10, Avg Reward = 984390.53, Events = 101
+    Episode 90: Reward = 750917.81, Avg Reward = 534432.44, Events = 106
+    Episode 100: Reward = 2398999.51, Avg Reward = 1277159.63, Events = 95
+
+[20250930_114355] Analysis for SUZLON.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for SUZLON.NS (SUZLON.NS): NEUTRAL
+Current Price: Rs.54.78
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0144 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 0.62
+Predicted Price (USD): 54.91560767097547
+Predicted Change (%): 8757.36
+Confidence Score: -0.13511267765950108
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -2.130575173365389
+  Average Reward: -31517.531916441236
+  Average Events/Episode: 103.38
+  Actions Distribution:
+    hold: 0.0116
+    buy: 0.0967
+    sell: 0.8917
+  RL Epoch Logs:
+    Episode 10: Reward = 473072.45, Avg Reward = 171753.06, Events = 92
+    Episode 20: Reward = -1855858.38, Avg Reward = 4824.37, Events = 119
+    Episode 30: Reward = -369692.33, Avg Reward = -158795.64, Events = 110
+    Episode 40: Reward = 630661.36, Avg Reward = -9509.19, Events = 108
+    Episode 50: Reward = -219196.47, Avg Reward = -74867.49, Events = 106
+    Episode 60: Reward = -548574.73, Avg Reward = -362930.48, Events = 117
+    Episode 70: Reward = 730037.72, Avg Reward = 71663.34, Events = 109
+    Episode 80: Reward = 734032.02, Avg Reward = 78942.28, Events = 83
+    Episode 90: Reward = 236094.22, Avg Reward = -20649.74, Events = 103
+    Episode 100: Reward = 265510.82, Avg Reward = -15605.83, Events = 113
+
+[20250930_115216] Analysis for CESC.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for CESC.NS (CESC.NS): NEUTRAL
+Current Price: Rs.165.65
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0174 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.87
+Predicted Price (USD): 163.2027022392689
+Predicted Change (%): 8627.42
+Confidence Score: -0.012819719171786259
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 3.643415682652325
+  Average Reward: 176778.3488264603
+  Average Events/Episode: 104.56
+  Actions Distribution:
+    hold: 0.3790
+    buy: 0.1733
+    sell: 0.4476
+  RL Epoch Logs:
+    Episode 10: Reward = -1255849.95, Avg Reward = 759298.54, Events = 122
+    Episode 20: Reward = -1763826.52, Avg Reward = 246936.54, Events = 97
+    Episode 30: Reward = 1940806.27, Avg Reward = -431885.47, Events = 104
+    Episode 40: Reward = -544297.06, Avg Reward = -145377.26, Events = 111
+    Episode 50: Reward = 620795.69, Avg Reward = 151078.28, Events = 108
+    Episode 60: Reward = 119280.31, Avg Reward = -40853.19, Events = 102
+    Episode 70: Reward = 1003985.03, Avg Reward = -387748.62, Events = 94
+    Episode 80: Reward = 1681766.05, Avg Reward = 528248.45, Events = 101
+    Episode 90: Reward = 907986.52, Avg Reward = 988591.26, Events = 105
+    Episode 100: Reward = 2560642.89, Avg Reward = 99494.95, Events = 115
+
+[20250930_120100] Analysis for IEX.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for IEX.NS (IEX.NS): NEUTRAL
+Current Price: Rs.138.70
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0110 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.56
+Predicted Price (USD): 138.91423651227274
+Predicted Change (%): 8804.76
+Confidence Score: 0.017061852895078777
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -1.7468597854874097
+  Average Reward: 149657.98957091148
+  Average Events/Episode: 107.27
+  Actions Distribution:
+    hold: 0.3989
+    buy: 0.1124
+    sell: 0.4888
+  RL Epoch Logs:
+    Episode 10: Reward = 1012533.02, Avg Reward = 1060037.20, Events = 113
+    Episode 20: Reward = -1683999.48, Avg Reward = 137881.83, Events = 100
+    Episode 30: Reward = 1453426.00, Avg Reward = 777606.87, Events = 104
+    Episode 40: Reward = 1961539.99, Avg Reward = 171395.74, Events = 92
+    Episode 50: Reward = -496345.61, Avg Reward = 661959.01, Events = 102
+    Episode 60: Reward = -1418961.82, Avg Reward = 201400.31, Events = 96
+    Episode 70: Reward = -350176.48, Avg Reward = -347483.95, Events = 103
+    Episode 80: Reward = 353892.19, Avg Reward = -586319.55, Events = 105
+    Episode 90: Reward = -790006.38, Avg Reward = -229530.02, Events = 116
+    Episode 100: Reward = -99284.68, Avg Reward = -350367.55, Events = 122
+
+[20250930_120854] Analysis for ALLCARGO.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for ALLCARGO.NS (ALLCARGO.NS): NEUTRAL
+Current Price: Rs.32.08
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0171 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 0.36
+Predicted Price (USD): 31.62032284049788
+Predicted Change (%): 8683.42
+Confidence Score: -0.01170434558785205
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.0009287256925599649
+  Average Reward: -9706.933518802733
+  Average Events/Episode: 107.3
+  Actions Distribution:
+    hold: 0.4723
+    buy: 0.0443
+    sell: 0.4834
+  RL Epoch Logs:
+    Episode 10: Reward = -617833.86, Avg Reward = -115369.81, Events = 108
+    Episode 20: Reward = 120541.89, Avg Reward = 153401.80, Events = 104
+    Episode 30: Reward = 31871.49, Avg Reward = 13659.48, Events = 114
+    Episode 40: Reward = -214690.49, Avg Reward = -128545.56, Events = 113
+    Episode 50: Reward = 7347.09, Avg Reward = 41777.51, Events = 106
+    Episode 60: Reward = -48994.56, Avg Reward = -50156.29, Events = 103
+    Episode 70: Reward = -61885.41, Avg Reward = 36766.56, Events = 116
+    Episode 80: Reward = 69045.14, Avg Reward = 3901.93, Events = 109
+    Episode 90: Reward = -14399.17, Avg Reward = -13022.96, Events = 109
+    Episode 100: Reward = -560.45, Avg Reward = -39481.98, Events = 102
+
+[20250930_124950] Analysis for SUZLON.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for SUZLON.NS (SUZLON.NS): NEUTRAL
+Current Price: Rs.54.78
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0144 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 0.62
+Predicted Price (USD): 55.04824636188315
+Predicted Change (%): 8778.75
+Confidence Score: -0.12267123344554531
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.9026934047063552
+  Average Reward: 94436.78427577493
+  Average Events/Episode: 114.86
+  Actions Distribution:
+    hold: 0.5300
+    buy: 0.0995
+    sell: 0.3705
+  RL Epoch Logs:
+    Episode 10: Reward = 2430252.88, Avg Reward = 324322.40, Events = 105
+    Episode 20: Reward = 313057.68, Avg Reward = -123103.49, Events = 100
+    Episode 30: Reward = -1293132.82, Avg Reward = 65156.71, Events = 115
+    Episode 40: Reward = 536911.41, Avg Reward = 119712.01, Events = 108
+    Episode 50: Reward = -174348.00, Avg Reward = -74199.81, Events = 111
+    Episode 60: Reward = 729330.21, Avg Reward = 108742.66, Events = 109
+    Episode 70: Reward = 497080.13, Avg Reward = 143200.90, Events = 109
+    Episode 80: Reward = 417344.38, Avg Reward = 304575.00, Events = 140
+    Episode 90: Reward = -237387.67, Avg Reward = 138731.51, Events = 118
+    Episode 100: Reward = -343284.15, Avg Reward = -62770.04, Events = 103
+
+[20250930_125804] Analysis for IEX.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for IEX.NS (IEX.NS): NEUTRAL
+Current Price: Rs.138.60
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0110 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.56
+Predicted Price (USD): 138.2666853281771
+Predicted Change (%): 8763.25
+Confidence Score: -0.034212378515558806
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: SELL
+  Performance (%): -7.2570090218652625
+  Average Reward: 33358.75422054996
+  Average Events/Episode: 118.95
+  Actions Distribution:
+    hold: 0.1557
+    buy: 0.0491
+    sell: 0.7953
+  RL Epoch Logs:
+    Episode 10: Reward = -1130691.35, Avg Reward = -416784.68, Events = 113
+    Episode 20: Reward = -819321.25, Avg Reward = 1010463.43, Events = 118
+    Episode 30: Reward = 536964.92, Avg Reward = -292433.91, Events = 148
+    Episode 40: Reward = -1344527.93, Avg Reward = -47006.20, Events = 114
+    Episode 50: Reward = -552582.65, Avg Reward = 165567.67, Events = 121
+    Episode 60: Reward = 262762.29, Avg Reward = -690814.00, Events = 136
+    Episode 70: Reward = 604689.01, Avg Reward = 206365.04, Events = 130
+    Episode 80: Reward = 1216648.43, Avg Reward = 444343.80, Events = 112
+    Episode 90: Reward = 816313.92, Avg Reward = 162639.69, Events = 124
+    Episode 100: Reward = 2305515.74, Avg Reward = -208753.29, Events = 129
+
+[20250930_130614] Analysis for CESC.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for CESC.NS (CESC.NS): NEUTRAL
+Current Price: Rs.163.01
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0168 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.84
+Predicted Price (USD): 162.12062253943654
+Predicted Change (%): 8710.90
+Confidence Score: -0.1241371215393452
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.015
+  Average Reward: -48980.09850558087
+  Average Events/Episode: 121.81
+  Actions Distribution:
+    hold: 0.7563
+    buy: 0.2354
+    sell: 0.0083
+  RL Epoch Logs:
+    Episode 10: Reward = -1845877.84, Avg Reward = -211232.77, Events = 122
+    Episode 20: Reward = 66903.42, Avg Reward = 214496.04, Events = 114
+    Episode 30: Reward = 1528840.91, Avg Reward = 217389.68, Events = 119
+    Episode 40: Reward = -1423331.86, Avg Reward = -803408.40, Events = 127
+    Episode 50: Reward = -290600.09, Avg Reward = 152833.44, Events = 129
+    Episode 60: Reward = 1562239.32, Avg Reward = -140512.42, Events = 111
+    Episode 70: Reward = 395751.67, Avg Reward = -305965.93, Events = 117
+    Episode 80: Reward = -961696.29, Avg Reward = 426369.85, Events = 100
+    Episode 90: Reward = 262126.38, Avg Reward = 242458.13, Events = 125
+    Episode 100: Reward = 40695.98, Avg Reward = -282228.61, Events = 122
+
+[20250930_131449] Analysis for ALLCARGO.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for ALLCARGO.NS (ALLCARGO.NS): NEUTRAL
+Current Price: Rs.31.87
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0170 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 0.36
+Predicted Price (USD): 31.96121621176992
+Predicted Change (%): 8778.12
+Confidence Score: 0.0037973384934055776
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.7233674219498353
+  Average Reward: -6369.512017802692
+  Average Events/Episode: 120.47
+  Actions Distribution:
+    hold: 0.0231
+    buy: 0.2339
+    sell: 0.7430
+  RL Epoch Logs:
+    Episode 10: Reward = -248141.91, Avg Reward = 65724.75, Events = 114
+    Episode 20: Reward = 462328.78, Avg Reward = -60056.67, Events = 120
+    Episode 30: Reward = -790988.88, Avg Reward = 849.27, Events = 136
+    Episode 40: Reward = -340553.62, Avg Reward = 86429.52, Events = 99
+    Episode 50: Reward = 488550.56, Avg Reward = -47606.93, Events = 133
+    Episode 60: Reward = 125598.95, Avg Reward = 98232.06, Events = 99
+    Episode 70: Reward = -207398.95, Avg Reward = -147759.65, Events = 116
+    Episode 80: Reward = 359582.74, Avg Reward = 151357.56, Events = 109
+    Episode 90: Reward = 358249.18, Avg Reward = -87562.22, Events = 128
+    Episode 100: Reward = 517921.40, Avg Reward = -123302.82, Events = 128
+
+[20250930_133405] Analysis for MRPL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for MRPL.NS (MRPL.NS): NEUTRAL
+Current Price: Rs.132.19
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0156 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 1.49
+Predicted Price (USD): 134.4310857542539
+Predicted Change (%): 8922.22
+Confidence Score: -0.080032025130504
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): -0.24679766533395742
+  Average Reward: 249857.78073404494
+  Average Events/Episode: 126.71
+  Actions Distribution:
+    hold: 0.3828
+    buy: 0.5008
+    sell: 0.1164
+  RL Epoch Logs:
+    Episode 10: Reward = -2196127.15, Avg Reward = 51209.11, Events = 130
+    Episode 20: Reward = -1234688.90, Avg Reward = 21017.30, Events = 116
+    Episode 30: Reward = 1704328.73, Avg Reward = 387780.68, Events = 120
+    Episode 40: Reward = -2122077.15, Avg Reward = 320693.34, Events = 116
+    Episode 50: Reward = 2084760.14, Avg Reward = 792881.00, Events = 130
+    Episode 60: Reward = 824659.12, Avg Reward = -631751.06, Events = 104
+    Episode 70: Reward = -427157.28, Avg Reward = 240450.33, Events = 125
+    Episode 80: Reward = 1927169.05, Avg Reward = -286599.63, Events = 131
+    Episode 90: Reward = -1869184.63, Avg Reward = 874331.56, Events = 108
+    Episode 100: Reward = 573827.22, Avg Reward = 728565.19, Events = 140
+
+[20250930_134418] Analysis for BPCL.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for BPCL.NS (BPCL.NS): NEUTRAL
+Current Price: Rs.338.65
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0126 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 3.81
+Predicted Price (USD): 330.7772219332344
+Predicted Change (%): 8581.82
+Confidence Score: -0.04143590051943402
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 1.459132236443562
+  Average Reward: 594376.0857415935
+  Average Events/Episode: 129.12
+  Actions Distribution:
+    hold: 0.2893
+    buy: 0.7075
+    sell: 0.0031
+  RL Epoch Logs:
+    Episode 10: Reward = 1851915.19, Avg Reward = 655461.45, Events = 114
+    Episode 20: Reward = 1450020.60, Avg Reward = 436547.54, Events = 118
+    Episode 30: Reward = 1748230.33, Avg Reward = 15700.08, Events = 123
+    Episode 40: Reward = -334809.31, Avg Reward = 1588234.48, Events = 130
+    Episode 50: Reward = 452653.99, Avg Reward = 406226.27, Events = 131
+    Episode 60: Reward = 1185258.33, Avg Reward = 542675.72, Events = 137
+    Episode 70: Reward = 1351061.79, Avg Reward = 162762.94, Events = 142
+    Episode 80: Reward = 716253.32, Avg Reward = 1224854.49, Events = 129
+    Episode 90: Reward = -1379097.05, Avg Reward = 569814.48, Events = 122
+    Episode 100: Reward = -454541.70, Avg Reward = 341483.41, Events = 141
+
+[20250930_135357] Analysis for ALLCARGO.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for ALLCARGO.NS (ALLCARGO.NS): NEUTRAL
+Current Price: Rs.31.82
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0170 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 0.36
+Predicted Price (USD): 31.57612451787975
+Predicted Change (%): 8671.15
+Confidence Score: -0.010440334490908532
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: HOLD
+  Performance (%): 0.03693925948975084
+  Average Reward: -4000.7491000954137
+  Average Events/Episode: 130.23
+  Actions Distribution:
+    hold: 0.0062
+    buy: 0.0015
+    sell: 0.9923
+  RL Epoch Logs:
+    Episode 10: Reward = -397785.15, Avg Reward = 80215.49, Events = 139
+    Episode 20: Reward = -381647.78, Avg Reward = -167826.33, Events = 140
+    Episode 30: Reward = 196365.69, Avg Reward = 80349.09, Events = 143
+    Episode 40: Reward = -62432.72, Avg Reward = 67212.36, Events = 139
+    Episode 50: Reward = 3245.27, Avg Reward = -25544.98, Events = 143
+    Episode 60: Reward = -429538.45, Avg Reward = -114589.28, Events = 121
+    Episode 70: Reward = -139763.61, Avg Reward = 44895.36, Events = 120
+    Episode 80: Reward = -196458.14, Avg Reward = 15217.25, Events = 124
+    Episode 90: Reward = -33433.61, Avg Reward = 121511.99, Events = 133
+    Episode 100: Reward = 233904.11, Avg Reward = -141448.44, Events = 125

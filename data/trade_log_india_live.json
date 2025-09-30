@@ -142,5 +142,13 @@
         "qty": 1,
         "price": 134.94,
         "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-30 13:34:16.596900",
+        "asset": "MRPL.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 132.11,
+        "pnl": 0.0
     }
 ]

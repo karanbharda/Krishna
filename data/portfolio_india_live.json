@@ -1,5 +1,5 @@
 {
-    "cash": 3611.89,
+    "cash": 446.69,
     "holdings": {
         "KRBL": {
             "qty": 3,
@@ -12,14 +12,24 @@
             "last_price": 93.39
         },
         "SUZLON": {
+            "qty": 6,
+            "avg_price": 56.25333,
+            "last_price": 56.25333
+        },
+        "INOXWIND": {
             "qty": 1,
-            "avg_price": 58.97,
-            "last_price": 58.97
+            "avg_price": 153.32,
+            "last_price": 153.32
         },
         "IDFCFIRSTB": {
             "qty": 3,
             "avg_price": 71.77,
             "last_price": 71.77
+        },
+        "NBCC": {
+            "qty": 1,
+            "avg_price": 113.11,
+            "last_price": 113.11
         },
         "NSLNISP": {
             "qty": 2,
@@ -27,9 +37,14 @@
             "last_price": 37.87
         },
         "PNB": {
-            "qty": 1,
-            "avg_price": 104.29,
-            "last_price": 104.29
+            "qty": 5,
+            "avg_price": 107.266,
+            "last_price": 107.266
+        },
+        "IREDA": {
+            "qty": 2,
+            "avg_price": 159.34,
+            "last_price": 159.34
         },
         "ASHOKLEY": {
             "qty": 3,
@@ -41,6 +56,11 @@
             "avg_price": 236.09,
             "last_price": 236.09
         },
+        "TATAPOWER": {
+            "qty": 1,
+            "avg_price": 397.0,
+            "last_price": 397.0
+        },
         "RVNL": {
             "qty": 1,
             "avg_price": 313.15,
@@ -51,6 +71,11 @@
             "avg_price": 40.54,
             "last_price": 40.54
         },
+        "SUVEN": {
+            "qty": 1,
+            "avg_price": 225.05,
+            "last_price": 225.05
+        },
         "IOB": {
             "qty": 1,
             "avg_price": 38.15,
@@ -60,6 +85,16 @@
             "qty": 2,
             "avg_price": 300.5,
             "last_price": 300.5
+        },
+        "AWL": {
+            "qty": 1,
+            "avg_price": 263.55,
+            "last_price": 263.55
+        },
+        "ADANIPOWER": {
+            "qty": 3,
+            "avg_price": 145.3,
+            "last_price": 145.3
         },
         "NHPC": {
             "qty": 2,
@@ -72,8 +107,8 @@
             "last_price": 67.1
         }
     },
-    "starting_balance": 3611.89,
+    "starting_balance": 578.89,
     "realized_pnl": 0.0,
     "unrealized_pnl": 0.0,
-    "last_updated": "2025-09-20T12:35:55.269006"
+    "last_updated": "2025-09-30T13:34:18.853099"
 }

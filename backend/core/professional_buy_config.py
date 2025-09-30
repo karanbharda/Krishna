@@ -5,8 +5,8 @@ class ProfessionalBuyConfig:
     def get_default_config():
         """Get default professional buy configuration"""
         return {
-            "min_buy_signals": 4,          # Minimum 2 signals
-            "max_buy_signals": 5,          # Maximum 4 signals
+            "min_buy_signals": 4,          # Minimum 4 signals
+            "max_buy_signals": 5,          # Maximum 5 signals
             "min_buy_confidence": 0.40,    # REDUCED from 0.50 to 0.40
             "min_weighted_buy_score": 0.04, # REDUCED from 0.12 to 0.04 (FIXED: Lowered threshold to allow more trades)
             "entry_buffer_pct": 0.01,

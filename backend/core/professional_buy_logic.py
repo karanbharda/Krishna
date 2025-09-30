@@ -195,6 +195,7 @@ class ProfessionalBuyLogic:
         logger.info(f"Cross-category confirmation: {cross_category_confirmed} (Categories: {', '.join(categories_triggered) if categories_triggered else 'None'})")
         if not cross_category_confirmed:
             logger.info("❌ BUY REJECTED: Cross-category confirmation failed - signals not aligned across multiple categories")
+            detailed_reasoning = f"Cross-category confirmation failed - only {len(categories_triggered)} categories triggered: {', '.join(categories_triggered) if categories_triggered else 'None'}. Need at least 2 different categories."
             return BuyDecision(
                 should_buy=False,
                 buy_quantity=0,
@@ -206,7 +207,7 @@ class ProfessionalBuyLogic:
                 target_entry_price=0.0,
                 stop_loss_price=0.0,
                 take_profit_price=0.0,
-                reasoning="Cross-category confirmation failed - signals not aligned across multiple categories"
+                reasoning=detailed_reasoning
             )
         
         # Step 3: Apply bearish block filter
@@ -216,6 +217,7 @@ class ProfessionalBuyLogic:
         logger.info(f"Bearish block filter: {bearish_blocked} ({len(bearish_signals)} bearish signals, {bearish_percentage:.1%} of triggered signals)")
         if bearish_blocked:
             logger.info("❌ BUY REJECTED: Bearish block filter triggered - too many bearish signals")
+            detailed_reasoning = f"Bearish block filter triggered - {len(bearish_signals)} bearish signals ({bearish_percentage:.1%} of triggered signals). Threshold is 30%."
             return BuyDecision(
                 should_buy=False,
                 buy_quantity=0,
@@ -227,7 +229,7 @@ class ProfessionalBuyLogic:
                 target_entry_price=0.0,
                 stop_loss_price=0.0,
                 take_profit_price=0.0,
-                reasoning="Bearish block filter triggered - too many bearish signals"
+                reasoning=detailed_reasoning
             )
         
         # Step 4: Calculate weighted signal score and confidence
@@ -301,6 +303,15 @@ class ProfessionalBuyLogic:
             
             detailed_reasoning = " | ".join(rejection_reasons)
             logger.info(f"Rejection Reasons: {detailed_reasoning}")
+            
+            # Log additional diagnostic information
+            logger.info(f"🔍 DETAILED DIAGNOSTIC INFORMATION:")
+            logger.info(f"   - Minimum Signals Required: {self.min_signals_required}")
+            logger.info(f"   - Maximum Signals Required: {self.max_signals_required}")
+            logger.info(f"   - Minimum Confidence Threshold: {self.min_confidence_threshold}")
+            logger.info(f"   - Minimum Weighted Score Threshold: {self.min_weighted_score}")
+            logger.info(f"   - Signal Sensitivity Multiplier: {getattr(self, 'signal_sensitivity_multiplier', 1.0)}")
+            logger.info(f"   - ML Signal Weight Boost: {getattr(self, 'ml_signal_weight_boost', 0.0)}")
             
             return BuyDecision(
                 should_buy=False,

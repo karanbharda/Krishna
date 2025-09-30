@@ -5400,13 +5400,24 @@ class StockTradingBot:
                 else:
                     logger.info(f"🟡 NO SELL SIGNAL: Professional logic recommends holding {ticker}")
                     logger.info(f"   Reason: {sell_decision.get('reason', 'no_clear_signal')}")
-                    logger.info(f"   Professional Reasoning: {sell_decision.get('professional_reasoning', 'No specific reasoning provided')}")
+                    professional_reasoning = sell_decision.get('professional_reasoning', 'No specific reasoning provided')
+                    logger.info(f"   Professional Reasoning: {professional_reasoning}")
+                    # Log detailed breakdown of why no sell signal
+                    if professional_reasoning and professional_reasoning != 'No specific reasoning provided':
+                        logger.info(f"   🔍 DETAILED SELL ANALYSIS: {professional_reasoning}")
+                    else:
+                        # Provide additional context when no reasoning is provided
+                        logger.info(f"   🔍 ANALYSIS CONTEXT:")
+                        logger.info(f"      - Position Quantity: {portfolio_holdings.get(ticker, {}).get('qty', 0)}")
+                        logger.info(f"      - Entry Price: Rs.{portfolio_holdings.get(ticker, {}).get('avg_price', 0.0):.2f}")
+                        logger.info(f"      - Current Price: Rs.{current_price:.2f}")
+                        logger.info(f"      - Unrealized P&L: {((current_price - portfolio_holdings.get(ticker, {}).get('avg_price', current_price)) / portfolio_holdings.get(ticker, {}).get('avg_price', current_price) * 100):.2f}%")
             except Exception as e:
                 logger.error(f"❌ ERROR IN SELL EVALUATION for {ticker}: {e}")
                 logger.exception("Full traceback:")
 
         # STEP 2: Check for BUY decision (if we have cash and don't own too much)
-        if self.professional_buy_integration and available_cash > 1000:  # Minimum cash threshold
+        if self.professional_buy_integration and available_cash > 1:  # Minimum cash threshold changed to Rs.1
             logger.info(f"💰 CASH AVAILABLE: Rs.{available_cash:.2f} - Checking for buy opportunities")
             try:
                 portfolio_data = {
@@ -5462,13 +5473,33 @@ class StockTradingBot:
                 else:
                     logger.info(f"🟡 NO BUY SIGNAL: Professional logic recommends holding {ticker}")
                     logger.info(f"   Reason: {buy_decision.get('reason', 'no_clear_signal')}")
-                    logger.info(f"   Professional Reasoning: {buy_decision.get('professional_reasoning', 'No specific reasoning provided')}")
+                    professional_reasoning = buy_decision.get('professional_reasoning', 'No specific reasoning provided')
+                    logger.info(f"   Professional Reasoning: {professional_reasoning}")
+                    # Log detailed breakdown of why no buy signal
+                    if professional_reasoning and professional_reasoning != 'No specific reasoning provided':
+                        logger.info(f"   🔍 DETAILED BUY ANALYSIS: {professional_reasoning}")
+                    else:
+                        # Provide additional context when no reasoning is provided
+                        logger.info(f"   🔍 ANALYSIS CONTEXT:")
+                        logger.info(f"      - Available Cash: Rs.{available_cash:.2f}")
+                        logger.info(f"      - Cash Threshold: Rs.1.00")
+                        logger.info(f"      - Cash Sufficient: {'Yes' if available_cash > 1 else 'No'}")
+                        logger.info(f"      - Current Price: Rs.{current_price:.2f}")
+                        logger.info(f"      - Professional Logic Enabled: {'Yes' if self.professional_buy_integration else 'No'}")
             except Exception as e:
                 logger.error(f"❌ ERROR IN BUY EVALUATION for {ticker}: {e}")
                 logger.exception("Full traceback:")
 
         # STEP 3: Default to HOLD
         logger.info(f"🟡 HOLD DECISION: {ticker} - No clear buy/sell signal")
+        logger.info(f"   🔍 DETAILED HOLD ANALYSIS:")
+        logger.info(f"      - Position Status: {'Holding' if ticker in self.portfolio.holdings else 'Not Holding'}")
+        logger.info(f"      - Available Cash: Rs.{available_cash:.2f} ({'Sufficient' if available_cash > 1 else 'Insufficient'})")  # Changed threshold to Rs.1
+        logger.info(f"      - Professional Logic Enabled: {self.professional_buy_integration is not None}")
+        if ticker in self.portfolio.holdings:
+            holding_info = self.portfolio.holdings.get(ticker, {})
+            logger.info(f"      - Holding Quantity: {holding_info.get('qty', 0)}")
+            logger.info(f"      - Entry Price: Rs.{holding_info.get('avg_price', 0.0):.2f}")
         logger.info(f"=== END TRADING DECISION FOR {ticker} ===")
         return {
             "action": "hold",

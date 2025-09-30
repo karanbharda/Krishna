@@ -571,6 +571,16 @@ class ProfessionalSellLogic:
             
             detailed_reasoning = " | ".join(rejection_reasons)
             logger.info(f"Rejection Reasons: {detailed_reasoning}")
+            
+            # Log additional diagnostic information
+            logger.info(f"🔍 DETAILED DIAGNOSTIC INFORMATION:")
+            logger.info(f"   - Minimum Signals Required: {self.min_signals_required}")
+            logger.info(f"   - Minimum Confidence Threshold: {self.min_confidence_threshold}")
+            logger.info(f"   - Minimum Weighted Score Threshold: {self.min_weighted_score}")
+            logger.info(f"   - Current Position P&L: Rs.{position.unrealized_pnl:.2f} ({position.unrealized_pnl_pct:.2%})")
+            logger.info(f"   - Days Held: {position.days_held}")
+            logger.info(f"   - Entry Price: Rs.{position.entry_price:.2f}")
+            logger.info(f"   - Current Price: Rs.{position.current_price:.2f}")
 
         return SellDecision(
             should_sell=should_sell,
