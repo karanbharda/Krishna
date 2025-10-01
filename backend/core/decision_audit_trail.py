@@ -62,14 +62,24 @@ class DecisionAuditTrail:
     """Production-level decision audit trail system"""
     
     def __init__(self, storage_path: str = None):
-        # FIXED: Use project root data directory
+        # FIXED: Use project root logs directory
         if storage_path is None:
             backend_dir = Path(__file__).resolve().parents[1]
             project_root = backend_dir.parent
-            storage_path = str(project_root / 'data' / 'audit_trail')
+            logs_dir = project_root / 'logs'
+            storage_path = str(logs_dir / 'audit_trail')
+            
+            # Debug logging
+            logger.info(f"Project root: {project_root}")
+            logger.info(f"Logs directory: {logs_dir}")
+            logger.info(f"Audit trail path: {storage_path}")
+            
+            # Ensure logs directory exists
+            logs_dir.mkdir(parents=True, exist_ok=True)
         
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Created/verified audit trail directory: {self.storage_path}")
         
         # File paths
         self.decisions_file = self.storage_path / "decisions.jsonl"

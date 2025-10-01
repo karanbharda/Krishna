@@ -3,11 +3,17 @@ import os
 import logging
 from typing import Dict, Any
 from datetime import datetime
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 class DynamicRiskEngine:
-    def __init__(self, config_path="data/live_config.json"):
+    def __init__(self, config_path=None):
+        # FIXED: Use project root data directory
+        if config_path is None:
+            backend_dir = Path(__file__).resolve().parents[1]
+            project_root = backend_dir.parent
+            config_path = str(project_root / 'data' / 'live_config.json')
         self.config_path = config_path
         self.config = self._load_config()
 

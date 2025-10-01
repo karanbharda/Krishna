@@ -246,6 +246,9 @@ class SettingsRequest(BaseModel):
     mode: Optional[str] = None
     riskLevel: Optional[str] = None
     stop_loss_pct: Optional[float] = None
+    target_profit_pct: Optional[float] = None
+    use_risk_reward: Optional[bool] = None
+    risk_reward_ratio: Optional[float] = None
     max_capital_per_trade: Optional[float] = None
     max_trade_limit: Optional[int] = None
 
@@ -1784,14 +1787,33 @@ class WebTradingBot:
         except Exception as e:
             logger.error(f"Error in trade callback: {e}")
 
-def apply_risk_level_settings(bot, risk_level, custom_stop_loss=None, custom_allocation=None):
+def apply_risk_level_settings(bot, risk_level, custom_stop_loss=None, custom_allocation=None, 
+                            custom_target_profit=None, custom_use_rr=None, custom_rr_ratio=None):
     """Apply risk level settings to the trading bot"""
     try:
         # Define risk level mappings
         risk_mappings = {
-            "LOW": {"stop_loss": 0.03, "allocation": 0.15},      # 3% stop-loss, 15% allocation
-            "MEDIUM": {"stop_loss": 0.05, "allocation": 0.25},   # 5% stop-loss, 25% allocation
-            "HIGH": {"stop_loss": 0.08, "allocation": 0.35}      # 8% stop-loss, 35% allocation
+            "LOW": {
+                "stop_loss": 0.03,         # 3% stop-loss
+                "allocation": 0.15,        # 15% allocation
+                "target_profit": 0.06,     # 6% target profit (2:1 risk-reward)
+                "use_risk_reward": True,   # Use risk-reward ratio
+                "risk_reward_ratio": 2.0   # 2:1 risk-reward ratio
+            },
+            "MEDIUM": {
+                "stop_loss": 0.05,         # 5% stop-loss
+                "allocation": 0.25,        # 25% allocation
+                "target_profit": 0.10,     # 10% target profit (2:1 risk-reward)
+                "use_risk_reward": True,   # Use risk-reward ratio
+                "risk_reward_ratio": 2.0   # 2:1 risk-reward ratio
+            },
+            "HIGH": {
+                "stop_loss": 0.08,         # 8% stop-loss
+                "allocation": 0.35,        # 35% allocation
+                "target_profit": 0.16,     # 16% target profit (2:1 risk-reward)
+                "use_risk_reward": True,   # Use risk-reward ratio
+                "risk_reward_ratio": 2.0   # 2:1 risk-reward ratio
+            }
         }
 
         if risk_level == "CUSTOM":
@@ -1800,24 +1822,52 @@ def apply_risk_level_settings(bot, risk_level, custom_stop_loss=None, custom_all
                 bot.config['stop_loss_pct'] = custom_stop_loss
                 if hasattr(bot, 'executor') and bot.executor:
                     bot.executor.stop_loss_pct = custom_stop_loss
+            
             if custom_allocation is not None:
                 bot.config['max_capital_per_trade'] = custom_allocation
                 if hasattr(bot, 'executor') and bot.executor:
                     bot.executor.max_capital_per_trade = custom_allocation
+            
+            if custom_target_profit is not None:
+                bot.config['target_profit_pct'] = custom_target_profit
+                if hasattr(bot, 'executor') and bot.executor:
+                    bot.executor.target_profit_pct = custom_target_profit
+            
+            if custom_use_rr is not None:
+                bot.config['use_risk_reward'] = custom_use_rr
+                if hasattr(bot, 'executor') and bot.executor:
+                    bot.executor.use_risk_reward = custom_use_rr
+            
+            if custom_rr_ratio is not None:
+                bot.config['risk_reward_ratio'] = custom_rr_ratio
+                if hasattr(bot, 'executor') and bot.executor:
+                    bot.executor.risk_reward_ratio = custom_rr_ratio
+        
         elif risk_level in risk_mappings:
             # Apply predefined risk level settings
             settings = risk_mappings[risk_level]
-            bot.config['stop_loss_pct'] = settings['stop_loss']
-            bot.config['max_capital_per_trade'] = settings['allocation']
+            bot.config.update({
+                'stop_loss_pct': settings['stop_loss'],
+                'max_capital_per_trade': settings['allocation'],
+                'target_profit_pct': settings['target_profit'],
+                'use_risk_reward': settings['use_risk_reward'],
+                'risk_reward_ratio': settings['risk_reward_ratio']
+            })
 
             # Update executor if it exists
             if hasattr(bot, 'executor') and bot.executor:
                 bot.executor.stop_loss_pct = settings['stop_loss']
                 bot.executor.max_capital_per_trade = settings['allocation']
+                bot.executor.target_profit_pct = settings['target_profit']
+                bot.executor.use_risk_reward = settings['use_risk_reward']
+                bot.executor.risk_reward_ratio = settings['risk_reward_ratio']
 
         logger.info(f"Applied {risk_level} risk settings: "
-                   f"Stop Loss={bot.config.get('stop_loss_pct')*100}%, "
-                   f"Max Allocation={bot.config.get('max_capital_per_trade')*100}%")
+                  f"Stop Loss={bot.config.get('stop_loss_pct')*100:.1f}%, "
+                  f"Target Profit={bot.config.get('target_profit_pct', 0)*100:.1f}%, "
+                  f"Use RR={bot.config.get('use_risk_reward', True)}, "
+                  f"RR Ratio={bot.config.get('risk_reward_ratio', 2.0):.1f}, "
+                  f"Max Allocation={bot.config.get('max_capital_per_trade')*100:.1f}%")
 
     except Exception as e:
         logger.error(f"Error applying risk level settings: {e}")
@@ -2472,6 +2522,9 @@ async def get_settings():
                 "mode": trading_bot.config.get("mode", "paper"),
                 "riskLevel": trading_bot.config.get("riskLevel", "MEDIUM"),
                 "stop_loss_pct": trading_bot.config.get("stop_loss_pct", 0.05),
+                "target_profit_pct": trading_bot.config.get("target_profit_pct", 0.1),
+                "use_risk_reward": trading_bot.config.get("use_risk_reward", True),
+                "risk_reward_ratio": trading_bot.config.get("risk_reward_ratio", 2.0),
                 "max_capital_per_trade": trading_bot.config.get("max_capital_per_trade", 0.25),
                 "max_trade_limit": trading_bot.config.get("max_trade_limit", 10)
             }
@@ -2502,6 +2555,9 @@ def save_config_to_file(mode: str, config_data: dict):
             "mode": mode,
             "riskLevel": config_data.get("riskLevel", "MEDIUM"),
             "stop_loss_pct": config_data.get("stop_loss_pct", 0.05),
+            "target_profit_pct": config_data.get("target_profit_pct", 0.1),
+            "use_risk_reward": config_data.get("use_risk_reward", True),
+            "risk_reward_ratio": config_data.get("risk_reward_ratio", 2.0),
             "max_capital_per_trade": config_data.get("max_capital_per_trade", 0.25),
             "max_trade_limit": config_data.get("max_trade_limit", 150),
             "created_at": datetime.now().isoformat()
@@ -2546,7 +2602,15 @@ async def update_settings(request: SettingsRequest):
                     apply_risk_level_settings(trading_bot, request.riskLevel)
                 else:
                     # For CUSTOM, use the provided values
-                    apply_risk_level_settings(trading_bot, request.riskLevel, request.stop_loss_pct, request.max_capital_per_trade)
+                    apply_risk_level_settings(
+                        bot=trading_bot, 
+                        risk_level=request.riskLevel, 
+                        custom_stop_loss=request.stop_loss_pct, 
+                        custom_allocation=request.max_capital_per_trade,
+                        custom_target_profit=request.target_profit_pct,
+                        custom_use_rr=request.use_risk_reward,
+                        custom_rr_ratio=request.risk_reward_ratio
+                    )
             if request.stop_loss_pct is not None:
                 trading_bot.config['stop_loss_pct'] = request.stop_loss_pct
                 # Update executor if it exists
@@ -2559,6 +2623,28 @@ async def update_settings(request: SettingsRequest):
                     trading_bot.executor.max_capital_per_trade = request.max_capital_per_trade
             if request.max_trade_limit is not None:
                 trading_bot.config['max_trade_limit'] = request.max_trade_limit
+            if request.stop_loss_pct is not None:
+                trading_bot.config['stop_loss_pct'] = request.stop_loss_pct
+                # Update executor if it exists
+                if hasattr(trading_bot, 'executor') and trading_bot.executor:
+                    trading_bot.executor.stop_loss_pct = request.stop_loss_pct
+            
+            # Handle target profit settings
+            if request.target_profit_pct is not None:
+                trading_bot.config['target_profit_pct'] = request.target_profit_pct
+                if hasattr(trading_bot, 'executor') and trading_bot.executor:
+                    trading_bot.executor.target_profit_pct = request.target_profit_pct
+            
+            # Handle risk/reward settings
+            if request.use_risk_reward is not None:
+                trading_bot.config['use_risk_reward'] = request.use_risk_reward
+                if hasattr(trading_bot, 'executor') and trading_bot.executor:
+                    trading_bot.executor.use_risk_reward = request.use_risk_reward
+            
+            if request.risk_reward_ratio is not None:
+                trading_bot.config['risk_reward_ratio'] = request.risk_reward_ratio
+                if hasattr(trading_bot, 'executor') and trading_bot.executor:
+                    trading_bot.executor.risk_reward_ratio = request.risk_reward_ratio
 
             # Save the updated configuration to the appropriate config file
             current_mode = trading_bot.config.get('mode', 'paper')
@@ -2566,8 +2652,11 @@ async def update_settings(request: SettingsRequest):
 
             logger.info(f"Settings updated: Mode={trading_bot.config.get('mode')}, "
                        f"Risk Level={trading_bot.config.get('riskLevel')}, "
-                       f"Stop Loss={trading_bot.config.get('stop_loss_pct')*100}%, "
-                       f"Max Allocation={trading_bot.config.get('max_capital_per_trade')*100}%")
+                       f"Stop Loss={trading_bot.config.get('stop_loss_pct', 0.05)*100:.1f}%, "
+                       f"Target Profit={trading_bot.config.get('target_profit_pct', 0.1)*100:.1f}%, "
+                       f"Use RR={trading_bot.config.get('use_risk_reward', True)}, "
+                       f"RR Ratio={trading_bot.config.get('risk_reward_ratio', 2.0):.1f}, "
+                       f"Max Allocation={trading_bot.config.get('max_capital_per_trade', 0.25)*100:.1f}%")
 
             return MessageResponse(message="Settings updated successfully")
         else:

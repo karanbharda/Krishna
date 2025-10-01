@@ -21,7 +21,14 @@ from data_service_client import get_data_client
 logger = logging.getLogger(__name__)
 
 class DataAgent:
-    def __init__(self, db_path="data/market_cache.db"):
+    def __init__(self, db_path=None):
+        # FIXED: Use project root data directory
+        if db_path is None:
+            from pathlib import Path
+            backend_dir = Path(__file__).resolve().parents[1]
+            project_root = backend_dir.parent
+            db_path = str(project_root / 'data' / 'market_cache.db')
+        
         self.client = get_data_client()
         self.db_path = db_path
         self._init_db()

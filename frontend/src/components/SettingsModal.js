@@ -368,6 +368,39 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
           </SettingGroup>
 
           <SettingGroup>
+            <label>Stop Loss Percentage (%):</label>
+            <input
+              type="number"
+              min="1"
+              max="20"
+              step="0.1"
+              value={formData.stopLossPct}
+              placeholder={formData.riskLevel === 'CUSTOM' ? 'Enter percentage (1-20)' : ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                console.log('Stop Loss input changed:', value, 'Risk Level:', formData.riskLevel);
+                handleInputChange('stopLossPct', value);
+              }}
+              disabled={loading || formData.riskLevel !== 'CUSTOM'}
+              style={{
+                backgroundColor: formData.riskLevel !== 'CUSTOM' ? '#f8f9fa' : 'white',
+                cursor: formData.riskLevel !== 'CUSTOM' ? 'not-allowed' : 'text',
+                border: formData.riskLevel === 'CUSTOM' ? '2px solid #e74c3c' : '2px solid #e9ecef'
+              }}
+            />
+            {formData.riskLevel !== 'CUSTOM' && (
+              <small style={{ color: '#6c757d', fontSize: '0.85rem', marginTop: '5px', display: 'block' }}>
+                Select "Custom" risk level to modify this value
+              </small>
+            )}
+            {formData.riskLevel === 'CUSTOM' && (
+              <small style={{ color: '#e74c3c', fontSize: '0.85rem', marginTop: '5px', display: 'block' }}>
+                ✓ Custom mode: You can edit this value
+              </small>
+            )}
+          </SettingGroup>
+
+          <SettingGroup>
             <label>Target Price Level:</label>
             <select
               value={formData.targetPriceLevel}

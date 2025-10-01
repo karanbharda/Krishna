@@ -1,0 +1,154 @@
+[
+    {
+        "timestamp": "2025-08-28 11:44:48.035707",
+        "asset": "BEL.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 367.35,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-08-28 12:37:16.507766",
+        "asset": "RVNL.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 313.0,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-08-29 10:08:11.733916",
+        "asset": "NMDC.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 68.3,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-08-29 10:34:38.146093",
+        "asset": "NMDC.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 68.61,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-01 14:11:56.408665",
+        "asset": "NSLNISP",
+        "action": "sell",
+        "qty": 2,
+        "price": 38.11,
+        "pnl": 0.480000000000004
+    },
+    {
+        "timestamp": "2025-09-05 14:48:05.580169",
+        "asset": "SHANTIGOLD.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 231.77,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-05 15:09:53.695149",
+        "asset": "SHANTIGOLD.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 230.87,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-05 15:19:00.004277",
+        "asset": "SHANTIGOLD.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 231.0,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-05 15:25:50.360720",
+        "asset": "MOTHERSON.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 94.6,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-08 13:18:48.590267",
+        "asset": "PNB.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 104.67,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-08 13:24:06.143865",
+        "asset": "PNB.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 104.6,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-08 13:29:30.923355",
+        "asset": "PNB.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 104.52,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-08 13:44:05.662956",
+        "asset": "PNB.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 104.46,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-08 14:25:58.295848",
+        "asset": "SJVN.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 93.36,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-08 15:17:30.274033",
+        "asset": "PNB.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 104.19,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-10 13:33:54.565128",
+        "asset": "NHPC.NS",
+        "action": "buy",
+        "qty": 2,
+        "price": 79.0,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-16 13:30:49.198404",
+        "asset": "ASHOKLEY.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 134.87,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-16 13:48:24.944727",
+        "asset": "ASHOKLEY.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 134.94,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-09-30 13:34:16.596900",
+        "asset": "MRPL.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 132.11,
+        "pnl": 0.0
+    }
+]

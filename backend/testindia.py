@@ -862,10 +862,15 @@ class ChatLogger:
     """Handles logging of chat interactions to JSON file."""
 
     def __init__(self):
-        self.log_file = "../data/chat_interactions.json"
-        os.makedirs("../data", exist_ok=True)
+        # Use absolute path to project root data directory
+        import os
+        from pathlib import Path
+        backend_dir = Path(__file__).resolve().parent
+        project_root = backend_dir.parent
+        data_dir = project_root / 'data'
+        data_dir.mkdir(parents=True, exist_ok=True)
+        self.log_file = str(data_dir / 'chat_interactions.json')
         self.interactions = self.load_interactions()
-
     def load_interactions(self):
         """Load existing chat interactions from file."""
         try:
@@ -1563,8 +1568,26 @@ class VirtualPortfolio:
 
     def initialize_files(self):
         """Initialize portfolio and trade log JSON files if they don't exist."""
-        # Ensure parent data directory exists (don't create local data folder)
-        os.makedirs("../data", exist_ok=True)
+        # Use absolute paths to project root directories
+        import os
+        from pathlib import Path
+        
+        # Get project root directory (parent of backend folder)
+        backend_dir = Path(__file__).resolve().parent
+        project_root = backend_dir.parent
+        data_dir = project_root / 'data'
+        logs_dir = project_root / 'logs'
+        
+        # Create directories if they don't exist
+        data_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Update file paths to use the correct data directory
+        if self.mode == "live":
+            self.portfolio_file = str(data_dir / "portfolio_india_live.json")
+            self.trade_log_file = str(data_dir / "trade_log_india_live.json")
+        else:
+            self.portfolio_file = str(data_dir / "portfolio_india_paper.json")
+            self.trade_log_file = str(data_dir / "trade_log_india_paper.json")
 
         # Only create portfolio file if it doesn't exist - preserve existing data
         if not os.path.exists(self.portfolio_file):
@@ -1583,17 +1606,18 @@ class VirtualPortfolio:
             with open(self.trade_log_file, "w") as f:
                 json.dump([], f, indent=4)
 
-        # Initialize paper trading specific logs directory in parent folder
+        # Initialize paper trading specific logs directory
         if self.mode == "paper":
-            os.makedirs("../logs", exist_ok=True)
-            self.paper_trade_log = f"../logs/paper_trade_{datetime.now().strftime('%Y%m%d')}.txt"
-            # Initialize paper trade log file with header
-            if not os.path.exists(self.paper_trade_log):
-                with open(self.paper_trade_log, "w", encoding='utf-8') as f:
+            logs_dir.mkdir(parents=True, exist_ok=True)
+            paper_trade_log_path = logs_dir / f"paper_trade_{datetime.now().strftime('%Y%m%d')}.txt"
+            self.paper_trade_log = str(paper_trade_log_path)
+            
+            # Initialize paper trade log file with header if it doesn't exist
+            if not paper_trade_log_path.exists():
+                with open(paper_trade_log_path, "w", encoding='utf-8') as f:
                     f.write(f"=== PAPER TRADING SESSION - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ===\n")
                     f.write(f"Starting Balance: Rs.{self.starting_balance:,.2f}\n")
-                    f.write("="*80 + "\n\n")
-
+                    f.write("=" * 80 + "\n\n")
     def initialize_portfolio(self, balance=None):
         """Reset or initialize portfolio with a given balance."""
         if balance is not None:
@@ -1603,7 +1627,7 @@ class VirtualPortfolio:
         self.trade_log = []
         self.save_portfolio()
         self.save_trade_log()
-
+        
     def add_trade_callback(self, callback):
         """Add a callback function to be called when trades are executed"""
         self.trade_callbacks.append(callback)
@@ -1614,7 +1638,7 @@ class VirtualPortfolio:
             try:
                 callback(trade_data)
             except Exception as e:
-                logger.error(f"Error in trade callback: {e}")
+                logger.error(f"Error in trade callback: {e}") 
 
     def buy(self, asset, qty, price):
         """Execute a buy order in live or paper trading mode."""
