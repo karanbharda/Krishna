@@ -144,11 +144,15 @@ class TrackerAgent:
     def _save_alerts(self, alerts: List[Dict[str, Any]]):
         """Save alerts to tracked_DATE.json"""
         try:
-            date_str = datetime.now().strftime("%Y%m%d")
-            os.makedirs("logs", exist_ok=True)
+            # FIXED: Use project root logs directory
+            from pathlib import Path
+            backend_dir = Path(__file__).resolve().parents[1]
+            project_root = backend_dir.parent
+            logs_dir = project_root / 'logs'
+            logs_dir.mkdir(parents=True, exist_ok=True)
             
-            # Append to daily tracking file
-            tracking_file = f"logs/tracked_{date_str}.json"
+            date_str = datetime.now().strftime("%Y%m%d")
+            tracking_file = logs_dir / f"tracked_{date_str}.json"
             
             # Load existing alerts if file exists
             existing_alerts = []

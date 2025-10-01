@@ -111,9 +111,14 @@ class DataAgent:
                 batch_num = i // batch_size + 1
                 logger.info(f"Processed batch {batch_num}/{total_batches}: {len(batch_data)} symbols")
             
-            # Save baseline
+            # Save baseline - FIXED: Use project root logs directory
+            from pathlib import Path
+            backend_dir = Path(__file__).resolve().parents[1]
+            project_root = backend_dir.parent
+            logs_dir = project_root / 'logs'
+            logs_dir.mkdir(parents=True, exist_ok=True)
+            
             date_str = datetime.now().strftime("%Y%m%d")
-            os.makedirs("logs", exist_ok=True)
             
             baseline_data = {
                 "timestamp": datetime.now().isoformat(),
@@ -123,7 +128,7 @@ class DataAgent:
                 "stocks": universe_data
             }
             
-            with open(f"logs/universe_open_{date_str}.json", 'w') as f:
+            with open(logs_dir / f"universe_open_{date_str}.json", 'w') as f:
                 json.dump(baseline_data, f, indent=2)
             
             logger.info(f"Full market scan completed: {len(universe_data)} stocks in {(datetime.now() - start_time).total_seconds():.2f}s")

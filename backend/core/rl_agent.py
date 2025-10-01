@@ -262,8 +262,14 @@ class RLFilteringAgent:
     def save_shortlist(self, shortlist: List[Dict[str, Any]]):
         """Save shortlist to JSON with enhanced metadata"""
         try:
+            # FIXED: Use project root logs directory
+            from pathlib import Path
+            backend_dir = Path(__file__).resolve().parents[1]
+            project_root = backend_dir.parent
+            logs_dir = project_root / 'logs'
+            logs_dir.mkdir(parents=True, exist_ok=True)
+            
             date_str = datetime.now().strftime("%Y%m%d")
-            os.makedirs("logs", exist_ok=True)
             
             shortlist_data = {
                 "timestamp": datetime.now().isoformat(),
@@ -273,7 +279,7 @@ class RLFilteringAgent:
                 "shortlist": shortlist
             }
             
-            with open(f"logs/shortlist_{date_str}.json", 'w') as f:
+            with open(logs_dir / f"shortlist_{date_str}.json", 'w') as f:
                 json.dump(shortlist_data, f, indent=2)
             
             logger.info(f"Saved shortlist: {len(shortlist)} stocks to logs/shortlist_{date_str}.json")

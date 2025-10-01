@@ -16,7 +16,8 @@ class ProfessionalSellConfig:
     def _load_live_config():
         """Load configuration from live_config.json"""
         try:
-            config_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'live_config.json')
+            # FIXED: Correct path to project root data directory
+            config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'live_config.json')
             with open(config_path, 'r') as f:
                 return json.load(f)
         except Exception as e:

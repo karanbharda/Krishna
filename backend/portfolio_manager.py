@@ -335,8 +335,12 @@ class DualPortfolioManager:
             holdings = session.query(Holding).filter_by(portfolio_id=self.current_portfolio.id).all()
             trades = session.query(Trade).filter_by(portfolio_id=self.current_portfolio.id).all()
             
-            # Calculate holdings value (need current prices here)
-            holdings_value = 0.0  # This should be updated with real-time prices
+            # Calculate holdings value using last_price from database
+            holdings_value = sum(holding.quantity * holding.last_price for holding in holdings)
+            
+            # Calculate unrealized P&L
+            cost_basis = sum(holding.quantity * holding.avg_price for holding in holdings)
+            unrealized_pnl = holdings_value - cost_basis
             
             # Calculate portfolio metrics
             total_value = self.current_portfolio.cash + holdings_value
@@ -351,7 +355,7 @@ class DualPortfolioManager:
                 "starting_balance": self.current_portfolio.starting_balance,
                 "total_return": total_return,
                 "return_percentage": return_percentage,
-                "unrealized_pnl": self.current_portfolio.unrealized_pnl,
+                "unrealized_pnl": unrealized_pnl,
                 "realized_pnl": self.current_portfolio.realized_pnl,
                 "total_trades": len(trades),
                 "active_positions": len(holdings),

@@ -71,7 +71,9 @@ class DynamicPositionSizer:
             import json
             import os
             
-            config_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'live_config.json')
+            # FIXED: Correct path to project root data directory
+            config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'live_config.json')
+            
             if os.path.exists(config_path):
                 with open(config_path, 'r') as f:
                     live_config = json.load(f)
@@ -83,7 +85,7 @@ class DynamicPositionSizer:
                 
                 logger.info(f"📊 Loaded dynamic config - Max Position: {self.max_position_size:.1%}, Total Exposure: {self.max_total_exposure:.1%}, Kelly Max: {self.kelly_max_position:.1%}")
             else:
-                logger.warning("live_config.json not found, using hardcoded defaults")
+                logger.warning(f"live_config.json not found at {config_path}, using hardcoded defaults")
                 self.max_position_size = 0.25  # 25% max per position
                 self.max_total_exposure = 0.95  # 95% max total exposure
                 self.kelly_max_position = 0.20  # Cap Kelly at 20%

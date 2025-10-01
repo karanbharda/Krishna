@@ -143,7 +143,9 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
     mode: 'paper',
     riskLevel: 'MEDIUM',
     maxAllocation: 25,
-    stopLossPct: 5
+    stopLossPct: 5,
+    targetPriceLevel: 'MEDIUM',
+    targetPricePct: 4
   });
   const [loading, setLoading] = useState(false);
 
@@ -158,7 +160,11 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
           : 25,
         stopLossPct: settings.stop_loss_pct
           ? (settings.stop_loss_pct * 100)
-          : 5
+          : 5,
+        targetPriceLevel: settings.target_price_level || 'MEDIUM',
+        targetPricePct: settings.target_price_multiplier
+          ? (settings.target_price_multiplier * 100)
+          : 4
       });
     }
   }, [settings]);
@@ -191,6 +197,25 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
         }
       }
 
+      // Auto-update target price based on target price level
+      if (field === 'targetPriceLevel') {
+        if (value === 'CUSTOM') {
+          // When Custom is selected, clear the field so user can input their own value
+          newData.targetPricePct = '';
+        } else {
+          // For predefined target price levels, set the values
+          const targetSettings = {
+            'LOW': 8,
+            'MEDIUM': 4,
+            'HIGH': 12
+          };
+
+          if (targetSettings[value]) {
+            newData.targetPricePct = targetSettings[value];
+          }
+        }
+      }
+
       console.log('Risk Level:', newData.riskLevel, 'Is Custom:', newData.riskLevel === 'CUSTOM');
       return newData;
     });
@@ -202,6 +227,7 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
       // Convert string values to numbers
       const maxAllocationNum = parseFloat(formData.maxAllocation) || 0;
       const stopLossPctNum = parseFloat(formData.stopLossPct) || 0;
+      const targetPricePctNum = parseFloat(formData.targetPricePct) || 0;
 
       // Validate that we have values for custom mode
       if (formData.riskLevel === 'CUSTOM') {
@@ -225,15 +251,34 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
         }
       }
 
+      // Validate target price for custom mode
+      if (formData.targetPriceLevel === 'CUSTOM') {
+        if (!formData.targetPricePct || targetPricePctNum <= 0) {
+          alert('Please enter a valid Target Price Percentage (1-50) when using Custom target price level.');
+          setLoading(false);
+          return;
+        }
+
+        // Validate range
+        if (targetPricePctNum < 1 || targetPricePctNum > 50) {
+          alert('Target Price Percentage must be between 1 and 50.');
+          setLoading(false);
+          return;
+        }
+      }
+
       // Use the converted numbers or defaults
       const maxAllocation = maxAllocationNum || 25;
       const stopLossPct = stopLossPctNum || 5;
+      const targetPricePct = targetPricePctNum || 4;
 
       const settingsToSave = {
         mode: formData.mode,
         riskLevel: formData.riskLevel,
         stop_loss_pct: stopLossPct / 100, // Convert percentage to decimal
         max_capital_per_trade: maxAllocation / 100, // Convert percentage to decimal
+        target_price_level: formData.targetPriceLevel,
+        target_price_multiplier: targetPricePct / 100, // Convert percentage to decimal
         max_trade_limit: 150 // Default value
       };
 
@@ -323,34 +368,48 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
           </SettingGroup>
 
           <SettingGroup>
-            <label>Stop Loss Percentage (%):</label>
+            <label>Target Price Level:</label>
+            <select
+              value={formData.targetPriceLevel}
+              onChange={(e) => handleInputChange('targetPriceLevel', e.target.value)}
+              disabled={loading}
+            >
+              <option value="LOW">Low (8% target price)</option>
+              <option value="MEDIUM">Medium (4% target price)</option>
+              <option value="HIGH">High (12% target price)</option>
+              <option value="CUSTOM">Custom (Set your own percentage)</option>
+            </select>
+          </SettingGroup>
+
+          <SettingGroup>
+            <label>Target Price Percentage (%):</label>
             <input
               type="number"
               min="1"
-              max="20"
+              max="50"
               step="0.1"
-              value={formData.stopLossPct}
-              placeholder={formData.riskLevel === 'CUSTOM' ? 'Enter percentage (1-20)' : ''}
+              value={formData.targetPricePct}
+              placeholder={formData.targetPriceLevel === 'CUSTOM' ? 'Enter percentage (1-50)' : ''}
               onChange={(e) => {
                 const value = e.target.value;
-                console.log('Stop Loss input changed:', value, 'Risk Level:', formData.riskLevel);
+                console.log('Target Price input changed:', value, 'Level:', formData.targetPriceLevel);
                 // Always allow the change, let the input handle validation
-                handleInputChange('stopLossPct', value);
+                handleInputChange('targetPricePct', value);
               }}
-              disabled={loading || formData.riskLevel !== 'CUSTOM'}
+              disabled={loading || formData.targetPriceLevel !== 'CUSTOM'}
               style={{
-                backgroundColor: formData.riskLevel !== 'CUSTOM' ? '#f8f9fa' : 'white',
-                cursor: formData.riskLevel !== 'CUSTOM' ? 'not-allowed' : 'text',
-                border: formData.riskLevel === 'CUSTOM' ? '2px solid #3498db' : '2px solid #e9ecef'
+                backgroundColor: formData.targetPriceLevel !== 'CUSTOM' ? '#f8f9fa' : 'white',
+                cursor: formData.targetPriceLevel !== 'CUSTOM' ? 'not-allowed' : 'text',
+                border: formData.targetPriceLevel === 'CUSTOM' ? '2px solid #e74c3c' : '2px solid #e9ecef'
               }}
             />
-            {formData.riskLevel !== 'CUSTOM' && (
+            {formData.targetPriceLevel !== 'CUSTOM' && (
               <small style={{ color: '#6c757d', fontSize: '0.85rem', marginTop: '5px', display: 'block' }}>
-                Select "Custom" risk level to modify this value
+                Select "Custom" target price level to modify this value
               </small>
             )}
-            {formData.riskLevel === 'CUSTOM' && (
-              <small style={{ color: '#27ae60', fontSize: '0.85rem', marginTop: '5px', display: 'block' }}>
+            {formData.targetPriceLevel === 'CUSTOM' && (
+              <small style={{ color: '#e74c3c', fontSize: '0.85rem', marginTop: '5px', display: 'block' }}>
                 ✓ Custom mode: You can edit this value
               </small>
             )}

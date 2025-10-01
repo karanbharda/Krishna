@@ -132,20 +132,34 @@ class ProfessionalBuyLogic:
                 with open(config_path, 'r') as f:
                     live_config = json.load(f)
                 
-                # Get dynamic stop-loss percentage from frontend config
+                # Get dynamic stop-loss percentage from frontend config (already as decimal)
                 self.stop_loss_pct = live_config.get("stop_loss_pct", 0.05)
-                self.take_profit_ratio = live_config.get("take_profit_ratio", 2.0)
                 
-                logger.info(f"📊 Loaded dynamic config - Stop Loss: {self.stop_loss_pct:.1%}, Take Profit Ratio: {self.take_profit_ratio}")
+                # Get target price configuration from frontend config
+                target_level = live_config.get("target_price_level", "MEDIUM")
+                target_multiplier = live_config.get("target_price_multiplier", 0.04)  # Already as decimal from frontend
+                
+                # Map target level to percentage (as decimal)
+                target_percentages = {
+                    "LOW": 0.08,      # 8% target price
+                    "MEDIUM": 0.04,   # 4% target price  
+                    "HIGH": 0.12,     # 12% target price
+                    "CUSTOM": target_multiplier  # Use custom value (already as decimal)
+                }
+                
+                # Store as decimal for calculation
+                self.target_price_pct = target_percentages.get(target_level, 0.04)
+                
+                logger.info(f"📊 Loaded dynamic config - Stop Loss: {self.stop_loss_pct:.1%}, Target Price: {self.target_price_pct:.1%} (Level: {target_level})")
             else:
                 logger.warning("live_config.json not found, using defaults")
                 self.stop_loss_pct = 0.05
-                self.take_profit_ratio = 2.0
+                self.target_price_pct = 0.04
                 
         except Exception as e:
             logger.error(f"Failed to load dynamic config: {e}")
             self.stop_loss_pct = 0.05
-            self.take_profit_ratio = 2.0
+            self.target_price_pct = 0.04
     
     def refresh_dynamic_config(self):
         """Refresh dynamic configuration from live_config.json (call this periodically)"""
@@ -673,12 +687,12 @@ class ProfessionalBuyLogic:
         # Choose the most aggressive (lowest) entry for better timing
         target_entry = min(base_entry, volatility_entry, support_entry)
 
-        # Stop-loss based on ATR with dynamic adjustment
-        stop_loss = target_entry * (1 - self.stop_loss_pct * (1 - min(stock.volatility / 0.03, 1)))
+        # Stop-loss based on dynamic percentage from frontend
+        stop_loss = target_entry * (1 - self.stop_loss_pct)
 
-        # Take-profit based on risk-reward ratio with enhanced targets
-        risk = target_entry - stop_loss
-        take_profit = target_entry + (risk * self.take_profit_ratio * 1.2)  # Increased profit target
+        # Take-profit based on dynamic target price percentage from frontend
+        # Simple calculation: entry price + target price percentage
+        take_profit = target_entry * (1 + self.target_price_pct)
 
         return {
             "target_entry": target_entry,

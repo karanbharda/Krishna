@@ -54,7 +54,6 @@ class DhanAPIClient:
         
         # Daily instrument master (Dhan's recommended approach)
         self.daily_instruments_df = None
-        self.daily_instruments_last_updated = None
         self.daily_instruments_cache_duration = 3600  # Refresh every hour
         self.daily_refresh_hour = 8  # Refresh at 8 AM daily
         
@@ -62,9 +61,11 @@ class DhanAPIClient:
         self.compact_url = "https://images.dhan.co/api-data/api-scrip-master.csv"
         self.detailed_url = "https://images.dhan.co/api-data/api-scrip-master-detailed.csv"
         
-        # Data directory for caching
-        self.data_dir = Path("data")
-        self.data_dir.mkdir(exist_ok=True)
+        # Data directory for caching - FIXED: Use project root data directory
+        backend_dir = Path(__file__).resolve().parent
+        project_root = backend_dir.parent
+        self.data_dir = project_root / 'data'
+        self.data_dir.mkdir(parents=True, exist_ok=True)
         
         # Initialize database for corrected security IDs
         self._init_security_id_db()

@@ -61,7 +61,13 @@ class PerformanceOutcome:
 class DecisionAuditTrail:
     """Production-level decision audit trail system"""
     
-    def __init__(self, storage_path: str = "data/audit_trail"):
+    def __init__(self, storage_path: str = None):
+        # FIXED: Use project root data directory
+        if storage_path is None:
+            backend_dir = Path(__file__).resolve().parents[1]
+            project_root = backend_dir.parent
+            storage_path = str(project_root / 'data' / 'audit_trail')
+        
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
         
