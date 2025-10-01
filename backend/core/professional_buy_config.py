@@ -26,28 +26,28 @@ class ProfessionalBuyConfig:
         max_capital_per_trade = live_config.get('max_capital_per_trade', 0.25)  # Default 25%
         
         return {
-            "min_buy_signals": 4,          # Minimum 4 signals
+            "min_buy_signals": 4,          # Minimum 4 signals (moderate-strict)
             "max_buy_signals": 5,          # Maximum 5 signals
-            "min_buy_confidence": 0.40,    # 40% minimum confidence
-            "min_weighted_buy_score": 0.04, # 4% minimum weighted score
-            "entry_buffer_pct": 0.01,
+            "min_buy_confidence": 0.45,    # 45% minimum confidence (moderate-strict)
+            "min_weighted_buy_score": 0.06, # 6% minimum weighted score (moderate-strict)
+            "entry_buffer_pct": 0.015,     # 1.5% entry buffer (moderate-strict)
             "buy_stop_loss_pct": stop_loss_pct,  # From live_config.json
             "max_capital_per_trade": max_capital_per_trade,  # From live_config.json
             "take_profit_ratio": 2.0,
-            "partial_entry_threshold": 0.40,
-            "full_entry_threshold": 0.65,
+            "partial_entry_threshold": 0.45,   # 45% for partial entry (moderate-strict)
+            "full_entry_threshold": 0.70,      # 70% for full entry (moderate-strict)
             "downtrend_buy_multiplier": 0.7,
             "uptrend_buy_multiplier": 1.2,
             "enable_professional_buy_logic": True,
             "fallback_to_legacy_buy": False,
             # OPTIMIZED BUY LOGIC: Enhanced parameters
-            "signal_sensitivity_multiplier": 1.2,
-            "early_entry_buffer_pct": 0.005,
-            "aggressive_entry_threshold": 0.75,
+            "signal_sensitivity_multiplier": 1.1,  # Slightly reduced (moderate-strict)
+            "early_entry_buffer_pct": 0.008,       # 0.8% early entry buffer
+            "aggressive_entry_threshold": 0.80,    # 80% for aggressive entry (moderate-strict)
             "dynamic_signal_thresholds": True,
-            "signal_strength_boost": 0.1,
-            "ml_signal_weight_boost": 0.15,
-            "ml_confidence_multiplier": 1.3,
+            "signal_strength_boost": 0.08,         # 8% boost (moderate-strict)
+            "ml_signal_weight_boost": 0.12,        # 12% ML boost (moderate-strict)
+            "ml_confidence_multiplier": 1.25,      # 1.25x ML multiplier (moderate-strict)
             "momentum_confirmation_window": 3,
-            "momentum_strength_threshold": 0.02
+            "momentum_strength_threshold": 0.025    # 2.5% momentum threshold (moderate-strict)
         }

@@ -31,35 +31,37 @@ class ProfessionalSellConfig:
         
         # Extract values from live_config.json (with defaults)
         stop_loss_pct = live_config.get('stop_loss_pct', 0.05)  # Default 5%
+        emergency_loss_threshold = live_config.get('emergency_loss_threshold', 0.10)  # Default 10%
         max_capital_per_trade = live_config.get('max_capital_per_trade', 0.25)  # Default 25%
         drawdown_limit_pct = live_config.get('drawdown_limit_pct', 0.15)  # Default 15%
         
         return {
-            # Signal Requirements (Professional Standards)
-            "min_sell_signals": 2,                    # Minimum 2 signals required
-            "min_sell_confidence": 0.40,              # 40% minimum confidence (balanced with buy)
-            "min_weighted_sell_score": 0.04,          # 4% minimum weighted score (balanced with buy)
+            # Signal Requirements (Professional Standards) - Moderate-Strict
+            "min_sell_signals": 3,                    # Minimum 3 signals required (moderate-strict)
+            "min_sell_confidence": 0.45,              # 45% minimum confidence (moderate-strict)
+            "min_weighted_sell_score": 0.06,          # 6% minimum weighted score (moderate-strict)
             
             # Stop-Loss Configuration (Dynamic & Trailing) - Integrated with live_config.json
             "stop_loss_pct": stop_loss_pct,           # From live_config.json
-            "trailing_stop_pct": stop_loss_pct * 0.6, # 60% of stop-loss for trailing
+            "emergency_loss_threshold": emergency_loss_threshold,  # From live_config.json (8-10% emergency sell)
+            "trailing_stop_pct": stop_loss_pct * 0.65, # 65% of stop-loss for trailing (moderate-strict)
             "max_capital_per_trade": max_capital_per_trade,  # From live_config.json
             "drawdown_limit_pct": drawdown_limit_pct, # From live_config.json
-            "profit_protection_threshold": 0.05,      # Lock profits after 5% gain
-            "volatility_stop_multiplier": 1.5,        # Adjust stops for volatility
+            "profit_protection_threshold": 0.06,      # Lock profits after 6% gain (moderate-strict)
+            "volatility_stop_multiplier": 1.4,        # Adjust stops for volatility (moderate-strict)
             
-            # Position Sizing (Partial vs Full Exits) - More granular thresholds
-            "conservative_exit_threshold": 0.15,      # 15% confidence for conservative exit
-            "partial_exit_threshold": 0.30,           # 30% confidence for partial exit
-            "aggressive_exit_threshold": 0.50,        # 50% confidence for aggressive exit
-            "full_exit_threshold": 0.70,              # 70% confidence for full exit
-            "emergency_exit_threshold": 0.90,         # 90% confidence for emergency exits
+            # Position Sizing (Partial vs Full Exits) - Moderate-strict thresholds
+            "conservative_exit_threshold": 0.20,      # 20% confidence for conservative exit (moderate-strict)
+            "partial_exit_threshold": 0.40,           # 40% confidence for partial exit (moderate-strict)
+            "aggressive_exit_threshold": 0.60,        # 60% confidence for aggressive exit (moderate-strict)
+            "full_exit_threshold": 0.75,              # 75% confidence for full exit (moderate-strict)
+            "emergency_exit_threshold": 0.85,         # 85% confidence for emergency exits (moderate-strict)
             
             # Market Context Filters (Less restrictive in uptrends)
-            "uptrend_sell_multiplier": 1.1,           # Less restriction in uptrends
-            "downtrend_sell_multiplier": 0.9,         # Less restriction in downtrends
+            "uptrend_sell_multiplier": 1.15,          # Less restriction in uptrends (moderate-strict)
+            "downtrend_sell_multiplier": 0.85,        # Less restriction in downtrends (moderate-strict)
             "sideways_sell_multiplier": 1.0,          # Normal threshold in sideways
-            "strong_trend_threshold": 0.05,           # 5% for strong trend classification
+            "strong_trend_threshold": 0.06,           # 6% for strong trend classification (moderate-strict)
             
             # Signal Weights (Professional Distribution)
             "technical_weight": 0.30,                 # 30% technical analysis
@@ -68,11 +70,11 @@ class ProfessionalSellConfig:
             "ml_weight": 0.15,                        # 15% ML/AI signals
             "market_structure_weight": 0.10,          # 10% market structure
             
-            # Risk Management (Professional Standards)
-            "max_loss_threshold": 0.08,               # 8% maximum loss before forced exit
-            "time_decay_threshold": 30,               # 30 days without profit
-            "volatility_spike_threshold": 0.03,       # 3% daily volatility threshold
-            "unrealized_loss_threshold": 0.02,        # 2% unrealized loss signal
+            # Risk Management (Professional Standards) - Moderate-Strict
+            "max_loss_threshold": 0.07,               # 7% maximum loss before forced exit (moderate-strict)
+            "time_decay_threshold": 25,               # 25 days without profit (moderate-strict)
+            "volatility_spike_threshold": 0.035,      # 3.5% daily volatility threshold (moderate-strict)
+            "unrealized_loss_threshold": 0.025,       # 2.5% unrealized loss signal (moderate-strict)
             
             # Market Context Parameters
             "short_ma_period": 10,                    # Short-term moving average
@@ -120,8 +122,12 @@ class ProfessionalSellConfig:
             print("❌ stop_loss_pct must be between 0.0 and 0.20 (20%)")
             return False
         
-        if config["partial_exit_threshold"] >= config["full_exit_threshold"]:
-            print("❌ partial_exit_threshold must be less than full_exit_threshold")
+        if config["conservative_exit_threshold"] >= config["full_exit_threshold"]:
+            print("❌ conservative_exit_threshold must be less than full_exit_threshold")
+            return False
+        
+        if config["partial_exit_threshold"] >= config["aggressive_exit_threshold"]:
+            print("❌ partial_exit_threshold must be less than aggressive_exit_threshold")
             return False
         
         print("✅ Professional sell configuration validated successfully")

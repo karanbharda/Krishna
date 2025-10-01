@@ -54,6 +54,8 @@ class PositionMetrics:
     highest_price_since_entry: float
     lowest_price_since_entry: float
     volatility: float
+    db_stop_loss: Optional[float] = None  # Stop-loss from database
+    db_target_price: Optional[float] = None  # Target price from database
     
 @dataclass
 class MarketContext:
@@ -103,6 +105,9 @@ class ProfessionalSellLogic:
         self.base_stop_loss_pct = config.get("stop_loss_pct", 0.05)
         self.trailing_stop_pct = config.get("trailing_stop_pct", 0.03)
         self.profit_protection_threshold = config.get("profit_protection_threshold", 0.05)
+        
+        # Emergency loss threshold (8-10% loss triggers immediate sell)
+        self.emergency_loss_threshold = config.get("emergency_loss_threshold", 0.10)  # 10% default
         
         # Position sizing - More granular thresholds
         self.conservative_exit_threshold = config.get("conservative_exit_threshold", 0.15)

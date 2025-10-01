@@ -174,6 +174,15 @@ class ProfessionalSellIntegration:
             if len(returns) > 1:
                 volatility = returns.std() * (252 ** 0.5)  # Annualized
         
+        # Fetch stop-loss and target price from database
+        db_stop_loss, db_target_price = self._fetch_db_stop_loss_target(ticker)
+        
+        logger.info(f"Position Metrics for {ticker}:")
+        logger.info(f"  Entry Price: {entry_price:.2f}")
+        logger.info(f"  Current Price: {current_price:.2f}")
+        logger.info(f"  DB Stop-Loss: {db_stop_loss if db_stop_loss else 'Not set'}")
+        logger.info(f"  DB Target Price: {db_target_price if db_target_price else 'Not set'}")
+        
         return PositionMetrics(
             entry_price=entry_price,
             current_price=current_price,
@@ -183,8 +192,45 @@ class ProfessionalSellIntegration:
             days_held=days_held,
             highest_price_since_entry=highest_price,
             lowest_price_since_entry=lowest_price,
-            volatility=volatility
+            volatility=volatility,
+            db_stop_loss=db_stop_loss,
+            db_target_price=db_target_price
         )
+    
+    def _fetch_db_stop_loss_target(self, ticker: str) -> Tuple[Optional[float], Optional[float]]:
+        """Fetch stop-loss and target price from database for the given ticker"""
+        try:
+            from ..db.database import DatabaseManager
+            
+            db_manager = DatabaseManager()
+            session = db_manager.Session()
+            
+            try:
+                # Query the most recent buy trade for this ticker
+                from ..db.database import Trade
+                latest_buy = session.query(Trade).filter(
+                    Trade.ticker == ticker,
+                    Trade.action == 'buy'
+                ).order_by(Trade.timestamp.desc()).first()
+                
+                if latest_buy:
+                    stop_loss = latest_buy.stop_loss if latest_buy.stop_loss and latest_buy.stop_loss > 0 else None
+                    target_price = latest_buy.take_profit if latest_buy.take_profit and latest_buy.take_profit > 0 else None
+                    
+                    if stop_loss or target_price:
+                        logger.info(f"📊 Database values retrieved for {ticker}: Stop-Loss={stop_loss}, Target={target_price}")
+                    
+                    return stop_loss, target_price
+                else:
+                    logger.debug(f"No buy trade found in database for {ticker}")
+                    return None, None
+                    
+            finally:
+                session.close()
+                
+        except Exception as e:
+            logger.warning(f"Failed to fetch database stop-loss/target for {ticker}: {e}")
+            return None, None
     
     def _build_market_context(self, analysis_data: Dict, price_history: Optional[pd.DataFrame]):
         """Build market context from analysis data"""

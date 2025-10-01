@@ -2,6 +2,7 @@
   "mode": "live",
   "riskLevel": "CUSTOM",
   "stop_loss_pct": 0.03,
+  "emergency_loss_threshold": 0.10,
   "max_capital_per_trade": 0.09,
   "max_trade_limit": 150,
   "created_at": "2025-09-30T13:25:04.363898"
