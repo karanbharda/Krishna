@@ -21,9 +21,7 @@ logger = logging.getLogger(__name__)
 class ProfessionalBuyIntegration:
     """
     Integration layer for professional buy logic
-    Bridges the gap between existing trading modules and new professional logic
     """
-    
     def __init__(self, config: Dict):
         self.config = config
         
@@ -36,6 +34,10 @@ class ProfessionalBuyIntegration:
         self.fallback_to_legacy = config.get("fallback_to_legacy_buy", True)  # Changed to True for compatibility
         
         logger.info("Professional Buy Integration initialized")
+    
+    def refresh_dynamic_config(self):
+        """Refresh dynamic configuration from live_config.json"""
+        self.buy_logic.refresh_dynamic_config()
     
     def evaluate_professional_buy(
         self,

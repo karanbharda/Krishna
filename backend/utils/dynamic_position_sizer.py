@@ -38,12 +38,12 @@ class DynamicPositionSizer:
     def __init__(self, initial_capital: float = 100000):
         self.initial_capital = initial_capital
         self.current_capital = initial_capital
-        self.max_position_size = 0.25  # 25% max per position
-        self.max_total_exposure = 0.95  # 95% max total exposure
+        
+        # Load dynamic configuration from live_config.json
+        self._load_dynamic_config()
         
         # Kelly Criterion parameters
         self.kelly_lookback_period = 50
-        self.kelly_max_position = 0.20  # Cap Kelly at 20%
         self.kelly_min_position = 0.01  # Minimum 1%
         
         # Volatility parameters
@@ -65,8 +65,41 @@ class DynamicPositionSizer:
         
         logger.info("✅ Dynamic Position Sizer initialized")
     
-    def calculate_position_size(self, 
-                              symbol: str, 
+    def _load_dynamic_config(self):
+        """Load dynamic configuration from live_config.json"""
+        try:
+            import json
+            import os
+            
+            config_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'live_config.json')
+            if os.path.exists(config_path):
+                with open(config_path, 'r') as f:
+                    live_config = json.load(f)
+                
+                # Get dynamic values from frontend config
+                self.max_position_size = live_config.get("max_capital_per_trade", 0.25)  # Use frontend value or 25% default
+                self.max_total_exposure = live_config.get("max_total_exposure", 0.95)   # Use frontend value or 95% default
+                self.kelly_max_position = live_config.get("kelly_max_position", 0.20)   # Use frontend value or 20% default
+                
+                logger.info(f"📊 Loaded dynamic config - Max Position: {self.max_position_size:.1%}, Total Exposure: {self.max_total_exposure:.1%}, Kelly Max: {self.kelly_max_position:.1%}")
+            else:
+                logger.warning("live_config.json not found, using hardcoded defaults")
+                self.max_position_size = 0.25  # 25% max per position
+                self.max_total_exposure = 0.95  # 95% max total exposure
+                self.kelly_max_position = 0.20  # Cap Kelly at 20%
+                
+        except Exception as e:
+            logger.error(f"Failed to load dynamic config: {e}")
+            self.max_position_size = 0.25  # 25% max per position
+            self.max_total_exposure = 0.95  # 95% max total exposure
+            self.kelly_max_position = 0.20  # Cap Kelly at 20%
+    
+    def refresh_dynamic_config(self):
+        """Refresh dynamic configuration from live_config.json (call this periodically)"""
+        self._load_dynamic_config()
+
+    def calculate_position_size(self,
+                              symbol: str,
                               signal_strength: float,
                               current_price: float,
                               volatility: float,
@@ -80,12 +113,12 @@ class DynamicPositionSizer:
         try:
             # Update current capital
             self.current_capital = portfolio_data.get('total_value', self.initial_capital)
-            
+
             # Calculate base position sizes using different methods
             kelly_size = self._calculate_kelly_size(symbol, historical_data, signal_strength)
             volatility_size = self._calculate_volatility_size(current_price, volatility, market_regime)
             risk_parity_size = self._calculate_risk_parity_size(volatility, portfolio_data)
-            
+
             # Select sizing method
             if method == SizingMethod.KELLY_CRITERION:
                 base_size = kelly_size
@@ -98,7 +131,7 @@ class DynamicPositionSizer:
                 base_size = self._adaptive_sizing(kelly_size, volatility_size, risk_parity_size, signal_strength, market_regime)
             else:
                 base_size = self._calculate_fixed_size()
-            
+
             # ENHANCEMENT: Adjust Kelly limits based on market conditions
             # Make Kelly fraction more responsive to market regime
             if market_regime == "HIGH_VOLATILITY":
@@ -107,26 +140,26 @@ class DynamicPositionSizer:
                 self.kelly_max_position = 0.25  # More aggressive in low volatility
             else:
                 self.kelly_max_position = 0.20  # Default
-            
+
             # Apply risk management constraints
             constrained_size = self._apply_risk_constraints(
                 base_size, symbol, current_price, portfolio_data
             )
-            
+
             # Calculate actual quantities and risk metrics
             position_value = constrained_size * self.current_capital
             quantity = int(position_value / current_price)
             actual_value = quantity * current_price
             actual_size = actual_value / self.current_capital
-            
+
             # Calculate stop loss
             stop_loss = self._calculate_stop_loss(current_price, volatility)
-            
+
             # Calculate risk metrics
             risk_metrics = self._calculate_risk_metrics(
                 actual_value, current_price, stop_loss, volatility
             )
-            
+
             result = {
                 'symbol': symbol,
                 'method_used': method.value,
@@ -147,10 +180,10 @@ class DynamicPositionSizer:
                 'market_regime': market_regime,
                 'timestamp': datetime.now().isoformat()
             }
-            
+
             logger.info(f"Position size calculated for {symbol}: {actual_size:.2%} (${actual_value:,.0f})")
             return result
-            
+
         except Exception as e:
             logger.error(f"Error calculating position size for {symbol}: {e}")
             return self._fallback_position_size(symbol, current_price)

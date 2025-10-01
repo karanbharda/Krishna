@@ -232,6 +232,64 @@ class ProfessionalSellIntegration:
             logger.warning(f"Failed to fetch database stop-loss/target for {ticker}: {e}")
             return None, None
     
+    def _fetch_dhan_portfolio_data(self) -> Tuple[float, float, float]:
+        """Fetch dynamic portfolio data from Dhan API"""
+        try:
+            # Import Dhan client if available
+            try:
+                from ..dhan_client import DhanAPIClient
+                from ..config.environment_manager import EnvironmentManager
+                
+                # Get Dhan credentials
+                env_manager = EnvironmentManager()
+                dhan_config = env_manager.get_dhan_config()
+                
+                if dhan_config and dhan_config.get('client_id') and dhan_config.get('access_token'):
+                    dhan_client = DhanAPIClient(
+                        client_id=dhan_config['client_id'],
+                        access_token=dhan_config['access_token']
+                    )
+                    
+                    # Get funds (available cash)
+                    funds_data = dhan_client.get_funds()
+                    available_cash = funds_data.get('availabelBalance', 0.0)  # Note: typo in Dhan API
+                    
+                    # Get holdings for P&L calculation
+                    holdings = dhan_client.get_holdings()
+                    
+                    # Calculate unrealized P&L from holdings
+                    unrealized_pnl = 0.0
+                    for holding in holdings:
+                        current_price = holding.get('lastPrice', 0.0)
+                        avg_price = holding.get('avgPrice', 0.0)
+                        quantity = holding.get('quantity', 0)
+                        
+                        if current_price > 0 and avg_price > 0:
+                            pnl = (current_price - avg_price) * quantity
+                            unrealized_pnl += pnl
+                    
+                    # For realized P&L, we'd need to get it from order history or positions
+                    # For now, we'll use 0 as Dhan doesn't provide realized P&L directly in funds
+                    realized_pnl = 0.0
+                    
+                    logger.info(f"📊 Dhan Portfolio Data - Cash: ₹{available_cash:.2f}, Unrealized P&L: ₹{unrealized_pnl:.2f}")
+                    
+                    return available_cash, realized_pnl, unrealized_pnl
+                else:
+                    logger.warning("Dhan credentials not available for dynamic portfolio data")
+                    return 0.0, 0.0, 0.0
+                    
+            except ImportError as e:
+                logger.warning(f"Dhan client not available: {e}")
+                return 0.0, 0.0, 0.0
+            except Exception as e:
+                logger.error(f"Error fetching Dhan portfolio data: {e}")
+                return 0.0, 0.0, 0.0
+                
+        except Exception as e:
+            logger.error(f"Failed to fetch Dhan portfolio data: {e}")
+            return 0.0, 0.0, 0.0
+    
     def _build_market_context(self, analysis_data: Dict, price_history: Optional[pd.DataFrame]):
         """Build market context from analysis data"""
         
@@ -333,6 +391,30 @@ class ProfessionalSellIntegration:
             "reason": "legacy_fallback",
             "professional_reasoning": "Using legacy sell logic"
         }
+    
+    def get_dynamic_portfolio_data(self) -> Dict:
+        """Get dynamic portfolio data from Dhan API for live trading"""
+        try:
+            # Fetch dynamic data from Dhan
+            available_cash, realized_pnl, unrealized_pnl = self._fetch_dhan_portfolio_data()
+            
+            return {
+                "available_cash": available_cash,
+                "realized_pnl": realized_pnl,
+                "unrealized_pnl": unrealized_pnl,
+                "total_value": available_cash + unrealized_pnl,  # Cash + unrealized positions
+                "is_dynamic": True
+            }
+        except Exception as e:
+            logger.error(f"Failed to get dynamic portfolio data: {e}")
+            # Fallback to database values if Dhan fails
+            return {
+                "available_cash": 0.0,
+                "realized_pnl": 0.0,
+                "unrealized_pnl": 0.0,
+                "total_value": 0.0,
+                "is_dynamic": False
+            }
     
     def _error_decision(self, error_msg: str) -> Dict:
         """Return decision when error occurs"""

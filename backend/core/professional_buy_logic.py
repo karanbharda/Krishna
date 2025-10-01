@@ -116,29 +116,40 @@ class ProfessionalBuyLogic:
         self.low_confidence_multiplier = config.get("low_confidence_multiplier", 0.8)
         self.high_confidence_multiplier = config.get("high_confidence_multiplier", 1.2)
         
-        # Entry configuration
-        self.base_entry_buffer_pct = config.get("entry_buffer_pct", 0.01)
-        self.stop_loss_pct = config.get("buy_stop_loss_pct", 0.05)
-        self.take_profit_ratio = config.get("take_profit_ratio", 2.0)
-        
-        # Position sizing
-        self.partial_entry_threshold = config.get("partial_entry_threshold", 0.40)  # Reduced from 0.50
-        self.full_entry_threshold = config.get("full_entry_threshold", 0.65)        # Reduced from 0.75
-        
-        # Market context filters
-        self.downtrend_buy_multiplier = config.get("downtrend_buy_multiplier", 0.7)
-        self.uptrend_buy_multiplier = config.get("uptrend_buy_multiplier", 1.2)
-        
-        # Balanced weights: Technical 25%, Value 20%, Sentiment 20%, ML 20%, Market Structure 15%
-        self.category_weights = {
-            "Technical": 0.25,
-            "Value": 0.20,
-            "Sentiment": 0.20,
-            "ML": 0.20,
-            "Market": 0.15
-        }
+        # DYNAMIC STOP-LOSS: Read from live_config.json instead of hardcoded
+        self._load_dynamic_config()
         
         logger.info("Professional Buy Logic initialized with enhanced optimization parameters")
+    
+    def _load_dynamic_config(self):
+        """Load dynamic configuration from live_config.json"""
+        try:
+            import json
+            import os
+            
+            config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'live_config.json')
+            if os.path.exists(config_path):
+                with open(config_path, 'r') as f:
+                    live_config = json.load(f)
+                
+                # Get dynamic stop-loss percentage from frontend config
+                self.stop_loss_pct = live_config.get("stop_loss_pct", 0.05)
+                self.take_profit_ratio = live_config.get("take_profit_ratio", 2.0)
+                
+                logger.info(f"📊 Loaded dynamic config - Stop Loss: {self.stop_loss_pct:.1%}, Take Profit Ratio: {self.take_profit_ratio}")
+            else:
+                logger.warning("live_config.json not found, using defaults")
+                self.stop_loss_pct = 0.05
+                self.take_profit_ratio = 2.0
+                
+        except Exception as e:
+            logger.error(f"Failed to load dynamic config: {e}")
+            self.stop_loss_pct = 0.05
+            self.take_profit_ratio = 2.0
+    
+    def refresh_dynamic_config(self):
+        """Refresh dynamic configuration from live_config.json (call this periodically)"""
+        self._load_dynamic_config()
     
     def evaluate_buy_decision(
         self,
