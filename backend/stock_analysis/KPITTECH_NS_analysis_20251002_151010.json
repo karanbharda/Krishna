@@ -1,0 +1,283 @@
+{
+    "success": true,
+    "stock_data": {
+        "symbol": "KPITTECH.NS",
+        "name": "KPITTECH.NS",
+        "current_price": {
+            "INR": 1153.2,
+            "USD": 13.0,
+            "EUR": 11.06,
+            "BTC": 0.00010952,
+            "ETH": 0.00296351
+        },
+        "sector": "N/A",
+        "industry": "N/A",
+        "pe_ratio": "N/A",
+        "dividends": "N/A"
+    },
+    "recommendation": "NEUTRAL",
+    "buy_score": 0.0,
+    "sell_score": 0.0,
+    "technical_indicators": {
+        "sma_50": 1225.272,
+        "sma_200": 1297.0955000000001,
+        "ema_50": 1235.70923243314,
+        "rsi": 38.802428844592974,
+        "macd": -14.85970575457236,
+        "signal_line": 0.28655075806429897,
+        "macd_histogram": -15.14625651263666,
+        "bb_upper": 1334.8632443051029,
+        "bb_lower": 1144.8667556948976,
+        "volatility": 0.025282035878056348,
+        "momentum": -0.05055162193314661,
+        "volume_trend": "MODERATE"
+    },
+    "fundamental_analysis": {
+        "market_cap": "N/A",
+        "pe_ratio": "N/A",
+        "dividend_yield": "N/A",
+        "52w_high": "N/A",
+        "52w_low": "N/A",
+        "balance_sheet": {},
+        "income_statement": {},
+        "cash_flow": {}
+    },
+    "sentiment_analysis": {
+        "newsapi": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "gnews": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "reddit": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "google_news": {
+            "positive": 7.0,
+            "negative": 0,
+            "neutral": 3.0
+        },
+        "aggregated": {
+            "positive": 7.0,
+            "negative": 0,
+            "neutral": 3.0
+        },
+        "weighted_aggregated": {
+            "positive": 18.2,
+            "negative": 0.0,
+            "neutral": 7.800000000000001,
+            "total_weight": 11.31
+        },
+        "comprehensive_analysis": {
+            "sentiment_strength": {
+                "bullish": 1.6091954022988504,
+                "bearish": 0.0,
+                "neutral": 0.6896551724137931
+            },
+            "confidence_score": 0.7,
+            "market_context_applied": 1.3,
+            "sources_coverage": {
+                "global_financial": true,
+                "indian_focus": true,
+                "broad_market": true,
+                "social_sentiment": true
+            }
+        }
+    },
+    "mpt_metrics": {
+        "annual_return": -0.29897432426846593,
+        "annual_volatility": 0.4002905055015925,
+        "sharpe_ratio": -0.8967845085874458,
+        "beta": "N/A",
+        "alpha": "N/A"
+    },
+    "institutional_holders": {},
+    "mutual_fund_holders": {},
+    "support_level": 1164.0084,
+    "resistance_level": 1286.5356,
+    "risk_level": "MEDIUM",
+    "timeframe": "SHORT_TERM",
+    "explanation": "Recommendation for KPITTECH.NS (KPITTECH.NS): NEUTRAL\nCurrent Price: Rs.1153.20\n\nBuy Score: 0.000, Sell Score: 0.000\n\nNeutral Factors:\n- Price is stable relative to moving averages.\n- Sentiment is balanced, with no strong bullish or bearish signals.\n\nRisk Assessment:\n- Volatility: 0.0253 (higher values indicate higher risk)\n- Sector: N/A\n- Industry: N/A\n",
+    "ml_analysis": {
+        "success": true,
+        "predicted_price": 1113.759378192454,
+        "confidence": -0.0339573262157713,
+        "mse": 1001.3522668759911,
+        "mae": 18.015423995827515,
+        "r2_score": -0.0339573262157713,
+        "best_ml_model": "stacking",
+        "best_model_metrics": {
+            "mse": 1001.3522668759911,
+            "mae": 18.015423995827515,
+            "r2": -0.0339573262157713
+        },
+        "all_model_scores": {
+            "xgb": {
+                "mse": 1122.1539275483888,
+                "mae": 18.69878852803513,
+                "r2": -0.15869241316067906,
+                "prediction": 1136.735107421875
+            },
+            "lgb": {
+                "mse": 1080.5014443853377,
+                "mae": 21.08841037637799,
+                "r2": -0.11568368232125592,
+                "prediction": 1117.9152230800717
+            },
+            "cb": {
+                "mse": 1118.550802474772,
+                "mae": 17.66803500510591,
+                "r2": -0.15497196663014834,
+                "prediction": 1128.6739348308897
+            },
+            "et": {
+                "mse": 1032.5613791545811,
+                "mae": 16.870548774663128,
+                "r2": -0.06618263927748824,
+                "prediction": 1128.2901912115342
+            },
+            "svr": {
+                "mse": 2982.4420050526364,
+                "mae": 37.406534901116075,
+                "r2": -2.079553383105009,
+                "prediction": 1155.8672002244307
+            },
+            "mlp": {
+                "mse": 4187.294523864421,
+                "mae": 52.99091705478883,
+                "r2": -3.3236371386863466,
+                "prediction": 1120.5628952188638
+            },
+            "ensemble": {
+                "mse": 1096.8036620784515,
+                "mae": 21.68233725826126,
+                "r2": -0.13251671698341916,
+                "prediction": 1131.3407462284563
+            },
+            "stacking": {
+                "mse": 1001.3522668759911,
+                "mae": 18.015423995827515,
+                "r2": -0.0339573262157713,
+                "prediction": 1127.150204889862
+            }
+        },
+        "lstm_metrics": {
+            "mse": 0.016655834391713142,
+            "r2": -1.0384721755981445,
+            "adv_mse": 0.032395634800195694,
+            "adv_r2": -2.9648334980010986
+        },
+        "transformer_metrics": {
+            "mse": 0.009840140119194984,
+            "r2": -0.2043139934539795,
+            "adv_mse": 0.010821704752743244,
+            "adv_r2": -0.32444560527801514
+        },
+        "rl_metrics": {
+            "success": true,
+            "recommendation": "BUY",
+            "performance_pct": 20.620416492564004,
+            "final_net_worth": 120620.416492564,
+            "average_reward": 564573.3019192474,
+            "average_events_per_episode": 74.37,
+            "actions_distribution": {
+                "hold": 0.21390374331550802,
+                "buy": 0.2807486631016043,
+                "sell": 0.5053475935828877
+            },
+            "epoch_logs": [
+                {
+                    "episode": 10,
+                    "total_reward": -6791177.90532629,
+                    "average_reward": -1371698.034213066,
+                    "events_triggered": 67
+                },
+                {
+                    "episode": 20,
+                    "total_reward": 1584759.3736350297,
+                    "average_reward": 962221.2134815395,
+                    "events_triggered": 77
+                },
+                {
+                    "episode": 30,
+                    "total_reward": 2384992.5153751033,
+                    "average_reward": -240461.23821407245,
+                    "events_triggered": 76
+                },
+                {
+                    "episode": 40,
+                    "total_reward": -6663087.261489466,
+                    "average_reward": 1725616.0700739205,
+                    "events_triggered": 75
+                },
+                {
+                    "episode": 50,
+                    "total_reward": 6653488.300699421,
+                    "average_reward": -539421.9284090665,
+                    "events_triggered": 79
+                },
+                {
+                    "episode": 60,
+                    "total_reward": -4390224.3065469125,
+                    "average_reward": 2622858.026176596,
+                    "events_triggered": 65
+                },
+                {
+                    "episode": 70,
+                    "total_reward": -5593804.518982372,
+                    "average_reward": 2261047.314290886,
+                    "events_triggered": 76
+                },
+                {
+                    "episode": 80,
+                    "total_reward": -5612729.108743699,
+                    "average_reward": 1812636.8013763323,
+                    "events_triggered": 82
+                },
+                {
+                    "episode": 90,
+                    "total_reward": -8635645.762594592,
+                    "average_reward": -1171219.4908484742,
+                    "events_triggered": 85
+                },
+                {
+                    "episode": 100,
+                    "total_reward": -8440094.541964365,
+                    "average_reward": -415845.7145221213,
+                    "events_triggered": 77
+                }
+            ]
+        },
+        "ensemble_components": {
+            "best_ml_model": 1127.150204889862,
+            "lstm": 1093.1148681640625,
+            "transformer": 1121.0130615234375,
+            "ensemble_average": 1130.816937888248
+        },
+        "industry_level_features": {
+            "top_5_ml_models": [
+                "xgb",
+                "lgb",
+                "cb",
+                "et",
+                "svr",
+                "mlp",
+                "ensemble",
+                "stacking"
+            ],
+            "ensemble_methods": [
+                "VotingRegressor",
+                "StackingRegressor"
+            ],
+            "advanced_scaling": "RobustScaler",
+            "model_selection": "Best R2 Score"
+        }
+    },
+    "timestamp": "2025-10-02 15:10:10"
+}

@@ -1,0 +1,283 @@
+{
+    "success": true,
+    "stock_data": {
+        "symbol": "MARUTI.NS",
+        "name": "MARUTI.NS",
+        "current_price": {
+            "INR": 15965.0,
+            "USD": 179.95,
+            "EUR": 153.1,
+            "BTC": 0.00151425,
+            "ETH": 0.0409314
+        },
+        "sector": "N/A",
+        "industry": "N/A",
+        "pe_ratio": "N/A",
+        "dividends": "N/A"
+    },
+    "recommendation": "NEUTRAL",
+    "buy_score": 0.0,
+    "sell_score": 0.0,
+    "technical_indicators": {
+        "sma_50": 14270.56,
+        "sma_200": 12655.974250000001,
+        "ema_50": 14644.94268583301,
+        "rsi": 68.07306808856598,
+        "macd": 510.13265808883807,
+        "signal_line": 563.5474857158982,
+        "macd_histogram": -53.41482762706016,
+        "bb_upper": 16605.52533331635,
+        "bb_lower": 14666.77466668365,
+        "volatility": 0.010557890360780668,
+        "momentum": 0.1226355389916321,
+        "volume_trend": "MODERATE"
+    },
+    "fundamental_analysis": {
+        "market_cap": "N/A",
+        "pe_ratio": "N/A",
+        "dividend_yield": "N/A",
+        "52w_high": "N/A",
+        "52w_low": "N/A",
+        "balance_sheet": {},
+        "income_statement": {},
+        "cash_flow": {}
+    },
+    "sentiment_analysis": {
+        "newsapi": {
+            "positive": 3.0,
+            "negative": 2.0,
+            "neutral": 0
+        },
+        "gnews": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "reddit": {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0
+        },
+        "google_news": {
+            "positive": 3.0,
+            "negative": 0,
+            "neutral": 7.0
+        },
+        "aggregated": {
+            "positive": 6.0,
+            "negative": 2.0,
+            "neutral": 7.0
+        },
+        "weighted_aggregated": {
+            "positive": 19.5,
+            "negative": 7.800000000000001,
+            "neutral": 18.2,
+            "total_weight": 11.31
+        },
+        "comprehensive_analysis": {
+            "sentiment_strength": {
+                "bullish": 1.7241379310344827,
+                "bearish": 0.6896551724137931,
+                "neutral": 1.6091954022988504
+            },
+            "confidence_score": 0.42857142857142855,
+            "market_context_applied": 1.3,
+            "sources_coverage": {
+                "global_financial": true,
+                "indian_focus": true,
+                "broad_market": true,
+                "social_sentiment": true
+            }
+        }
+    },
+    "mpt_metrics": {
+        "annual_return": 0.2601203219537981,
+        "annual_volatility": 0.21768547590060072,
+        "sharpe_ratio": 0.9193094813784305,
+        "beta": "N/A",
+        "alpha": "N/A"
+    },
+    "institutional_holders": {},
+    "mutual_fund_holders": {},
+    "support_level": 12023.175537500001,
+    "resistance_level": 16763.25,
+    "risk_level": "LOW",
+    "timeframe": "MEDIUM_TERM",
+    "explanation": "Recommendation for MARUTI.NS (MARUTI.NS): NEUTRAL\nCurrent Price: Rs.15965.00\n\nBuy Score: 0.000, Sell Score: 0.000\n\nNeutral Factors:\n- Price is stable relative to moving averages.\n- Sentiment is balanced, with no strong bullish or bearish signals.\n\nRisk Assessment:\n- Volatility: 0.0106 (higher values indicate higher risk)\n- Sector: N/A\n- Industry: N/A\n",
+    "ml_analysis": {
+        "success": true,
+        "predicted_price": 15683.963338121182,
+        "confidence": -0.03017058793887606,
+        "mse": 197057.6102605289,
+        "mae": 159.1287183543394,
+        "r2_score": -0.03017058793887606,
+        "best_ml_model": "stacking",
+        "best_model_metrics": {
+            "mse": 197057.6102605289,
+            "mae": 159.1287183543394,
+            "r2": -0.03017058793887606
+        },
+        "all_model_scores": {
+            "xgb": {
+                "mse": 217678.8570564622,
+                "mae": 205.89433417100685,
+                "r2": -0.13797358985143093,
+                "prediction": 16169.3017578125
+            },
+            "lgb": {
+                "mse": 246831.17071635358,
+                "mae": 272.9437830243495,
+                "r2": -0.2903749919748193,
+                "prediction": 15740.642299393896
+            },
+            "cb": {
+                "mse": 204396.70260146225,
+                "mae": 176.75955928959834,
+                "r2": -0.06853762721130652,
+                "prediction": 15922.50166031273
+            },
+            "et": {
+                "mse": 208007.2537238279,
+                "mae": 190.57109129085563,
+                "r2": -0.0874127346866953,
+                "prediction": 16120.260486449686
+            },
+            "svr": {
+                "mse": 274325.0547317134,
+                "mae": 336.30024623947276,
+                "r2": -0.4341065160878961,
+                "prediction": 16082.209205673882
+            },
+            "mlp": {
+                "mse": 2091166.8899007759,
+                "mae": 774.627816735776,
+                "r2": -9.932125999088584,
+                "prediction": 16915.408223348255
+            },
+            "ensemble": {
+                "mse": 260555.59036572682,
+                "mae": 238.07674993028357,
+                "r2": -0.3621230124680257,
+                "prediction": 16158.387200688254
+            },
+            "stacking": {
+                "mse": 197057.6102605289,
+                "mae": 159.1287183543394,
+                "r2": -0.03017058793887606,
+                "prediction": 15856.456420613546
+            }
+        },
+        "lstm_metrics": {
+            "mse": 0.021633092314004898,
+            "r2": -1.1477530002593994,
+            "adv_mse": 0.03971686586737633,
+            "adv_r2": -2.9431264400482178
+        },
+        "transformer_metrics": {
+            "mse": 0.010110738687217236,
+            "r2": -0.003803253173828125,
+            "adv_mse": 0.01047455333173275,
+            "adv_r2": -0.03992307186126709
+        },
+        "rl_metrics": {
+            "success": true,
+            "recommendation": "SELL",
+            "performance_pct": -13.21025167971768,
+            "final_net_worth": 86789.74832028232,
+            "average_reward": 594046.4688698321,
+            "average_events_per_episode": 74.92,
+            "actions_distribution": {
+                "hold": 0.43315508021390375,
+                "buy": 0.4679144385026738,
+                "sell": 0.09893048128342247
+            },
+            "epoch_logs": [
+                {
+                    "episode": 10,
+                    "total_reward": 766068.2467555588,
+                    "average_reward": 2652374.909275613,
+                    "events_triggered": 85
+                },
+                {
+                    "episode": 20,
+                    "total_reward": 964306.2983541165,
+                    "average_reward": 1251128.9085715397,
+                    "events_triggered": 72
+                },
+                {
+                    "episode": 30,
+                    "total_reward": -1860297.0839799684,
+                    "average_reward": -1107263.9472287553,
+                    "events_triggered": 57
+                },
+                {
+                    "episode": 40,
+                    "total_reward": -2411983.9211454103,
+                    "average_reward": 151537.7338029923,
+                    "events_triggered": 84
+                },
+                {
+                    "episode": 50,
+                    "total_reward": 4110120.3394365185,
+                    "average_reward": 1112430.6443069368,
+                    "events_triggered": 71
+                },
+                {
+                    "episode": 60,
+                    "total_reward": -5995530.776058546,
+                    "average_reward": 585585.9158753131,
+                    "events_triggered": 87
+                },
+                {
+                    "episode": 70,
+                    "total_reward": 5450453.10459457,
+                    "average_reward": 1544446.727790448,
+                    "events_triggered": 68
+                },
+                {
+                    "episode": 80,
+                    "total_reward": -2725059.640898488,
+                    "average_reward": 250042.93695491343,
+                    "events_triggered": 84
+                },
+                {
+                    "episode": 90,
+                    "total_reward": 776538.4837222479,
+                    "average_reward": -2425502.1543959635,
+                    "events_triggered": 75
+                },
+                {
+                    "episode": 100,
+                    "total_reward": -4026618.5026270743,
+                    "average_reward": 1925683.0137452825,
+                    "events_triggered": 73
+                }
+            ]
+        },
+        "ensemble_components": {
+            "best_ml_model": 15856.456420613546,
+            "lstm": 15266.853515625,
+            "transformer": 15928.580078125,
+            "ensemble_average": 16120.645906786594
+        },
+        "industry_level_features": {
+            "top_5_ml_models": [
+                "xgb",
+                "lgb",
+                "cb",
+                "et",
+                "svr",
+                "mlp",
+                "ensemble",
+                "stacking"
+            ],
+            "ensemble_methods": [
+                "VotingRegressor",
+                "StackingRegressor"
+            ],
+            "advanced_scaling": "RobustScaler",
+            "model_selection": "Best R2 Score"
+        }
+    },
+    "timestamp": "2025-10-02 15:24:10"
+}

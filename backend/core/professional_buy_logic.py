@@ -119,6 +119,15 @@ class ProfessionalBuyLogic:
         # DYNAMIC STOP-LOSS: Read from live_config.json instead of hardcoded
         self._load_dynamic_config()
         
+        # Define category weights for signal generation
+        self.category_weights = {
+            "Technical": 0.25,   # 25% weight to technical signals
+            "Value": 0.20,       # 20% weight to value signals
+            "Sentiment": 0.20,   # 20% weight to sentiment signals
+            "ML": 0.20,          # 20% weight to ML signals
+            "Market": 0.15        # 15% weight to market structure signals
+        }
+        
         logger.info("Professional Buy Logic initialized with enhanced optimization parameters")
     
     def _load_dynamic_config(self):
@@ -506,6 +515,92 @@ class ProfessionalBuyLogic:
                 category="Technical"
             ))
 
+        # ADVANCED TECHNICAL INDICATORS - NEW ADDITIONS
+
+        # Money Flow Index (MFI) signal
+        mfi = technical.get("mfi", 50)
+        if mfi < 20:  # Oversold condition
+            strength = min((20 - mfi) / 20, 1.0) * self.signal_sensitivity_multiplier
+            signals.append(BuySignal(
+                name="mfi_oversold",
+                strength=strength,
+                weight=category_weight * 0.10,  # 10% weight for MFI
+                triggered=True,
+                reasoning=f"MFI oversold at {mfi:.1f}",
+                confidence=0.85,
+                category="Technical"
+            ))
+
+        # Stochastic Oscillator signal
+        stoch_k = technical.get("stoch_k", 50)
+        if stoch_k < 20:  # Oversold condition
+            strength = min((20 - stoch_k) / 20, 1.0) * self.signal_sensitivity_multiplier
+            signals.append(BuySignal(
+                name="stoch_oversold",
+                strength=strength,
+                weight=category_weight * 0.09,  # 9% weight for stochastic
+                triggered=True,
+                reasoning=f"Stochastic oversold at {stoch_k:.1f}%",
+                confidence=0.8,
+                category="Technical"
+            ))
+
+        # Bollinger Bands signal (position near lower band)
+        bb_position = technical.get("bb_position", 0.5)
+        if bb_position < 0.1:  # Near lower band
+            strength = min((0.1 - bb_position) / 0.1, 1.0) * self.signal_sensitivity_multiplier
+            signals.append(BuySignal(
+                name="bb_lower_band",
+                strength=strength,
+                weight=category_weight * 0.08,  # 8% weight for Bollinger Bands
+                triggered=True,
+                reasoning=f"Price near lower Bollinger Band ({bb_position:.2f})",
+                confidence=0.75,
+                category="Technical"
+            ))
+
+        # Williams %R signal
+        williams_r = technical.get("williams_r", -50)
+        if williams_r < -80:  # Oversold condition
+            strength = min((-80 - williams_r) / 20, 1.0) * self.signal_sensitivity_multiplier
+            signals.append(BuySignal(
+                name="williams_r_oversold",
+                strength=strength,
+                weight=category_weight * 0.08,  # 8% weight for Williams %R
+                triggered=True,
+                reasoning=f"Williams %R oversold at {williams_r:.1f}",
+                confidence=0.75,
+                category="Technical"
+            ))
+
+        # Volume Rate of Change signal
+        volume_roc = technical.get("volume_roc", 0)
+        if volume_roc > 50:  # Significant volume increase
+            strength = min(volume_roc / 100, 1.0) * self.signal_sensitivity_multiplier
+            signals.append(BuySignal(
+                name="volume_surge",
+                strength=strength,
+                weight=category_weight * 0.07,  # 7% weight for volume
+                triggered=True,
+                reasoning=f"Volume surge: {volume_roc:.1f}% increase",
+                confidence=0.7,
+                category="Technical"
+            ))
+
+        # Order book imbalance signal (bullish pressure)
+        order_imbalance = technical.get("order_book_imbalance", 0)
+        if order_imbalance > 0.3:  # Strong bullish order flow
+            strength = min(order_imbalance / 0.5, 1.0) * self.signal_sensitivity_multiplier
+            signals.append(BuySignal(
+                name="bullish_order_flow",
+                strength=strength,
+                weight=category_weight * 0.11,  # 11% weight for order book
+                triggered=True,
+                reasoning=f"Bullish order book imbalance: {order_imbalance:.3f}",
+                confidence=0.9,
+                category="Technical"
+            ))
+
         return signals
 
     def _generate_value_signals(self, stock: StockMetrics, category_weight: float = 0.20) -> List[BuySignal]:
@@ -597,6 +692,20 @@ class ProfessionalBuyLogic:
                 triggered=True,
                 reasoning="Improving news sentiment",
                 confidence=0.5,
+                category="Sentiment"
+            ))
+
+        # Put/Call Ratio signal (contrarian sentiment indicator)
+        pc_ratio = sentiment.get("pc_ratio", 1.0)
+        if pc_ratio > 1.2:  # High put volume (fear) - bullish contrarian signal
+            strength = min((pc_ratio - 1.0) / 0.5, 1.0)
+            signals.append(BuySignal(
+                name="high_put_call_ratio",
+                strength=strength,
+                weight=category_weight * 0.12,  # 12% weight for PCR
+                triggered=True,
+                reasoning=f"High Put/Call ratio ({pc_ratio:.3f}) indicates fear - contrarian bullish",
+                confidence=0.8,
                 category="Sentiment"
             ))
 

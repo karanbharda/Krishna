@@ -11,6 +11,8 @@ from datetime import datetime
 from dataclasses import dataclass
 import traceback
 
+from .advanced_technical_signal_collector import AdvancedTechnicalSignalCollector
+
 logger = logging.getLogger(__name__)
 
 @dataclass
@@ -45,6 +47,12 @@ class AsyncSignalCollector:
         # Security: Initialize semaphore safely to prevent race conditions
         self.semaphore = None
         self._semaphore_initialized = False
+
+        # Initialize advanced technical signal collector
+        self.advanced_collector = AdvancedTechnicalSignalCollector()
+
+        # Register advanced technical signal sources
+        self._register_advanced_signal_sources()
         
     def register_signal_source(self, name: str, collector_func: Callable[[str, Dict[str, Any]], Union[Dict[str, Any], Any]], weight: float = 1.0) -> None:
         """
@@ -67,6 +75,52 @@ class AsyncSignalCollector:
             'success_rate': 1.0,
             'avg_time': 1.0
         }
+        
+    def _register_advanced_signal_sources(self):
+        """Register advanced technical signal sources"""
+        # Register Money Flow Index signal
+        self.register_signal_source(
+            'mfi_signal',
+            self.advanced_collector.collect_mfi_signal,
+            weight=0.8  # High weight for MFI
+        )
+        
+        # Register Put/Call Ratio signal
+        self.register_signal_source(
+            'pc_ratio_signal',
+            self.advanced_collector.collect_pc_ratio_signal,
+            weight=0.7  # Medium-high weight for PCR
+        )
+        
+        # Register Order Book signal
+        self.register_signal_source(
+            'order_book_signal',
+            self.advanced_collector.collect_order_book_signal,
+            weight=0.9  # High weight for order book
+        )
+        
+        # Register Stochastic signal
+        self.register_signal_source(
+            'stochastic_signal',
+            self.advanced_collector.collect_stochastic_signal,
+            weight=0.8  # High weight for stochastic
+        )
+        
+        # Register Bollinger Bands signal
+        self.register_signal_source(
+            'bollinger_bands_signal',
+            self.advanced_collector.collect_bollinger_bands_signal,
+            weight=0.7  # Medium-high weight for BB
+        )
+        
+        # Register Volume signal
+        self.register_signal_source(
+            'volume_signal',
+            self.advanced_collector.collect_volume_signal,
+            weight=0.6  # Medium weight for volume
+        )
+        
+        logger.info("Registered 6 advanced technical signal sources")
         
     async def _ensure_semaphore_initialized(self):
         """Safely initialize semaphore in async context"""

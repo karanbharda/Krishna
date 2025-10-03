@@ -1737,3 +1737,191 @@ Reinforcement Learning Results:
     Episode 80: Reward = -196458.14, Avg Reward = 15217.25, Events = 124
     Episode 90: Reward = -33433.61, Avg Reward = 121511.99, Events = 133
     Episode 100: Reward = 233904.11, Avg Reward = -141448.44, Events = 125
+
+[20251002_151010] Analysis for KPITTECH.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for KPITTECH.NS (KPITTECH.NS): NEUTRAL
+Current Price: Rs.1153.20
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0253 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 13.0
+Predicted Price (USD): 1113.759378192454
+Predicted Change (%): 8467.38
+Confidence Score: -0.0339573262157713
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 20.620416492564004
+  Average Reward: 564573.3019192474
+  Average Events/Episode: 74.37
+  Actions Distribution:
+    hold: 0.2139
+    buy: 0.2807
+    sell: 0.5053
+  RL Epoch Logs:
+    Episode 10: Reward = -6791177.91, Avg Reward = -1371698.03, Events = 67
+    Episode 20: Reward = 1584759.37, Avg Reward = 962221.21, Events = 77
+    Episode 30: Reward = 2384992.52, Avg Reward = -240461.24, Events = 76
+    Episode 40: Reward = -6663087.26, Avg Reward = 1725616.07, Events = 75
+    Episode 50: Reward = 6653488.30, Avg Reward = -539421.93, Events = 79
+    Episode 60: Reward = -4390224.31, Avg Reward = 2622858.03, Events = 65
+    Episode 70: Reward = -5593804.52, Avg Reward = 2261047.31, Events = 76
+    Episode 80: Reward = -5612729.11, Avg Reward = 1812636.80, Events = 82
+    Episode 90: Reward = -8635645.76, Avg Reward = -1171219.49, Events = 85
+    Episode 100: Reward = -8440094.54, Avg Reward = -415845.71, Events = 77
+
+[20251002_151821] Analysis for KPITTECH.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for KPITTECH.NS (KPITTECH.NS): NEUTRAL
+Current Price: Rs.1153.20
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0253 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 13.0
+Predicted Price (USD): 1114.7570824045356
+Predicted Change (%): 8475.05
+Confidence Score: 0.05050316567673796
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: SELL
+  Performance (%): -22.726099494520515
+  Average Reward: 466132.8816053615
+  Average Events/Episode: 76.43
+  Actions Distribution:
+    hold: 0.4759
+    buy: 0.1337
+    sell: 0.3904
+  RL Epoch Logs:
+    Episode 10: Reward = 1765574.47, Avg Reward = 206799.61, Events = 78
+    Episode 20: Reward = 2289121.14, Avg Reward = 1145004.47, Events = 87
+    Episode 30: Reward = 8318909.84, Avg Reward = 716162.17, Events = 68
+    Episode 40: Reward = -6226411.23, Avg Reward = -820830.76, Events = 83
+    Episode 50: Reward = 5542541.26, Avg Reward = -319141.59, Events = 92
+    Episode 60: Reward = -2312081.09, Avg Reward = -10340.09, Events = 74
+    Episode 70: Reward = -6946430.31, Avg Reward = 49081.81, Events = 88
+    Episode 80: Reward = -2883799.80, Avg Reward = 4363459.25, Events = 75
+    Episode 90: Reward = 6101990.88, Avg Reward = -1415227.49, Events = 71
+    Episode 100: Reward = -7354256.31, Avg Reward = 746361.43, Events = 73
+
+[20251002_152410] Analysis for MARUTI.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for MARUTI.NS (MARUTI.NS): NEUTRAL
+Current Price: Rs.15965.00
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0106 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 179.95
+Predicted Price (USD): 15683.963338121182
+Predicted Change (%): 8615.73
+Confidence Score: -0.03017058793887606
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: SELL
+  Performance (%): -13.21025167971768
+  Average Reward: 594046.4688698321
+  Average Events/Episode: 74.92
+  Actions Distribution:
+    hold: 0.4332
+    buy: 0.4679
+    sell: 0.0989
+  RL Epoch Logs:
+    Episode 10: Reward = 766068.25, Avg Reward = 2652374.91, Events = 85
+    Episode 20: Reward = 964306.30, Avg Reward = 1251128.91, Events = 72
+    Episode 30: Reward = -1860297.08, Avg Reward = -1107263.95, Events = 57
+    Episode 40: Reward = -2411983.92, Avg Reward = 151537.73, Events = 84
+    Episode 50: Reward = 4110120.34, Avg Reward = 1112430.64, Events = 71
+    Episode 60: Reward = -5995530.78, Avg Reward = 585585.92, Events = 87
+    Episode 70: Reward = 5450453.10, Avg Reward = 1544446.73, Events = 68
+    Episode 80: Reward = -2725059.64, Avg Reward = 250042.94, Events = 84
+    Episode 90: Reward = 776538.48, Avg Reward = -2425502.15, Events = 75
+    Episode 100: Reward = -4026618.50, Avg Reward = 1925683.01, Events = 73
+
+[20251002_153001] Analysis for AXISBANK.NS
+==================================================
+Stock Analysis Report
+==================================================
+Recommendation for AXISBANK.NS (AXISBANK.NS): NEUTRAL
+Current Price: Rs.1159.50
+
+Buy Score: 0.000, Sell Score: 0.000
+
+Neutral Factors:
+- Price is stable relative to moving averages.
+- Sentiment is balanced, with no strong bullish or bearish signals.
+
+Risk Assessment:
+- Volatility: 0.0111 (higher values indicate higher risk)
+- Sector: N/A
+- Industry: N/A
+
+Prediction Days: 30
+Current Price (USD): 13.07
+Predicted Price (USD): 1143.4484924975852
+Predicted Change (%): 8648.65
+Confidence Score: -0.08947679561591082
+Pattern: Technical and Sentiment Analysis
+Model Scores:
+Best Model: Stacking Ensemble
+Reinforcement Learning Results:
+  Recommendation: BUY
+  Performance (%): 26.511139551536385
+  Average Reward: 1522815.7547406221
+  Average Events/Episode: 75.94
+  Actions Distribution:
+    hold: 0.4278
+    buy: 0.4572
+    sell: 0.1150
+  RL Epoch Logs:
+    Episode 10: Reward = -182390.54, Avg Reward = -1241444.35, Events = 77
+    Episode 20: Reward = 8975599.10, Avg Reward = 583740.50, Events = 77
+    Episode 30: Reward = 10847184.47, Avg Reward = 7430883.53, Events = 71
+    Episode 40: Reward = 11851644.14, Avg Reward = 2393890.67, Events = 73
+    Episode 50: Reward = -6868978.52, Avg Reward = -840318.79, Events = 79
+    Episode 60: Reward = 6454844.02, Avg Reward = -1189610.17, Events = 79
+    Episode 70: Reward = 6558767.97, Avg Reward = 1963671.52, Events = 74
+    Episode 80: Reward = 5885665.19, Avg Reward = 5207620.99, Events = 73
+    Episode 90: Reward = 89971.41, Avg Reward = 888838.30, Events = 71
+    Episode 100: Reward = -3845900.00, Avg Reward = 30885.35, Events = 81

@@ -1,7 +1,7 @@
 {
-  "cash": 16510.12,
-  "total_value": 23674.59999,
-  "starting_balance": 16510.12,
+  "cash": 16358.19,
+  "total_value": 22168.08998,
+  "starting_balance": 16358.19,
   "holdings": {
     "KRBL": {
       "qty": 3,
@@ -53,25 +53,10 @@
       "avg_price": 132.16,
       "last_price": 132.16
     },
-    "PNB": {
-      "qty": 5,
-      "avg_price": 107.266,
-      "last_price": 107.266
-    },
     "IREDA": {
       "qty": 2,
       "avg_price": 159.34,
       "last_price": 159.34
-    },
-    "ASHOKLEY": {
-      "qty": 3,
-      "avg_price": 135.80667,
-      "last_price": 135.80667
-    },
-    "ONGC": {
-      "qty": 1,
-      "avg_price": 236.09,
-      "last_price": 236.09
     },
     "TATAPOWER": {
       "qty": 1,
@@ -82,11 +67,6 @@
       "qty": 1,
       "avg_price": 313.15,
       "last_price": 313.15
-    },
-    "PAISALO": {
-      "qty": 1,
-      "avg_price": 40.54,
-      "last_price": 40.54
     },
     "SUVEN": {
       "qty": 1,
@@ -117,11 +97,6 @@
       "qty": 2,
       "avg_price": 79.01,
       "last_price": 79.01
-    },
-    "JAYNECOIND": {
-      "qty": 2,
-      "avg_price": 67.1,
-      "last_price": 67.1
     }
   },
   "unrealized_pnl": 0.0,
@@ -129,5 +104,5 @@
   "total_trades": 0,
   "winning_trades": 0,
   "losing_trades": 0,
-  "last_updated": "2025-10-01T15:56:08.786527"
+  "last_updated": "2025-10-03T14:42:11.447885"
 }
