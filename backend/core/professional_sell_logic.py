@@ -97,14 +97,14 @@ class ProfessionalSellLogic:
         self.config = config
         
         # Professional thresholds - BALANCED with buy logic
-        self.min_signals_required = config.get("min_sell_signals", 2)
-        self.min_confidence_threshold = config.get("min_sell_confidence", 0.40)  # BALANCED with buy thresholds
-        self.min_weighted_score = config.get("min_weighted_sell_score", 0.04)   # BALANCED with buy thresholds
+        self.min_signals_required = config.get("min_sell_signals", 3)  # Minimum 3 signals (moderate-strict)
+        self.min_confidence_threshold = config.get("min_sell_confidence", 0.45)  # 45% minimum confidence (moderate-strict)
+        self.min_weighted_score = config.get("min_weighted_sell_score", 0.06)  # 6% minimum weighted score (moderate-strict)
         
         # Stop-loss configuration
         self.base_stop_loss_pct = config.get("stop_loss_pct", 0.05)
-        self.trailing_stop_pct = config.get("trailing_stop_pct", 0.03)
-        self.profit_protection_threshold = config.get("profit_protection_threshold", 0.05)
+        self.trailing_stop_pct = config.get("trailing_stop_pct", 0.0325)  # 65% of stop-loss (moderate-strict)
+        self.profit_protection_threshold = config.get("profit_protection_threshold", 0.06)  # 6% profit lock (moderate-strict)
         
         # Emergency loss threshold (8-10% loss triggers immediate sell)
         self.emergency_loss_threshold = config.get("emergency_loss_threshold", 0.10)  # 10% default
@@ -117,8 +117,8 @@ class ProfessionalSellLogic:
         self.emergency_exit_threshold = config.get("emergency_exit_threshold", 0.90)
         
         # Market context filters - Less restrictive
-        self.uptrend_sell_multiplier = config.get("uptrend_sell_multiplier", 1.1)  # LESS restrictive
-        self.downtrend_sell_multiplier = config.get("downtrend_sell_multiplier", 0.9)  # LESS restrictive
+        self.uptrend_sell_multiplier = config.get("uptrend_sell_multiplier", 1.15)  # Less restriction in uptrends (moderate-strict)
+        self.downtrend_sell_multiplier = config.get("downtrend_sell_multiplier", 0.85)  # Less restriction in downtrends (moderate-strict)
         
         logger.info("Professional Sell Logic initialized with institutional parameters")
     

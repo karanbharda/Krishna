@@ -5,13 +5,12 @@ entry confirmation, and market context awareness.
 """
 
 import logging
-from typing import Dict, List, Tuple, Optional, NamedTuple
+from typing import Dict, List, Tuple, Optional, NamedTuple, Any
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
 from datetime import datetime, timedelta
 
-# Import shared market context classes from professional_sell_logic
 from .professional_sell_logic import MarketTrend, MarketContext
 
 logger = logging.getLogger(__name__)
@@ -88,27 +87,27 @@ class ProfessionalBuyLogic:
         self.config = config
         
         # Professional thresholds - OPTIMIZED for better opportunity capture
-        self.min_signals_required = config.get("min_buy_signals", 2)  # Minimum 2 signals
-        self.max_signals_required = config.get("max_buy_signals", 4)  # Maximum 4 signals
-        self.min_confidence_threshold = config.get("min_buy_confidence", 0.40)  # REDUCED from 0.50 to 0.40
-        self.min_weighted_score = config.get("min_weighted_buy_score", 0.04)  # REDUCED from 0.12 to 0.04 (FIXED: Lowered threshold)
+        self.min_signals_required = config.get("min_buy_signals", 4)  # Minimum 4 signals (moderate-strict)
+        self.max_signals_required = config.get("max_buy_signals", 5)  # Maximum 5 signals (moderate-strict)
+        self.min_confidence_threshold = config.get("min_buy_confidence", 0.45)  # 45% minimum confidence (moderate-strict)
+        self.min_weighted_score = config.get("min_weighted_buy_score", 0.06)  # 6% minimum weighted score (moderate-strict)
         
         # OPTIMIZED BUY LOGIC: Enhanced parameters for better entry timing
-        self.signal_sensitivity_multiplier = config.get("signal_sensitivity_multiplier", 1.2)
-        self.early_entry_buffer_pct = config.get("early_entry_buffer_pct", 0.005)  # Reduced for earlier entries
-        self.aggressive_entry_threshold = config.get("aggressive_entry_threshold", 0.75)
+        self.signal_sensitivity_multiplier = config.get("signal_sensitivity_multiplier", 1.1)  # Slightly reduced (moderate-strict)
+        self.early_entry_buffer_pct = config.get("early_entry_buffer_pct", 0.008)  # 0.8% early entry buffer
+        self.aggressive_entry_threshold = config.get("aggressive_entry_threshold", 0.80)  # 80% for aggressive entry (moderate-strict)
         
         # OPTIMIZED BUY LOGIC: Dynamic signal thresholds
         self.dynamic_signal_thresholds = config.get("dynamic_signal_thresholds", True)
-        self.signal_strength_boost = config.get("signal_strength_boost", 0.1)
+        self.signal_strength_boost = config.get("signal_strength_boost", 0.08)  # 8% boost (moderate-strict)
         
         # OPTIMIZED BUY LOGIC: Enhanced ML integration
-        self.ml_signal_weight_boost = config.get("ml_signal_weight_boost", 0.15)
-        self.ml_confidence_multiplier = config.get("ml_confidence_multiplier", 1.3)
+        self.ml_signal_weight_boost = config.get("ml_signal_weight_boost", 0.12)  # 12% ML boost (moderate-strict)
+        self.ml_confidence_multiplier = config.get("ml_confidence_multiplier", 1.25)  # 1.25x ML multiplier (moderate-strict)
         
         # OPTIMIZED BUY LOGIC: Improved momentum detection
         self.momentum_confirmation_window = config.get("momentum_confirmation_window", 3)
-        self.momentum_strength_threshold = config.get("momentum_strength_threshold", 0.02)
+        self.momentum_strength_threshold = config.get("momentum_strength_threshold", 0.025)  # 2.5% momentum threshold (moderate-strict)
         
         # ADAPTIVE THRESHOLDS: Adjust based on market conditions
         self.adaptive_thresholds_enabled = config.get("adaptive_thresholds_enabled", True)
@@ -438,6 +437,150 @@ class ProfessionalBuyLogic:
         triggered_signals = [s for s in signals if s.triggered]
         categories = set(s.category for s in triggered_signals if s.category)
         return len(categories) >= 2
+
+    def _calculate_advanced_indicators(self, prices: List[float], volumes: List[float] = None,
+                                     highs: List[float] = None, lows: List[float] = None,
+                                     put_volume: float = 0, call_volume: float = 0,
+                                     bid_volume: float = 0, ask_volume: float = 0,
+                                     bid_prices: List[float] = None, ask_prices: List[float] = None) -> Dict[str, Any]:
+        """
+        Calculate advanced technical indicators
+        Returns dictionary with all advanced indicator values and signals
+        """
+        if not prices:
+            return {}
+
+        # Set defaults for optional data
+        if volumes is None:
+            volumes = [1000000] * len(prices)
+        if highs is None:
+            highs = prices
+        if lows is None:
+            lows = prices
+        if bid_prices is None:
+            bid_prices = []
+        if ask_prices is None:
+            ask_prices = []
+
+        indicators = {}
+
+        # Money Flow Index (MFI)
+        if len(prices) >= 14 and len(volumes) >= 14 and len(highs) >= 14 and len(lows) >= 14:
+            typical_prices = [(h + l + c) / 3 for h, l, c in zip(highs[-14:], lows[-14:], prices[-14:])]
+            money_flows = []
+            for i in range(1, len(typical_prices)):
+                if typical_prices[i] > typical_prices[i-1]:
+                    money_flows.append(typical_prices[i] * volumes[-14+i])
+                elif typical_prices[i] < typical_prices[i-1]:
+                    money_flows.append(-typical_prices[i] * volumes[-14+i])
+                else:
+                    money_flows.append(0)
+
+            positive_flow = sum(mf for mf in money_flows if mf > 0)
+            negative_flow = abs(sum(mf for mf in money_flows if mf < 0))
+
+            if negative_flow == 0:
+                mfi = 100.0
+            else:
+                money_ratio = positive_flow / negative_flow
+                mfi = 100 - (100 / (1 + money_ratio))
+
+            indicators['mfi'] = round(mfi, 2)
+            if mfi < 20:
+                indicators['mfi_signal'] = "BULLISH"
+            elif mfi > 80:
+                indicators['mfi_signal'] = "BEARISH"
+            else:
+                indicators['mfi_signal'] = "NEUTRAL"
+
+        # Put/Call Ratio
+        if call_volume > 0:
+            pc_ratio = put_volume / call_volume
+            indicators['pc_ratio'] = round(pc_ratio, 3)
+            if pc_ratio > 1.2:
+                indicators['pc_ratio_signal'] = "BULLISH"  # Contrarian - high fear
+            elif pc_ratio < 0.8:
+                indicators['pc_ratio_signal'] = "BEARISH"  # Contrarian - high greed
+            else:
+                indicators['pc_ratio_signal'] = "NEUTRAL"
+
+        # Order Book Analysis
+        if bid_volume > 0 or ask_volume > 0:
+            total_volume = bid_volume + ask_volume
+            if total_volume > 0:
+                imbalance = (bid_volume - ask_volume) / total_volume
+                indicators['order_book_imbalance'] = round(imbalance, 3)
+
+                if abs(imbalance) > 0.3:
+                    indicators['order_flow'] = "BULLISH" if imbalance > 0 else "BEARISH"
+                else:
+                    indicators['order_flow'] = "NEUTRAL"
+
+        # Stochastic Oscillator
+        if len(prices) >= 14 and len(highs) >= 14 and len(lows) >= 14:
+            current_price = prices[-1]
+            lowest_low = min(lows[-14:])
+            highest_high = max(highs[-14:])
+
+            if highest_high != lowest_low:
+                stoch_k = ((current_price - lowest_low) / (highest_high - lowest_low)) * 100
+                indicators['stoch_k'] = round(stoch_k, 2)
+
+                if stoch_k < 20:
+                    indicators['stoch_signal'] = "BULLISH"
+                elif stoch_k > 80:
+                    indicators['stoch_signal'] = "BEARISH"
+                else:
+                    indicators['stoch_signal'] = "NEUTRAL"
+
+        # Williams %R
+        if len(prices) >= 14 and len(highs) >= 14 and len(lows) >= 14:
+            current_price = prices[-1]
+            highest_high = max(highs[-14:])
+            lowest_low = min(lows[-14:])
+
+            if highest_high != lowest_low:
+                williams_r = ((highest_high - current_price) / (highest_high - lowest_low)) * -100
+                indicators['williams_r'] = round(williams_r, 2)
+
+                if williams_r < -80:
+                    indicators['williams_r_signal'] = "BULLISH"
+                elif williams_r > -20:
+                    indicators['williams_r_signal'] = "BEARISH"
+                else:
+                    indicators['williams_r_signal'] = "NEUTRAL"
+
+        # Bollinger Bands
+        if len(prices) >= 20:
+            middle_band = np.mean(prices[-20:])
+            std = np.std(prices[-20:])
+            upper_band = middle_band + (std * 2)
+            lower_band = middle_band - (std * 2)
+
+            current_price = prices[-1]
+            if upper_band != lower_band:
+                position = (current_price - lower_band) / (upper_band - lower_band)
+                indicators['bb_position'] = round(position, 2)
+                indicators['bb_upper'] = round(upper_band, 2)
+                indicators['bb_middle'] = round(middle_band, 2)
+                indicators['bb_lower'] = round(lower_band, 2)
+
+                if position < 0.1:
+                    indicators['bb_signal'] = "BULLISH"
+                elif position > 0.9:
+                    indicators['bb_signal'] = "BEARISH"
+                else:
+                    indicators['bb_signal'] = "NEUTRAL"
+
+        # Volume Rate of Change
+        if len(prices) >= 2 and len(volumes) >= 2:
+            current_volume = volumes[-1]
+            previous_volume = volumes[-2]
+            if previous_volume > 0:
+                volume_roc = ((current_volume - previous_volume) / previous_volume) * 100
+                indicators['volume_roc'] = round(volume_roc, 2)
+
+        return indicators
 
     def _generate_technical_signals(self, technical: Dict, stock: StockMetrics, category_weight: float = 0.25) -> List[BuySignal]:
         """Generate technical analysis buy signals with enhanced sensitivity"""
