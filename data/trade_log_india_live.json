@@ -150,5 +150,37 @@
         "qty": 1,
         "price": 132.11,
         "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-10-06 11:59:56.183609",
+        "asset": "IOC.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 151.74,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-10-06 14:37:11.981591",
+        "asset": "HINDALCO.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 775.35,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-10-06 14:47:24.264048",
+        "asset": "HDFCBANK.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 974.15,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-10-06 14:52:37.980102",
+        "asset": "ICICIBANK.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 1361.5,
+        "pnl": 0.0
     }
 ]

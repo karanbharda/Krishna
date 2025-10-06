@@ -147,16 +147,28 @@ class ProfessionalSellIntegration:
     ) -> PositionMetrics:
         """Build position metrics from portfolio data"""
         
+        # Helper function to safely convert values to float
+        def safe_float(value, default=0.0):
+            if isinstance(value, str):
+                try:
+                    return float(value)
+                except (ValueError, TypeError):
+                    return default
+            elif isinstance(value, (int, float)):
+                return float(value)
+            else:
+                return default
+        
         holding = portfolio_holdings[ticker]
-        entry_price = holding.get("avg_price", current_price)
-        quantity = holding.get("qty", 0)
+        entry_price = safe_float(holding.get("avg_price", current_price), current_price)
+        quantity = safe_float(holding.get("qty", 0), 0)
         
         # Calculate P&L
         unrealized_pnl = (current_price - entry_price) * quantity
         unrealized_pnl_pct = (current_price - entry_price) / entry_price if entry_price > 0 else 0.0
         
         # Calculate days held (estimate if not available)
-        days_held = holding.get("days_held", 1)
+        days_held = safe_float(holding.get("days_held", 1), 1)
         
         # Calculate highest/lowest prices since entry
         highest_price = current_price
@@ -213,9 +225,21 @@ class ProfessionalSellIntegration:
                     Trade.action == 'buy'
                 ).order_by(Trade.timestamp.desc()).first()
                 
+                # Helper function to safely convert values to float
+                def safe_float(value, default=None):
+                    if isinstance(value, str):
+                        try:
+                            return float(value)
+                        except (ValueError, TypeError):
+                            return default
+                    elif isinstance(value, (int, float)):
+                        return float(value) if value > 0 else default
+                    else:
+                        return default
+                
                 if latest_buy:
-                    stop_loss = latest_buy.stop_loss if latest_buy.stop_loss and latest_buy.stop_loss > 0 else None
-                    target_price = latest_buy.take_profit if latest_buy.take_profit and latest_buy.take_profit > 0 else None
+                    stop_loss = safe_float(latest_buy.stop_loss)
+                    target_price = safe_float(latest_buy.take_profit)
                     
                     if stop_loss or target_price:
                         logger.info(f"📊 Database values retrieved for {ticker}: Stop-Loss={stop_loss}, Target={target_price}")
@@ -300,11 +324,23 @@ class ProfessionalSellIntegration:
             # Fallback to basic context from analysis data
             from .professional_sell_logic import MarketTrend, MarketContext
             
+            # Helper function to safely convert values to float
+            def safe_float(value, default=0.0):
+                if isinstance(value, str):
+                    try:
+                        return float(value)
+                    except (ValueError, TypeError):
+                        return default
+                elif isinstance(value, (int, float)):
+                    return float(value)
+                else:
+                    return default
+            
             # Extract basic trend info
             technical = analysis_data.get("technical_indicators", {})
-            sma_20 = technical.get("sma_20", 0)
-            sma_50 = technical.get("sma_50", 0)
-            current_price = technical.get("current_price", 0)
+            sma_20 = safe_float(technical.get("sma_20", 0), 0)
+            sma_50 = safe_float(technical.get("sma_50", 0), 0)
+            current_price = safe_float(technical.get("current_price", 0), 0)
             
             # Simple trend detection
             if current_price > sma_20 > sma_50:

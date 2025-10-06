@@ -31,7 +31,7 @@ class ProfessionalBuyIntegration:
         
         # Integration settings
         self.enable_professional_logic = config.get("enable_professional_buy_logic", True)
-        self.fallback_to_legacy = config.get("fallback_to_legacy_buy", True)  # Changed to True for compatibility
+        self.fallback_to_legacy = config.get("fallback_to_legacy_buy", False)  # Changed to False for consistency
         
         logger.info("Professional Buy Integration initialized")
     
@@ -82,7 +82,7 @@ class ProfessionalBuyIntegration:
             
             # Extract analysis components
             technical_analysis = analysis_data.get("technical_indicators", {})
-            sentiment_analysis = analysis_data.get("sentiment", {})
+            sentiment_analysis = analysis_data.get("sentiment_analysis", {})
             ml_analysis = analysis_data.get("ml_analysis", {})
             
             # Use empty portfolio context if not provided
@@ -165,22 +165,46 @@ class ProfessionalBuyIntegration:
             
             # Calculate ATR if available
             if 'ATR' in price_history.columns:
-                atr = price_history['ATR'].iloc[-1] if not pd.isna(price_history['ATR'].iloc[-1]) else 0.0
+                atr_value = price_history['ATR'].iloc[-1] if not pd.isna(price_history['ATR'].iloc[-1]) else 0.0
+                atr = safe_float(atr_value, 0.0)
         
-        # Extract key technical indicators with defaults
-        rsi = technical.get("rsi", 50)
-        macd = technical.get("macd", 0)
-        macd_signal = technical.get("macd_signal", 0)
-        sma_20 = technical.get("sma_20", current_price)
-        sma_50 = technical.get("sma_50", current_price)
-        sma_200 = technical.get("sma_200", current_price)
-        support_level = technical.get("support_level", current_price * 0.95)
-        resistance_level = technical.get("resistance_level", current_price * 1.05)
-        volume_ratio = technical.get("volume_ratio", 1.0)
+        # Extract key technical indicators with defaults and type conversion
+        # Helper function to safely convert values to float
+        def safe_float(value, default=0.0):
+            if isinstance(value, str):
+                try:
+                    return float(value)
+                except (ValueError, TypeError):
+                    return default
+            elif isinstance(value, (int, float)):
+                return float(value)
+            else:
+                return default
         
-        # Extract fundamental metrics with defaults
-        price_to_book = analysis_data.get("fundamental_metrics", {}).get("price_to_book", 2.0)
-        price_to_earnings = analysis_data.get("fundamental_metrics", {}).get("price_to_earnings", 15.0)
+        # Extract key technical indicators with defaults and type conversion
+        rsi = safe_float(technical.get("rsi", 50), 50)
+        macd = safe_float(technical.get("macd", 0), 0)
+        macd_signal = safe_float(technical.get("macd_signal", 0), 0)
+        sma_20 = safe_float(technical.get("sma_20", current_price), current_price)
+        sma_50 = safe_float(technical.get("sma_50", current_price), current_price)
+        sma_200 = safe_float(technical.get("sma_200", current_price), current_price)
+        support_level = safe_float(technical.get("support_level", current_price * 0.95), current_price * 0.95)
+        resistance_level = safe_float(technical.get("resistance_level", current_price * 1.05), current_price * 1.05)
+        volume_ratio = safe_float(technical.get("volume_ratio", 1.0), 1.0)
+        
+        # Extract fundamental metrics with defaults and type conversion
+        fundamental_data = analysis_data.get("fundamental_analysis", {}) or analysis_data.get("fundamental_metrics", {})
+        price_to_book = safe_float(fundamental_data.get("price_to_book", 2.0), 2.0)
+        price_to_earnings = safe_float(fundamental_data.get("price_to_earnings", 15.0), 15.0)
+        earnings_growth = safe_float(fundamental_data.get("earnings_growth", 0.05), 0.05)  # Default 5% growth
+        return_on_equity = safe_float(fundamental_data.get("return_on_equity", 0.10), 0.10)  # Default 10% ROE
+        free_cash_flow_yield = safe_float(fundamental_data.get("free_cash_flow_yield", 0.05), 0.05)  # Default 5% FCF yield
+        debt_to_equity = safe_float(fundamental_data.get("debt_to_equity", 0.5), 0.5)  # Default 0.5 debt-to-equity
+        dividend_yield = safe_float(fundamental_data.get("dividend_yield", 0.0), 0.0)  # Default 0% dividend yield
+        payout_ratio = safe_float(fundamental_data.get("payout_ratio", 0.0), 0.0)  # Default 0% payout ratio
+        earnings_quality = safe_float(fundamental_data.get("earnings_quality", 0.5), 0.5)  # Default 50% earnings quality
+        insider_ownership = safe_float(fundamental_data.get("insider_ownership", 0.0), 0.0)  # Default 0% insider ownership
+        sector_pe = safe_float(fundamental_data.get("sector_pe", 20.0), 20.0)  # Default sector P/E of 20
         
         return StockMetrics(
             current_price=current_price,
@@ -198,7 +222,16 @@ class ProfessionalBuyIntegration:
             resistance_level=resistance_level,
             volume_ratio=volume_ratio,
             price_to_book=price_to_book,
-            price_to_earnings=price_to_earnings
+            price_to_earnings=price_to_earnings,
+            earnings_growth=earnings_growth,
+            return_on_equity=return_on_equity,
+            free_cash_flow_yield=free_cash_flow_yield,
+            debt_to_equity=debt_to_equity,
+            dividend_yield=dividend_yield,
+            payout_ratio=payout_ratio,
+            earnings_quality=earnings_quality,
+            insider_ownership=insider_ownership,
+            sector_pe=sector_pe
         )
     
     def _build_market_context(self, analysis_data: Dict, price_history: Optional[pd.DataFrame]):

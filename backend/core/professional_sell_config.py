@@ -32,13 +32,14 @@ class ProfessionalSellConfig:
         
         # Extract values from live_config.json (with defaults)
         stop_loss_pct = live_config.get('stop_loss_pct', 0.05)  # Default 5%
+        target_profit_pct = live_config.get('target_profit_pct', 0.08)  # Default 8%
         emergency_loss_threshold = live_config.get('emergency_loss_threshold', 0.10)  # Default 10%
         max_capital_per_trade = live_config.get('max_capital_per_trade', 0.25)  # Default 25%
         drawdown_limit_pct = live_config.get('drawdown_limit_pct', 0.15)  # Default 15%
         
         return {
             # Signal Requirements (Professional Standards) - Moderate-Strict
-            "min_sell_signals": 3,                    # Minimum 3 signals required (moderate-strict)
+            "min_sell_signals": 2,                    # Minimum 2 categories (relaxed for combined signals)
             "min_sell_confidence": 0.45,              # 45% minimum confidence (moderate-strict)
             "min_weighted_sell_score": 0.06,          # 6% minimum weighted score (moderate-strict)
             
@@ -48,7 +49,7 @@ class ProfessionalSellConfig:
             "trailing_stop_pct": stop_loss_pct * 0.65, # 65% of stop-loss for trailing (moderate-strict)
             "max_capital_per_trade": max_capital_per_trade,  # From live_config.json
             "drawdown_limit_pct": drawdown_limit_pct, # From live_config.json
-            "profit_protection_threshold": 0.06,      # Lock profits after 6% gain (moderate-strict)
+            "profit_protection_threshold": target_profit_pct * 0.75,      # 75% of target profit for profit locking (dynamic)
             "volatility_stop_multiplier": 1.4,        # Adjust stops for volatility (moderate-strict)
             
             # Position Sizing (Partial vs Full Exits) - Moderate-strict thresholds

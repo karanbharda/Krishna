@@ -4239,13 +4239,25 @@ class Stock:
             current_price = float(history["Close"].iloc[-1])
             exchange_rates = self.fetch_exchange_rates()
             converted_prices = self.convert_price(current_price, exchange_rates)
-            market_cap = stock_info.get("marketCap", "N/A")
-            volume = stock_info.get("volume", "N/A")
-            pe_ratio = stock_info.get("trailingPE", "N/A")
-            dividends = stock_info.get("dividendYield", "N/A")
-            dividend_yield = float(dividends) * 100 if isinstance(dividends, (int, float)) else "N/A"
-            high_52w = stock_info.get("fiftyTwoWeekHigh", "N/A")
-            low_52w = stock_info.get("fiftyTwoWeekLow", "N/A")
+            # Helper function to safely convert values to float
+            def safe_float(value, default=0.0):
+                if isinstance(value, str):
+                    try:
+                        return float(value)
+                    except (ValueError, TypeError):
+                        return default
+                elif isinstance(value, (int, float)):
+                    return float(value)
+                else:
+                    return default
+            
+            market_cap = safe_float(stock_info.get("marketCap", 0.0), 0.0)
+            volume = safe_float(stock_info.get("volume", 0.0), 0.0)
+            pe_ratio = safe_float(stock_info.get("trailingPE", 0.0), 0.0)
+            dividends = stock_info.get("dividendYield", 0.0)
+            dividend_yield = safe_float(dividends, 0.0) * 100
+            high_52w = safe_float(stock_info.get("fiftyTwoWeekHigh", 0.0), 0.0)
+            low_52w = safe_float(stock_info.get("fiftyTwoWeekLow", 0.0), 0.0)
             sector = stock_info.get("sector", "N/A")
             industry = stock_info.get("industry", "N/A")
 
@@ -4283,16 +4295,17 @@ class Stock:
             risk_free_rate = 0.06
             sharpe_ratio = (history["Daily_Return"].mean() - risk_free_rate) / history["Daily_Return"].std() if history["Daily_Return"].std() != 0 else 0
 
-            sma_50 = float(history["SMA_50"].iloc[-1]) if not pd.isna(history["SMA_50"].iloc[-1]) else current_price
-            sma_200 = float(history["SMA_200"].iloc[-1]) if not pd.isna(history["SMA_200"].iloc[-1]) else current_price
-            ema_50 = float(history["EMA_50"].iloc[-1]) if not pd.isna(history["EMA_50"].iloc[-1]) else current_price
-            volatility = float(history["Volatility"].iloc[-1]) if not pd.isna(history["Volatility"].iloc[-1]) else 0
-            rsi = float(history["RSI"].iloc[-1]) if not pd.isna(history["RSI"].iloc[-1]) else 50
-            bb_upper = float(history["BB_Upper"].iloc[-1]) if not pd.isna(history["BB_Upper"].iloc[-1]) else current_price * 1.1
-            bb_lower = float(history["BB_Lower"].iloc[-1]) if not pd.isna(history["BB_Lower"].iloc[-1]) else current_price * 0.9
-            macd = float(history["MACD"].iloc[-1]) if not pd.isna(history["MACD"].iloc[-1]) else 0
-            signal_line = float(history["Signal_Line"].iloc[-1]) if not pd.isna(history["Signal_Line"].iloc[-1]) else 0
-            macd_histogram = float(history["MACD_Histogram"].iloc[-1]) if not pd.isna(history["MACD_Histogram"].iloc[-1]) else 0
+            # Use safe_float for technical indicators
+            sma_50 = safe_float(history["SMA_50"].iloc[-1], current_price) if not pd.isna(history["SMA_50"].iloc[-1]) else current_price
+            sma_200 = safe_float(history["SMA_200"].iloc[-1], current_price) if not pd.isna(history["SMA_200"].iloc[-1]) else current_price
+            ema_50 = safe_float(history["EMA_50"].iloc[-1], current_price) if not pd.isna(history["EMA_50"].iloc[-1]) else current_price
+            volatility = safe_float(history["Volatility"].iloc[-1], 0) if not pd.isna(history["Volatility"].iloc[-1]) else 0
+            rsi = safe_float(history["RSI"].iloc[-1], 50) if not pd.isna(history["RSI"].iloc[-1]) else 50
+            bb_upper = safe_float(history["BB_Upper"].iloc[-1], current_price * 1.1) if not pd.isna(history["BB_Upper"].iloc[-1]) else current_price * 1.1
+            bb_lower = safe_float(history["BB_Lower"].iloc[-1], current_price * 0.9) if not pd.isna(history["BB_Lower"].iloc[-1]) else current_price * 0.9
+            macd = safe_float(history["MACD"].iloc[-1], 0) if not pd.isna(history["MACD"].iloc[-1]) else 0
+            signal_line = safe_float(history["Signal_Line"].iloc[-1], 0) if not pd.isna(history["Signal_Line"].iloc[-1]) else 0
+            macd_histogram = safe_float(history["MACD_Histogram"].iloc[-1], 0) if not pd.isna(history["MACD_Histogram"].iloc[-1]) else 0
 
             momentum = 0
             if len(history) >= 30:
@@ -4435,8 +4448,8 @@ class Stock:
             # Set default recommendation for technical analysis - will be overridden by proper scoring
             recommendation = "NEUTRAL"  # Neutral starting point for technical analysis
 
-            support_level = min(sma_200, sma_50) * 0.95
-            resistance_level = max(current_price * 1.05, sma_50 * 1.05)
+            support_level = safe_float(min(sma_200, sma_50) * 0.95, current_price * 0.95)
+            resistance_level = safe_float(max(current_price * 1.05, sma_50 * 1.05), current_price * 1.05)
 
             if volatility > 0.03:
                 risk_level = "HIGH"
@@ -4969,10 +4982,15 @@ class Stock:
                             bot_running=bot_running
                         )
 
+                        # Calculate prediction direction based on current vs predicted price
+                        prediction_direction = (float(ensemble_pred) - current_price) / current_price if current_price != 0 else 0
+                        
                         ml_analysis = {
                             "success": True,
                             "predicted_price": float(ensemble_pred),
+                            "prediction_direction": prediction_direction,  # Required for professional buy logic
                             "confidence": float(r2),
+                            "model_accuracy": float(r2),  # Required for professional buy logic
                             "mse": float(mse),
                             "mae": float(mae),
                             "r2_score": float(r2),
@@ -4991,11 +5009,16 @@ class Stock:
                             "lstm_metrics": lstm_metrics,
                             "transformer_metrics": transformer_metrics,
                             "rl_metrics": rl_result,
+                            "rl_recommendation": rl_result.get("recommendation", "HOLD"),  # Required for professional buy logic
+                            "rl_confidence": rl_result.get("average_reward", 0.5),  # Required for professional buy logic
+                            "rl_sharpe_ratio": rl_result.get("performance_pct", 0.5) / 100 if rl_result.get("performance_pct") else 0.5,  # Required for professional buy logic
                             "ensemble_components": {
                                 "best_ml_model": float(predicted_price),
                                 "lstm": float(lstm_pred),
                                 "transformer": float(transformer_pred),
-                                "ensemble_average": float(ensemble_results['ensemble_prediction'])
+                                "ensemble_average": float(ensemble_results['ensemble_prediction']),
+                                "ensemble_prediction": prediction_direction,  # Required for professional buy logic
+                                "ensemble_models_count": len(model_scores)  # Required for professional buy logic
                             },
                             "industry_level_features": {
                                 "top_5_ml_models": list(model_scores.keys()),
@@ -5026,14 +5049,24 @@ class Stock:
                     "volume_trend": volume_trend
                 },
                 "fundamental_analysis": {
-                    "market_cap": market_cap,
-                    "pe_ratio": pe_ratio,
-                    "dividend_yield": dividend_yield,
-                    "52w_high": high_52w,
-                    "52w_low": low_52w,
+                    "market_cap": safe_float(market_cap, 0.0),
+                    "pe_ratio": safe_float(pe_ratio, 0.0),
+                    "price_to_earnings": safe_float(pe_ratio, 0.0),  # Duplicate for compatibility
+                    "dividend_yield": safe_float(dividend_yield, 0.0),
+                    "52w_high": safe_float(high_52w, 0.0),
+                    "52w_low": safe_float(low_52w, 0.0),
                     "balance_sheet": balance_sheet_filtered,
                     "income_statement": income_statement_filtered,
-                    "cash_flow": cash_flow_filtered
+                    "cash_flow": cash_flow_filtered,
+                    "price_to_book": safe_float(stock_info.get("priceToBook", 2.0), 2.0),
+                    "earnings_growth": safe_float(stock_info.get("earningsGrowth", 0.05), 0.05),  # Default 5% growth
+                    "return_on_equity": safe_float(stock_info.get("returnOnEquity", 0.10), 0.10),  # Default 10% ROE
+                    "free_cash_flow_yield": safe_float(stock_info.get("freeCashflow", 0.05), 0.05) / safe_float(market_cap, 1.0) if safe_float(market_cap, 1.0) > 0 else 0.05,  # Default 5% FCF yield
+                    "debt_to_equity": safe_float(stock_info.get("debtToEquity", 0.5), 0.5),  # Default 0.5 debt-to-equity
+                    "payout_ratio": safe_float(stock_info.get("payoutRatio", 0.0), 0.0),  # Default 0% payout ratio
+                    "earnings_quality": safe_float(0.5, 0.5),  # Default value
+                    "insider_ownership": safe_float(institutional_data.get("insider_ownership_pct", 0.0), 0.0) / 100 if institutional_data else 0.0,  # Use insider ownership if available
+                    "sector_pe": safe_float(20.0, 20.0)  # Default sector P/E
                 },
                 "sentiment_analysis": sentiment_data,
                 "mpt_metrics": mpt_metrics,

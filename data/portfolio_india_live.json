@@ -1,5 +1,5 @@
 {
-    "cash": 16358.19,
+    "cash": 13962.88,
     "holdings": {
         "KRBL": {
             "qty": 3,
@@ -10,11 +10,6 @@
             "qty": 1,
             "avg_price": 93.39,
             "last_price": 93.39
-        },
-        "BPCL": {
-            "qty": 1,
-            "avg_price": 337.95,
-            "last_price": 337.95
         },
         "SUZLON": {
             "qty": 6,
@@ -71,6 +66,11 @@
             "avg_price": 225.05,
             "last_price": 225.05
         },
+        "HFCL": {
+            "qty": 2,
+            "avg_price": 75.63,
+            "last_price": 75.63
+        },
         "IOB": {
             "qty": 1,
             "avg_price": 38.15,
@@ -97,8 +97,8 @@
             "last_price": 79.01
         }
     },
-    "starting_balance": 16358.19,
+    "starting_balance": 13962.88,
     "realized_pnl": 0.0,
     "unrealized_pnl": 0.0,
-    "last_updated": "2025-10-03T14:42:11.446469"
+    "last_updated": "2025-10-06T15:09:05.480963"
 }

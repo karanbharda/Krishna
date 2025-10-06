@@ -97,7 +97,7 @@ class ProfessionalSellLogic:
         self.config = config
         
         # Professional thresholds - BALANCED with buy logic
-        self.min_signals_required = config.get("min_sell_signals", 3)  # Minimum 3 signals (moderate-strict)
+        self.min_signals_required = config.get("min_sell_signals", 2)  # Minimum 2 categories
         self.min_confidence_threshold = config.get("min_sell_confidence", 0.45)  # 45% minimum confidence (moderate-strict)
         self.min_weighted_score = config.get("min_weighted_sell_score", 0.06)  # 6% minimum weighted score (moderate-strict)
         
@@ -147,21 +147,17 @@ class ProfessionalSellLogic:
         )
         
         # Log signal generation with detailed information
-        logger.info(f"Generated {len(signals)} total signals")
+        logger.info(f"Generated {len(signals)} combined signals (one per category)")
         triggered_signals = [s for s in signals if s.triggered]
-        logger.info(f"{len(triggered_signals)} triggered signals:")
+        logger.info(f"{len(triggered_signals)} triggered category signals:")
         
-        # Log each triggered signal
-        for signal in triggered_signals:
-            logger.info(f"  - {signal.name}: strength={signal.strength:.3f}, weight={signal.weight:.3f}, confidence={signal.confidence:.3f}")
-            logger.info(f"    Reasoning: {signal.reasoning}")
-        
-        # Log non-triggered signals for completeness
-        non_triggered_signals = [s for s in signals if not s.triggered]
-        if non_triggered_signals:
-            logger.info(f"{len(non_triggered_signals)} non-triggered signals:")
-            for signal in non_triggered_signals:
-                logger.info(f"  - {signal.name}: Not triggered - {signal.reasoning}")
+        # Log each signal by category
+        for signal in signals:  # Show all signals, not just triggered ones
+            status = "✅ TRIGGERED" if signal.triggered else "❌ NOT TRIGGERED"
+            logger.info(f"  {signal.name.replace('_combined', '').title()} Signal:")
+            logger.info(f"    - {signal.name}: {status}")
+            logger.info(f"      Strength: {signal.strength:.3f}, Weight: {signal.weight:.3f}, Confidence: {signal.confidence:.3f}")
+            logger.info(f"      Reasoning: {signal.reasoning}")
         
         # Step 2: Calculate dynamic stop-loss levels
         stop_levels = self._calculate_dynamic_stops(position_metrics, market_context)
@@ -216,28 +212,173 @@ class ProfessionalSellLogic:
         sentiment_analysis: Dict,
         ml_analysis: Dict
     ) -> List[SellSignal]:
-        """Generate comprehensive sell signals with professional weighting"""
+        """Generate comprehensive sell signals with professional weighting - ONE signal per category"""
         signals = []
 
-        # 1. Technical Analysis Signals (Weight: 30%)
+        # 1. Technical Analysis Signals - Combine all technical signals into one
         technical_signals = self._generate_technical_signals(technical_analysis, position_metrics)
-        signals.extend(technical_signals)
+        if technical_signals:
+            # Combine all technical signals into one signal
+            triggered_tech_signals = [s for s in technical_signals if s.triggered]
+            if triggered_tech_signals:
+                # Calculate combined strength as average of triggered signals
+                combined_strength = sum(s.strength for s in triggered_tech_signals) / len(triggered_tech_signals)
+                combined_weight = 0.30  # 30% weight for technical analysis
+                combined_confidence = sum(s.confidence for s in triggered_tech_signals) / len(triggered_tech_signals)
+                
+                # Create single combined technical signal
+                combined_tech_signal = SellSignal(
+                    name="technical_combined",
+                    strength=combined_strength,
+                    weight=combined_weight,
+                    triggered=True,
+                    reasoning=f"Combined technical signal from {len(triggered_tech_signals)} indicators",
+                    confidence=combined_confidence
+                )
+                signals.append(combined_tech_signal)
+            else:
+                # Add non-triggered signal if no technical signals triggered
+                combined_tech_signal = SellSignal(
+                    name="technical_combined",
+                    strength=0.0,
+                    weight=0.30,
+                    triggered=False,
+                    reasoning="No technical signals triggered",
+                    confidence=0.0
+                )
+                signals.append(combined_tech_signal)
 
-        # 2. Risk Management Signals (Weight: 25%)
+        # 2. Risk Management Signals - Combine all risk signals into one
         risk_signals = self._generate_risk_signals(position_metrics)
-        signals.extend(risk_signals)
+        if risk_signals:
+            # Combine all risk signals into one signal
+            triggered_risk_signals = [s for s in risk_signals if s.triggered]
+            if triggered_risk_signals:
+                # Calculate combined strength as average of triggered signals
+                combined_strength = sum(s.strength for s in triggered_risk_signals) / len(triggered_risk_signals)
+                combined_weight = 0.25  # 25% weight for risk management
+                combined_confidence = sum(s.confidence for s in triggered_risk_signals) / len(triggered_risk_signals)
+                
+                # Create single combined risk signal
+                combined_risk_signal = SellSignal(
+                    name="risk_combined",
+                    strength=combined_strength,
+                    weight=combined_weight,
+                    triggered=True,
+                    reasoning=f"Combined risk signal from {len(triggered_risk_signals)} indicators",
+                    confidence=combined_confidence
+                )
+                signals.append(combined_risk_signal)
+            else:
+                # Add non-triggered signal if no risk signals triggered
+                combined_risk_signal = SellSignal(
+                    name="risk_combined",
+                    strength=0.0,
+                    weight=0.25,
+                    triggered=False,
+                    reasoning="No risk signals triggered",
+                    confidence=0.0
+                )
+                signals.append(combined_risk_signal)
 
-        # 3. Sentiment Signals (Weight: 20%)
+        # 3. Sentiment Signals - Combine all sentiment signals into one
         sentiment_signals = self._generate_sentiment_signals(sentiment_analysis)
-        signals.extend(sentiment_signals)
+        if sentiment_signals:
+            # Combine all sentiment signals into one signal
+            triggered_sentiment_signals = [s for s in sentiment_signals if s.triggered]
+            if triggered_sentiment_signals:
+                # Calculate combined strength as average of triggered signals
+                combined_strength = sum(s.strength for s in triggered_sentiment_signals) / len(triggered_sentiment_signals)
+                combined_weight = 0.20  # 20% weight for sentiment
+                combined_confidence = sum(s.confidence for s in triggered_sentiment_signals) / len(triggered_sentiment_signals)
+                
+                # Create single combined sentiment signal
+                combined_sentiment_signal = SellSignal(
+                    name="sentiment_combined",
+                    strength=combined_strength,
+                    weight=combined_weight,
+                    triggered=True,
+                    reasoning=f"Combined sentiment signal from {len(triggered_sentiment_signals)} indicators",
+                    confidence=combined_confidence
+                )
+                signals.append(combined_sentiment_signal)
+            else:
+                # Add non-triggered signal if no sentiment signals triggered
+                combined_sentiment_signal = SellSignal(
+                    name="sentiment_combined",
+                    strength=0.0,
+                    weight=0.20,
+                    triggered=False,
+                    reasoning="No sentiment signals triggered",
+                    confidence=0.0
+                )
+                signals.append(combined_sentiment_signal)
 
-        # 4. ML/AI Signals (Weight: 15%)
+        # 4. ML/AI Signals - Combine all ML signals into one
         ml_signals = self._generate_ml_signals(ml_analysis)
-        signals.extend(ml_signals)
+        if ml_signals:
+            # Combine all ML signals into one signal
+            triggered_ml_signals = [s for s in ml_signals if s.triggered]
+            if triggered_ml_signals:
+                # Calculate combined strength as average of triggered signals
+                combined_strength = sum(s.strength for s in triggered_ml_signals) / len(triggered_ml_signals)
+                combined_weight = 0.15  # 15% weight for ML/AI
+                combined_confidence = sum(s.confidence for s in triggered_ml_signals) / len(triggered_ml_signals)
+                
+                # Create single combined ML signal
+                combined_ml_signal = SellSignal(
+                    name="ml_combined",
+                    strength=combined_strength,
+                    weight=combined_weight,
+                    triggered=True,
+                    reasoning=f"Combined ML signal from {len(triggered_ml_signals)} models",
+                    confidence=combined_confidence
+                )
+                signals.append(combined_ml_signal)
+            else:
+                # Add non-triggered signal if no ML signals triggered
+                combined_ml_signal = SellSignal(
+                    name="ml_combined",
+                    strength=0.0,
+                    weight=0.15,
+                    triggered=False,
+                    reasoning="No ML signals triggered",
+                    confidence=0.0
+                )
+                signals.append(combined_ml_signal)
 
-        # 5. Market Structure Signals (Weight: 10%)
+        # 5. Market Structure Signals - Combine all market signals into one
         market_signals = self._generate_market_signals(market_context)
-        signals.extend(market_signals)
+        if market_signals:
+            # Combine all market signals into one signal
+            triggered_market_signals = [s for s in market_signals if s.triggered]
+            if triggered_market_signals:
+                # Calculate combined strength as average of triggered signals
+                combined_strength = sum(s.strength for s in triggered_market_signals) / len(triggered_market_signals)
+                combined_weight = 0.10  # 10% weight for market structure
+                combined_confidence = sum(s.confidence for s in triggered_market_signals) / len(triggered_market_signals)
+                
+                # Create single combined market signal
+                combined_market_signal = SellSignal(
+                    name="market_combined",
+                    strength=combined_strength,
+                    weight=combined_weight,
+                    triggered=True,
+                    reasoning=f"Combined market signal from {len(triggered_market_signals)} indicators",
+                    confidence=combined_confidence
+                )
+                signals.append(combined_market_signal)
+            else:
+                # Add non-triggered signal if no market signals triggered
+                combined_market_signal = SellSignal(
+                    name="market_combined",
+                    strength=0.0,
+                    weight=0.10,
+                    triggered=False,
+                    reasoning="No market signals triggered",
+                    confidence=0.0
+                )
+                signals.append(combined_market_signal)
 
         return signals
 
@@ -503,6 +644,12 @@ class ProfessionalSellLogic:
             "active_stop": active_stop
         }
 
+    def _check_cross_category_confirmation(self, signals: List[SellSignal]) -> bool:
+        """Cross-category confirmation: At least 2 categories must align"""
+        # With combined signals, we check if at least 2 categories have triggered signals
+        triggered_signals = [s for s in signals if s.triggered]
+        return len(triggered_signals) >= 2
+
     def _check_immediate_exit_conditions(self, position: PositionMetrics, stop_levels: Dict) -> Optional[SellDecision]:
         """Check for immediate exit conditions (stop-loss, etc.)"""
 
@@ -536,7 +683,7 @@ class ProfessionalSellLogic:
         position: PositionMetrics,
         market_context: MarketContext
     ) -> SellDecision:
-        """Evaluate sell decision based on signal analysis"""
+        """Evaluate sell decision based on signal analysis with combined signals"""
 
         # Calculate weighted signal score
         triggered_signals = [s for s in signals if s.triggered]
@@ -547,28 +694,50 @@ class ProfessionalSellLogic:
         signal_confidences = [s.confidence for s in triggered_signals]
         avg_confidence = np.mean(signal_confidences) if signal_confidences else 0.0
 
-        # Professional decision criteria
+        # Professional decision criteria with combined signals
         signals_count = len(triggered_signals)
-        meets_signal_threshold = signals_count >= self.min_signals_required
+        # For combined signals, we expect 2-5 triggered signals (one per category)
+        # Adjust thresholds to be more appropriate for combined signals
+        meets_signal_threshold = 2 <= signals_count <= 5  # At least 2 categories should trigger
         meets_confidence_threshold = avg_confidence >= self.min_confidence_threshold
         meets_weighted_threshold = weighted_score >= self.min_weighted_score
 
         logger.info(f"Signal Analysis Summary:")
-        logger.info(f"  Signal Count: {signals_count} (Required: ≥{self.min_signals_required}) - {'✅ PASS' if meets_signal_threshold else '❌ FAIL'}")
+        logger.info(f"  Signal Count: {signals_count} (Required: 2-5) - {'✅ PASS' if meets_signal_threshold else '❌ FAIL'}")
         logger.info(f"  Average Confidence: {avg_confidence:.3f} (Threshold: {self.min_confidence_threshold}) - {'✅ PASS' if meets_confidence_threshold else '❌ FAIL'}")
         logger.info(f"  Weighted Score: {weighted_score:.3f} (Threshold: {self.min_weighted_score}) - {'✅ PASS' if meets_weighted_threshold else '❌ FAIL'}")
 
+        # Professional sell logic: All three conditions must be met
         should_sell = meets_signal_threshold and meets_confidence_threshold and meets_weighted_threshold
 
-        logger.info(f"Signal-based decision: Should Sell: {should_sell}")
-        
         if should_sell:
             logger.info("✅ ALL THRESHOLD CHECKS PASSED - Proceeding with sell decision")
+            
+            # Calculate stop-loss and take-profit levels
+            stop_levels = self._calculate_dynamic_stops(position, market_context)
+            
+            base_decision = SellDecision(
+                should_sell=True,
+                sell_quantity=position.quantity,  # Will be adjusted by position sizing
+                sell_percentage=0.0,  # Will be calculated
+                reason=SellReason.TECHNICAL_SIGNALS,
+                confidence=avg_confidence,
+                urgency=0.5,  # Will be adjusted
+                signals_triggered=triggered_signals,
+                stop_loss_price=stop_levels["active_stop"],
+                take_profit_price=0.0,  # Will be calculated
+                trailing_stop_price=stop_levels["trailing_stop"],
+                reasoning=f"Professional sell confirmed: {signals_count} categories triggered, "
+                         f"confidence {avg_confidence:.3f}, weighted score {weighted_score:.3f}"
+            )
+            
+            return base_decision
         else:
             logger.info("❌ THRESHOLD CHECKS FAILED - Generating hold decision")
+            # Provide detailed reasoning for why sell was rejected
             rejection_reasons = []
             if not meets_signal_threshold:
-                rejection_reasons.append(f"Signal count {signals_count} below minimum {self.min_signals_required}")
+                rejection_reasons.append(f"Triggered categories {signals_count} not in range [2, 5]")
             if not meets_confidence_threshold:
                 rejection_reasons.append(f"Confidence {avg_confidence:.3f} below threshold {self.min_confidence_threshold}")
             if not meets_weighted_threshold:
@@ -579,27 +748,24 @@ class ProfessionalSellLogic:
             
             # Log additional diagnostic information
             logger.info(f"🔍 DETAILED DIAGNOSTIC INFORMATION:")
-            logger.info(f"   - Minimum Signals Required: {self.min_signals_required}")
+            logger.info(f"   - Minimum Signals Required: 2 categories")
+            logger.info(f"   - Maximum Signals Required: 5 categories")
             logger.info(f"   - Minimum Confidence Threshold: {self.min_confidence_threshold}")
             logger.info(f"   - Minimum Weighted Score Threshold: {self.min_weighted_score}")
-            logger.info(f"   - Current Position P&L: Rs.{position.unrealized_pnl:.2f} ({position.unrealized_pnl_pct:.2%})")
-            logger.info(f"   - Days Held: {position.days_held}")
-            logger.info(f"   - Entry Price: Rs.{position.entry_price:.2f}")
-            logger.info(f"   - Current Price: Rs.{position.current_price:.2f}")
-
-        return SellDecision(
-            should_sell=should_sell,
-            sell_quantity=0,  # Will be determined later
-            sell_percentage=0.0,
-            reason=SellReason.TECHNICAL_SIGNALS,
-            confidence=avg_confidence,
-            urgency=min(weighted_score, 1.0),
-            signals_triggered=triggered_signals,
-            stop_loss_price=0.0,
-            take_profit_price=0.0,
-            trailing_stop_price=0.0,
-            reasoning=f"Signal-based decision: {signals_count} signals, score: {weighted_score:.3f}" + (f" | Rejection: {detailed_reasoning}" if not should_sell else "")
-        )
+            
+            return SellDecision(
+                should_sell=False,
+                sell_quantity=0,
+                sell_percentage=0.0,
+                reason=SellReason.TECHNICAL_SIGNALS,
+                confidence=avg_confidence,
+                urgency=0.0,
+                signals_triggered=signals,
+                stop_loss_price=0.0,
+                take_profit_price=0.0,
+                trailing_stop_price=0.0,
+                reasoning=detailed_reasoning
+            )
 
     def _apply_market_context_filters(self, decision: SellDecision, market_context: MarketContext) -> SellDecision:
         """Apply market context filters to sell decision (LESS restrictive)"""

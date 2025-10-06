@@ -144,8 +144,8 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
     riskLevel: 'MEDIUM',
     maxAllocation: 25,
     stopLossPct: 5,
-    targetPriceLevel: 'MEDIUM',
-    targetPricePct: 4
+    targetProfitLevel: 'MEDIUM',
+    targetProfitPct: 8
   });
   const [loading, setLoading] = useState(false);
 
@@ -161,10 +161,10 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
         stopLossPct: settings.stop_loss_pct
           ? (settings.stop_loss_pct * 100)
           : 5,
-        targetPriceLevel: settings.target_price_level || 'MEDIUM',
-        targetPricePct: settings.target_price_multiplier
-          ? (settings.target_price_multiplier * 100)
-          : 4
+        targetProfitLevel: settings.target_profit_level || 'MEDIUM',
+        targetProfitPct: settings.target_profit_pct
+          ? (settings.target_profit_pct * 100)
+          : 8
       });
     }
   }, [settings]);
@@ -197,21 +197,21 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
         }
       }
 
-      // Auto-update target price based on target price level
-      if (field === 'targetPriceLevel') {
+      // Auto-update target profit based on target profit level
+      if (field === 'targetProfitLevel') {
         if (value === 'CUSTOM') {
           // When Custom is selected, clear the field so user can input their own value
-          newData.targetPricePct = '';
+          newData.targetProfitPct = '';
         } else {
-          // For predefined target price levels, set the values
+          // For predefined target profit levels, set the values
           const targetSettings = {
             'LOW': 8,
-            'MEDIUM': 4,
+            'MEDIUM': 8,
             'HIGH': 12
           };
 
           if (targetSettings[value]) {
-            newData.targetPricePct = targetSettings[value];
+            newData.targetProfitPct = targetSettings[value];
           }
         }
       }
@@ -251,17 +251,17 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
         }
       }
 
-      // Validate target price for custom mode
-      if (formData.targetPriceLevel === 'CUSTOM') {
-        if (!formData.targetPricePct || targetPricePctNum <= 0) {
-          alert('Please enter a valid Target Price Percentage (1-50) when using Custom target price level.');
+      // Validate target profit for custom mode
+      if (formData.targetProfitLevel === 'CUSTOM') {
+        if (!formData.targetProfitPct || targetPricePctNum <= 0) {
+          alert('Please enter a valid Target Profit Percentage (1-50) when using Custom target profit level.');
           setLoading(false);
           return;
         }
 
         // Validate range
         if (targetPricePctNum < 1 || targetPricePctNum > 50) {
-          alert('Target Price Percentage must be between 1 and 50.');
+          alert('Target Profit Percentage must be between 1 and 50.');
           setLoading(false);
           return;
         }
@@ -270,15 +270,15 @@ const SettingsModal = ({ settings, onSave, onClose }) => {
       // Use the converted numbers or defaults
       const maxAllocation = maxAllocationNum || 25;
       const stopLossPct = stopLossPctNum || 5;
-      const targetPricePct = targetPricePctNum || 4;
+      const targetProfitPct = targetPricePctNum || 8;
 
       const settingsToSave = {
         mode: formData.mode,
         riskLevel: formData.riskLevel,
         stop_loss_pct: stopLossPct / 100, // Convert percentage to decimal
         max_capital_per_trade: maxAllocation / 100, // Convert percentage to decimal
-        target_price_level: formData.targetPriceLevel,
-        target_price_multiplier: targetPricePct / 100, // Convert percentage to decimal
+        target_profit_level: formData.targetProfitLevel,
+        target_profit_pct: targetProfitPct / 100, // Convert percentage to decimal
         max_trade_limit: 150 // Default value
       };
 
