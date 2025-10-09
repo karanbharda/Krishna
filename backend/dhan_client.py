@@ -736,8 +736,10 @@ class DhanAPIClient:
     
     def _convert_symbol_to_dhan(self, symbol: str) -> str:
         """Convert Yahoo Finance symbol to Dhan symbol format"""
-        # Remove .NS suffix if present
+        # Remove exchange suffix if present
         if symbol.endswith('.NS'):
+            symbol = symbol[:-3]
+        elif symbol.endswith('.BO'):
             symbol = symbol[:-3]
         
         # Return the symbol in uppercase format

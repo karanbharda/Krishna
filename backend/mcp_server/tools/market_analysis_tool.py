@@ -184,6 +184,10 @@ class AdvancedTechnicalAnalyzer:
             macd_signal = macd.ewm(span=9).mean()
             adx = pd.Series([50] * len(df), index=df.index)  # Default neutral ADX
             sar = df['close'] * 0.98  # Simple approximation
+            # Additional indicators
+            aroon_up = pd.Series([50] * len(df), index=df.index)
+            aroon_down = pd.Series([50] * len(df), index=df.index)
+            aroon_osc = pd.Series([0] * len(df), index=df.index)
         else:
             # Moving averages using ta library
             sma_20 = ta.trend.sma_indicator(df['close'], window=20)
@@ -200,6 +204,12 @@ class AdvancedTechnicalAnalyzer:
 
             # Parabolic SAR
             sar = ta.trend.psar_up(df['high'], df['low'], df['close'])
+            
+            # Additional indicators
+            # Aroon indicators
+            aroon_up = ta.trend.aroon_up(df['close'], window=14)
+            aroon_down = ta.trend.aroon_down(df['close'], window=14)
+            aroon_osc = ta.trend.aroon_indicator(df['close'], window=14)
         
         # Calculate trend signals
         current_price = df['close'].iloc[-1]
@@ -210,7 +220,10 @@ class AdvancedTechnicalAnalyzer:
             'ma_cross_signal': 1 if sma_20.iloc[-1] > sma_50.iloc[-1] else -1,
             'macd_signal': 1 if macd.iloc[-1] > macd_signal.iloc[-1] else -1,
             'adx_strength': adx.iloc[-1] / 100 if not pd.isna(adx.iloc[-1]) else 0.5,  # Normalize to 0-1
-            'sar_signal': 1 if current_price > sar.iloc[-1] else -1 if not pd.isna(sar.iloc[-1]) else 0
+            'sar_signal': 1 if current_price > sar.iloc[-1] else -1 if not pd.isna(sar.iloc[-1]) else 0,
+            # Additional signals
+            'aroon_signal': 1 if aroon_up.iloc[-1] > aroon_down.iloc[-1] else -1 if not pd.isna(aroon_up.iloc[-1]) else 0,
+            'aroon_osc_signal': aroon_osc.iloc[-1] / 100 if not pd.isna(aroon_osc.iloc[-1]) else 0  # Normalize to -1 to 1
         }
         
         # Composite trend score
@@ -219,7 +232,9 @@ class AdvancedTechnicalAnalyzer:
             signals['sma_50_signal'],
             signals['ma_cross_signal'],
             signals['macd_signal'],
-            signals['sar_signal']
+            signals['sar_signal'],
+            signals['aroon_signal'],
+            signals['aroon_osc_signal']
         ]) * signals['adx_strength']
         
         signals['composite_score'] = trend_score
@@ -236,6 +251,10 @@ class AdvancedTechnicalAnalyzer:
             cci = pd.Series([0] * len(df), index=df.index)
             mfi = pd.Series([50] * len(df), index=df.index)
             roc = df['close'].pct_change(periods=10) * 100
+            # Additional indicators
+            cmo = pd.Series([0] * len(df), index=df.index)
+            trix = pd.Series([0] * len(df), index=df.index)
+            ultosc = pd.Series([50] * len(df), index=df.index)
         else:
             # RSI
             rsi = ta.momentum.rsi(df['close'], window=14)
@@ -255,7 +274,17 @@ class AdvancedTechnicalAnalyzer:
 
             # Rate of Change
             roc = ta.momentum.roc(df['close'], window=10)
-        
+            
+            # Additional indicators
+            # Chande Momentum Oscillator (approximated)
+            cmo = ta.momentum.rsi(df['close'], window=14) * 2 - 100  # Simplified approximation
+            
+            # TRIX (approximated)
+            trix = ta.momentum.roc(df['close'], window=14)  # Simplified approximation
+            
+            # Ultimate Oscillator
+            ultosc = ta.momentum.rsi(df['close'], window=14)  # Using RSI as fallback for now
+
         signals = {
             'rsi': rsi.iloc[-1] if not pd.isna(rsi.iloc[-1]) else 50,
             'rsi_signal': 1 if 30 < rsi.iloc[-1] < 70 else (-1 if rsi.iloc[-1] > 70 else -0.5) if not pd.isna(rsi.iloc[-1]) else 0,
@@ -263,7 +292,11 @@ class AdvancedTechnicalAnalyzer:
             'willr_signal': 1 if willr.iloc[-1] > -80 else -1 if not pd.isna(willr.iloc[-1]) else 0,
             'cci_signal': 1 if -100 < cci.iloc[-1] < 100 else (-1 if cci.iloc[-1] > 100 else -0.5) if not pd.isna(cci.iloc[-1]) else 0,
             'mfi_signal': 1 if 20 < mfi.iloc[-1] < 80 else (-1 if mfi.iloc[-1] > 80 else -0.5) if not pd.isna(mfi.iloc[-1]) else 0,
-            'roc_signal': 1 if roc.iloc[-1] > 0 else -1 if not pd.isna(roc.iloc[-1]) else 0
+            'roc_signal': 1 if roc.iloc[-1] > 0 else -1 if not pd.isna(roc.iloc[-1]) else 0,
+            # Additional signals
+            'cmo_signal': 1 if -50 < cmo.iloc[-1] < 50 else (-1 if cmo.iloc[-1] > 50 else -0.5) if not pd.isna(cmo.iloc[-1]) else 0,
+            'trix_signal': 1 if trix.iloc[-1] > 0 else -1 if not pd.isna(trix.iloc[-1]) else 0,
+            'ultosc_signal': 1 if 30 < ultosc.iloc[-1] < 70 else (-1 if ultosc.iloc[-1] > 70 else -0.5) if not pd.isna(ultosc.iloc[-1]) else 0
         }
         
         # Composite momentum score
@@ -273,7 +306,10 @@ class AdvancedTechnicalAnalyzer:
             signals['willr_signal'],
             signals['cci_signal'],
             signals['mfi_signal'],
-            signals['roc_signal']
+            signals['roc_signal'],
+            signals['cmo_signal'],
+            signals['trix_signal'],
+            signals['ultosc_signal']
         ])
         
         signals['composite_score'] = momentum_score
@@ -291,6 +327,15 @@ class AdvancedTechnicalAnalyzer:
 
         # Standard deviation
         std_dev = df['close'].rolling(window=20).std()
+        
+        # Additional indicators
+        # Keltner Channels (approximated)
+        keltner_upper = ta.trend.ema_indicator(df['close'], window=20) + (atr * 2)
+        keltner_lower = ta.trend.ema_indicator(df['close'], window=20) - (atr * 2)
+        
+        # Donchian Channels
+        donchian_upper = df['high'].rolling(window=20).max()
+        donchian_lower = df['low'].rolling(window=20).min()
 
         current_price = df['close'].iloc[-1]
         
@@ -298,7 +343,10 @@ class AdvancedTechnicalAnalyzer:
             'bb_position': (current_price - bb_lower.iloc[-1]) / (bb_upper.iloc[-1] - bb_lower.iloc[-1]) if not pd.isna(bb_upper.iloc[-1]) else 0.5,
             'bb_squeeze': (bb_upper.iloc[-1] - bb_lower.iloc[-1]) / bb_middle.iloc[-1] if not pd.isna(bb_middle.iloc[-1]) else 0.1,
             'atr_normalized': atr.iloc[-1] / current_price if not pd.isna(atr.iloc[-1]) else 0.02,
-            'volatility_trend': std_dev.iloc[-1] / std_dev.iloc[-5] if len(std_dev) > 5 and not pd.isna(std_dev.iloc[-1]) else 1
+            'volatility_trend': std_dev.iloc[-1] / std_dev.iloc[-5] if len(std_dev) > 5 and not pd.isna(std_dev.iloc[-1]) else 1,
+            # Additional signals
+            'keltner_position': (current_price - keltner_lower.iloc[-1]) / (keltner_upper.iloc[-1] - keltner_lower.iloc[-1]) if not pd.isna(keltner_upper.iloc[-1]) else 0.5,
+            'donchian_position': (current_price - donchian_lower.iloc[-1]) / (donchian_upper.iloc[-1] - donchian_lower.iloc[-1]) if not pd.isna(donchian_upper.iloc[-1]) else 0.5
         }
         
         # Volatility score (lower volatility = better for trend following)
@@ -321,11 +369,22 @@ class AdvancedTechnicalAnalyzer:
         # Chaikin Money Flow
         cmf = ta.volume.chaikin_money_flow(df['high'], df['low'], df['close'], df['volume'], window=20)
         
+        # Additional indicators
+        # Volume Rate of Change
+        vroc = df['volume'].pct_change(periods=10) * 100
+        
+        # Ease of Movement
+        emv = ((df['high'] + df['low']) / 2).diff() * (df['high'] - df['low']) / df['volume']
+        emv = emv.rolling(window=14).mean()
+        
         signals = {
             'obv_trend': 1 if obv.iloc[-1] > obv.iloc[-5] else -1 if len(obv) > 5 and not pd.isna(obv.iloc[-1]) else 0,
             'volume_ratio': df['volume'].iloc[-1] / vol_sma.iloc[-1] if not pd.isna(vol_sma.iloc[-1]) else 1,
             'ad_trend': 1 if ad.iloc[-1] > ad.iloc[-5] else -1 if len(ad) > 5 and not pd.isna(ad.iloc[-1]) else 0,
-            'cmf_signal': 1 if cmf.iloc[-1] > 0 else -1 if not pd.isna(cmf.iloc[-1]) else 0
+            'cmf_signal': 1 if cmf.iloc[-1] > 0 else -1 if not pd.isna(cmf.iloc[-1]) else 0,
+            # Additional signals
+            'vroc_signal': 1 if vroc.iloc[-1] > 10 else (-1 if vroc.iloc[-1] < -10 else 0) if not pd.isna(vroc.iloc[-1]) else 0,
+            'emv_signal': 1 if emv.iloc[-1] > 0 else -1 if not pd.isna(emv.iloc[-1]) else 0
         }
         
         # Volume score
@@ -333,7 +392,9 @@ class AdvancedTechnicalAnalyzer:
             signals['obv_trend'],
             min(signals['volume_ratio'], 2) - 1,  # Normalize volume ratio
             signals['ad_trend'],
-            signals['cmf_signal']
+            signals['cmf_signal'],
+            signals['vroc_signal'],
+            signals['emv_signal']
         ])
         
         signals['composite_score'] = volume_score

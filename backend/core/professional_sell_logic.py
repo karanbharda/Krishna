@@ -41,7 +41,8 @@ class SellSignal:
     triggered: bool
     reasoning: str
     confidence: float
-
+    category: str = ""  # Category of the signal (Technical, Risk, Sentiment, ML, Market)
+    
 @dataclass
 class PositionMetrics:
     """Position-specific metrics for sell decisions"""
@@ -233,7 +234,8 @@ class ProfessionalSellLogic:
                     weight=combined_weight,
                     triggered=True,
                     reasoning=f"Combined technical signal from {len(triggered_tech_signals)} indicators",
-                    confidence=combined_confidence
+                    confidence=combined_confidence,
+                    category="Technical"
                 )
                 signals.append(combined_tech_signal)
             else:
@@ -244,7 +246,8 @@ class ProfessionalSellLogic:
                     weight=0.30,
                     triggered=False,
                     reasoning="No technical signals triggered",
-                    confidence=0.0
+                    confidence=0.0,
+                    category="Technical"
                 )
                 signals.append(combined_tech_signal)
 
@@ -266,7 +269,8 @@ class ProfessionalSellLogic:
                     weight=combined_weight,
                     triggered=True,
                     reasoning=f"Combined risk signal from {len(triggered_risk_signals)} indicators",
-                    confidence=combined_confidence
+                    confidence=combined_confidence,
+                    category="Risk"
                 )
                 signals.append(combined_risk_signal)
             else:
@@ -277,7 +281,8 @@ class ProfessionalSellLogic:
                     weight=0.25,
                     triggered=False,
                     reasoning="No risk signals triggered",
-                    confidence=0.0
+                    confidence=0.0,
+                    category="Risk"
                 )
                 signals.append(combined_risk_signal)
 
@@ -299,7 +304,8 @@ class ProfessionalSellLogic:
                     weight=combined_weight,
                     triggered=True,
                     reasoning=f"Combined sentiment signal from {len(triggered_sentiment_signals)} indicators",
-                    confidence=combined_confidence
+                    confidence=combined_confidence,
+                    category="Sentiment"
                 )
                 signals.append(combined_sentiment_signal)
             else:
@@ -310,7 +316,8 @@ class ProfessionalSellLogic:
                     weight=0.20,
                     triggered=False,
                     reasoning="No sentiment signals triggered",
-                    confidence=0.0
+                    confidence=0.0,
+                    category="Sentiment"
                 )
                 signals.append(combined_sentiment_signal)
 
@@ -332,7 +339,8 @@ class ProfessionalSellLogic:
                     weight=combined_weight,
                     triggered=True,
                     reasoning=f"Combined ML signal from {len(triggered_ml_signals)} models",
-                    confidence=combined_confidence
+                    confidence=combined_confidence,
+                    category="ML"
                 )
                 signals.append(combined_ml_signal)
             else:
@@ -343,7 +351,8 @@ class ProfessionalSellLogic:
                     weight=0.15,
                     triggered=False,
                     reasoning="No ML signals triggered",
-                    confidence=0.0
+                    confidence=0.0,
+                    category="ML"
                 )
                 signals.append(combined_ml_signal)
 
@@ -365,7 +374,8 @@ class ProfessionalSellLogic:
                     weight=combined_weight,
                     triggered=True,
                     reasoning=f"Combined market signal from {len(triggered_market_signals)} indicators",
-                    confidence=combined_confidence
+                    confidence=combined_confidence,
+                    category="Market"
                 )
                 signals.append(combined_market_signal)
             else:
@@ -376,7 +386,8 @@ class ProfessionalSellLogic:
                     weight=0.10,
                     triggered=False,
                     reasoning="No market signals triggered",
-                    confidence=0.0
+                    confidence=0.0,
+                    category="Market"
                 )
                 signals.append(combined_market_signal)
 
@@ -396,7 +407,8 @@ class ProfessionalSellLogic:
                 weight=0.08,  # 8% of total weight
                 triggered=True,
                 reasoning=f"RSI overbought at {rsi:.1f}",
-                confidence=0.8
+                confidence=0.8,
+                category="Technical"
             ))
 
         # MACD Bearish Divergence
@@ -410,7 +422,8 @@ class ProfessionalSellLogic:
                 weight=0.07,  # 7% of total weight
                 triggered=True,
                 reasoning="MACD bearish crossover",
-                confidence=0.7
+                confidence=0.7,
+                category="Technical"
             ))
 
         # Moving Average Breakdown
@@ -424,7 +437,8 @@ class ProfessionalSellLogic:
                 weight=0.06,  # 6% of total weight
                 triggered=True,
                 reasoning="Price below key moving averages",
-                confidence=0.75
+                confidence=0.75,
+                category="Technical"
             ))
 
         # Support Level Breakdown
@@ -437,7 +451,156 @@ class ProfessionalSellLogic:
                 weight=0.09,  # 9% of total weight
                 triggered=True,
                 reasoning=f"Support breakdown at {support:.2f}",
-                confidence=0.85
+                confidence=0.85,
+                category="Technical"
+            ))
+
+        # ADX signal for trend strength confirmation
+        adx = technical.get("adx", 20)
+        plus_di = technical.get("plus_di", 20)
+        minus_di = technical.get("minus_di", 20)
+        
+        # Strong bearish trend confirmation with ADX > 25 and -DI > +DI
+        if adx > 25 and minus_di > plus_di:
+            strength = min((adx - 25) / 25, 1.0)
+            signals.append(SellSignal(
+                name="adx_trend_strength",
+                strength=strength,
+                weight=0.07,
+                triggered=True,
+                reasoning=f"Strong bearish trend confirmed with ADX {adx:.1f}, -DI {minus_di:.1f} > +DI {plus_di:.1f}",
+                confidence=0.80,
+                category="Technical"
+            ))
+
+        # Aroon Oscillator signal for trend reversal
+        aroon_osc = technical.get("aroon_osc", 0)
+        
+        # Bearish Aroon Oscillator
+        if aroon_osc < -50:
+            strength = min(abs(aroon_osc) / 100, 1.0)
+            signals.append(SellSignal(
+                name="aroon_bearish",
+                strength=strength,
+                weight=0.06,
+                triggered=True,
+                reasoning=f"Bearish trend reversal signal with Aroon Oscillator {aroon_osc:.1f}",
+                confidence=0.75,
+                category="Technical"
+            ))
+
+        # CCI signal for cyclical selling opportunities
+        cci = technical.get("cci_14", 0)
+        
+        # CCI overbought condition
+        if cci > 100:
+            strength = min((cci - 100) / 100, 1.0)
+            signals.append(SellSignal(
+                name="cci_overbought",
+                strength=strength,
+                weight=0.05,
+                triggered=True,
+                reasoning=f"CCI overbought at {cci:.1f} indicating potential reversal",
+                confidence=0.70,
+                category="Technical"
+            ))
+
+        # ROC signal for momentum confirmation
+        roc_10 = technical.get("roc_10", 0)
+        roc_20 = technical.get("roc_20", 0)
+        
+        # Negative momentum with ROC confirmation
+        if roc_10 < -1.0 and roc_20 < -0.5:
+            strength = min(abs(roc_10) / 5, 1.0)
+            signals.append(SellSignal(
+                name="roc_negative_momentum",
+                strength=strength,
+                weight=0.06,
+                triggered=True,
+                reasoning=f"Negative momentum confirmed with ROC(10) {roc_10:.2f}% and ROC(20) {roc_20:.2f}%",
+                confidence=0.70,
+                category="Technical"
+            ))
+
+        # TRIX signal for trend direction
+        trix = technical.get("trix", 0)
+        
+        # Bearish TRIX crossover
+        if trix < 0:
+            strength = min(abs(trix) * 10, 1.0)
+            signals.append(SellSignal(
+                name="trix_bearish",
+                strength=strength,
+                weight=0.05,
+                triggered=True,
+                reasoning=f"Bearish trend confirmed with TRIX {trix:.4f}",
+                confidence=0.65,
+                category="Technical"
+            ))
+
+        # CMO signal for momentum
+        cmo = technical.get("cmo_14", 0)
+        
+        # Overbought CMO condition
+        if cmo > 50:
+            strength = min((cmo - 50) / 50, 1.0)
+            signals.append(SellSignal(
+                name="cmo_overbought",
+                strength=strength,
+                weight=0.05,
+                triggered=True,
+                reasoning=f"CMO overbought at {cmo:.1f} indicating potential selling opportunity",
+                confidence=0.65,
+                category="Technical"
+            ))
+
+        # Williams %R signal
+        williams_r = technical.get("williams_r", -50)
+        
+        # Overbought Williams %R condition
+        if williams_r > -10:
+            strength = min((williams_r + 10) / 10, 1.0)
+            signals.append(SellSignal(
+                name="williams_r_overbought",
+                strength=strength,
+                weight=0.06,
+                triggered=True,
+                reasoning=f"Williams %R overbought at {williams_r:.1f}",
+                confidence=0.70,
+                category="Technical"
+            ))
+
+        # Stochastic Oscillator signal
+        stoch_k = technical.get("stoch_k", 50)
+        stoch_d = technical.get("stoch_d", 50)
+        
+        # Overbought Stochastic condition
+        if stoch_k > 90 and stoch_k < stoch_d:  # %K crossing below %D
+            strength = min((stoch_k - 90) / 10, 1.0)
+            signals.append(SellSignal(
+                name="stoch_overbought",
+                strength=strength,
+                weight=0.06,
+                triggered=True,
+                reasoning=f"Stochastic overbought at {stoch_k:.1f}% with bearish crossover (%D: {stoch_d:.1f})",
+                confidence=0.70,
+                category="Technical"
+            ))
+
+        # MFI signal
+        mfi = technical.get("mfi", 50)
+        
+        # Overbought MFI condition
+        if mfi > 80:
+            strength = min((mfi - 80) / 20, 1.0)
+            signals.append(SellSignal(
+                name="mfi_overbought",
+                strength=strength,
+                weight=0.07,
+                triggered=True,
+                reasoning=f"MFI overbought at {mfi:.1f}",
+                confidence=0.75,
+                category="Technical"
             ))
 
         return signals
@@ -455,7 +618,8 @@ class ProfessionalSellLogic:
                 weight=0.15,  # 15% of total weight
                 triggered=True,
                 reasoning=f"Stop-loss triggered at {stop_loss_level:.2f}",
-                confidence=1.0
+                confidence=1.0,
+                category="Risk"
             ))
 
         # Trailing Stop
@@ -467,7 +631,8 @@ class ProfessionalSellLogic:
                 weight=0.12,  # 12% of total weight
                 triggered=True,
                 reasoning=f"Trailing stop triggered at {trailing_stop:.2f}",
-                confidence=0.9
+                confidence=0.9,
+                category="Risk"
             ))
 
         # Profit Protection (lock in gains)
@@ -479,7 +644,8 @@ class ProfessionalSellLogic:
                 weight=0.10,  # 10% of total weight
                 triggered=True,
                 reasoning=f"Profit protection at {profit_protect_level:.2f}",
-                confidence=0.8
+                confidence=0.8,
+                category="Risk"
             ))
 
         # Large Loss Signal
@@ -491,7 +657,8 @@ class ProfessionalSellLogic:
                 weight=0.10,  # 10% of total weight
                 triggered=True,
                 reasoning=f"Large loss: {position.unrealized_pnl_pct:.1%}",
-                confidence=0.85
+                confidence=0.85,
+                category="Risk"
             ))
 
         # Volatility Spike Signal
@@ -503,7 +670,8 @@ class ProfessionalSellLogic:
                 weight=0.08,  # 8% of total weight
                 triggered=True,
                 reasoning=f"High volatility: {position.volatility:.1%}",
-                confidence=0.7
+                confidence=0.7,
+                category="Risk"
             ))
 
         # Time-based Risk (holding too long without profit)
@@ -515,7 +683,8 @@ class ProfessionalSellLogic:
                 weight=0.07,  # 7% of total weight
                 triggered=True,
                 reasoning=f"Held {position.days_held} days without profit",
-                confidence=0.6
+                confidence=0.6,
+                category="Risk"
             ))
 
         return signals
@@ -534,7 +703,8 @@ class ProfessionalSellLogic:
                 weight=0.12,  # 12% of total weight
                 triggered=True,
                 reasoning=f"Negative sentiment: {sentiment_score:.2f}",
-                confidence=0.6
+                confidence=0.6,
+                category="Sentiment"
             ))
 
         # News sentiment deterioration
@@ -547,7 +717,8 @@ class ProfessionalSellLogic:
                 weight=0.08,  # 8% of total weight
                 triggered=True,
                 reasoning="Deteriorating news sentiment",
-                confidence=0.5
+                confidence=0.5,
+                category="Sentiment"
             ))
 
         return signals
@@ -566,7 +737,8 @@ class ProfessionalSellLogic:
                 weight=0.10,  # 10% of total weight
                 triggered=True,
                 reasoning=f"ML bearish prediction: {ml_prediction:.1%}",
-                confidence=ml_analysis.get("confidence", 0.5)
+                confidence=ml_analysis.get("confidence", 0.5),
+                category="ML"
             ))
 
         # RL Recommendation
@@ -579,7 +751,8 @@ class ProfessionalSellLogic:
                 weight=0.05,  # 5% of total weight
                 triggered=True,
                 reasoning="RL algorithm recommends SELL",
-                confidence=rl_confidence
+                confidence=rl_confidence,
+                category="ML"
             ))
 
         return signals
@@ -596,7 +769,8 @@ class ProfessionalSellLogic:
                 weight=0.06,  # 6% of total weight
                 triggered=True,
                 reasoning=f"High market stress: {market_context.market_stress:.1%}",
-                confidence=0.7
+                confidence=0.7,
+                category="Market"
             ))
 
         # Sector underperformance
@@ -608,7 +782,8 @@ class ProfessionalSellLogic:
                 weight=0.04,  # 4% of total weight
                 triggered=True,
                 reasoning="Sector underperforming market",
-                confidence=0.6
+                confidence=0.6,
+                category="Market"
             ))
 
         return signals

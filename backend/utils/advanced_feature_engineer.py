@@ -44,14 +44,14 @@ class AdvancedFeatureEngineer:
         # Feature categories for organized engineering
         self.feature_categories = {
             'price_based': ['sma', 'ema', 'wma', 'dema', 'tema', 'trima'],
-            'momentum': ['rsi', 'stoch', 'williams', 'cci', 'roc', 'momentum'],
-            'volatility': ['atr', 'bb', 'keltner', 'dc', 'ultosc'],
-            'volume': ['obv', 'ad', 'fi', 'nvi', 'pvi', 'vpt'],
-            'trend': ['macd', 'ppo', 'trix', 'dmi', 'aroon', 'sar'],
-            'cycles': ['sine', 'leadsin', 'dcperiod', 'dcphase'],
+            'momentum': ['rsi', 'stoch', 'williams', 'cci', 'roc', 'momentum', 'mfi', 'ultosc', 'stochrsi', 'ppo'],
+            'volatility': ['atr', 'bb', 'keltner', 'dc', 'ultosc', 'natr'],
+            'volume': ['obv', 'ad', 'fi', 'nvi', 'pvi', 'vpt', 'adosc', 'vroc', 'vwap', 'eom'],
+            'trend': ['macd', 'ppo', 'trix', 'dmi', 'aroon', 'sar', 'adx', 'dx', 'linearreg_slope', 'tsf', 'ht_trendmode'],
+            'cycles': ['sine', 'leadsin', 'dcperiod', 'dcphase', 'ht_phasor'],
             'pattern': ['cdl_patterns', 'morning_star', 'evening_star', 'hammer'],
-            'statistical': ['linear_reg', 'std_dev', 'var', 'beta', 'correl'],
-            'custom': ['price_position', 'volume_profile', 'support_resistance']
+            'statistical': ['linear_reg', 'std_dev', 'var', 'beta', 'correl', 'tsf', 'linearreg_intercept', 'linearreg_angle', 'zscore'],
+            'custom': ['price_position', 'volume_profile', 'support_resistance', 'gap', 'body_size', 'shadows', 'price_accel', 'close_to_sma']
         }
         
         logger.info("✅ Advanced Feature Engineering System initialized")
@@ -139,7 +139,10 @@ class AdvancedFeatureEngineer:
     def _add_momentum_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """Add momentum oscillators and momentum-based features"""
         try:
-            high, low, close, volume = df['High'].values, df['Low'].values, df['Close'].values, df['Volume'].values
+            high = df['High'].values.astype(np.double)
+            low = df['Low'].values.astype(np.double)
+            close = df['Close'].values.astype(np.double)
+            volume = df['Volume'].values.astype(np.double)
             
             # RSI with different periods
             for period in [7, 14, 21]:
@@ -173,6 +176,15 @@ class AdvancedFeatureEngineer:
             
             # Percentage Price Oscillator
             df['ppo'] = talib.PPO(close)
+            
+            # Chande Momentum Oscillator
+            df['cmo_14'] = talib.CMO(close, timeperiod=14)
+            
+            # Rate of Change Percentage
+            df['rocp_10'] = talib.ROCP(close, timeperiod=10)
+            
+            # Triple Smoothed Rate of Change
+            df['trix_14'] = talib.TRIX(close, timeperiod=14)
             
             return df
             
@@ -211,6 +223,12 @@ class AdvancedFeatureEngineer:
             # Normalized Average True Range
             df['natr'] = talib.NATR(high, low, close, timeperiod=14)
             
+            # Standard Deviation
+            df['std_dev_20'] = talib.STDDEV(close, timeperiod=20)
+            
+            # Variance
+            df['var_20'] = talib.VAR(close, timeperiod=20)
+            
             return df
             
         except Exception as e:
@@ -220,7 +238,10 @@ class AdvancedFeatureEngineer:
     def _add_volume_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """Add volume-based indicators"""
         try:
-            high, low, close, volume = df['High'].values, df['Low'].values, df['Close'].values, df['Volume'].values
+            high = df['High'].values.astype(np.double)
+            low = df['Low'].values.astype(np.double)
+            close = df['Close'].values.astype(np.double)
+            volume = df['Volume'].values.astype(np.double)
             
             # On Balance Volume
             df['obv'] = talib.OBV(close, volume)
@@ -239,16 +260,21 @@ class AdvancedFeatureEngineer:
             df['vol_ratio'] = volume / df['vol_sma_20']
             
             # Price Volume Trend
-            df['pvt'] = ((close - close.shift(1)) / close.shift(1) * volume).cumsum()
+            close_series = pd.Series(close)
+            volume_series = pd.Series(volume)
+            df['pvt'] = ((close_series - close_series.shift(1)) / close_series.shift(1) * volume_series).cumsum()
             
             # Volume Weighted Average Price (approximated)
-            df['vwap'] = (close * volume).rolling(20).sum() / volume.rolling(20).sum()
-            
-            # Ease of Movement
-            df['eom'] = talib.EOM(high, low, volume)
+            df['vwap'] = (close_series * volume_series).rolling(20).sum() / volume_series.rolling(20).sum()
             
             # Force Index
-            df['force_index'] = (close - close.shift(1)) * volume
+            df['force_index'] = (close_series - close_series.shift(1)) * volume_series
+            
+            # Volume Oscillator
+            df['vol_osc'] = talib.ADOSC(high, low, close, volume, fastperiod=3, slowperiod=10)
+            
+            # Chaikin Money Flow
+            df['cmf'] = self._calculate_cmf(high, low, close, volume, 20)
             
             return df
             
@@ -290,6 +316,18 @@ class AdvancedFeatureEngineer:
             
             # Hilbert Transform Trend vs Cycle Mode
             df['ht_trendmode'] = talib.HT_TRENDMODE(close)
+            
+            # Minus Directional Indicator
+            df['mdi'] = talib.MINUS_DI(high, low, close, timeperiod=14)
+            
+            # Plus Directional Indicator
+            df['pdi'] = talib.PLUS_DI(high, low, close, timeperiod=14)
+            
+            # Directional Movement Index Rating
+            df['adxr'] = talib.ADXR(high, low, close, timeperiod=14)
+            
+            # Linear Regression Angle
+            df['linearreg_angle'] = talib.LINEARREG_ANGLE(close, timeperiod=14)
             
             return df
             
@@ -436,6 +474,13 @@ class AdvancedFeatureEngineer:
         except Exception as e:
             logger.warning(f"Error adding custom features: {e}")
             return df
+    
+    def _calculate_cmf(self, high, low, close, volume, period):
+        """Calculate Chaikin Money Flow"""
+        mf_multiplier = ((close - low) - (high - close)) / (high - low)
+        mf_volume = mf_multiplier * volume
+        cmf = pd.Series(mf_volume).rolling(period).sum() / pd.Series(volume).rolling(period).sum()
+        return cmf
     
     def _engineer_basic_features(self, data: pd.DataFrame) -> pd.DataFrame:
         """Fallback basic feature engineering for insufficient data"""

@@ -1024,6 +1024,105 @@ class ProfessionalBuyLogic:
                 category="Technical"
             ))
 
+        # ADX signal for trend strength confirmation
+        adx = technical.get("adx", 20)
+        plus_di = technical.get("plus_di", 20)
+        minus_di = technical.get("minus_di", 20)
+        
+        # Strong trend confirmation with ADX > 25 and +DI > -DI
+        if adx > 25 and plus_di > minus_di:
+            strength = min((adx - 25) / 25, 1.0) * self.signal_sensitivity_multiplier
+            signals.append(BuySignal(
+                name="adx_trend_strength",
+                strength=strength,
+                weight=category_weight * 0.08,
+                triggered=True,
+                reasoning=f"Strong bullish trend confirmed with ADX {adx:.1f}, +DI {plus_di:.1f} > -DI {minus_di:.1f}",
+                confidence=0.75,
+                category="Technical"
+            ))
+
+        # Aroon Oscillator signal for trend reversal
+        aroon_osc = technical.get("aroon_osc", 0)
+        
+        # Bullish Aroon Oscillator
+        if aroon_osc > 50:
+            strength = min(aroon_osc / 100, 1.0) * self.signal_sensitivity_multiplier
+            signals.append(BuySignal(
+                name="aroon_bullish",
+                strength=strength,
+                weight=category_weight * 0.07,
+                triggered=True,
+                reasoning=f"Bullish trend reversal signal with Aroon Oscillator {aroon_osc:.1f}",
+                confidence=0.70,
+                category="Technical"
+            ))
+
+        # CCI signal for cyclical buying opportunities
+        cci = technical.get("cci_14", 0)
+        
+        # CCI oversold condition
+        if cci < -100:
+            strength = min((-100 - cci) / 100, 1.0) * self.signal_sensitivity_multiplier
+            signals.append(BuySignal(
+                name="cci_oversold",
+                strength=strength,
+                weight=category_weight * 0.06,
+                triggered=True,
+                reasoning=f"CCI oversold at {cci:.1f} indicating potential reversal",
+                confidence=0.65,
+                category="Technical"
+            ))
+
+        # ROC signal for momentum confirmation
+        roc_10 = technical.get("roc_10", 0)
+        roc_20 = technical.get("roc_20", 0)
+        
+        # Positive momentum with ROC confirmation
+        if roc_10 > 1.0 and roc_20 > 0.5:
+            strength = min(roc_10 / 5, 1.0) * self.signal_sensitivity_multiplier
+            signals.append(BuySignal(
+                name="roc_momentum",
+                strength=strength,
+                weight=category_weight * 0.07,
+                triggered=True,
+                reasoning=f"Positive momentum confirmed with ROC(10) {roc_10:.2f}% and ROC(20) {roc_20:.2f}%",
+                confidence=0.70,
+                category="Technical"
+            ))
+
+        # TRIX signal for trend direction
+        trix = technical.get("trix", 0)
+        
+        # Bullish TRIX crossover
+        if trix > 0:
+            strength = min(trix * 10, 1.0) * self.signal_sensitivity_multiplier
+            signals.append(BuySignal(
+                name="trix_bullish",
+                strength=strength,
+                weight=category_weight * 0.06,
+                triggered=True,
+                reasoning=f"Bullish trend confirmed with TRIX {trix:.4f}",
+                confidence=0.65,
+                category="Technical"
+            ))
+
+        # CMO signal for momentum
+        cmo = technical.get("cmo_14", 0)
+        
+        # Oversold CMO condition
+        if cmo < -50:
+            strength = min((-50 - cmo) / 50, 1.0) * self.signal_sensitivity_multiplier
+            signals.append(BuySignal(
+                name="cmo_oversold",
+                strength=strength,
+                weight=category_weight * 0.06,
+                triggered=True,
+                reasoning=f"CMO oversold at {cmo:.1f} indicating potential buying opportunity",
+                confidence=0.65,
+                category="Technical"
+            ))
+
         return signals
 
     def _generate_value_signals(self, stock: StockMetrics, category_weight: float = 0.20) -> List[BuySignal]:
