@@ -712,6 +712,7 @@ class ProfessionalSellLogic:
 
         if should_sell:
             logger.info("✅ ALL THRESHOLD CHECKS PASSED - Proceeding with sell decision")
+                
             
             # Calculate stop-loss and take-profit levels
             stop_levels = self._calculate_dynamic_stops(position, market_context)

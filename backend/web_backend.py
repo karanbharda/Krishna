@@ -3343,11 +3343,19 @@ async def startup_event():
         # Start Dhan sync service if in live mode
         if LIVE_TRADING_AVAILABLE and trading_bot and trading_bot.config.get("mode") == "live":
             try:
-                sync_service = start_sync_service(sync_interval=30)  # Sync every 30 seconds
-                if sync_service:
-                    logger.info("🚀 Dhan real-time sync service started (30s interval)")
+                # Check Dhan credentials before starting sync service
+                dhan_client_id = os.getenv("DHAN_CLIENT_ID")
+                dhan_access_token = os.getenv("DHAN_ACCESS_TOKEN")
+                
+                if not dhan_client_id or not dhan_access_token:
+                    logger.error("DHAN_CLIENT_ID or DHAN_ACCESS_TOKEN not found in environment variables")
+                    logger.error("Please set these in your .env file to enable live trading")
                 else:
-                    logger.warning("Failed to start Dhan sync service")
+                    sync_service = start_sync_service(sync_interval=30)  # Sync every 30 seconds
+                    if sync_service:
+                        logger.info("🚀 Dhan real-time sync service started (30s interval)")
+                    else:
+                        logger.warning("Failed to start Dhan sync service")
             except Exception as sync_error:
                 logger.error(f"Error starting Dhan sync service: {sync_error}")
 

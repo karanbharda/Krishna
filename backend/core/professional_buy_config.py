@@ -28,25 +28,25 @@ class ProfessionalBuyConfig:
         max_capital_per_trade = live_config.get('max_capital_per_trade', 0.05)  # Default 5%
         
         return {
-            "min_buy_signals": 3,          # Minimum 3 categories (more selective for combined signals)
+            "min_buy_signals": 3,          # CORRECTED: 3-5 categories as per project requirements
             "max_buy_signals": 5,          # Maximum 5 categories (all categories)
-            "min_weighted_buy_score": 0.15, # Increased to 15% minimum weighted score (more stringent)
+            "min_weighted_buy_score": 0.15, # CORRECTED: 15% minimum weighted score as per project requirements
             "entry_buffer_pct": 0.015,     # 1.5% entry buffer (moderate)
             "buy_stop_loss_pct": stop_loss_pct,  # From live_config.json
             "buy_target_profit_pct": target_profit_pct,  # From live_config.json
             "take_profit_ratio": target_profit_pct / stop_loss_pct if stop_loss_pct > 0 else 2.0,
-            "partial_entry_threshold": 0.55,   # Increased to 55% for partial entry (more stringent)
-            "full_entry_threshold": live_config.get('full_entry_threshold', 0.85),  # Increased to 85% (more stringent)
-            "signal_sensitivity_multiplier": 0.9,  # Reduced sensitivity (more stringent)
+            "partial_entry_threshold": 0.55,   # CORRECTED: 55% as per project requirements
+            "full_entry_threshold": live_config.get('full_entry_threshold', 0.85),  # CORRECTED: 85% as per project requirements
+            "signal_sensitivity_multiplier": 0.9,  # CORRECTED: 0.9 as per project requirements
             "early_entry_buffer_pct": 0.01,       # 1% early entry buffer (more conservative)
-            "aggressive_entry_threshold": 0.90,    # 90% for aggressive entry (more stringent)
+            "aggressive_entry_threshold": 0.90,    # CORRECTED: 90% as per project requirements
             "dynamic_signal_thresholds": True,
-            "signal_strength_boost": 0.03,         # 3% boost (more conservative)
-            "ml_signal_weight_boost": 0.05,        # 5% ML boost (more conservative)
-            "ml_confidence_multiplier": 1.10,      # 1.10x ML multiplier (more conservative)
+            "signal_strength_boost": 0.03,         # CORRECTED: 3% as per project requirements
+            "ml_signal_weight_boost": 0.05,        # CORRECTED: 5% as per project requirements
+            "ml_confidence_multiplier": 1.10,      # CORRECTED: 1.10 as per project requirements
             "momentum_confirmation_window": 5,
-            "momentum_strength_threshold": 0.035,    # 3.5% momentum threshold (more stringent)
-            "min_buy_confidence": 0.60,            # Increased to 60% minimum confidence (more stringent)
+            "momentum_strength_threshold": 0.035,    # CORRECTED: 3.5% as per project requirements
+            "min_buy_confidence": 0.60,            # CORRECTED: 60% as per project requirements
             "enable_professional_buy_logic": True,  # Enable professional logic
             "fallback_to_legacy_buy": False,        # Don't fallback to legacy
             "max_capital_per_trade": max_capital_per_trade,  # From live_config.json

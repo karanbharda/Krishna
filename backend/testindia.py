@@ -1364,8 +1364,14 @@ def get_stock_data_fyers_or_yf(ticker, period="1d"):
     fyers_client = get_fyers_client()
     if fyers_client:
         try:
-            # Convert ticker format for Fyers
-            fyers_symbol = f"NSE:{ticker.replace('.NS', '').replace('.BO', '')}-EQ"
+            # Convert ticker format for Fyers - handle both NSE and BSE
+            if ticker.endswith('.NS'):
+                fyers_symbol = f"NSE:{ticker.replace('.NS', '')}-EQ"
+            elif ticker.endswith('.BO'):
+                fyers_symbol = f"BSE:{ticker.replace('.BO', '')}-EQ"
+            else:
+                # Default to NSE if no exchange specified
+                fyers_symbol = f"NSE:{ticker}-EQ"
 
             if period == "1d":
                 # For current day data, use quotes

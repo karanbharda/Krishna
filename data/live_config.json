@@ -2,10 +2,10 @@
   "mode": "live",
   "riskLevel": "CUSTOM",
   "stop_loss_pct": 0.02,
-  "target_profit_pct": 0.02,
+  "target_profit_pct": 0.03,
   "use_risk_reward": true,
   "risk_reward_ratio": 2.0,
   "max_capital_per_trade": 0.05,
   "max_trade_limit": 150,
-  "created_at": "2025-10-06T15:09:56.497714"
+  "created_at": "2025-10-09T14:00:39.114006"
 }

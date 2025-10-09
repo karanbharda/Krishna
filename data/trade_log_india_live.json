@@ -182,5 +182,29 @@
         "qty": 1,
         "price": 1361.5,
         "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-10-07 12:48:31.998275",
+        "asset": "LTIM.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 5285.5,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-10-07 14:08:02.124659",
+        "asset": "BSE.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 2248.5,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-10-08 15:08:12.713850",
+        "asset": "CLEAN.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 1051.2,
+        "pnl": 0.0
     }
 ]
