@@ -91,6 +91,14 @@ logger = logging.getLogger(__name__)
 # Load environment variables
 load_dotenv()
 
+# Import unified ML interface
+try:
+    from ml_interface import get_ml_interface, get_unified_ml_analysis
+    ML_INTERFACE_AVAILABLE = True
+except ImportError:
+    logger.warning("ML interface not available, using individual components")
+    ML_INTERFACE_AVAILABLE = False
+
 
 class FyersTickerMapper:
     """Fyers API-based ticker-to-company name mapping for Indian stock market"""
@@ -5311,6 +5319,17 @@ class StockTradingBot:
         self.command_queue = queue.Queue()
         self.initialize()
 
+        # Initialize unified ML interface
+        if ML_INTERFACE_AVAILABLE:
+            try:
+                self.ml_interface = get_ml_interface()
+                logger.info("Unified ML interface initialized successfully")
+            except Exception as e:
+                logger.error(f"Failed to initialize unified ML interface: {e}")
+                self.ml_interface = None
+        else:
+            self.ml_interface = None
+
     def _initialize_data_services(self):
         """Initialize unified data service manager"""
         try:
@@ -7194,13 +7213,31 @@ class StockTradingBot:
 
     def run_analysis(self, ticker):
         """Run analysis for a given ticker and return the result."""
-        return self.stock_analyzer.analyze_stock(
+        analysis = self.stock_analyzer.analyze_stock(
             ticker,
             benchmark_tickers=self.config.get("benchmark_tickers", ["^NSEI"]),
             prediction_days=self.config.get("prediction_days", 30),
             training_period=self.config.get("period", "1y"),
             bot_running=self.bot_running
         )
+        
+        # Validate ML models if ML interface is available
+        if self.ml_interface:
+            try:
+                validation_result = self.ml_interface.validate_all_models()
+                if validation_result.get("success", False):
+                    logger.info(f"ML models validation completed for {ticker}")
+                    # Log any issues found
+                    validation_results = validation_result.get("validation_results", {})
+                    overall_health = validation_results.get("overall_health", {})
+                    if overall_health.get("status") != "healthy":
+                        logger.warning(f"ML models health status: {overall_health.get('status', 'unknown')}")
+                else:
+                    logger.warning(f"ML models validation failed: {validation_result.get('error', 'Unknown error')}")
+            except Exception as e:
+                logger.error(f"Error during ML models validation: {e}")
+        
+        return analysis
 
     def run(self):
         """Main bot loop to run analysis, make trades, and generate reports."""

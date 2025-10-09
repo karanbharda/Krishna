@@ -12,6 +12,8 @@ import numpy as np
 from datetime import datetime, timedelta
 
 from .professional_sell_logic import MarketTrend, MarketContext
+from .rl_agent import rl_agent
+from utils.ensemble_optimizer import get_ensemble_optimizer
 
 logger = logging.getLogger(__name__)
 
@@ -1903,6 +1905,79 @@ class ProfessionalBuyLogic:
                     reasoning=f"Positive price prediction: {price_change_pct:.1%} gain expected (confidence: {prediction_confidence:.2f}, interval: ±{confidence_interval:.1%}, validation: {prediction_validation:.2f})",
                     category="ML"
                 ))
+
+        # RL Agent signal integration
+        try:
+            # Get RL analysis for the current stock
+            rl_data = {
+                'price': current_price,
+                'volume': ml_analysis.get("volume", 1000000),
+                'change': ml_analysis.get("price_change", 0),
+                'change_pct': price_change_pct * 100 if current_price > 0 else 0
+            }
+            rl_analysis = rl_agent.get_rl_analysis(rl_data)
+            
+            if rl_analysis.get("success", False):
+                rl_recommendation = rl_analysis.get("recommendation", "HOLD")
+                rl_confidence = rl_analysis.get("confidence", 0.5)
+                
+                # Only trigger signal if RL recommends BUY with high confidence
+                if rl_recommendation == "BUY" and rl_confidence > 0.6:
+                    strength = min(rl_confidence, 1.0)
+                    signals.append(BuySignal(
+                        name="rl_agent_signal",
+                        strength=strength,
+                        weight=category_weight * 0.10,
+                        triggered=True,
+                        confidence=rl_confidence,
+                        reasoning=f"RL Agent recommends BUY with confidence {rl_confidence:.2f}",
+                        category="ML"
+                    ))
+        except Exception as e:
+            logger.warning(f"Failed to integrate RL agent signal: {e}")
+
+        # Ensemble Optimizer signal integration
+        try:
+            # Get ensemble optimizer
+            ensemble_optimizer = get_ensemble_optimizer()
+            
+            # Create features for ensemble prediction
+            # This is a simplified feature vector - in practice, you would use actual technical features
+            features = np.array([
+                ml_analysis.get("rsi", 50) / 100,  # Normalize RSI
+                ml_analysis.get("macd", 0),
+                ml_analysis.get("macd_signal", 0),
+                price_change_pct if current_price > 0 else 0,
+                ml_analysis.get("volume_ratio", 1.0),
+                ml_analysis.get("volatility", 0.02),
+                1 if price_change_pct > 0 else 0,  # Positive momentum
+                ml_analysis.get("support_level", current_price) / current_price if current_price > 0 else 1,
+                ml_analysis.get("resistance_level", current_price) / current_price if current_price > 0 else 1,
+                ml_analysis.get("atr", 0) / current_price if current_price > 0 else 0.01
+            ], dtype=np.float32)
+            
+            # Get detailed ensemble analysis
+            ensemble_analysis = ensemble_optimizer.get_detailed_ensemble_analysis(features)
+            
+            if ensemble_analysis.get("success", False):
+                ensemble_recommendation = ensemble_analysis.get("recommendation", "HOLD")
+                ensemble_confidence = ensemble_analysis.get("confidence", 0.5)
+                consensus_level = ensemble_analysis.get("consensus_level", 0.5)
+                
+                # Only trigger signal if ensemble recommends BUY with high confidence and consensus
+                if ensemble_recommendation == "BUY" and ensemble_confidence > 0.6 and consensus_level > 0.7:
+                    strength = min(ensemble_confidence * consensus_level, 1.0)
+                    signals.append(BuySignal(
+                        name="ensemble_optimizer_signal",
+                        strength=strength,
+                        weight=category_weight * 0.12,
+                        triggered=True,
+                        confidence=ensemble_confidence,
+                        reasoning=f"Ensemble Optimizer recommends BUY with confidence {ensemble_confidence:.2f} and consensus {consensus_level:.2f}",
+                        category="ML"
+                    ))
+        except Exception as e:
+            logger.warning(f"Failed to integrate Ensemble Optimizer signal: {e}")
 
         return signals
 

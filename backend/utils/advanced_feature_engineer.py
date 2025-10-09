@@ -26,6 +26,14 @@ try:
 except ImportError:
     SCIPY_AVAILABLE = False
 
+# Import monitoring
+try:
+    from utils.monitoring import log_model_performance
+    MONITORING_AVAILABLE = True
+except ImportError:
+    logger.warning("Monitoring not available for Feature Engineer")
+    MONITORING_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -547,7 +555,7 @@ class AdvancedFeatureEngineer:
             return {}
     
     def select_best_features(self, features_df: pd.DataFrame, target: pd.Series, k: int = 50) -> List[str]:
-        """Select k best features using statistical tests"""
+        """Select k best features using multiple statistical tests and ensemble methods"""
         try:
             # Get numeric features only
             numeric_features = features_df.select_dtypes(include=[np.number])
@@ -565,34 +573,197 @@ class AdvancedFeatureEngineer:
             numeric_features = numeric_features.loc[common_idx]
             target_clean = target_clean.loc[common_idx]
             
-            # Feature selection using f_regression
-            selector = SelectKBest(score_func=f_regression, k=min(k, len(numeric_features.columns)))
-            selector.fit(numeric_features, target_clean)
+            # Multiple feature selection methods
+            feature_scores = {}
             
-            # Get selected feature names
-            selected_features = numeric_features.columns[selector.get_support()].tolist()
+            # 1. F-regression
+            try:
+                f_selector = SelectKBest(score_func=f_regression, k='all')
+                f_selector.fit(numeric_features, target_clean)
+                f_scores = dict(zip(numeric_features.columns, f_selector.scores_))
+                # Normalize scores
+                f_max = max(f_scores.values())
+                if f_max > 0:
+                    f_scores = {k: v/f_max for k, v in f_scores.items()}
+                feature_scores['f_regression'] = f_scores
+            except Exception as e:
+                logger.warning(f"F-regression feature selection failed: {e}")
+                feature_scores['f_regression'] = {col: 1.0 for col in numeric_features.columns}
+            
+            # 2. Mutual Information (if scipy available)
+            if SCIPY_AVAILABLE:
+                try:
+                    mi_scores = {}
+                    for col in numeric_features.columns:
+                        try:
+                            mi_score = mutual_info_regression(numeric_features[[col]], target_clean)[0]
+                            mi_scores[col] = mi_score
+                        except:
+                            mi_scores[col] = 0.0
+                    # Normalize scores
+                    mi_max = max(mi_scores.values())
+                    if mi_max > 0:
+                        mi_scores = {k: v/mi_max for k, v in mi_scores.items()}
+                    feature_scores['mutual_info'] = mi_scores
+                except Exception as e:
+                    logger.warning(f"Mutual info feature selection failed: {e}")
+                    feature_scores['mutual_info'] = {col: 1.0 for col in numeric_features.columns}
+            else:
+                feature_scores['mutual_info'] = {col: 1.0 for col in numeric_features.columns}
+            
+            # 3. Correlation-based selection
+            try:
+                correlations = {}
+                for col in numeric_features.columns:
+                    try:
+                        corr = abs(np.corrcoef(numeric_features[col], target_clean)[0, 1])
+                        correlations[col] = corr if not np.isnan(corr) else 0.0
+                    except:
+                        correlations[col] = 0.0
+                feature_scores['correlation'] = correlations
+            except Exception as e:
+                logger.warning(f"Correlation feature selection failed: {e}")
+                feature_scores['correlation'] = {col: 1.0 for col in numeric_features.columns}
+            
+            # Ensemble feature selection - combine all methods
+            ensemble_scores = {}
+            method_weights = {'f_regression': 0.4, 'mutual_info': 0.3, 'correlation': 0.3}
+            
+            for col in numeric_features.columns:
+                score = 0.0
+                for method, weight in method_weights.items():
+                    if method in feature_scores and col in feature_scores[method]:
+                        score += feature_scores[method][col] * weight
+                ensemble_scores[col] = score
+            
+            # Select top k features based on ensemble scores
+            sorted_features = sorted(ensemble_scores.items(), key=lambda x: x[1], reverse=True)
+            selected_features = [feat for feat, score in sorted_features[:min(k, len(sorted_features))]]
             
             # Store feature scores
-            feature_scores = dict(zip(numeric_features.columns, selector.scores_))
-            self.feature_importance = feature_scores
+            self.feature_importance = ensemble_scores
             self.selected_features = selected_features
             
-            logger.info(f"✅ Selected {len(selected_features)} best features from {len(numeric_features.columns)}")
+            logger.info(f"✅ Selected {len(selected_features)} best features from {len(numeric_features.columns)} using ensemble method")
+            
+            # Log top 10 features
+            top_features = sorted_features[:10]
+            logger.info(f"Top 10 features: {[(feat, f'{score:.4f}') for feat, score in top_features]}")
+            
             return selected_features
             
         except Exception as e:
             logger.error(f"Error selecting features: {e}")
-            return list(features_df.select_dtypes(include=[np.number]).columns)[:k]
+            # Fallback to simple selection
+            numeric_cols = list(features_df.select_dtypes(include=[np.number]).columns)
+            if target.name in numeric_cols:
+                numeric_cols.remove(target.name)
+            return numeric_cols[:k]
+
+    def get_feature_importance_ranking(self) -> List[Tuple[str, float]]:
+        """Get features ranked by importance score"""
+        if not self.feature_importance:
+            return []
+        
+        return sorted(self.feature_importance.items(), key=lambda x: x[1], reverse=True)
+
+    def select_features_by_stability(self, features_df: pd.DataFrame, target: pd.Series, k: int = 50) -> List[str]:
+        """Select features based on stability over time"""
+        try:
+            # Get numeric features only
+            numeric_features = features_df.select_dtypes(include=[np.number])
+            
+            # Remove target if it exists in features
+            if target.name in numeric_features.columns:
+                numeric_features = numeric_features.drop(columns=[target.name])
+            
+            # Handle NaN values
+            numeric_features = numeric_features.fillna(numeric_features.median())
+            target_clean = target.fillna(target.median())
+            
+            # Align indices
+            common_idx = numeric_features.index.intersection(target_clean.index)
+            numeric_features = numeric_features.loc[common_idx]
+            target_clean = target_clean.loc[common_idx]
+            
+            # Calculate stability scores based on rolling window correlations
+            stability_scores = {}
+            window_size = min(30, len(numeric_features) // 4)  # Use 25% of data or 30, whichever is smaller
+            
+            if window_size < 10:
+                # Not enough data for stability analysis, fall back to regular selection
+                return self.select_best_features(features_df, target, k)
+            
+            # Calculate rolling correlations for each feature
+            for col in numeric_features.columns:
+                try:
+                    rolling_corrs = []
+                    for i in range(0, len(numeric_features) - window_size, window_size // 2):
+                        window_end = i + window_size
+                        if window_end <= len(numeric_features):
+                            feat_window = numeric_features[col].iloc[i:window_end]
+                            target_window = target_clean.iloc[i:window_end]
+                            
+                            # Calculate correlation for this window
+                            corr = np.corrcoef(feat_window, target_window)[0, 1]
+                            if not np.isnan(corr):
+                                rolling_corrs.append(abs(corr))
+                    
+                    # Stability is measured by low standard deviation of correlations
+                    if len(rolling_corrs) > 1:
+                        stability = 1.0 / (1.0 + np.std(rolling_corrs))  # Higher stability = lower std
+                        avg_corr = np.mean(rolling_corrs)
+                        stability_scores[col] = stability * avg_corr  # Combine stability with average predictive power
+                    else:
+                        stability_scores[col] = 0.5  # Default score
+                except Exception as e:
+                    logger.warning(f"Error calculating stability for {col}: {e}")
+                    stability_scores[col] = 0.0
+            
+            # Select top k features based on stability scores
+            sorted_features = sorted(stability_scores.items(), key=lambda x: x[1], reverse=True)
+            selected_features = [feat for feat, score in sorted_features[:min(k, len(sorted_features))]]
+            
+            # Update feature importance
+            self.feature_importance = stability_scores
+            self.selected_features = selected_features
+            
+            logger.info(f"✅ Selected {len(selected_features)} stable features from {len(numeric_features.columns)}")
+            
+            # Log top 10 stable features
+            top_features = sorted_features[:10]
+            logger.info(f"Top 10 stable features: {[(feat, f'{score:.4f}') for feat, score in top_features]}")
+            
+            return selected_features
+            
+        except Exception as e:
+            logger.error(f"Error selecting stable features: {e}")
+            # Fallback to regular feature selection
+            return self.select_best_features(features_df, target, k)        
     
     def get_feature_summary(self) -> Dict:
         """Get summary of engineered features"""
-        return {
+        summary = {
             'total_features_engineered': len(self.feature_importance) if self.feature_importance else 0,
             'selected_features_count': len(self.selected_features),
             'feature_categories': self.feature_categories,
             'top_10_features': sorted(self.feature_importance.items(), 
                                     key=lambda x: x[1], reverse=True)[:10] if self.feature_importance else []
         }
+        
+        # Log performance metrics if monitoring is available
+        if MONITORING_AVAILABLE:
+            try:
+                metrics = {
+                    "features_engineered": summary['total_features_engineered'],
+                    "features_selected": summary['selected_features_count'],
+                    "quality_score": min(summary['total_features_engineered'] / 100.0, 1.0)  # Normalize to 0-1
+                }
+                log_model_performance("FeatureEngineer", metrics, summary)
+            except Exception as e:
+                logger.debug(f"Failed to log feature engineer performance: {e}")
+        
+        return summary
 
 
 # Global instance

@@ -13,6 +13,14 @@ from sklearn.ensemble import VotingRegressor, StackingRegressor
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_squared_error, r2_score
 
+# Import monitoring
+try:
+    from utils.monitoring import log_model_performance
+    MONITORING_AVAILABLE = True
+except ImportError:
+    logger.warning("Monitoring not available for Ensemble Optimizer")
+    MONITORING_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -199,6 +207,10 @@ class EnsembleOptimizer:
                 # Adaptive combination based on recent performance and market conditions
                 ensemble_pred, confidence = self._adaptive_combination(predictions, weights)
                 
+            elif method == EnsembleMethod.STACKING:
+                # Stacking with meta-learner
+                ensemble_pred, confidence = self._stacking_combination(predictions, weights)
+                
             else:  # Default to simple average
                 ensemble_pred = np.mean(predictions)
                 confidence = 1.0 / (1.0 + np.std(predictions))
@@ -280,6 +292,38 @@ class EnsembleOptimizer:
             
         except Exception as e:
             logger.error(f"Error in adaptive combination: {e}")
+            return float(np.mean(predictions)), 0.5
+
+    def _stacking_combination(self, predictions: np.ndarray, weights: np.ndarray) -> Tuple[float, float]:
+        """Stacking combination with meta-learner"""
+        try:
+            # Get recent performance for meta-learning
+            performance_weights = self._get_performance_weights()
+            
+            # Create features for meta-learner (predictions from base models)
+            X_meta = np.array(predictions).reshape(1, -1)
+            
+            # Simple linear combination as meta-learner
+            # In a more advanced implementation, this would be a trained model
+            meta_weights = np.array(list(performance_weights.values()))
+            if len(meta_weights) == len(predictions):
+                # Normalize meta-weights
+                meta_weights = meta_weights / meta_weights.sum()
+                ensemble_pred = np.dot(predictions, meta_weights)
+                
+                # Confidence based on meta-weight concentration
+                weight_entropy = -np.sum(meta_weights * np.log(meta_weights + 1e-10))
+                confidence = 1.0 / (1.0 + weight_entropy)
+            else:
+                # Fallback to weighted average
+                weights = weights / weights.sum()
+                ensemble_pred = np.average(predictions, weights=weights)
+                confidence = 1.0 / (1.0 + np.std(predictions))
+            
+            return float(ensemble_pred), float(confidence)
+            
+        except Exception as e:
+            logger.error(f"Error in stacking combination: {e}")
             return float(np.mean(predictions)), 0.5
     
     def update_with_outcome(self, model_predictions: Dict[str, float], actual_outcome: float):
@@ -383,11 +427,83 @@ class EnsembleOptimizer:
             if len(self.ensemble_history) >= 10:
                 insights['ensemble_performance'] = self._calculate_ensemble_performance()
             
+            # Log performance metrics if monitoring is available
+            if MONITORING_AVAILABLE:
+                try:
+                    # Get ensemble performance metrics
+                    ensemble_perf = insights.get('ensemble_performance', {})
+                    if ensemble_perf:
+                        log_model_performance("EnsembleOptimizer", ensemble_perf, insights)
+                except Exception as e:
+                    logger.debug(f"Failed to log ensemble performance: {e}")
+            
             return insights
             
         except Exception as e:
             logger.error(f"Error getting ensemble insights: {e}")
             return {}
+
+    def get_detailed_ensemble_analysis(self, features: np.ndarray) -> Dict:
+        """Get detailed ensemble analysis for integration with professional buy logic"""
+        try:
+            # Get ensemble prediction
+            result = self.predict_ensemble(features)
+            
+            # Get model performances
+            model_performances = {}
+            for model_name, tracker in self.performance_trackers.items():
+                metrics = tracker.get_performance_metrics()
+                model_performances[model_name] = {
+                    'accuracy': metrics.get('accuracy', 0),
+                    'r2_score': metrics.get('r2', 0),
+                    'mse': metrics.get('mse', 0)
+                }
+            
+            # Calculate consensus level
+            predictions = list(result.get('model_predictions', {}).values())
+            if len(predictions) > 1:
+                prediction_std = np.std(predictions)
+                consensus_level = 1.0 / (1.0 + prediction_std)  # Higher consensus = lower std
+            else:
+                consensus_level = 0.5
+            
+            # Determine recommendation based on prediction direction and confidence
+            prediction = result.get('prediction', 0)
+            confidence = result.get('confidence', 0.5)
+            
+            if prediction > 0.02 and confidence > 0.6:  # Positive prediction with good confidence
+                recommendation = "BUY"
+            elif prediction < -0.02 and confidence > 0.6:  # Negative prediction with good confidence
+                recommendation = "SELL"
+            else:
+                recommendation = "HOLD"
+            
+            return {
+                'success': True,
+                'recommendation': recommendation,
+                'prediction': prediction,
+                'confidence': confidence,
+                'consensus_level': consensus_level,
+                'model_predictions': result.get('model_predictions', {}),
+                'model_performances': model_performances,
+                'ensemble_method': result.get('method_used', 'unknown'),
+                'num_models': result.get('num_models', 0)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in detailed ensemble analysis: {e}")
+            return {
+                'success': False,
+                'recommendation': "HOLD",
+                'prediction': 0.0,
+                'confidence': 0.5,
+                'consensus_level': 0.5,
+                'model_predictions': {},
+                'model_performances': {},
+                'ensemble_method': 'unknown',
+                'num_models': 0,
+                'error': str(e)
+            }
     
     def _calculate_ensemble_performance(self) -> Dict:
         """Calculate overall ensemble performance"""

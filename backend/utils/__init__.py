@@ -23,7 +23,7 @@ from .exceptions import (
     NetworkError,
     AuthenticationError
 )
-from .monitoring import PerformanceMonitor
+from .monitoring import MLModelMonitor, log_model_performance, get_model_health_report
 
 __all__ = [
     'ConfigValidator',
@@ -35,5 +35,7 @@ __all__ = [
     'ValidationError',
     'NetworkError',
     'AuthenticationError',
-    'PerformanceMonitor'
+    'MLModelMonitor',
+    'log_model_performance',
+    'get_model_health_report'
 ]
