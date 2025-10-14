@@ -24,6 +24,7 @@ from .exceptions import (
     AuthenticationError
 )
 from .monitoring import MLModelMonitor, log_model_performance, get_model_health_report
+from .performance_monitor import PerformanceMonitor, get_performance_monitor
 
 __all__ = [
     'ConfigValidator',
@@ -37,5 +38,7 @@ __all__ = [
     'AuthenticationError',
     'MLModelMonitor',
     'log_model_performance',
-    'get_model_health_report'
+    'get_model_health_report',
+    'PerformanceMonitor',
+    'get_performance_monitor'
 ]

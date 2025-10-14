@@ -16,6 +16,7 @@ class DynamicRiskEngine:
             config_path = str(project_root / 'data' / 'live_config.json')
         self.config_path = config_path
         self.config = self._load_config()
+        self.trading_bot = None  # Reference to the trading bot instance
 
     def _load_config(self) -> Dict[str, Any]:
         """Load risk config from live_config.json"""
@@ -38,6 +39,10 @@ class DynamicRiskEngine:
                 json.dump(default, f, indent=2)
             return default
 
+    def set_trading_bot(self, trading_bot):
+        """Set reference to the trading bot instance"""
+        self.trading_bot = trading_bot
+
     def update_risk_profile(self, stop_loss_pct: float, capital_risk_pct: float, drawdown_limit_pct: float):
         """Update risk settings dynamically and save to live_config.json"""
         self.config["stop_loss_pct"] = stop_loss_pct / 100  # Convert % to decimal
@@ -48,6 +53,14 @@ class DynamicRiskEngine:
         with open(self.config_path, 'w') as f:
             json.dump(self.config, f, indent=2)
         logger.info(f"Updated live_config.json with new risk settings")
+        
+        # Notify the trading bot to refresh its professional integrations
+        if self.trading_bot:
+            try:
+                self.trading_bot.refresh_professional_integrations()
+                logger.info("Notified trading bot to refresh professional integrations")
+            except Exception as e:
+                logger.error(f"Failed to notify trading bot of config update: {e}")
 
     def get_risk_settings(self) -> Dict[str, float]:
         """Get current risk settings"""

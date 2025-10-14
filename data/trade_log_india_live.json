@@ -1,210 +1,26 @@
 [
     {
-        "timestamp": "2025-08-28 11:44:48.035707",
-        "asset": "BEL.NS",
+        "timestamp": "2025-10-13 10:58:53.953587",
+        "asset": "IDBI.NS",
         "action": "buy",
-        "qty": 1,
-        "price": 367.35,
+        "qty": 5,
+        "price": 93.16,
         "pnl": 0.0
     },
     {
-        "timestamp": "2025-08-28 12:37:16.507766",
-        "asset": "RVNL.NS",
+        "timestamp": "2025-10-13 11:02:21.949428",
+        "asset": "IDBI.NS",
         "action": "buy",
-        "qty": 1,
-        "price": 313.0,
+        "qty": 5,
+        "price": 93.14,
         "pnl": 0.0
     },
     {
-        "timestamp": "2025-08-29 10:08:11.733916",
-        "asset": "NMDC.NS",
+        "timestamp": "2025-10-13 11:06:19.579474",
+        "asset": "IDBI.NS",
         "action": "buy",
-        "qty": 1,
-        "price": 68.3,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-08-29 10:34:38.146093",
-        "asset": "NMDC.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 68.61,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-09-01 14:11:56.408665",
-        "asset": "NSLNISP",
-        "action": "sell",
-        "qty": 2,
-        "price": 38.11,
-        "pnl": 0.480000000000004
-    },
-    {
-        "timestamp": "2025-09-05 14:48:05.580169",
-        "asset": "SHANTIGOLD.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 231.77,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-09-05 15:09:53.695149",
-        "asset": "SHANTIGOLD.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 230.87,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-09-05 15:19:00.004277",
-        "asset": "SHANTIGOLD.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 231.0,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-09-05 15:25:50.360720",
-        "asset": "MOTHERSON.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 94.6,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-09-08 13:18:48.590267",
-        "asset": "PNB.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 104.67,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-09-08 13:24:06.143865",
-        "asset": "PNB.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 104.6,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-09-08 13:29:30.923355",
-        "asset": "PNB.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 104.52,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-09-08 13:44:05.662956",
-        "asset": "PNB.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 104.46,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-09-08 14:25:58.295848",
-        "asset": "SJVN.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 93.36,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-09-08 15:17:30.274033",
-        "asset": "PNB.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 104.19,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-09-10 13:33:54.565128",
-        "asset": "NHPC.NS",
-        "action": "buy",
-        "qty": 2,
-        "price": 79.0,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-09-16 13:30:49.198404",
-        "asset": "ASHOKLEY.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 134.87,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-09-16 13:48:24.944727",
-        "asset": "ASHOKLEY.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 134.94,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-09-30 13:34:16.596900",
-        "asset": "MRPL.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 132.11,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-10-06 11:59:56.183609",
-        "asset": "IOC.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 151.74,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-10-06 14:37:11.981591",
-        "asset": "HINDALCO.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 775.35,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-10-06 14:47:24.264048",
-        "asset": "HDFCBANK.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 974.15,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-10-06 14:52:37.980102",
-        "asset": "ICICIBANK.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 1361.5,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-10-07 12:48:31.998275",
-        "asset": "LTIM.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 5285.5,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-10-07 14:08:02.124659",
-        "asset": "BSE.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 2248.5,
-        "pnl": 0.0
-    },
-    {
-        "timestamp": "2025-10-08 15:08:12.713850",
-        "asset": "CLEAN.NS",
-        "action": "buy",
-        "qty": 1,
-        "price": 1051.2,
+        "qty": 5,
+        "price": 93.18,
         "pnl": 0.0
     }
 ]

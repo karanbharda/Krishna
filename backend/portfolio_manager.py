@@ -267,6 +267,9 @@ class DualPortfolioManager:
             except Exception as sync_error:
                 logger.error(f"Error syncing to JSON files: {sync_error}")
             
+            # NEW: Update data service watchlist after trade execution
+            self._update_data_service_watchlist_after_trade(session, portfolio)
+            
             # Notify callbacks
             for callback in self.trade_callbacks:
                 try:
@@ -283,6 +286,24 @@ class DualPortfolioManager:
             if session:
                 session.close()
                     
+    def _update_data_service_watchlist_after_trade(self, session, portfolio):
+        """Update data service watchlist after a trade is executed"""
+        try:
+            # Get current holdings from database
+            holdings = session.query(Holding).filter_by(portfolio_id=portfolio.id).all()
+            holding_symbols = [holding.ticker for holding in holdings]
+            
+            # Import data service client
+            from data_service_client import get_data_client
+            data_client = get_data_client()
+            
+            # Update watchlist with current holdings
+            data_client.update_watchlist(holding_symbols)
+            logger.info(f"Updated data service watchlist after trade with {len(holding_symbols)} symbols")
+                
+        except Exception as e:
+            logger.error(f"Failed to update data service watchlist after trade: {e}")
+            
     def _sync_to_json(self, session, portfolio):
         """Sync database changes back to JSON files for backward compatibility"""
         try:

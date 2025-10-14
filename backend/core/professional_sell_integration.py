@@ -14,26 +14,33 @@ from .professional_sell_logic import (
 )
 from .market_context_analyzer import MarketContextAnalyzer
 
+# PRODUCTION ENHANCEMENT: Import signal tracker
+from utils.signal_tracker import get_signal_tracker
+
 logger = logging.getLogger(__name__)
 
 class ProfessionalSellIntegration:
     """
     Integration layer for professional sell logic
-    Bridges the gap between existing trading modules and new professional logic
     """
-    
     def __init__(self, config: Dict):
         self.config = config
         
         # Initialize professional components
         self.sell_logic = ProfessionalSellLogic(config)
-        self.market_analyzer = MarketContextAnalyzer(config)
+        
+        # PRODUCTION ENHANCEMENT: Initialize signal tracker
+        self.signal_tracker = get_signal_tracker()
         
         # Integration settings
         self.enable_professional_logic = config.get("enable_professional_sell_logic", True)
         self.fallback_to_legacy = config.get("fallback_to_legacy_sell", False)
         
         logger.info("Professional Sell Integration initialized")
+    
+    def refresh_dynamic_config(self):
+        """Refresh dynamic configuration from live_config.json"""
+        self.sell_logic.refresh_dynamic_config()
     
     def evaluate_professional_sell(
         self,
@@ -365,14 +372,21 @@ class ProfessionalSellIntegration:
     def _convert_to_legacy_format(self, sell_decision: SellDecision, position_metrics: PositionMetrics) -> Dict:
         """Convert professional sell decision to legacy format"""
         
+        # PRODUCTION ENHANCEMENT: Track signals for continuous learning
+        self._track_signals(sell_decision)
+        
         if not sell_decision.should_sell:
+            # Use stored database values if available, otherwise use calculated values
+            stop_loss = position_metrics.db_stop_loss if position_metrics.db_stop_loss is not None else sell_decision.stop_loss_price
+            take_profit = position_metrics.db_target_price if position_metrics.db_target_price is not None else sell_decision.take_profit_price
+            
             return {
                 "action": "hold",
                 "ticker": "",
                 "qty": 0,
                 "price": position_metrics.current_price,
-                "stop_loss": sell_decision.stop_loss_price,
-                "take_profit": sell_decision.take_profit_price,
+                "stop_loss": stop_loss,
+                "take_profit": take_profit,
                 "success": True,
                 "confidence_score": sell_decision.confidence,
                 "signals": len(sell_decision.signals_triggered),
@@ -380,13 +394,17 @@ class ProfessionalSellIntegration:
                 "professional_reasoning": sell_decision.reasoning
             }
         
+        # Use stored database values if available, otherwise use calculated values
+        stop_loss = position_metrics.db_stop_loss if position_metrics.db_stop_loss is not None else sell_decision.stop_loss_price
+        take_profit = position_metrics.db_target_price if position_metrics.db_target_price is not None else sell_decision.take_profit_price
+        
         return {
             "action": "sell",
             "ticker": "",  # Will be set by calling module
             "qty": sell_decision.sell_quantity,
             "price": position_metrics.current_price,
-            "stop_loss": sell_decision.stop_loss_price,
-            "take_profit": sell_decision.take_profit_price,
+            "stop_loss": stop_loss,
+            "take_profit": take_profit,
             "success": True,  # Will be set by execution
             "confidence_score": sell_decision.confidence,
             "signals": len(sell_decision.signals_triggered),
@@ -427,6 +445,37 @@ class ProfessionalSellIntegration:
             "reason": "legacy_fallback",
             "professional_reasoning": "Using legacy sell logic"
         }
+    
+    def _track_signals(self, sell_decision: SellDecision):
+        """
+        PRODUCTION ENHANCEMENT: Track signals for continuous learning
+        """
+        try:
+            # Record each triggered signal
+            for signal in sell_decision.signals_triggered:
+                if signal.triggered:
+                    signal_data = {
+                        'symbol': '',  # Will be filled in by calling function
+                        'signal_type': signal.category.lower() if signal.category else 'unknown',
+                        'signal_name': signal.name,
+                        'signal_strength': signal.strength,
+                        'signal_confidence': signal.confidence,
+                        'market_regime': 'unknown',  # Would be filled with actual regime
+                        'liquidity_score': 0.5,  # Default score
+                        'volatility_regime': 'normal',  # Would be filled with actual regime
+                        'additional_metrics': {
+                            'reasoning': signal.reasoning,
+                            'weight': signal.weight
+                        }
+                    }
+                    
+                    # Record the signal
+                    self.signal_tracker.record_signal(signal_data)
+            
+            logger.debug(f"Tracked {len(sell_decision.signals_triggered)} signals for continuous learning")
+            
+        except Exception as e:
+            logger.warning(f"Error tracking signals: {e}")
     
     def get_dynamic_portfolio_data(self) -> Dict:
         """Get dynamic portfolio data from Dhan API for live trading"""

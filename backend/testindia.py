@@ -5236,6 +5236,29 @@ class Stock:
 class StockTradingBot:
     def __init__(self, config):
         self.config = config
+
+# Add import for professional buy logic
+# Use absolute import to avoid relative import issues when imported by other modules
+try:
+    from core.professional_buy_integration import ProfessionalBuyIntegration
+except ImportError:
+    # Fallback for direct script execution
+    import sys
+    import os
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    if parent_dir not in sys.path:
+        sys.path.insert(0, parent_dir)
+    from core.professional_buy_integration import ProfessionalBuyIntegration
+
+# Setup logging
+import logging
+logger = logging.getLogger(__name__)
+
+class StockTradingBot:
+    def __init__(self, config):
+        self.config = config
+
         self.timezone = pytz.timezone("Asia/Kolkata")  # Changed to India timezone
         self.data_feed = DataFeed(config["tickers"])
         self.portfolio = VirtualPortfolio(config)

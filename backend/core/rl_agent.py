@@ -18,6 +18,9 @@ if current_dir not in sys.path:
 
 from .risk_engine import risk_engine
 
+# Set up logger first
+logger = logging.getLogger(__name__)
+
 # Import monitoring
 try:
     from utils.monitoring import log_model_performance
@@ -25,8 +28,6 @@ try:
 except ImportError:
     logger.warning("Monitoring not available for RL agent")
     MONITORING_AVAILABLE = False
-
-logger = logging.getLogger(__name__)
 
 class SimpleRLModel(nn.Module):
     def __init__(self, input_size=10, hidden_size=64, output_size=3):  # 3 actions: buy, hold, sell

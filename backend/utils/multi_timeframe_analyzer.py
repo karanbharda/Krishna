@@ -44,4 +44,524 @@ class MultiTimeframeAnalyzer:
             Timeframe.M15: 0.25,  # Medium-term signals
             Timeframe.H1: 0.35,   # Strong intermediate signals
             Timeframe.D1: 0.20    # Long-term trend confirmation
-        }\n        \n        self.signal_cache = {}\n        self.trend_cache = {}\n        \n        logger.info(\"✅ Multi-Timeframe Analyzer initialized\")\n    \n    def analyze_all_timeframes(self, symbol: str, data_provider) -> Dict:\n        \"\"\"\n        Analyze signal across all timeframes and provide weighted consensus\n        \"\"\"\n        try:\n            results = {}\n            weighted_signals = []\n            \n            for timeframe in self.timeframes:\n                try:\n                    # Get data for this timeframe\n                    data = self._get_timeframe_data(symbol, timeframe, data_provider)\n                    \n                    if data is None or len(data) < 50:\n                        logger.warning(f\"Insufficient data for {timeframe.value} analysis\")\n                        continue\n                    \n                    # Analyze this timeframe\n                    analysis = self._analyze_single_timeframe(data, timeframe)\n                    results[timeframe.value] = analysis\n                    \n                    # Calculate weighted signal\n                    signal_score = analysis['signal_score']\n                    weight = self.weights[timeframe]\n                    weighted_signals.append(signal_score * weight)\n                    \n                    logger.debug(f\"{timeframe.value}: Signal={signal_score:.3f}, Weight={weight}\")\n                    \n                except Exception as e:\n                    logger.warning(f\"Error analyzing {timeframe.value}: {e}\")\n                    continue\n            \n            # Calculate consensus\n            if weighted_signals:\n                consensus_score = sum(weighted_signals)\n                consensus_signal = self._interpret_consensus_score(consensus_score)\n                \n                results['consensus'] = {\n                    'score': consensus_score,\n                    'signal': consensus_signal,\n                    'strength': self._calculate_signal_strength(results),\n                    'confirmation_level': self._calculate_confirmation_level(results)\n                }\n            else:\n                results['consensus'] = {\n                    'score': 0.0,\n                    'signal': 'HOLD',\n                    'strength': SignalStrength.VERY_WEAK,\n                    'confirmation_level': 0.0\n                }\n            \n            logger.info(f\"Multi-timeframe analysis completed: {results['consensus']['signal']} (strength: {results['consensus']['strength'].name})\")\n            return results\n            \n        except Exception as e:\n            logger.error(f\"Error in multi-timeframe analysis: {e}\")\n            return {'consensus': {'score': 0.0, 'signal': 'HOLD', 'strength': SignalStrength.VERY_WEAK}}\n    \n    def _get_timeframe_data(self, symbol: str, timeframe: Timeframe, data_provider) -> Optional[pd.DataFrame]:\n        \"\"\"\n        Get data for specific timeframe\n        \"\"\"\n        try:\n            # Calculate periods needed based on timeframe\n            periods_map = {\n                Timeframe.M1: 1440,   # 1 day of 1m data\n                Timeframe.M5: 288,    # 1 day of 5m data  \n                Timeframe.M15: 96,    # 1 day of 15m data\n                Timeframe.H1: 168,    # 1 week of 1h data\n                Timeframe.D1: 252     # 1 year of daily data\n            }\n            \n            periods = periods_map.get(timeframe, 100)\n            \n            # Try to get data from provider\n            if hasattr(data_provider, 'get_historical_data'):\n                data = data_provider.get_historical_data(symbol, timeframe.value, periods)\n            else:\n                # Fallback: resample daily data\n                daily_data = data_provider.get_data(symbol)\n                if daily_data is not None:\n                    data = self._resample_data(daily_data, timeframe)\n                else:\n                    return None\n            \n            return data\n            \n        except Exception as e:\n            logger.error(f\"Error getting {timeframe.value} data for {symbol}: {e}\")\n            return None\n    \n    def _resample_data(self, daily_data: pd.DataFrame, target_timeframe: Timeframe) -> pd.DataFrame:\n        \"\"\"\n        Resample daily data to target timeframe (limited functionality)\n        \"\"\"\n        try:\n            if target_timeframe == Timeframe.D1:\n                return daily_data\n            \n            # For intraday timeframes, we can't accurately resample from daily data\n            # Return the daily data as approximation\n            logger.warning(f\"Cannot accurately resample daily data to {target_timeframe.value}\")\n            return daily_data\n            \n        except Exception as e:\n            logger.error(f\"Error resampling data: {e}\")\n            return daily_data\n    \n    def _analyze_single_timeframe(self, data: pd.DataFrame, timeframe: Timeframe) -> Dict:\n        \"\"\"\n        Analyze signals for a single timeframe\n        \"\"\"\n        try:\n            # Calculate indicators for this timeframe\n            indicators = self._calculate_timeframe_indicators(data)\n            \n            # Analyze trend\n            trend_analysis = self._analyze_trend(data, indicators)\n            \n            # Analyze momentum\n            momentum_analysis = self._analyze_momentum(indicators)\n            \n            # Analyze volume\n            volume_analysis = self._analyze_volume(data)\n            \n            # Calculate support/resistance\n            sr_analysis = self._analyze_support_resistance(data)\n            \n            # Combine signals\n            signals = [\n                trend_analysis['signal_score'],\n                momentum_analysis['signal_score'], \n                volume_analysis['signal_score'],\n                sr_analysis['signal_score']\n            ]\n            \n            signal_score = np.mean(signals)\n            \n            return {\n                'timeframe': timeframe.value,\n                'signal_score': signal_score,\n                'trend': trend_analysis,\n                'momentum': momentum_analysis,\n                'volume': volume_analysis,\n                'support_resistance': sr_analysis,\n                'indicators': indicators,\n                'recommendation': self._get_recommendation(signal_score)\n            }\n            \n        except Exception as e:\n            logger.error(f\"Error analyzing {timeframe.value}: {e}\")\n            return {\n                'timeframe': timeframe.value,\n                'signal_score': 0.0,\n                'recommendation': 'HOLD'\n            }\n    \n    def _calculate_timeframe_indicators(self, data: pd.DataFrame) -> Dict:\n        \"\"\"\n        Calculate technical indicators for timeframe analysis\n        \"\"\"\n        try:\n            close = data['Close']\n            high = data['High']\n            low = data['Low']\n            volume = data.get('Volume', pd.Series([1] * len(data)))\n            \n            indicators = {}\n            \n            # Moving averages\n            indicators['sma_10'] = close.rolling(10).mean()\n            indicators['sma_20'] = close.rolling(20).mean()\n            indicators['sma_50'] = close.rolling(50).mean()\n            indicators['ema_12'] = close.ewm(span=12).mean()\n            indicators['ema_26'] = close.ewm(span=26).mean()\n            \n            # MACD\n            indicators['macd'] = indicators['ema_12'] - indicators['ema_26']\n            indicators['macd_signal'] = indicators['macd'].ewm(span=9).mean()\n            indicators['macd_histogram'] = indicators['macd'] - indicators['macd_signal']\n            \n            # RSI\n            delta = close.diff()\n            gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()\n            loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()\n            rs = gain / loss\n            indicators['rsi'] = 100 - (100 / (1 + rs))\n            \n            # Bollinger Bands\n            bb_middle = close.rolling(20).mean()\n            bb_std = close.rolling(20).std()\n            indicators['bb_upper'] = bb_middle + (bb_std * 2)\n            indicators['bb_lower'] = bb_middle - (bb_std * 2)\n            indicators['bb_position'] = (close - indicators['bb_lower']) / (indicators['bb_upper'] - indicators['bb_lower'])\n            \n            # Volume indicators\n            indicators['volume_sma'] = volume.rolling(20).mean()\n            indicators['volume_ratio'] = volume / indicators['volume_sma']\n            \n            # Average True Range\n            high_low = high - low\n            high_close = (high - close.shift()).abs()\n            low_close = (low - close.shift()).abs()\n            true_range = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)\n            indicators['atr'] = true_range.rolling(14).mean()\n            \n            return indicators\n            \n        except Exception as e:\n            logger.error(f\"Error calculating indicators: {e}\")\n            return {}\n    \n    def _analyze_trend(self, data: pd.DataFrame, indicators: Dict) -> Dict:\n        \"\"\"\n        Analyze trend strength and direction\n        \"\"\"\n        try:\n            close = data['Close'].iloc[-1]\n            \n            # Moving average analysis\n            ma_signals = []\n            if 'sma_10' in indicators and not pd.isna(indicators['sma_10'].iloc[-1]):\n                ma_signals.append(1 if close > indicators['sma_10'].iloc[-1] else -1)\n            if 'sma_20' in indicators and not pd.isna(indicators['sma_20'].iloc[-1]):\n                ma_signals.append(1 if close > indicators['sma_20'].iloc[-1] else -1)\n            if 'sma_50' in indicators and not pd.isna(indicators['sma_50'].iloc[-1]):\n                ma_signals.append(1 if close > indicators['sma_50'].iloc[-1] else -1)\n            \n            # MACD trend\n            macd_signal = 0\n            if 'macd' in indicators and 'macd_signal' in indicators:\n                macd = indicators['macd'].iloc[-1]\n                macd_sig = indicators['macd_signal'].iloc[-1]\n                if not (pd.isna(macd) or pd.isna(macd_sig)):\n                    macd_signal = 1 if macd > macd_sig else -1\n            \n            # Combine trend signals\n            all_signals = ma_signals + [macd_signal]\n            trend_score = np.mean(all_signals) if all_signals else 0\n            \n            return {\n                'signal_score': trend_score,\n                'direction': 'BULLISH' if trend_score > 0.2 else 'BEARISH' if trend_score < -0.2 else 'NEUTRAL',\n                'strength': abs(trend_score),\n                'ma_alignment': np.mean(ma_signals) if ma_signals else 0,\n                'macd_signal': macd_signal\n            }\n            \n        except Exception as e:\n            logger.error(f\"Error analyzing trend: {e}\")\n            return {'signal_score': 0, 'direction': 'NEUTRAL'}\n    \n    def _analyze_momentum(self, indicators: Dict) -> Dict:\n        \"\"\"\n        Analyze momentum indicators\n        \"\"\"\n        try:\n            momentum_signals = []\n            \n            # RSI analysis\n            if 'rsi' in indicators and not pd.isna(indicators['rsi'].iloc[-1]):\n                rsi = indicators['rsi'].iloc[-1]\n                if rsi < 30:\n                    momentum_signals.append(1)  # Oversold - bullish\n                elif rsi > 70:\n                    momentum_signals.append(-1)  # Overbought - bearish\n                else:\n                    momentum_signals.append(0)  # Neutral\n            \n            # MACD histogram\n            if 'macd_histogram' in indicators and not pd.isna(indicators['macd_histogram'].iloc[-1]):\n                macd_hist = indicators['macd_histogram'].iloc[-1]\n                momentum_signals.append(1 if macd_hist > 0 else -1)\n            \n            momentum_score = np.mean(momentum_signals) if momentum_signals else 0\n            \n            return {\n                'signal_score': momentum_score,\n                'rsi_level': indicators.get('rsi', pd.Series([50])).iloc[-1],\n                'momentum_strength': abs(momentum_score)\n            }\n            \n        except Exception as e:\n            logger.error(f\"Error analyzing momentum: {e}\")\n            return {'signal_score': 0}\n    \n    def _analyze_volume(self, data: pd.DataFrame) -> Dict:\n        \"\"\"\n        Analyze volume patterns\n        \"\"\"\n        try:\n            if 'Volume' not in data.columns:\n                return {'signal_score': 0, 'volume_trend': 'NEUTRAL'}\n            \n            volume = data['Volume']\n            volume_sma = volume.rolling(20).mean()\n            \n            current_volume = volume.iloc[-1]\n            avg_volume = volume_sma.iloc[-1]\n            \n            if pd.isna(avg_volume) or avg_volume == 0:\n                return {'signal_score': 0, 'volume_trend': 'NEUTRAL'}\n            \n            volume_ratio = current_volume / avg_volume\n            \n            # Volume signal interpretation\n            if volume_ratio > 1.5:\n                volume_signal = 0.5  # High volume can support moves\n            elif volume_ratio < 0.5:\n                volume_signal = -0.2  # Low volume reduces conviction\n            else:\n                volume_signal = 0\n            \n            return {\n                'signal_score': volume_signal,\n                'volume_ratio': volume_ratio,\n                'volume_trend': 'HIGH' if volume_ratio > 1.5 else 'LOW' if volume_ratio < 0.5 else 'NORMAL'\n            }\n            \n        except Exception as e:\n            logger.error(f\"Error analyzing volume: {e}\")\n            return {'signal_score': 0, 'volume_trend': 'NEUTRAL'}\n    \n    def _analyze_support_resistance(self, data: pd.DataFrame) -> Dict:\n        \"\"\"\n        Analyze support and resistance levels\n        \"\"\"\n        try:\n            high = data['High']\n            low = data['Low']\n            close = data['Close'].iloc[-1]\n            \n            # Calculate recent highs and lows\n            resistance = high.rolling(20).max().iloc[-1]\n            support = low.rolling(20).min().iloc[-1]\n            \n            # Distance from support/resistance\n            if resistance != support:\n                position = (close - support) / (resistance - support)\n            else:\n                position = 0.5\n            \n            # Signal based on position\n            if position < 0.2:\n                sr_signal = 0.3  # Near support - potential bounce\n            elif position > 0.8:\n                sr_signal = -0.3  # Near resistance - potential rejection\n            else:\n                sr_signal = 0  # In the middle\n            \n            return {\n                'signal_score': sr_signal,\n                'support_level': support,\n                'resistance_level': resistance,\n                'position_in_range': position\n            }\n            \n        except Exception as e:\n            logger.error(f\"Error analyzing support/resistance: {e}\")\n            return {'signal_score': 0}\n    \n    def _get_recommendation(self, signal_score: float) -> str:\n        \"\"\"\n        Convert signal score to recommendation\n        \"\"\"\n        if signal_score > 0.3:\n            return 'STRONG_BUY'\n        elif signal_score > 0.1:\n            return 'BUY'\n        elif signal_score > -0.1:\n            return 'HOLD'\n        elif signal_score > -0.3:\n            return 'SELL'\n        else:\n            return 'STRONG_SELL'\n    \n    def _interpret_consensus_score(self, score: float) -> str:\n        \"\"\"\n        Interpret consensus score into trading signal\n        \"\"\"\n        if score > 0.4:\n            return 'STRONG_BUY'\n        elif score > 0.2:\n            return 'BUY'\n        elif score > -0.2:\n            return 'HOLD'\n        elif score > -0.4:\n            return 'SELL'\n        else:\n            return 'STRONG_SELL'\n    \n    def _calculate_signal_strength(self, results: Dict) -> SignalStrength:\n        \"\"\"\n        Calculate overall signal strength based on timeframe agreement\n        \"\"\"\n        try:\n            # Count agreeing timeframes\n            consensus_signal = results.get('consensus', {}).get('signal', 'HOLD')\n            agreeing_timeframes = 0\n            total_timeframes = 0\n            \n            for tf_key, tf_data in results.items():\n                if tf_key == 'consensus':\n                    continue\n                    \n                total_timeframes += 1\n                tf_signal = tf_data.get('recommendation', 'HOLD')\n                \n                # Check if signals align\n                if self._signals_align(consensus_signal, tf_signal):\n                    agreeing_timeframes += 1\n            \n            if total_timeframes == 0:\n                return SignalStrength.VERY_WEAK\n            \n            agreement_ratio = agreeing_timeframes / total_timeframes\n            \n            if agreement_ratio >= 0.8:\n                return SignalStrength.VERY_STRONG\n            elif agreement_ratio >= 0.6:\n                return SignalStrength.STRONG\n            elif agreement_ratio >= 0.4:\n                return SignalStrength.MODERATE\n            elif agreement_ratio >= 0.2:\n                return SignalStrength.WEAK\n            else:\n                return SignalStrength.VERY_WEAK\n                \n        except Exception as e:\n            logger.error(f\"Error calculating signal strength: {e}\")\n            return SignalStrength.VERY_WEAK\n    \n    def _signals_align(self, signal1: str, signal2: str) -> bool:\n        \"\"\"\n        Check if two signals are aligned\n        \"\"\"\n        buy_signals = ['BUY', 'STRONG_BUY']\n        sell_signals = ['SELL', 'STRONG_SELL']\n        hold_signals = ['HOLD']\n        \n        if signal1 in buy_signals and signal2 in buy_signals:\n            return True\n        elif signal1 in sell_signals and signal2 in sell_signals:\n            return True\n        elif signal1 in hold_signals and signal2 in hold_signals:\n            return True\n        else:\n            return False\n    \n    def _calculate_confirmation_level(self, results: Dict) -> float:\n        \"\"\"\n        Calculate confirmation level (0.0 to 1.0)\n        \"\"\"\n        try:\n            signal_scores = []\n            \n            for tf_key, tf_data in results.items():\n                if tf_key == 'consensus':\n                    continue\n                    \n                score = tf_data.get('signal_score', 0)\n                signal_scores.append(abs(score))\n            \n            if not signal_scores:\n                return 0.0\n            \n            # Average absolute signal strength\n            avg_strength = np.mean(signal_scores)\n            return min(1.0, avg_strength)\n            \n        except Exception as e:\n            logger.error(f\"Error calculating confirmation level: {e}\")\n            return 0.0\n    \n    def get_timeframe_summary(self, results: Dict) -> str:\n        \"\"\"\n        Get human-readable summary of multi-timeframe analysis\n        \"\"\"\n        try:\n            consensus = results.get('consensus', {})\n            signal = consensus.get('signal', 'HOLD')\n            strength = consensus.get('strength', SignalStrength.VERY_WEAK)\n            confirmation = consensus.get('confirmation_level', 0.0)\n            \n            summary = f\"Multi-Timeframe Analysis:\\n\"\n            summary += f\"Consensus Signal: {signal}\\n\"\n            summary += f\"Signal Strength: {strength.name}\\n\"\n            summary += f\"Confirmation Level: {confirmation:.1%}\\n\\n\"\n            \n            summary += \"Timeframe Breakdown:\\n\"\n            for tf_key, tf_data in results.items():\n                if tf_key == 'consensus':\n                    continue\n                    \n                tf_signal = tf_data.get('recommendation', 'HOLD')\n                tf_score = tf_data.get('signal_score', 0)\n                summary += f\"  {tf_key}: {tf_signal} (score: {tf_score:+.2f})\\n\"\n            \n            return summary\n            \n        except Exception as e:\n            logger.error(f\"Error creating summary: {e}\")\n            return \"Multi-timeframe analysis unavailable\"\n\n\n# Global instance\n_mtf_analyzer = None\n\ndef get_mtf_analyzer() -> MultiTimeframeAnalyzer:\n    \"\"\"Get the global multi-timeframe analyzer instance\"\"\"\n    global _mtf_analyzer\n    if _mtf_analyzer is None:\n        _mtf_analyzer = MultiTimeframeAnalyzer()\n    return _mtf_analyzer"
+        }
+        
+        self.signal_cache = {}
+        self.trend_cache = {}
+        
+        logger.info("✅ Multi-Timeframe Analyzer initialized")
+    
+    def analyze_all_timeframes(self, symbol: str, data_provider) -> Dict:
+        """
+        Analyze signal across all timeframes and provide weighted consensus
+        """
+        try:
+            results = {}
+            weighted_signals = []
+            
+            for timeframe in self.timeframes:
+                try:
+                    # Get data for this timeframe
+                    data = self._get_timeframe_data(symbol, timeframe, data_provider)
+                    
+                    if data is None or len(data) < 50:
+                        logger.warning(f"Insufficient data for {timeframe.value} analysis")
+                        continue
+                    
+                    # Analyze this timeframe
+                    analysis = self._analyze_single_timeframe(data, timeframe)
+                    results[timeframe.value] = analysis
+                    
+                    # Calculate weighted signal
+                    signal_score = analysis['signal_score']
+                    weight = self.weights[timeframe]
+                    weighted_signals.append(signal_score * weight)
+                    
+                    logger.debug(f"{timeframe.value}: Signal={signal_score:.3f}, Weight={weight}")
+                    
+                except Exception as e:
+                    logger.warning(f"Error analyzing {timeframe.value}: {e}")
+                    continue
+            
+            # Calculate consensus
+            if weighted_signals:
+                consensus_score = sum(weighted_signals)
+                consensus_signal = self._interpret_consensus_score(consensus_score)
+                
+                results['consensus'] = {
+                    'score': consensus_score,
+                    'signal': consensus_signal,
+                    'strength': self._calculate_signal_strength(results),
+                    'confirmation_level': self._calculate_confirmation_level(results)
+                }
+            else:
+                results['consensus'] = {
+                    'score': 0.0,
+                    'signal': 'HOLD',
+                    'strength': SignalStrength.VERY_WEAK,
+                    'confirmation_level': 0.0
+                }
+            
+            logger.info(f"Multi-timeframe analysis completed: {results['consensus']['signal']} (strength: {results['consensus']['strength'].name})")
+            return results
+            
+        except Exception as e:
+            logger.error(f"Error in multi-timeframe analysis: {e}")
+            return {'consensus': {'score': 0.0, 'signal': 'HOLD', 'strength': SignalStrength.VERY_WEAK}}
+    
+    def _get_timeframe_data(self, symbol: str, timeframe: Timeframe, data_provider) -> Optional[pd.DataFrame]:
+        """
+        Get data for specific timeframe
+        """
+        try:
+            # Calculate periods needed based on timeframe
+            periods_map = {
+                Timeframe.M1: 1440,   # 1 day of 1m data
+                Timeframe.M5: 288,    # 1 day of 5m data  
+                Timeframe.M15: 96,    # 1 day of 15m data
+                Timeframe.H1: 168,    # 1 week of 1h data
+                Timeframe.D1: 252     # 1 year of daily data
+            }
+            
+            periods = periods_map.get(timeframe, 100)
+            
+            # Try to get data from provider
+            if hasattr(data_provider, 'get_historical_data'):
+                data = data_provider.get_historical_data(symbol, timeframe.value, periods)
+            else:
+                # Fallback: resample daily data
+                daily_data = data_provider.get_data(symbol)
+                if daily_data is not None:
+                    data = self._resample_data(daily_data, timeframe)
+                else:
+                    return None
+            
+            return data
+            
+        except Exception as e:
+            logger.error(f"Error getting {timeframe.value} data for {symbol}: {e}")
+            return None
+    
+    def _resample_data(self, daily_data: pd.DataFrame, target_timeframe: Timeframe) -> pd.DataFrame:
+        """
+        Resample daily data to target timeframe (limited functionality)
+        """
+        try:
+            if target_timeframe == Timeframe.D1:
+                return daily_data
+            
+            # For intraday timeframes, we can't accurately resample from daily data
+            # Return the daily data as approximation
+            logger.warning(f"Cannot accurately resample daily data to {target_timeframe.value}")
+            return daily_data
+            
+        except Exception as e:
+            logger.error(f"Error resampling data: {e}")
+            return daily_data
+    
+    def _analyze_single_timeframe(self, data: pd.DataFrame, timeframe: Timeframe) -> Dict:
+        """
+        Analyze signals for a single timeframe
+        """
+        try:
+            # Calculate indicators for this timeframe
+            indicators = self._calculate_timeframe_indicators(data)
+            
+            # Analyze trend
+            trend_analysis = self._analyze_trend(data, indicators)
+            
+            # Analyze momentum
+            momentum_analysis = self._analyze_momentum(indicators)
+            
+            # Analyze volume
+            volume_analysis = self._analyze_volume(data)
+            
+            # Calculate support/resistance
+            sr_analysis = self._analyze_support_resistance(data)
+            
+            # Combine signals
+            signals = [
+                trend_analysis['signal_score'],
+                momentum_analysis['signal_score'], 
+                volume_analysis['signal_score'],
+                sr_analysis['signal_score']
+            ]
+            
+            signal_score = np.mean(signals)
+            
+            return {
+                'timeframe': timeframe.value,
+                'signal_score': signal_score,
+                'trend': trend_analysis,
+                'momentum': momentum_analysis,
+                'volume': volume_analysis,
+                'support_resistance': sr_analysis,
+                'indicators': indicators,
+                'recommendation': self._get_recommendation(signal_score)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing {timeframe.value}: {e}")
+            return {
+                'timeframe': timeframe.value,
+                'signal_score': 0.0,
+                'recommendation': 'HOLD'
+            }
+    
+    def _calculate_timeframe_indicators(self, data: pd.DataFrame) -> Dict:
+        """
+        Calculate technical indicators for timeframe analysis
+        """
+        try:
+            close = data['Close']
+            high = data['High']
+            low = data['Low']
+            volume = data.get('Volume', pd.Series([1] * len(data)))
+            
+            indicators = {}
+            
+            # Moving averages
+            indicators['sma_10'] = close.rolling(10).mean()
+            indicators['sma_20'] = close.rolling(20).mean()
+            indicators['sma_50'] = close.rolling(50).mean()
+            indicators['ema_12'] = close.ewm(span=12).mean()
+            indicators['ema_26'] = close.ewm(span=26).mean()
+            
+            # MACD
+            indicators['macd'] = indicators['ema_12'] - indicators['ema_26']
+            indicators['macd_signal'] = indicators['macd'].ewm(span=9).mean()
+            indicators['macd_histogram'] = indicators['macd'] - indicators['macd_signal']
+            
+            # RSI
+            delta = close.diff()
+            gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+            rs = gain / loss
+            indicators['rsi'] = 100 - (100 / (1 + rs))
+            
+            # Bollinger Bands
+            bb_middle = close.rolling(20).mean()
+            bb_std = close.rolling(20).std()
+            indicators['bb_upper'] = bb_middle + (bb_std * 2)
+            indicators['bb_lower'] = bb_middle - (bb_std * 2)
+            indicators['bb_position'] = (close - indicators['bb_lower']) / (indicators['bb_upper'] - indicators['bb_lower'])
+            
+            # Volume indicators
+            indicators['volume_sma'] = volume.rolling(20).mean()
+            indicators['volume_ratio'] = volume / indicators['volume_sma']
+            
+            # Average True Range
+            high_low = high - low
+            high_close = (high - close.shift()).abs()
+            low_close = (low - close.shift()).abs()
+            true_range = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+            indicators['atr'] = true_range.rolling(14).mean()
+            
+            return indicators
+            
+        except Exception as e:
+            logger.error(f"Error calculating indicators: {e}")
+            return {}
+    
+    def _analyze_trend(self, data: pd.DataFrame, indicators: Dict) -> Dict:
+        """
+        Analyze trend strength and direction
+        """
+        try:
+            close = data['Close'].iloc[-1]
+            
+            # Moving average analysis
+            ma_signals = []
+            if 'sma_10' in indicators and not pd.isna(indicators['sma_10'].iloc[-1]):
+                ma_signals.append(1 if close > indicators['sma_10'].iloc[-1] else -1)
+            if 'sma_20' in indicators and not pd.isna(indicators['sma_20'].iloc[-1]):
+                ma_signals.append(1 if close > indicators['sma_20'].iloc[-1] else -1)
+            if 'sma_50' in indicators and not pd.isna(indicators['sma_50'].iloc[-1]):
+                ma_signals.append(1 if close > indicators['sma_50'].iloc[-1] else -1)
+            
+            # MACD trend
+            macd_signal = 0
+            if 'macd' in indicators and 'macd_signal' in indicators:
+                macd = indicators['macd'].iloc[-1]
+                macd_sig = indicators['macd_signal'].iloc[-1]
+                if not (pd.isna(macd) or pd.isna(macd_sig)):
+                    macd_signal = 1 if macd > macd_sig else -1
+            
+            # Combine trend signals
+            all_signals = ma_signals + [macd_signal]
+            trend_score = np.mean(all_signals) if all_signals else 0
+            
+            return {
+                'signal_score': trend_score,
+                'direction': 'BULLISH' if trend_score > 0.2 else 'BEARISH' if trend_score < -0.2 else 'NEUTRAL',
+                'strength': abs(trend_score),
+                'ma_alignment': np.mean(ma_signals) if ma_signals else 0,
+                'macd_signal': macd_signal
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing trend: {e}")
+            return {'signal_score': 0, 'direction': 'NEUTRAL'}
+    
+    def _analyze_momentum(self, indicators: Dict) -> Dict:
+        """
+        Analyze momentum indicators
+        """
+        try:
+            momentum_signals = []
+            
+            # RSI analysis
+            if 'rsi' in indicators and not pd.isna(indicators['rsi'].iloc[-1]):
+                rsi = indicators['rsi'].iloc[-1]
+                if rsi < 30:
+                    momentum_signals.append(1)  # Oversold - bullish
+                elif rsi > 70:
+                    momentum_signals.append(-1)  # Overbought - bearish
+                else:
+                    momentum_signals.append(0)  # Neutral
+            
+            # MACD histogram
+            if 'macd_histogram' in indicators and not pd.isna(indicators['macd_histogram'].iloc[-1]):
+                macd_hist = indicators['macd_histogram'].iloc[-1]
+                momentum_signals.append(1 if macd_hist > 0 else -1)
+            
+            momentum_score = np.mean(momentum_signals) if momentum_signals else 0
+            
+            return {
+                'signal_score': momentum_score,
+                'rsi_level': indicators.get('rsi', pd.Series([50])).iloc[-1],
+                'momentum_strength': abs(momentum_score)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing momentum: {e}")
+            return {'signal_score': 0}
+    
+    def _analyze_volume(self, data: pd.DataFrame) -> Dict:
+        """
+        Analyze volume patterns
+        """
+        try:
+            if 'Volume' not in data.columns:
+                return {'signal_score': 0, 'volume_trend': 'NEUTRAL'}
+            
+            volume = data['Volume']
+            volume_sma = volume.rolling(20).mean()
+            
+            current_volume = volume.iloc[-1]
+            avg_volume = volume_sma.iloc[-1]
+            
+            if pd.isna(avg_volume) or avg_volume == 0:
+                return {'signal_score': 0, 'volume_trend': 'NEUTRAL'}
+            
+            volume_ratio = current_volume / avg_volume
+            
+            # Volume signal interpretation
+            if volume_ratio > 1.5:
+                volume_signal = 0.5  # High volume can support moves
+            elif volume_ratio < 0.5:
+                volume_signal = -0.2  # Low volume reduces conviction
+            else:
+                volume_signal = 0
+            
+            return {
+                'signal_score': volume_signal,
+                'volume_ratio': volume_ratio,
+                'volume_trend': 'HIGH' if volume_ratio > 1.5 else 'LOW' if volume_ratio < 0.5 else 'NORMAL'
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing volume: {e}")
+            return {'signal_score': 0, 'volume_trend': 'NEUTRAL'}
+    
+    def _analyze_support_resistance(self, data: pd.DataFrame) -> Dict:
+        """
+        Analyze support and resistance levels
+        """
+        try:
+            high = data['High']
+            low = data['Low']
+            close = data['Close'].iloc[-1]
+            
+            # Calculate recent highs and lows
+            resistance = high.rolling(20).max().iloc[-1]
+            support = low.rolling(20).min().iloc[-1]
+            
+            # Distance from support/resistance
+            if resistance != support:
+                position = (close - support) / (resistance - support)
+            else:
+                position = 0.5
+            
+            # Signal based on position
+            if position < 0.2:
+                sr_signal = 0.3  # Near support - potential bounce
+            elif position > 0.8:
+                sr_signal = -0.3  # Near resistance - potential rejection
+            else:
+                sr_signal = 0  # In the middle
+            
+            return {
+                'signal_score': sr_signal,
+                'support_level': support,
+                'resistance_level': resistance,
+                'position_in_range': position
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing support/resistance: {e}")
+            return {'signal_score': 0}
+    
+    def _get_recommendation(self, signal_score: float) -> str:
+        """
+        Convert signal score to recommendation
+        """
+        if signal_score > 0.3:
+            return 'STRONG_BUY'
+        elif signal_score > 0.1:
+            return 'BUY'
+        elif signal_score > -0.1:
+            return 'HOLD'
+        elif signal_score > -0.3:
+            return 'SELL'
+        else:
+            return 'STRONG_SELL'
+    
+    def _interpret_consensus_score(self, score: float) -> str:
+        """
+        Interpret consensus score into trading signal
+        """
+        if score > 0.4:
+            return 'STRONG_BUY'
+        elif score > 0.2:
+            return 'BUY'
+        elif score > -0.2:
+            return 'HOLD'
+        elif score > -0.4:
+            return 'SELL'
+        else:
+            return 'STRONG_SELL'
+    
+    def _calculate_signal_strength(self, results: Dict) -> SignalStrength:
+        """
+        Calculate overall signal strength based on timeframe agreement
+        """
+        try:
+            # Count agreeing timeframes
+            consensus_signal = results.get('consensus', {}).get('signal', 'HOLD')
+            agreeing_timeframes = 0
+            total_timeframes = 0
+            
+            for tf_key, tf_data in results.items():
+                if tf_key == 'consensus':
+                    continue
+                    
+                total_timeframes += 1
+                tf_signal = tf_data.get('recommendation', 'HOLD')
+                
+                # Check if signals align
+                if self._signals_align(consensus_signal, tf_signal):
+                    agreeing_timeframes += 1
+            
+            if total_timeframes == 0:
+                return SignalStrength.VERY_WEAK
+            
+            agreement_ratio = agreeing_timeframes / total_timeframes
+            
+            if agreement_ratio >= 0.8:
+                return SignalStrength.VERY_STRONG
+            elif agreement_ratio >= 0.6:
+                return SignalStrength.STRONG
+            elif agreement_ratio >= 0.4:
+                return SignalStrength.MODERATE
+            elif agreement_ratio >= 0.2:
+                return SignalStrength.WEAK
+            else:
+                return SignalStrength.VERY_WEAK
+                
+        except Exception as e:
+            logger.error(f"Error calculating signal strength: {e}")
+            return SignalStrength.VERY_WEAK
+    
+    def _signals_align(self, signal1: str, signal2: str) -> bool:
+        """
+        Check if two signals are aligned
+        """
+        buy_signals = ['BUY', 'STRONG_BUY']
+        sell_signals = ['SELL', 'STRONG_SELL']
+        hold_signals = ['HOLD']
+        
+        if signal1 in buy_signals and signal2 in buy_signals:
+            return True
+        elif signal1 in sell_signals and signal2 in sell_signals:
+            return True
+        elif signal1 in hold_signals and signal2 in hold_signals:
+            return True
+        else:
+            return False
+    
+    def _calculate_confirmation_level(self, results: Dict) -> float:
+        """
+        Calculate confirmation level (0.0 to 1.0)
+        """
+        try:
+            signal_scores = []
+            
+            for tf_key, tf_data in results.items():
+                if tf_key == 'consensus':
+                    continue
+                    
+                score = tf_data.get('signal_score', 0)
+                signal_scores.append(abs(score))
+            
+            if not signal_scores:
+                return 0.0
+            
+            # Average absolute signal strength
+            avg_strength = np.mean(signal_scores)
+            return min(1.0, avg_strength)
+            
+        except Exception as e:
+            logger.error(f"Error calculating confirmation level: {e}")
+            return 0.0
+    
+    def get_timeframe_summary(self, results: Dict) -> str:
+        """
+        Get human-readable summary of multi-timeframe analysis
+        """
+        try:
+            consensus = results.get('consensus', {})
+            signal = consensus.get('signal', 'HOLD')
+            strength = consensus.get('strength', SignalStrength.VERY_WEAK)
+            confirmation = consensus.get('confirmation_level', 0.0)
+            
+            summary = f"Multi-Timeframe Analysis:\n"
+            summary += f"Consensus Signal: {signal}\n"
+            summary += f"Signal Strength: {strength.name}\n"
+            summary += f"Confirmation Level: {confirmation:.1%}\n\n"
+            
+            summary += "Timeframe Breakdown:\n"
+            for tf_key, tf_data in results.items():
+                if tf_key == 'consensus':
+                    continue
+                    
+                tf_signal = tf_data.get('recommendation', 'HOLD')
+                tf_score = tf_data.get('signal_score', 0)
+                summary += f"  {tf_key}: {tf_signal} (score: {tf_score:+.2f})\n"
+            
+            return summary
+            
+        except Exception as e:
+            logger.error(f"Error creating summary: {e}")
+            return "Multi-timeframe analysis unavailable"
+
+
+# Global instance
+_mtf_analyzer = None
+
+def get_mtf_analyzer() -> MultiTimeframeAnalyzer:
+    """Get the global multi-timeframe analyzer instance"""
+    global _mtf_analyzer
+    if _mtf_analyzer is None:
+        _mtf_analyzer = MultiTimeframeAnalyzer()
+    return _mtf_analyzer

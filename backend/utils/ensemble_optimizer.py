@@ -13,6 +13,9 @@ from sklearn.ensemble import VotingRegressor, StackingRegressor
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_squared_error, r2_score
 
+# Set up logger first
+logger = logging.getLogger(__name__)
+
 # Import monitoring
 try:
     from utils.monitoring import log_model_performance
@@ -20,9 +23,6 @@ try:
 except ImportError:
     logger.warning("Monitoring not available for Ensemble Optimizer")
     MONITORING_AVAILABLE = False
-
-logger = logging.getLogger(__name__)
-
 
 class EnsembleMethod(Enum):
     """Ensemble combination methods"""

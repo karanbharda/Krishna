@@ -16,6 +16,9 @@ from .professional_buy_logic import (
 from .professional_sell_logic import MarketTrend, MarketContext
 from .market_context_analyzer import MarketContextAnalyzer
 
+# PRODUCTION ENHANCEMENT: Import signal tracker
+from utils.signal_tracker import get_signal_tracker
+
 logger = logging.getLogger(__name__)
 
 class ProfessionalBuyIntegration:
@@ -28,6 +31,9 @@ class ProfessionalBuyIntegration:
         # Initialize professional components
         self.buy_logic = ProfessionalBuyLogic(config)
         self.market_analyzer = MarketContextAnalyzer(config)
+        
+        # PRODUCTION ENHANCEMENT: Initialize signal tracker
+        self.signal_tracker = get_signal_tracker()
         
         # Integration settings
         self.enable_professional_logic = config.get("enable_professional_buy_logic", True)
@@ -273,6 +279,9 @@ class ProfessionalBuyIntegration:
     def _convert_to_legacy_format(self, buy_decision: BuyDecision, stock_metrics: StockMetrics, portfolio_context: Dict = None) -> Dict:
         """Convert professional buy decision to legacy format"""
         
+        # PRODUCTION ENHANCEMENT: Track signals for continuous learning
+        self._track_signals(buy_decision, stock_metrics)
+        
         if not buy_decision.should_buy:
             return {
                 "action": "hold",
@@ -354,3 +363,34 @@ class ProfessionalBuyIntegration:
             "reason": "error",
             "professional_reasoning": f"Error: {error_msg}"
         }
+    
+    def _track_signals(self, buy_decision: BuyDecision, stock_metrics: StockMetrics):
+        """
+        PRODUCTION ENHANCEMENT: Track signals for continuous learning
+        """
+        try:
+            # Record each triggered signal
+            for signal in buy_decision.signals_triggered:
+                if signal.triggered:
+                    signal_data = {
+                        'symbol': '',  # Will be filled in by calling function
+                        'signal_type': signal.category.lower() if signal.category else 'unknown',
+                        'signal_name': signal.name,
+                        'signal_strength': signal.strength,
+                        'signal_confidence': signal.confidence,
+                        'market_regime': 'unknown',  # Would be filled with actual regime
+                        'liquidity_score': 0.5,  # Default score
+                        'volatility_regime': 'normal',  # Would be filled with actual regime
+                        'additional_metrics': {
+                            'reasoning': signal.reasoning,
+                            'weight': signal.weight
+                        }
+                    }
+                    
+                    # Record the signal
+                    self.signal_tracker.record_signal(signal_data)
+            
+            logger.debug(f"Tracked {len(buy_decision.signals_triggered)} signals for continuous learning")
+            
+        except Exception as e:
+            logger.warning(f"Error tracking signals: {e}")

@@ -175,6 +175,9 @@ class LiveTradingExecutor:
                 # Update current portfolio reference
                 self.portfolio_manager.current_portfolio = portfolio
                 
+                # NEW: Update data service watchlist with current holdings
+                self._update_data_service_watchlist(session, portfolio)
+                
                 logger.debug(f"Portfolio synced - Cash: Rs.{available_cash:.2f}, Holdings: Rs.{total_holdings_value:.2f}")
                 self.last_sync_time = time.time()
                 return True
@@ -190,6 +193,27 @@ class LiveTradingExecutor:
         except Exception as e:
             logger.error(f"Failed to sync portfolio with Dhan: {e}")
             return False
+    
+    def _update_data_service_watchlist(self, session, portfolio):
+        """Update data service watchlist with current portfolio holdings"""
+        try:
+            # Get current holdings from database
+            holdings = session.query(Holding).filter_by(portfolio_id=portfolio.id).all()
+            holding_symbols = [holding.ticker for holding in holdings]
+            
+            # Import data service client
+            from data_service_client import get_data_client
+            data_client = get_data_client()
+            
+            # Update watchlist with current holdings
+            if holding_symbols:
+                data_client.update_watchlist(holding_symbols)
+                logger.info(f"Updated data service watchlist with {len(holding_symbols)} symbols")
+            else:
+                logger.info("No holdings to update in data service watchlist")
+                
+        except Exception as e:
+            logger.error(f"Failed to update data service watchlist: {e}")
     
     def get_real_time_price(self, symbol: str) -> float:
         """Get real-time price using Fyers API for reliable data"""

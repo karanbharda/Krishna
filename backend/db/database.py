@@ -1,7 +1,7 @@
 """
 Database configuration and initialization for LangGraph SQLite checkpoint system
 """
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, JSON, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, JSON, ForeignKey, Boolean, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
@@ -54,6 +54,28 @@ class Trade(Base):
     take_profit = Column(Float)
     trade_metadata = Column(JSON)  # For additional trade data
     portfolio = relationship("Portfolio", back_populates="trades")
+
+class SignalPerformance(Base):
+    """
+    PRODUCTION ENHANCEMENT: Track signal performance for continuous learning
+    """
+    __tablename__ = 'signal_performance'
+    
+    id = Column(Integer, primary_key=True)
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+    symbol = Column(String, index=True)
+    signal_type = Column(String, index=True)  # e.g., 'technical', 'ml', 'sentiment'
+    signal_name = Column(String)  # e.g., 'rsi_oversold', 'ml_bullish'
+    signal_strength = Column(Float)  # 0.0 to 1.0
+    signal_confidence = Column(Float)  # 0.0 to 1.0
+    market_regime = Column(String)  # e.g., 'bull', 'bear', 'sideways'
+    actual_outcome = Column(Float)  # Actual price movement after signal
+    outcome_duration = Column(Integer)  # Days until outcome measurement
+    is_correct = Column(Boolean)  # Whether signal was correct
+    false_signal_reason = Column(String)  # Reason for false signal if applicable
+    liquidity_score = Column(Float)  # Liquidity at time of signal
+    volatility_regime = Column(String)  # e.g., 'low', 'normal', 'high'
+    additional_metrics = Column(JSON)  # Additional performance metrics
 
 def _default_db_uri() -> str:
     # Resolve to project root /data/trading.db regardless of working dir

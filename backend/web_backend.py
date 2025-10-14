@@ -175,10 +175,7 @@ except ImportError as e:
 
     def validate_chat_input(message): return message.strip()
 
-    class PerformanceMonitor:
-        def __init__(self): pass
-        def record_request(self, *args, **kwargs): pass
-        def get_stats(self): return {"status": "fallback"}
+# Remove the fallback PerformanceMonitor class since it's now properly imported from utils
 
 # Initialize performance monitor
 performance_monitor = PerformanceMonitor()
@@ -827,6 +824,24 @@ class WebTradingBot:
             # Portfolio might not be directly accessible, skip callback registration
             logger.warning(f"Could not register portfolio callback: {e}")
             pass
+
+    def refresh_professional_integrations(self):
+        """Refresh professional buy/sell integrations with updated configuration"""
+        try:
+            logger.info("Refreshing professional buy/sell integrations with updated configuration")
+            
+            # Refresh the professional buy integration if it exists
+            if hasattr(self.trading_bot, 'professional_buy_integration') and self.trading_bot.professional_buy_integration:
+                self.trading_bot.professional_buy_integration.refresh_dynamic_config()
+                logger.info("Professional buy integration refreshed")
+            
+            # Refresh the professional sell integration if it exists
+            if hasattr(self.trading_bot, 'professional_sell_integration') and self.trading_bot.professional_sell_integration:
+                self.trading_bot.professional_sell_integration.refresh_dynamic_config()
+                logger.info("Professional sell integration refreshed")
+                
+        except Exception as e:
+            logger.error(f"Error refreshing professional integrations: {e}")
 
     def _initialize_production_components(self):
         """Priority 3: Initialize production-level components with dependency injection"""
@@ -1941,13 +1956,16 @@ def initialize_bot():
                 "max_trade_limit": saved_config.get("max_trade_limit", config["max_trade_limit"])
             })
             logger.info(f"Merged saved config: Risk Level={config['riskLevel']}, "
-                       f"Stop Loss={config['stop_loss_pct']*100}%, "
-                       f"Max Allocation={config['max_capital_per_trade']*100}%")
+                       f"Stop Loss={config['stop_loss_pct']*100:.1f}%, "
+                       f"Max Allocation={config['max_capital_per_trade']*100:.1f}%")
         
         trading_bot = WebTradingBot(config)
 
         # Apply risk level settings from loaded config
         apply_risk_level_settings(trading_bot, config["riskLevel"])
+        
+        # Set the trading bot reference in the risk engine
+        risk_engine.set_trading_bot(trading_bot)
 
         logger.info("Trading bot initialized successfully")
         
