@@ -10,10 +10,12 @@ from .trading_agent import TradingAgent
 from .explanation_agent import ExplanationAgent
 from .risk_agent import RiskAgent
 from .portfolio_agent import PortfolioAgent
+from .insight_agent import InsightAgent
 
 __all__ = [
     "TradingAgent",
     "ExplanationAgent", 
     "RiskAgent",
-    "PortfolioAgent"
+    "PortfolioAgent",
+    "InsightAgent"
 ]

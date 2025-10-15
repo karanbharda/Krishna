@@ -265,6 +265,19 @@ class MCPChatRequest(BaseModel):
     message: str
     context: Optional[Dict[str, Any]] = None
 
+class PredictionRequest(BaseModel):
+    symbols: Optional[List[str]] = []
+    models: Optional[List[str]] = ["rl"]
+    horizon: Optional[str] = "day"
+    include_explanations: Optional[bool] = True
+    natural_query: Optional[str] = ""
+
+class ScanRequest(BaseModel):
+    filters: Optional[Dict[str, Any]] = {}
+    sort_by: Optional[str] = "score"
+    limit: Optional[int] = 50
+    natural_query: Optional[str] = ""
+
 class PortfolioMetrics(BaseModel):
     total_value: float
     cash: float
@@ -3028,11 +3041,13 @@ async def mcp_chat(request: MCPChatRequest):
             """
 
             async with llama_engine:
-                result = await llama_engine._make_llama_request(general_prompt)
+                response = await llama_engine.generate_response(general_prompt)
 
             return {
-                "response": result.get("response", "I'm here to help with trading questions."),
-                "context": "general",
+                "response": response.content,
+                "reasoning": response.reasoning,
+                "confidence": response.confidence,
+                "context": "general_trading",
                 "timestamp": datetime.now().isoformat()
             }
 
@@ -3040,6 +3055,105 @@ async def mcp_chat(request: MCPChatRequest):
         raise
     except Exception as e:
         logger.error(f"MCP chat error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/mcp/predict")
+async def mcp_predict(request: PredictionRequest):
+    """MCP-powered prediction ranking with natural language interpretation"""
+    try:
+        if not MCP_AVAILABLE:
+            raise HTTPException(status_code=503, detail="MCP server not available")
+
+        # Initialize MCP components if needed
+        await _ensure_mcp_initialized()
+
+        # Generate a session ID for this request
+        session_id = str(int(time.time() * 1000000))
+
+        # Prepare arguments for the prediction tool
+        arguments = {
+            "symbols": request.symbols or [],
+            "models": request.models or ["rl"],
+            "horizon": request.horizon or "day",
+            "include_explanations": request.include_explanations,
+            "natural_query": request.natural_query or ""
+        }
+
+        # Call the prediction tool directly
+        from mcp_server.tools.prediction_tool import PredictionTool
+        prediction_tool = PredictionTool({
+            "tool_id": "prediction_tool",
+            "ollama_enabled": True,
+            "ollama_host": "http://localhost:11434",
+            "ollama_model": "llama3.1:8b"
+        })
+
+        result = await prediction_tool.rank_predictions(arguments, session_id)
+
+        if result.status == "SUCCESS":
+            return {
+                "success": True,
+                "data": result.data,
+                "reasoning": result.reasoning,
+                "confidence": result.confidence,
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            raise HTTPException(status_code=500, detail=result.error)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP prediction error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/mcp/scan")
+async def mcp_scan(request: ScanRequest):
+    """MCP-powered stock scanning with filtered shortlists"""
+    try:
+        if not MCP_AVAILABLE:
+            raise HTTPException(status_code=503, detail="MCP server not available")
+
+        # Initialize MCP components if needed
+        await _ensure_mcp_initialized()
+
+        # Generate a session ID for this request
+        session_id = str(int(time.time() * 1000000))
+
+        # Prepare arguments for the scan tool
+        arguments = {
+            "filters": request.filters or {},
+            "sort_by": request.sort_by or "score",
+            "limit": request.limit or 50,
+            "natural_query": request.natural_query or ""
+        }
+
+        # Call the scan tool directly
+        from mcp_server.tools.scan_tool import ScanTool
+        scan_tool = ScanTool({
+            "tool_id": "scan_tool",
+            "ollama_enabled": True,
+            "ollama_host": "http://localhost:11434",
+            "ollama_model": "llama3.1:8b"
+        })
+
+        result = await scan_tool.scan_all(arguments, session_id)
+
+        if result.status == "SUCCESS":
+            return {
+                "success": True,
+                "data": result.data,
+                "reasoning": result.reasoning,
+                "confidence": result.confidence,
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            raise HTTPException(status_code=500, detail=result.error)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP scan error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/mcp/status")
@@ -3263,6 +3377,88 @@ async def _ensure_mcp_initialized():
             }
             mcp_trading_agent = TradingAgent(agent_config)
             await mcp_trading_agent.initialize()
+
+        # Register MCP tools
+        if mcp_server:
+            # Import tools
+            from mcp_server.tools.prediction_tool import PredictionTool
+            from mcp_server.tools.scan_tool import ScanTool
+            
+            # Initialize tools
+            prediction_tool = PredictionTool({
+                "tool_id": "prediction_tool",
+                "ollama_enabled": True,
+                "ollama_host": "http://localhost:11434",
+                "ollama_model": "llama3.1:8b"
+            })
+            
+            scan_tool = ScanTool({
+                "tool_id": "scan_tool",
+                "ollama_enabled": True,
+                "ollama_host": "http://localhost:11434",
+                "ollama_model": "llama3.1:8b"
+            })
+            
+            # Register prediction tool
+            mcp_server.register_tool(
+                name="predict",
+                function=prediction_tool.rank_predictions,
+                description="Rank predictions from RL agents and other models",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "symbols": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "models": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "horizon": {"type": "string"},
+                        "include_explanations": {"type": "boolean"},
+                        "natural_query": {"type": "string"}
+                    },
+                    "required": []
+                }
+            )
+            
+            # Register scan tool
+            mcp_server.register_tool(
+                name="scan_all",
+                function=scan_tool.scan_all,
+                description="Generate filtered shortlists based on user criteria",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "filters": {
+                            "type": "object",
+                            "properties": {
+                                "min_price": {"type": "number"},
+                                "max_price": {"type": "number"},
+                                "min_volume": {"type": "number"},
+                                "min_score": {"type": "number"},
+                                "sectors": {
+                                    "type": "array",
+                                    "items": {"type": "string"}
+                                },
+                                "market_caps": {
+                                    "type": "array",
+                                    "items": {"type": "string"}
+                                },
+                                "risk_levels": {
+                                    "type": "array",
+                                    "items": {"type": "string"}
+                                }
+                            }
+                        },
+                        "sort_by": {"type": "string"},
+                        "limit": {"type": "number"},
+                        "natural_query": {"type": "string"}
+                    },
+                    "required": []
+                }
+            )
 
         logger.info("MCP components initialized successfully")
 

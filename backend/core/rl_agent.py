@@ -215,9 +215,19 @@ class RLFilteringAgent:
                 # Risk compliance checks
                 is_risk_compliant = (
                     score > 0.5 and  # Minimum confidence
-                    price > risk_limits['stop_loss_amount'] and
-                    price < risk_limits['capital_at_risk'] * 10  # Max price check
+                    price > 10 and  # Minimum price check
+                    price < risk_limits['capital_at_risk'] * 100  # Max price check
                 )
+                
+                # Log why stocks are not passing risk filter for debugging
+                if score <= 0.5:
+                    logger.debug(f"{symbol} failed risk filter: score {score} <= 0.5")
+                elif price <= 10:
+                    logger.debug(f"{symbol} failed risk filter: price {price} <= 10")
+                elif price >= risk_limits['capital_at_risk'] * 100:
+                    logger.debug(f"{symbol} failed risk filter: price {price} >= {risk_limits['capital_at_risk'] * 100}")
+                else:
+                    logger.debug(f"{symbol} passed risk filter with score {score}")
                 
                 if is_risk_compliant:
                     self.filtering_stats["risk_compliant"] += 1
@@ -233,6 +243,8 @@ class RLFilteringAgent:
                         "risk_limits": risk_limits,
                         "horizon": horizon
                     })
+                else:
+                    logger.debug(f"{symbol} did not pass risk compliance with score {score}, price {price}")
         
         except Exception as e:
             logger.error(f"Error processing batch: {e}")
@@ -242,12 +254,14 @@ class RLFilteringAgent:
                     features = self._extract_features(data, horizon)
                     score = self._get_rl_score_cpu(features)
                     
-                    if score > 0.5:
+                    # Even in fallback, apply basic risk compliance
+                    price = data.get('price', 0)
+                    if score > 0.5 and price > 10:
                         batch_results.append({
                             "symbol": symbol,
                             "score": score,
                             "risk_compliant": True,
-                            "price": data.get('price', 0),
+                            "price": price,
                             "horizon": horizon
                         })
                 except Exception as e2:

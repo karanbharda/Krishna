@@ -9,11 +9,15 @@ from .market_analysis_tool import MarketAnalysisTool
 from .portfolio_tool import PortfolioTool
 from .risk_management_tool import RiskManagementTool
 from .sentiment_tool import SentimentTool
+from .prediction_tool import PredictionTool
+from .scan_tool import ScanTool
 
 __all__ = [
     "ExecutionTool",
     "MarketAnalysisTool",
     "PortfolioTool",
     "RiskManagementTool",
-    "SentimentTool"
+    "SentimentTool",
+    "PredictionTool",
+    "ScanTool"
 ]

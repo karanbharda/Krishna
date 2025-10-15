@@ -28,6 +28,7 @@ logger.info("MCP Trading Server components loaded successfully")
 # Import agents - NO FALLBACKS
 from .agents.trading_agent import TradingAgent
 from .agents.explanation_agent import ExplanationAgent
+from .agents.insight_agent import InsightAgent
 TRADING_AGENT_AVAILABLE = True
 EXPLANATION_AGENT_AVAILABLE = True
 logger.info("All MCP agents loaded successfully")
@@ -36,6 +37,7 @@ __all__ = [
     "MCPTradingServer",
     "TradingAgent",
     "ExplanationAgent",
+    "InsightAgent",
     "MCPToolResult",
     "MCPToolStatus",
     "MCP_SERVER_AVAILABLE"
