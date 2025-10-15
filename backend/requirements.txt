@@ -42,6 +42,7 @@ pandas-market-calendars>=4.3.0
 tenacity>=8.2.0
 pytz>=2023.3
 apscheduler>=3.10.0
+redis>=4.5.0
 
 # LangChain for AI Chat
 langchain>=0.0.300

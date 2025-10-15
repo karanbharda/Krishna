@@ -3185,6 +3185,57 @@ class Stock:
             gnews_sentiment = self.gnews_sentiment(ticker)
             reddit_sentiment = self.reddit_sentiment(ticker)
             google_sentiment = self.google_news_sentiment(ticker)
+            
+            # NEW: Get sentiment from the updated SentimentTool with Indian news
+            try:
+                # Import SentimentTool
+                from backend.mcp_server.tools.sentiment_tool import SentimentTool
+                
+                # Initialize SentimentTool with Indian news support
+                sentiment_tool = SentimentTool({
+                    "tool_id": "testindia_sentiment_tool",
+                    "sentiment_sources": ["news", "social", "market", "indian_news"]
+                })
+                
+                # Get market regime for multiplier
+                market_context_multiplier = self.get_market_context_multiplier()
+                
+                # Analyze sentiment using the new tool
+                import asyncio
+                # Create a new event loop for the async call
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                sentiment_result = loop.run_until_complete(
+                    sentiment_tool.analyze_sentiment({
+                        "symbol": ticker,
+                        "sources": ["news", "social", "market", "indian_news"],
+                        "lookback_days": 7,
+                        "include_news_items": False
+                    }, "testindia_session")
+                )
+                
+                if sentiment_result.status == "SUCCESS":
+                    # Extract Indian news sentiment
+                    sentiment_data = sentiment_result.data
+                    indian_news_sentiment_data = sentiment_data.get("sentiment_breakdown", {}).get("indian_news", {})
+                    
+                    # Convert to expected format
+                    indian_news_sentiment = {
+                        "positive": indian_news_sentiment_data.get("positive", 0),
+                        "negative": indian_news_sentiment_data.get("negative", 0),
+                        "neutral": indian_news_sentiment_data.get("neutral", 0)
+                    }
+                    
+                    # Apply regime multiplier
+                    total_indian = sum(indian_news_sentiment.values())
+                    if total_indian > 0:
+                        for key in indian_news_sentiment:
+                            indian_news_sentiment[key] *= market_context_multiplier
+                else:
+                    indian_news_sentiment = {"positive": 0, "negative": 0, "neutral": 0}
+            except Exception as e:
+                logger.warning(f"Error using SentimentTool for Indian news: {e}")
+                indian_news_sentiment = {"positive": 0, "negative": 0, "neutral": 0}
 
             # ENHANCED: Dynamic weighted sentiment aggregation based on market impact
             # Higher weights for sources with better global and financial coverage
@@ -3192,7 +3243,8 @@ class Stock:
                 "newsapi": 3.0,      # Highest weight - comprehensive global financial coverage
                 "gnews": 2.5,        # High weight - good global and Indian coverage
                 "google_news": 2.0,  # High weight - broad market coverage
-                "reddit": 1.2        # Medium weight - social sentiment indicator
+                "reddit": 1.2,       # Medium weight - social sentiment indicator
+                "indian_news": 2.9   # NEW: High weight for Indian news sources
             }
 
             # Add market context weighting based on current market conditions
@@ -3205,31 +3257,37 @@ class Stock:
                 newsapi_sentiment["positive"] * weights["newsapi"] +
                 gnews_sentiment["positive"] * weights["gnews"] +
                 reddit_sentiment["positive"] * weights["reddit"] +
-                google_sentiment["positive"] * weights["google_news"]
+                google_sentiment["positive"] * weights["google_news"] +
+                indian_news_sentiment["positive"] * weights["indian_news"]
             )
 
             weighted_negative = (
                 newsapi_sentiment["negative"] * weights["newsapi"] +
                 gnews_sentiment["negative"] * weights["gnews"] +
                 reddit_sentiment["negative"] * weights["reddit"] +
-                google_sentiment["negative"] * weights["google_news"]
+                google_sentiment["negative"] * weights["google_news"] +
+                indian_news_sentiment["negative"] * weights["indian_news"]
             )
 
             weighted_neutral = (
                 newsapi_sentiment["neutral"] * weights["newsapi"] +
                 gnews_sentiment["neutral"] * weights["gnews"] +
                 reddit_sentiment["neutral"] * weights["reddit"] +
-                google_sentiment["neutral"] * weights["google_news"]
+                google_sentiment["neutral"] * weights["google_news"] +
+                indian_news_sentiment["neutral"] * weights["indian_news"]
             )
 
             # Traditional aggregation (for backward compatibility)
             aggregated = {
                 "positive": (newsapi_sentiment["positive"] + gnews_sentiment["positive"] +
-                            reddit_sentiment["positive"] + google_sentiment["positive"]),
+                            reddit_sentiment["positive"] + google_sentiment["positive"] +
+                            indian_news_sentiment["positive"]),
                 "negative": (newsapi_sentiment["negative"] + gnews_sentiment["negative"] +
-                            reddit_sentiment["negative"] + google_sentiment["negative"]),
+                            reddit_sentiment["negative"] + google_sentiment["negative"] +
+                            indian_news_sentiment["negative"]),
                 "neutral": (newsapi_sentiment["neutral"] + gnews_sentiment["neutral"] +
-                           reddit_sentiment["neutral"] + google_sentiment["neutral"])
+                           reddit_sentiment["neutral"] + google_sentiment["neutral"] +
+                           indian_news_sentiment["neutral"])
             }
 
             # NEW: Comprehensive weighted aggregation with market context
@@ -3258,9 +3316,10 @@ class Stock:
                 "market_context_applied": market_context_multiplier,
                 "sources_coverage": {
                     "global_financial": "newsapi" in weights,
-                    "indian_focus": "gnews" in weights,
+                    "indian_focus": "gnews" in weights or "indian_news" in weights,
                     "broad_market": "google_news" in weights,
-                    "social_sentiment": "reddit" in weights
+                    "social_sentiment": "reddit" in weights,
+                    "indian_news": "indian_news" in weights
                 }
             }
 
@@ -3269,6 +3328,7 @@ class Stock:
                 "gnews": gnews_sentiment,
                 "reddit": reddit_sentiment,
                 "google_news": google_sentiment,
+                "indian_news": indian_news_sentiment,  # NEW: Indian news sentiment
                 "aggregated": aggregated,
                 "weighted_aggregated": weighted_aggregated,
                 "comprehensive_analysis": comprehensive_analysis  # NEW: Detailed market sentiment analysis
@@ -3280,8 +3340,9 @@ class Stock:
                 "gnews": {"positive": 0, "negative": 0, "neutral": 0},
                 "reddit": {"positive": 0, "negative": 0, "neutral": 0},
                 "google_news": {"positive": 0, "negative": 0, "neutral": 0},
+                "indian_news": {"positive": 0, "negative": 0, "neutral": 0},  # NEW: Indian news sentiment
                 "aggregated": {"positive": 0, "negative": 0, "neutral": 0},
-                "weighted_aggregated": {"positive": 0, "negative": 0, "neutral": 0, "total_weight": 8.7},
+                "weighted_aggregated": {"positive": 0, "negative": 0, "neutral": 0, "total_weight": 11.6},
                 "comprehensive_analysis": {
                     "sentiment_strength": {"bullish": 0, "bearish": 0, "neutral": 0},
                     "confidence_score": 0.0,
@@ -3290,7 +3351,8 @@ class Stock:
                         "global_financial": False,
                         "indian_focus": False,
                         "broad_market": False,
-                        "social_sentiment": False
+                        "social_sentiment": False,
+                        "indian_news": False
                     }
                 }
             }
@@ -4232,23 +4294,41 @@ class Stock:
 
             ticker = ticker.strip().upper()
             logger.info(f"Fetching and analyzing data for {ticker}...")
+            
+            # Track errors for decision making
+            error_messages = []
+            error_count = 0
 
             # Use Fyers for historical data (1y) - SAME LOGIC
             history = get_stock_data_fyers_or_yf(ticker, period="1y")
 
             if history is None or history.empty:
-                logger.error(f"No price data found for {ticker}.")
-                return {
-                    "success": False,
-                    "message": f"Unable to fetch data for {ticker}: No price data found"
-                }
+                error_msg = f"No price data found for {ticker}."
+                logger.error(error_msg)
+                error_messages.append(error_msg)
+                error_count += 1
+                
+                # If we can't get price data, don't proceed with analysis
+                if self._should_skip_analysis(ticker, error_messages):
+                    return {
+                        "success": False,
+                        "message": f"Skipping analysis for {ticker}: {error_msg}",
+                        "error_count": error_count,
+                        "errors": error_messages
+                    }
+                else:
+                    # Try to continue with minimal data
+                    logger.info(f"Continuing analysis for {ticker} with limited data")
 
             # Get stock info for additional data (still use yfinance for company info)
             try:
                 stock = yf.Ticker(ticker)
                 stock_info = stock.info
             except Exception as e:
-                logger.warning(f"Could not fetch stock info for {ticker}: {e}")
+                error_msg = f"Could not fetch stock info for {ticker}: {e}"
+                logger.warning(error_msg)
+                error_messages.append(error_msg)
+                error_count += 1
                 stock_info = {}
             current_price = float(history["Close"].iloc[-1])
             exchange_rates = self.fetch_exchange_rates()
@@ -4326,7 +4406,20 @@ class Stock:
                 momentum = (current_price - history["Close"].iloc[-30]) / history["Close"].iloc[-30]
 
             logger.info(f"Fetching sentiment for {ticker}...")
-            sentiment_data = self.fetch_combined_sentiment(ticker)
+            try:
+                sentiment_data = self.fetch_combined_sentiment(ticker)
+                if not sentiment_data or len(sentiment_data) == 0:
+                    error_msg = f"No sentiment data available for {ticker}"
+                    logger.warning(error_msg)
+                    error_messages.append(error_msg)
+                    error_count += 1
+                    sentiment_data = {"aggregated": {"positive": 0, "negative": 0, "neutral": 1}}
+            except Exception as e:
+                error_msg = f"Error fetching sentiment for {ticker}: {e}"
+                logger.error(error_msg)
+                error_messages.append(error_msg)
+                error_count += 1
+                sentiment_data = {"aggregated": {"positive": 0, "negative": 0, "neutral": 1}}
 
             # ENHANCED: Use weighted sentiment for better accuracy
             if "weighted_aggregated" in sentiment_data and sentiment_data["weighted_aggregated"]["total_weight"] > 0:
@@ -5232,6 +5325,37 @@ class Stock:
                 "success": False,
                 "message": f"Error saving analysis: {str(e)}"
             }
+    
+    def _should_skip_analysis(self, ticker: str, error_messages: list) -> bool:
+        """
+        Determine if we should skip analysis for a stock due to errors.
+        
+        Args:
+            ticker: Stock symbol
+            error_messages: List of error messages encountered
+            
+        Returns:
+            bool: True if we should skip analysis, False otherwise
+        """
+        # Skip if we have rate limiting errors
+        rate_limit_errors = [msg for msg in error_messages if 'rate limit' in msg.lower()]
+        if rate_limit_errors:
+            logger.warning(f"Skipping {ticker} due to rate limiting: {len(rate_limit_errors)} errors")
+            return True
+        
+        # Skip if we have "no price data found" errors
+        no_data_errors = [msg for msg in error_messages if 'no price data found' in msg.lower()]
+        if no_data_errors:
+            logger.warning(f"Skipping {ticker} due to missing price data")
+            return True
+        
+        # Skip if we have critical data source failures
+        critical_failures = [msg for msg in error_messages if 'critical' in msg.lower()]
+        if len(critical_failures) >= 2:  # Multiple critical failures
+            logger.warning(f"Skipping {ticker} due to multiple critical failures")
+            return True
+        
+        return False
 
 class StockTradingBot:
     def __init__(self, config):

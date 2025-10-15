@@ -95,7 +95,7 @@ class EnsembleOptimizer:
         self.weight_adjustment_rate = 0.1
         self.performance_decay = 0.95  # Decay factor for older performance
         
-        logger.info("✅ Ensemble Optimizer initialized")
+        logger.info("Ensemble Optimizer initialized")
     
     def register_model(self, model_name: str, model: Any, initial_weight: float = 1.0):
         """Register a model in the ensemble"""

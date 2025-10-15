@@ -30,5 +30,13 @@
         "qty": 1,
         "price": 694.15,
         "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-10-15 14:35:03.043826",
+        "asset": "IDBI.NS",
+        "action": "buy",
+        "qty": 3,
+        "price": 93.14,
+        "pnl": 0.0
     }
 ]

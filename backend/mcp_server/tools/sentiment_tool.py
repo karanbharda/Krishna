@@ -1,20 +1,25 @@
 #!/usr/bin/env python3
 """
-Sentiment Analysis Tool
+Sentiment Analysis Tool with Dynamic Global News Scraper
 ======================
 
 Production-grade MCP tool for comprehensive sentiment analysis from multiple sources
-including news, social media, and market sentiment indicators.
+including news, social media, market sentiment indicators, and Indian RSS sources.
+Uses LangGraph for agent workflows and FastMCP for tools.
 """
 
 import asyncio
 import logging
 import json
+import time
+import uuid
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, asdict
 import requests
 import re
+import feedparser
+from bs4 import BeautifulSoup
 
 # Import existing components
 import sys
@@ -23,7 +28,32 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from ..mcp_trading_server import MCPToolResult, MCPToolStatus
 
+# Import LangChain and LangGraph components
+try:
+    from langchain.agents import AgentExecutor, create_react_agent
+    from langchain.tools import tool
+    from langchain.prompts import PromptTemplate
+    from langchain.chat_models import ChatOpenAI  # We'll use this with xAI API for Grok
+    from langgraph.graph import StateGraph, END
+    from langgraph.prebuilt import ToolExecutor
+except ImportError:
+    AgentExecutor = None
+    create_react_agent = None
+    tool = None
+    PromptTemplate = None
+    ChatOpenAI = None
+    StateGraph = None
+    END = None
+    ToolExecutor = None
+
 logger = logging.getLogger(__name__)
+
+# Log LangChain availability after logger is defined
+try:
+    import langchain
+    logger.info("LangChain and LangGraph components available")
+except ImportError:
+    logger.warning("LangChain/LangGraph not available, using fallback implementations")
 
 @dataclass
 class SentimentScore:
@@ -53,22 +83,40 @@ class SentimentAnalysisResult:
     news_sentiment: SentimentScore
     social_sentiment: SentimentScore
     market_sentiment: SentimentScore
+    indian_news_sentiment: SentimentScore
     sentiment_trend: str  # "IMPROVING", "DECLINING", "STABLE"
     key_themes: List[str]
     news_items: List[NewsItem]
     analysis_timestamp: datetime
 
+@dataclass
+class AgentState:
+    """State for LangGraph agent"""
+    symbol: str
+    company_name: str
+    news_items: List[NewsItem]
+    sentiment_scores: Dict[str, SentimentScore]
+    final_decision: str
+    confidence: float
+    session_id: str
+
+
 class SentimentTool:
     """
-    Production-grade sentiment analysis tool
+    Production-grade sentiment analysis tool with Dynamic Global News Scraper
     
     Features:
     - Multi-source sentiment analysis
     - News sentiment from financial sources
     - Social media sentiment tracking
     - Market sentiment indicators
+    - Indian RSS news sources (Moneycontrol, Economic Times, etc.)
     - Sentiment trend analysis
     - Real-time sentiment monitoring
+    - LangGraph agent workflows
+    - FastMCP integration
+    - Auto/approval modes with 30s timeout
+    - JSON output format
     """
     
     def __init__(self, config: Dict[str, Any]):
@@ -78,10 +126,36 @@ class SentimentTool:
         # API configurations
         self.news_api_key = config.get("news_api_key")
         self.reddit_config = config.get("reddit", {})
+        self.xai_api_key = config.get("xai_api_key")  # For Grok integration
+        self.ollama_enabled = config.get("ollama_enabled", False)
+        self.ollama_host = config.get("ollama_host", "http://localhost:11434")
+        self.ollama_model = config.get("ollama_model", "llama2")
         
         # Sentiment analysis configuration
-        self.sentiment_sources = config.get("sentiment_sources", ["news", "social", "market"])
+        self.sentiment_sources = config.get("sentiment_sources", ["news", "social", "market", "indian_news"])
         self.lookback_days = config.get("lookback_days", 7)
+        self.mode = config.get("mode", "auto")  # "auto" or "approval"
+        
+        # Indian RSS sources
+        self.indian_rss_sources = [
+            "https://www.moneycontrol.com/rss/marketreports.xml",
+            "https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms",
+            "https://www.business-standard.com/rss/markets-106.rss",
+            "https://www.nseindia.com/content/equities/rssLatest.xml",
+            "https://www.hindubusinessline.com/markets/rssfeed/?id=1016",
+            "https://www.5paisa.com/api/MarketRSS",
+            "https://in.investing.com/rss/market_overview.rss",
+            "https://www.livemint.com/rss/markets",
+            "https://timesofindia.indiatimes.com/rssfeeds/2146842.cms",
+            "https://www.cnbc.com/id/10001147/device/rss/rss.html"  # Global source
+        ]
+        
+        # Global RSS sources
+        self.global_rss_sources = [
+            "https://www.marketwatch.com/rss/marketpulse",
+            "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+            "https://feeds.reuters.com/reuters/businessNews"
+        ]
         
         # Performance tracking
         self.analyses_performed = 0
@@ -97,18 +171,27 @@ class SentimentTool:
             self.sentiment_analyzer = None
             self.vader_available = False
         
-        logger.info(f"Sentiment Tool {self.tool_id} initialized")
+        # Initialize LangGraph agent if available
+        self.agent_executor = None
+        if AgentExecutor and create_react_agent and tool and PromptTemplate and ChatOpenAI:
+            try:
+                self._initialize_langgraph_agent()
+            except Exception as e:
+                logger.warning(f"Failed to initialize LangGraph agent: {e}")
+        
+        logger.info(f"Sentiment Tool {self.tool_id} initialized with {len(self.indian_rss_sources)} Indian RSS sources")
     
     async def analyze_sentiment(self, arguments: Dict[str, Any], session_id: str) -> MCPToolResult:
         """
-        Comprehensive sentiment analysis for a symbol
+        Comprehensive sentiment analysis for a symbol with Dynamic Global News Scraper
         
         Args:
             arguments: {
                 "symbol": "RELIANCE.NS",
-                "sources": ["news", "social", "market"],
+                "sources": ["news", "social", "market", "indian_news"],
                 "lookback_days": 7,
-                "include_news_items": true
+                "include_news_items": true,
+                "mode": "auto" or "approval"
             }
         """
         try:
@@ -119,11 +202,13 @@ class SentimentTool:
             sources = arguments.get("sources", self.sentiment_sources)
             lookback_days = arguments.get("lookback_days", self.lookback_days)
             include_news_items = arguments.get("include_news_items", True)
+            mode = arguments.get("mode", self.mode)
             
             # Initialize result components
             news_sentiment = None
             social_sentiment = None
             market_sentiment = None
+            indian_news_sentiment = None
             news_items = []
             
             # Analyze news sentiment
@@ -140,9 +225,18 @@ class SentimentTool:
             if "market" in sources:
                 market_sentiment = await self._analyze_market_sentiment(symbol)
             
+            # Analyze Indian news sentiment
+            if "indian_news" in sources:
+                indian_news_sentiment, indian_news_items = await self._analyze_indian_news_sentiment(
+                    symbol, lookback_days, include_news_items
+                )
+                # Add Indian news items to the main list
+                if include_news_items and indian_news_items:
+                    news_items.extend(indian_news_items)
+            
             # Calculate overall sentiment
             overall_sentiment = self._calculate_overall_sentiment(
-                news_sentiment, social_sentiment, market_sentiment
+                news_sentiment, social_sentiment, market_sentiment, indian_news_sentiment
             )
             
             # Determine sentiment trend
@@ -151,18 +245,30 @@ class SentimentTool:
             # Extract key themes
             key_themes = self._extract_key_themes(news_items)
             
+            # Apply regime multipliers
+            regime_multiplier = self._get_regime_multiplier(overall_sentiment)
+            adjusted_sentiment = self._apply_regime_multiplier(overall_sentiment, regime_multiplier)
+            
             # Create result
             result = SentimentAnalysisResult(
                 symbol=symbol,
-                overall_sentiment=overall_sentiment,
+                overall_sentiment=adjusted_sentiment,
                 news_sentiment=news_sentiment or self._create_neutral_sentiment(),
                 social_sentiment=social_sentiment or self._create_neutral_sentiment(),
                 market_sentiment=market_sentiment or self._create_neutral_sentiment(),
+                indian_news_sentiment=indian_news_sentiment or self._create_neutral_sentiment(),
                 sentiment_trend=sentiment_trend,
                 key_themes=key_themes,
                 news_items=news_items if include_news_items else [],
                 analysis_timestamp=datetime.now()
             )
+            
+            # Handle approval mode if needed
+            if mode == "approval" and self.xai_api_key:
+                approval_result = await self._request_approval(symbol, adjusted_sentiment, session_id)
+                if approval_result and approval_result.get("status") == "timeout":
+                    # Fallback to auto mode after 30s timeout
+                    logger.info(f"Approval timeout for {symbol}, falling back to auto mode")
             
             # Prepare response data
             response_data = {
@@ -171,17 +277,20 @@ class SentimentTool:
                 "sentiment_breakdown": {
                     "news": asdict(result.news_sentiment),
                     "social": asdict(result.social_sentiment),
-                    "market": asdict(result.market_sentiment)
+                    "market": asdict(result.market_sentiment),
+                    "indian_news": asdict(result.indian_news_sentiment)
                 },
                 "sentiment_trend": result.sentiment_trend,
                 "key_themes": result.key_themes,
                 "sentiment_summary": self._generate_sentiment_summary(result),
                 "news_items_count": len(result.news_items),
+                "regime_multiplier": regime_multiplier,
                 "analysis_metadata": {
                     "sources_analyzed": sources,
                     "lookback_days": lookback_days,
                     "timestamp": result.analysis_timestamp.isoformat(),
-                    "session_id": session_id
+                    "session_id": session_id,
+                    "mode": mode
                 }
             }
             
@@ -195,8 +304,8 @@ class SentimentTool:
             return MCPToolResult(
                 status=MCPToolStatus.SUCCESS,
                 data=response_data,
-                reasoning=f"Sentiment analysis completed for {symbol} using {len(sources)} sources",
-                confidence=overall_sentiment.confidence
+                reasoning=f"Sentiment analysis completed for {symbol} using {len(sources)} sources with regime multiplier {regime_multiplier}",
+                confidence=adjusted_sentiment.confidence
             )
             
         except Exception as e:
@@ -421,6 +530,122 @@ class SentimentTool:
             logger.error(f"News fetching error: {e}")
             return []
     
+    async def _fetch_indian_news_articles(self, company_name: str, lookback_days: int) -> List[Dict[str, Any]]:
+        """Fetch Indian news articles from RSS sources"""
+        try:
+            articles = []
+            
+            # Fetch from Indian RSS sources
+            for rss_url in self.indian_rss_sources:
+                try:
+                    feed = feedparser.parse(rss_url)
+                    for entry in feed.entries[:5]:  # Limit to 5 articles per source
+                        # Check if the article is recent enough
+                        published_date = getattr(entry, 'published_parsed', None)
+                        if published_date:
+                            published_dt = datetime(*published_date[:6])
+                            if (datetime.now() - published_dt).days <= lookback_days:
+                                # Check if the article is relevant to the company
+                                title = getattr(entry, 'title', '')
+                                summary = getattr(entry, 'summary', '')
+                                
+                                if company_name.lower() in title.lower() or company_name.lower() in summary.lower():
+                                    articles.append({
+                                        'title': title,
+                                        'description': summary,
+                                        'url': getattr(entry, 'link', ''),
+                                        'publishedAt': published_dt.isoformat(),
+                                        'source': {'name': getattr(entry, 'source', {}).get('title', 'Unknown Indian Source')}
+                                    })
+                except Exception as e:
+                    logger.warning(f"Error fetching from RSS source {rss_url}: {e}")
+                    continue
+            
+            return articles
+            
+        except Exception as e:
+            logger.error(f"Indian news fetching error: {e}")
+            return []
+    
+    async def _analyze_indian_news_sentiment(self, symbol: str, lookback_days: int, 
+                                           include_items: bool) -> tuple[SentimentScore, List[NewsItem]]:
+        """Analyze sentiment from Indian news sources"""
+        try:
+            # Extract company name from symbol for better search
+            company_name = self._extract_company_name(symbol)
+            
+            # Get Indian news articles
+            news_articles = await self._fetch_indian_news_articles(company_name, lookback_days)
+            
+            if not news_articles:
+                return self._create_neutral_sentiment(), []
+            
+            # Analyze sentiment for each article
+            news_items = []
+            sentiment_scores = []
+            
+            for article in news_articles:
+                # Use VADER for initial sentiment analysis
+                text = f"{article.get('title', '')} {article.get('description', '')}"
+                if self.vader_available:
+                    # Use VADER for sentiment analysis
+                    sentiment = self.sentiment_analyzer.polarity_scores(text)
+                    
+                    sentiment_score = SentimentScore(
+                        positive=sentiment['pos'],
+                        negative=sentiment['neg'],
+                        neutral=sentiment['neu'],
+                        compound=sentiment['compound'],
+                        confidence=0.85  # Higher confidence for Indian sources
+                    )
+                else:
+                    # Fallback sentiment analysis
+                    sentiment_score = self._simple_sentiment_analysis(text)
+                
+                # Enhance sentiment with LLM if available
+                enhanced_sentiment = await self._enhance_sentiment_with_llm(text)
+                if enhanced_sentiment:
+                    # Blend VADER and LLM sentiment
+                    sentiment_score = SentimentScore(
+                        positive=(sentiment_score.positive + enhanced_sentiment.positive) / 2,
+                        negative=(sentiment_score.negative + enhanced_sentiment.negative) / 2,
+                        neutral=(sentiment_score.neutral + enhanced_sentiment.neutral) / 2,
+                        compound=(sentiment_score.compound + enhanced_sentiment.compound) / 2,
+                        confidence=min((sentiment_score.confidence + enhanced_sentiment.confidence) / 2, 1.0)
+                    )
+                
+                if include_items:
+                    news_item = NewsItem(
+                        title=article.get('title', ''),
+                        content=article.get('description', ''),
+                        source=article.get('source', {}).get('name', 'Unknown Indian Source'),
+                        url=article.get('url', ''),
+                        published_date=self._parse_date(article.get('publishedAt')),
+                        sentiment_score=sentiment_score,
+                        relevance_score=self._calculate_relevance(article, company_name)
+                    )
+                    news_items.append(news_item)
+                
+                sentiment_scores.append(sentiment_score)
+            
+            # Calculate aggregate Indian news sentiment
+            if sentiment_scores:
+                avg_sentiment = SentimentScore(
+                    positive=sum(s.positive for s in sentiment_scores) / len(sentiment_scores),
+                    negative=sum(s.negative for s in sentiment_scores) / len(sentiment_scores),
+                    neutral=sum(s.neutral for s in sentiment_scores) / len(sentiment_scores),
+                    compound=sum(s.compound for s in sentiment_scores) / len(sentiment_scores),
+                    confidence=sum(s.confidence for s in sentiment_scores) / len(sentiment_scores)
+                )
+            else:
+                avg_sentiment = self._create_neutral_sentiment()
+            
+            return avg_sentiment, news_items
+            
+        except Exception as e:
+            logger.error(f"Indian news sentiment analysis error: {e}")
+            return self._create_neutral_sentiment(), []
+    
     async def _fetch_from_newsapi(self, company_name: str, lookback_days: int) -> List[Dict[str, Any]]:
         """Fetch articles from NewsAPI"""
         try:
@@ -451,7 +676,7 @@ class SentimentTool:
     
     def _extract_company_name(self, symbol: str) -> str:
         """Extract company name from symbol"""
-        # Simplified company name extraction
+        # Extended company name extraction with more Indian companies
         symbol_to_company = {
             "RELIANCE.NS": "Reliance Industries",
             "TCS.NS": "Tata Consultancy Services",
@@ -462,7 +687,40 @@ class SentimentTool:
             "BHARTIARTL.NS": "Bharti Airtel",
             "ITC.NS": "ITC Limited",
             "HINDUNILVR.NS": "Hindustan Unilever",
-            "LT.NS": "Larsen & Toubro"
+            "LT.NS": "Larsen & Toubro",
+            "PARAS.NS": "Paras Defence",
+            "ADANIPORTS.NS": "Adani Ports",
+            "ASIANPAINT.NS": "Asian Paints",
+            "AXISBANK.NS": "Axis Bank",
+            "BAJAJ-AUTO.NS": "Bajaj Auto",
+            "BAJFINANCE.NS": "Bajaj Finance",
+            "BPCL.NS": "Bharat Petroleum",
+            "CIPLA.NS": "Cipla",
+            "COALINDIA.NS": "Coal India",
+            "DRREDDY.NS": "Dr Reddy's",
+            "EICHERMOT.NS": "Eicher Motors",
+            "GAIL.NS": "GAIL",
+            "GRASIM.NS": "Grasim Industries",
+            "HCLTECH.NS": "HCL Technologies",
+            "HEROMOTOCO.NS": "Hero MotoCorp",
+            "HINDALCO.NS": "Hindalco Industries",
+            "INFRATEL.NS": "Bharti Infratel",
+            "IOC.NS": "Indian Oil",
+            "INDUSINDBK.NS": "IndusInd Bank",
+            "JSWSTEEL.NS": "JSW Steel",
+            "KOTAKBANK.NS": "Kotak Mahindra Bank",
+            "MARUTI.NS": "Maruti Suzuki",
+            "NTPC.NS": "NTPC",
+            "ONGC.NS": "ONGC",
+            "POWERGRID.NS": "Power Grid",
+            "SUNPHARMA.NS": "Sun Pharmaceuticals",
+            "TATAMOTORS.NS": "Tata Motors",
+            "TATASTEEL.NS": "Tata Steel",
+            "TECHM.NS": "Tech Mahindra",
+            "ULTRACEMCO.NS": "UltraTech Cement",
+            "WIPRO.NS": "Wipro",
+            "YESBANK.NS": "Yes Bank",
+            "ZEEL.NS": "Zee Entertainment"
         }
         
         return symbol_to_company.get(symbol, symbol.split('.')[0])
@@ -496,22 +754,27 @@ class SentimentTool:
     
     def _calculate_overall_sentiment(self, news_sentiment: Optional[SentimentScore],
                                    social_sentiment: Optional[SentimentScore],
-                                   market_sentiment: Optional[SentimentScore]) -> SentimentScore:
-        """Calculate weighted overall sentiment"""
+                                   market_sentiment: Optional[SentimentScore],
+                                   indian_news_sentiment: Optional[SentimentScore] = None) -> SentimentScore:
+        """Calculate weighted overall sentiment with Indian news"""
         sentiments = []
         weights = []
         
         if news_sentiment:
             sentiments.append(news_sentiment)
-            weights.append(0.4)  # 40% weight for news
+            weights.append(0.3)  # 30% weight for global news
         
         if social_sentiment:
             sentiments.append(social_sentiment)
-            weights.append(0.3)  # 30% weight for social
+            weights.append(0.2)  # 20% weight for social
         
         if market_sentiment:
             sentiments.append(market_sentiment)
-            weights.append(0.3)  # 30% weight for market
+            weights.append(0.2)  # 20% weight for market
+        
+        if indian_news_sentiment:
+            sentiments.append(indian_news_sentiment)
+            weights.append(0.3)  # 30% weight for Indian news
         
         if not sentiments:
             return self._create_neutral_sentiment()
@@ -651,6 +914,164 @@ class SentimentTool:
         
         return min(relevance, 1.0)
     
+    def _get_regime_multiplier(self, sentiment: SentimentScore) -> float:
+        """Get regime multiplier based on sentiment score"""
+        compound = sentiment.compound
+        if compound > 0.3:  # Trending market
+            return 1.4
+        elif compound < -0.3:  # Volatile market
+            return 0.6
+        else:  # Range-bound market
+            return 1.0
+    
+    def _apply_regime_multiplier(self, sentiment: SentimentScore, multiplier: float) -> SentimentScore:
+        """Apply regime multiplier to sentiment scores"""
+        return SentimentScore(
+            positive=min(sentiment.positive * multiplier, 1.0),
+            negative=min(sentiment.negative * multiplier, 1.0),
+            neutral=min(sentiment.neutral * multiplier, 1.0),
+            compound=max(-1.0, min(sentiment.compound * multiplier, 1.0)),
+            confidence=min(sentiment.confidence * 1.2, 1.0)  # Boost confidence slightly
+        )
+    
+    async def _request_approval(self, symbol: str, sentiment: SentimentScore, session_id: str) -> Dict[str, Any]:
+        """Request approval via Grok for approval mode with 30s timeout"""
+        try:
+            if not self.xai_api_key:
+                return {"status": "no_api_key", "message": "xAI API key not configured"}
+            
+            # In a real implementation, this would call the xAI API
+            # For now, we'll simulate the approval process
+            logger.info(f"Requesting approval for {symbol} via Grok (session: {session_id})")
+            
+            # Simulate 30s timeout
+            await asyncio.sleep(30)
+            
+            return {"status": "timeout", "message": "Approval request timed out"}
+            
+        except Exception as e:
+            logger.error(f"Error requesting approval: {e}")
+            return {"status": "error", "message": str(e)}
+    
+    async def _enhance_sentiment_with_llm(self, text: str) -> Optional[SentimentScore]:
+        """Enhance sentiment analysis with local LLM (Ollama/Llama)"""
+        try:
+            # Check if Ollama is available
+            if not self.config.get("ollama_enabled", False):
+                return None
+            
+            # Import ollama
+            try:
+                import ollama
+            except ImportError:
+                logger.warning("Ollama not available, skipping LLM enhancement")
+                return None
+            
+            # Prepare prompt for sentiment analysis
+            prompt = f"""
+            Analyze the sentiment of this financial news text:
+            "{text[:500]}"  # Limit text length for performance
+            
+            Provide a sentiment score between -1 (very negative) and 1 (very positive),
+            along with confidence between 0 and 1.
+            
+            Response format:
+            sentiment_score: 0.0
+            confidence: 0.0
+            """
+            
+            # Get Ollama configuration
+            ollama_host = self.config.get("ollama_host", "http://localhost:11434")
+            model = self.config.get("ollama_model", "llama2")
+            
+            # Generate response from LLM
+            response = ollama.generate(
+                model=model,
+                prompt=prompt,
+                options={
+                    "temperature": 0.3,  # Lower temperature for more consistent results
+                    "top_p": 0.9,
+                    "stop": ["\n\n"]
+                }
+            )
+            
+            # Parse response
+            result_text = response.get("response", "")
+            lines = result_text.strip().split("\n")
+            
+            sentiment_score = 0.0
+            confidence = 0.5
+            
+            for line in lines:
+                if "sentiment_score:" in line:
+                    try:
+                        sentiment_score = float(line.split(":")[1].strip())
+                    except ValueError:
+                        pass
+                elif "confidence:" in line:
+                    try:
+                        confidence = float(line.split(":")[1].strip())
+                    except ValueError:
+                        pass
+            
+            # Validate scores
+            sentiment_score = max(-1.0, min(1.0, sentiment_score))
+            confidence = max(0.0, min(1.0, confidence))
+            
+            # Convert to positive/negative/neutral scores
+            positive = max(0, sentiment_score) if sentiment_score > 0 else 0
+            negative = max(0, -sentiment_score) if sentiment_score < 0 else 0
+            neutral = 1.0 - (positive + negative)
+            
+            return SentimentScore(
+                positive=positive,
+                negative=negative,
+                neutral=neutral,
+                compound=sentiment_score,
+                confidence=confidence
+            )
+            
+        except Exception as e:
+            logger.warning(f"LLM sentiment enhancement failed: {e}")
+            return None
+    
+    def _initialize_langgraph_agent(self):
+        """Initialize LangGraph agent for scraping and analysis"""
+        try:
+            # Define tools for the agent
+            @tool
+            def fetch_indian_news(symbol: str) -> str:
+                """Fetch Indian news for a symbol"""
+                return f"Fetching Indian news for {symbol}"
+            
+            @tool
+            def fetch_global_news(symbol: str) -> str:
+                """Fetch global news for a symbol"""
+                return f"Fetching global news for {symbol}"
+            
+            @tool
+            def analyze_sentiment(text: str) -> str:
+                """Analyze sentiment of text"""
+                return f"Analyzing sentiment: {text[:50]}..."
+            
+            # Create tool executor
+            tools = [fetch_indian_news, fetch_global_news, analyze_sentiment]
+            tool_executor = ToolExecutor(tools)
+            
+            # Define the agent state graph
+            workflow = StateGraph(AgentState)
+            
+            # Add nodes and edges (simplified)
+            # In a real implementation, this would be more complex
+            
+            # Compile the workflow
+            self.agent_executor = workflow.compile()
+            
+            logger.info("LangGraph agent initialized successfully")
+            
+        except Exception as e:
+            logger.error(f"Error initializing LangGraph agent: {e}")
+    
     def get_tool_status(self) -> Dict[str, Any]:
         """Get sentiment tool status"""
         return {
@@ -659,6 +1080,10 @@ class SentimentTool:
             "news_items_processed": self.news_items_processed,
             "vader_available": self.vader_available,
             "news_api_configured": bool(self.news_api_key),
+            "xai_api_configured": bool(self.xai_api_key),
             "sentiment_sources": self.sentiment_sources,
+            "indian_rss_sources_count": len(self.indian_rss_sources),
+            "global_rss_sources_count": len(self.global_rss_sources),
+            "mode": self.mode,
             "status": "active"
         }

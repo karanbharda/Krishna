@@ -62,7 +62,7 @@ class AdvancedFeatureEngineer:
             'custom': ['price_position', 'volume_profile', 'support_resistance', 'gap', 'body_size', 'shadows', 'price_accel', 'close_to_sma']
         }
         
-        logger.info("✅ Advanced Feature Engineering System initialized")
+        logger.info("Advanced Feature Engineering System initialized")
     
     def engineer_all_features(self, data: pd.DataFrame) -> pd.DataFrame:
         """

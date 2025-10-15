@@ -201,7 +201,7 @@ class ProfessionalBuyLogic:
                     # Store as decimal for calculation
                     self.target_price_pct = target_percentages.get(target_level, 0.02)
                 
-                logger.info(f"📊 Loaded dynamic config - Stop Loss: {self.stop_loss_pct:.1%}, Target Price: {self.target_price_pct:.1%}")
+                logger.info(f"Loaded dynamic config - Stop Loss: {self.stop_loss_pct:.1%}, Target Price: {self.target_price_pct:.1%}")
             else:
                 logger.warning("live_config.json not found, using defaults")
                 self.stop_loss_pct = 0.03
@@ -226,6 +226,25 @@ class ProfessionalBuyLogic:
         ml_analysis: Dict,
         portfolio_context: Dict
     ) -> BuyDecision:
+        """
+        Main entry point for professional buy evaluation
+        """
+        # Validate input data before proceeding
+        if not self._validate_input_data(ticker, stock_metrics, technical_analysis, sentiment_analysis, ml_analysis):
+            logger.warning(f"❌ Insufficient data for {ticker}, returning HOLD decision")
+            return BuyDecision(
+                should_buy=False,
+                buy_quantity=0,
+                buy_percentage=0.0,
+                reason=BuyReason.TECHNICAL_BREAKOUT,
+                confidence=0.0,
+                urgency=0.0,
+                signals_triggered=[],
+                target_entry_price=0.0,
+                stop_loss_price=0.0,
+                take_profit_price=0.0,
+                reasoning=f"Insufficient data for {ticker} - skipping analysis"
+            )
         """
         Main entry point for professional buy evaluation
         """
@@ -365,12 +384,12 @@ class ProfessionalBuyLogic:
         signals_count = len(triggered_signals)
         # For combined signals, we expect 2-5 triggered signals (one per category)
         # MODERATE: Adjust thresholds for better signal generation
-        meets_signal_threshold = 2 <= signals_count <= 5  # MODERATE: 2-5 categories for better signal generation
+        meets_signal_threshold = 3 <= signals_count <= 5  # INCREASED: Require at least 3 categories (was 2)
         meets_confidence_threshold = avg_confidence >= self.min_confidence_threshold
         meets_weighted_threshold = weighted_score >= self.min_weighted_score
 
         logger.info(f"Signal Analysis Summary:")
-        logger.info(f"  Signal Count: {signals_count} (Required: 2-5) - {'✅ PASS' if meets_signal_threshold else '❌ FAIL'}")  # MODERATE: 2-5 for better signal generation
+        logger.info(f"  Signal Count: {signals_count} (Required: 3-5) - {'✅ PASS' if meets_signal_threshold else '❌ FAIL'}")  # UPDATED: Changed required count to 3-5
         logger.info(f"  Average Confidence: {avg_confidence:.3f} (Threshold: {self.min_confidence_threshold}) - {'✅ PASS' if meets_confidence_threshold else '❌ FAIL'}")
         logger.info(f"  Weighted Score: {weighted_score:.3f} (Threshold: {self.min_weighted_score}) - {'✅ PASS' if meets_weighted_threshold else '❌ FAIL'}")
 
@@ -416,7 +435,7 @@ class ProfessionalBuyLogic:
             # Provide detailed reasoning for why buy was rejected
             rejection_reasons = []
             if not meets_signal_threshold:
-                rejection_reasons.append(f"Triggered categories {signals_count} not in range [2, 5]")  # MODERATE: [2, 5] for better signal generation
+                rejection_reasons.append(f"Triggered categories {signals_count} not in range [3, 5]")  # INCREASED: [3, 5] for better signal generation
             if not meets_confidence_threshold:
                 rejection_reasons.append(f"Confidence {avg_confidence:.3f} below threshold {self.min_confidence_threshold}")
             if not meets_weighted_threshold:
@@ -427,7 +446,7 @@ class ProfessionalBuyLogic:
             
             # Log additional diagnostic information
             logger.info(f"🔍 DETAILED DIAGNOSTIC INFORMATION:")
-            logger.info(f"   - Minimum Signals Required: 2 categories")
+            logger.info(f"   - Minimum Signals Required: 3 categories")
             logger.info(f"   - Maximum Signals Required: 5 categories")
             logger.info(f"   - Minimum Confidence Threshold: {self.min_confidence_threshold}")
             logger.info(f"   - Minimum Weighted Score Threshold: {self.min_weighted_score}")
@@ -465,6 +484,7 @@ class ProfessionalBuyLogic:
         # Need at least 3 different categories to be triggered
         return len(categories_triggered) >= 3
 
+
     def _generate_buy_signals(
         self,
         stock_metrics: StockMetrics,
@@ -491,9 +511,9 @@ class ProfessionalBuyLogic:
             triggered_tech_signals = [s for s in technical_signals if s.triggered]
             logger.info(f"{len(triggered_tech_signals)} triggered technical signals")
             
-            # Require at least 1 individual technical signal to trigger the combined signal
+            # Require at least 2 individual technical signals to trigger the combined signal
             # AND require average strength to be above a minimum threshold
-            if len(triggered_tech_signals) >= 1 and (sum(s.strength for s in triggered_tech_signals) / len(triggered_tech_signals)) > 0.1:
+            if len(triggered_tech_signals) >= 2 and (sum(s.strength for s in triggered_tech_signals) / len(triggered_tech_signals)) > 0.3:  # INCREASED: Require 2 signals and 0.3 strength (was 1 signal and 0.1 strength)
                 # Calculate combined strength as average of triggered signals
                 combined_strength = sum(s.strength for s in triggered_tech_signals) / len(triggered_tech_signals)
                 combined_weight = dynamic_weights["Technical"]  # Use category weight
@@ -512,14 +532,14 @@ class ProfessionalBuyLogic:
                 signals.append(combined_tech_signal)
                 logger.info(f"Combined technical signal created: strength={combined_strength:.3f}, confidence={combined_confidence:.3f}")
             else:
-                # If fewer than 3 technical signals trigger or average strength is too low,
+                # If fewer than 2 technical signals trigger or average strength is too low,
                 # don't create a combined signal
                 # This prevents weak technical signals from contributing to buy decisions
-                if len(triggered_tech_signals) < 3:
-                    logger.info(f"Not enough triggered technical signals: {len(triggered_tech_signals)} < 3")
+                if len(triggered_tech_signals) < 2:
+                    logger.info(f"Not enough triggered technical signals: {len(triggered_tech_signals)} < 2")  # UPDATED: Changed to 2
                 else:
                     avg_strength = sum(s.strength for s in triggered_tech_signals) / len(triggered_tech_signals) if triggered_tech_signals else 0
-                    logger.info(f"Average strength too low: {avg_strength:.3f} < 0.3")
+                    logger.info(f"Average strength too low: {avg_strength:.3f} < 0.3")  # UPDATED: Changed to 0.3
                 pass
         else:
             logger.info("No technical signals generated")
@@ -684,14 +704,64 @@ class ProfessionalBuyLogic:
             
         return weights
 
+    def _validate_input_data(self, ticker: str, stock_metrics: StockMetrics, technical_analysis: Dict, 
+                           sentiment_analysis: Dict, ml_analysis: Dict) -> bool:
+        """
+        Validate that we have sufficient data to make a trading decision.
+        
+        Args:
+            ticker: Stock symbol
+            stock_metrics: Stock metrics data
+            technical_analysis: Technical analysis results
+            sentiment_analysis: Sentiment analysis results
+            ml_analysis: ML analysis results
+            
+        Returns:
+            bool: True if data is sufficient, False otherwise
+        """
+        # Check if we have valid price data
+        if not hasattr(stock_metrics, 'current_price') or stock_metrics.current_price <= 0:
+            logger.warning(f"Missing or invalid current price for {ticker}")
+            return False
+        
+        # Check if we have technical analysis data
+        if not technical_analysis or len(technical_analysis) == 0:
+            logger.warning(f"Missing technical analysis data for {ticker}")
+            return False
+            
+        # Check if we have at least some key technical indicators
+        key_indicators = ['rsi', 'sma_20', 'sma_50', 'macd']
+        available_indicators = [ind for ind in key_indicators if ind in technical_analysis and technical_analysis[ind] is not None]
+        if len(available_indicators) < 2:
+            logger.warning(f"Insufficient technical indicators for {ticker}: {len(available_indicators)} available")
+            return False
+            
+        # Check if we have sentiment analysis data
+        if not sentiment_analysis or len(sentiment_analysis) == 0:
+            logger.warning(f"Missing sentiment analysis data for {ticker}")
+            return False
+            
+        # Check if we have ML analysis data
+        if not ml_analysis or len(ml_analysis) == 0:
+            logger.warning(f"Missing ML analysis data for {ticker}")
+            return False
+            
+        # If ML analysis exists but failed, that's OK - we can still make decisions based on other signals
+        # But if it exists, it should at least have a success flag or prediction
+        if 'success' in ml_analysis and not ml_analysis.get('success', True):
+            logger.info(f"ML analysis failed for {ticker}, but continuing with other signals")
+            
+        logger.info(f"All required data present for {ticker}")
+        return True
+
     def _check_cross_category_confirmation(self, signals: List[BuySignal]) -> bool:
-        """Cross-category confirmation: At least 2 categories must align"""  # MODERATE: 2 categories for better signal generation
+        """Cross-category confirmation: At least 3 categories must align"""  # INCREASED: 3 categories for better signal generation
         # With combined signals, we check if at least 3 categories have triggered signals
         triggered_signals = [s for s in signals if s.triggered]
         categories = set(s.category for s in triggered_signals if s.category)
         logger.info(f"Cross-category check: {len(categories)} categories triggered: {', '.join(categories) if categories else 'None'}")
-        result = len(categories) >= 2  # MODERATE: 2 categories for better signal generation
-        logger.info(f"Cross-category confirmation: {'PASS' if result else 'FAIL'} (need at least 2)")
+        result = len(categories) >= 3  # INCREASED: 3 categories for better signal generation
+        logger.info(f"Cross-category confirmation: {'PASS' if result else 'FAIL'} (need at least 3)")
         return result
 
     def _calculate_advanced_indicators(self, prices: List[float], volumes: List[float] = None,
@@ -1498,6 +1568,27 @@ class ProfessionalBuyLogic:
                 sentiment_score = (positive - negative) / total
             else:
                 sentiment_score = 0
+        # Check for comprehensive sentiment data from updated SentimentTool
+        if "comprehensive_analysis" in sentiment:
+            comprehensive = sentiment["comprehensive_analysis"]
+            sentiment_strength = comprehensive.get("sentiment_strength", {})
+            # Use bullish sentiment as the base score
+            sentiment_score = sentiment_strength.get("bullish", 0) - sentiment_strength.get("bearish", 0)
+            # Apply regime multiplier if available
+            regime_multiplier = comprehensive.get("market_context_applied", 1.0)
+            sentiment_score *= regime_multiplier
+        # Check for weighted aggregated sentiment data
+        elif "weighted_aggregated" in sentiment:
+            sentiment_data = sentiment["weighted_aggregated"]
+            positive = sentiment_data.get("positive", 0)
+            negative = sentiment_data.get("negative", 0)
+            neutral = sentiment_data.get("neutral", 0)
+            total = positive + negative + neutral
+            
+            if total > 0:
+                sentiment_score = (positive - negative) / total
+            else:
+                sentiment_score = 0
         # Check for aggregated sentiment data
         elif "aggregated" in sentiment:
             sentiment_data = sentiment["aggregated"]
@@ -1532,25 +1623,25 @@ class ProfessionalBuyLogic:
         sentiment_momentum = sentiment.get("sentiment_momentum", 0)
         source_diversity = sentiment.get("source_diversity", 1)  # Number of different sentiment sources
 
-        # MAINTAINED: Strict positive sentiment threshold
-        if sentiment_score > 0.3:  # More moderate threshold for genuine positive sentiment
+        # INCREASED: Stricter positive sentiment threshold
+        if sentiment_score > 0.5:  # INCREASED: Require stronger positive sentiment (was 0.3)
             # Enhanced with momentum and source diversity
             momentum_boost = 1.0
-            if sentiment_momentum > 0.2:  # Strong momentum
+            if sentiment_momentum > 0.3:  # INCREASED: Require stronger momentum (was 0.2)
                 momentum_boost = 1.1  # Boost for momentum
-            elif sentiment_momentum > 0.1:  # Moderate momentum
+            elif sentiment_momentum > 0.15:  # INCREASED: Require stronger momentum (was 0.1)
                 momentum_boost = 1.05  # Smaller boost
             
             diversity_boost = 1.0
-            if source_diversity > 3:  # Multiple sources
+            if source_diversity > 5:  # INCREASED: Require more diverse sources (was 3)
                 diversity_boost = 1.15  # Boost for diversity
             
             strength = min(sentiment_score / 0.8, 1.0) * momentum_boost * diversity_boost  # Enhanced scaling
 
             reasoning = f"Positive sentiment: {sentiment_score:.2f}"
-            if sentiment_momentum > 0.2:
+            if sentiment_momentum > 0.3:
                 reasoning += f" (improving momentum: {sentiment_momentum:.2f})"
-            if source_diversity > 3:
+            if source_diversity > 5:
                 reasoning += f" (diverse sources: {source_diversity})"
 
             signals.append(BuySignal(
@@ -1559,7 +1650,7 @@ class ProfessionalBuyLogic:
                 weight=category_weight * 0.15,
                 triggered=True,
                 reasoning=reasoning,
-                confidence=0.60,  # Enhanced confidence
+                confidence=0.70,  # INCREASED: Higher confidence for stronger signals (was 0.60)
                 category="Sentiment"
             ))
 
@@ -2338,8 +2429,8 @@ class ProfessionalBuyLogic:
             original_confidence = decision.confidence
             decision.confidence *= self.downtrend_buy_multiplier
             logger.info(f"Downtrend filter applied - confidence reduced from {original_confidence:.3f} to {decision.confidence:.3f}")
-            if decision.confidence < self.min_confidence_threshold:
-                logger.info(f"BUY BLOCKED: Market in {market_context.trend.value}, confidence {decision.confidence:.3f} < threshold {self.min_confidence_threshold}")
+            if decision.confidence < self.min_confidence_threshold * 1.1:
+                logger.info(f"BUY BLOCKED: Market in {market_context.trend.value}, confidence {decision.confidence:.3f} < threshold {self.min_confidence_threshold * 1.1}")
                 decision.should_buy = False
                 decision.reasoning += " | BLOCKED: Downtrend"
                 return decision

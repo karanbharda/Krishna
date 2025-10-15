@@ -30,7 +30,7 @@ class ProfessionalBuyConfig:
         return {
             "min_buy_signals": 3,          # CORRECTED: 3-5 categories as per project requirements
             "max_buy_signals": 5,          # Maximum 5 categories (all categories)
-            "min_weighted_buy_score": 0.15, # CORRECTED: 15% minimum weighted score as per project requirements
+            "min_weighted_buy_score": 0.25, # INCREASED: 25% minimum weighted score (was 15%)
             "entry_buffer_pct": 0.015,     # 1.5% entry buffer (moderate)
             "buy_stop_loss_pct": stop_loss_pct,  # From live_config.json
             "buy_target_profit_pct": target_profit_pct,  # From live_config.json
@@ -46,7 +46,7 @@ class ProfessionalBuyConfig:
             "ml_confidence_multiplier": 1.10,      # CORRECTED: 1.10 as per project requirements
             "momentum_confirmation_window": 5,
             "momentum_strength_threshold": 0.035,    # CORRECTED: 3.5% as per project requirements
-            "min_buy_confidence": 0.60,            # CORRECTED: 60% as per project requirements
+            "min_buy_confidence": 0.70,            # INCREASED: 70% minimum confidence (was 60%)
             "enable_professional_buy_logic": True,  # Enable professional logic
             "fallback_to_legacy_buy": False,        # Don't fallback to legacy
             "max_capital_per_trade": max_capital_per_trade,  # From live_config.json

@@ -52,7 +52,7 @@ try:
     from live_executor import LiveTradingExecutor
     from dhan_sync_service import start_sync_service, stop_sync_service, get_sync_service
     LIVE_TRADING_AVAILABLE = True
-    logger.info("✅ Live trading components loaded successfully")
+    logger.info("Live trading components loaded successfully")
 except ImportError as e:
     print(f"Live trading components not available: {e}")
     logger.error(f"❌ Live trading import failed: {e}")
@@ -64,7 +64,7 @@ try:
     from core.rl_agent import rl_agent
     from core.tracker_agent import tracker_agent
     from core.risk_engine import risk_engine
-    logger.info("✅ RL scanning agents loaded successfully")
+    logger.info("RL scanning agents loaded successfully")
 except ImportError as e:
     logger.error(f"❌ RL agents import failed: {e}")
 
@@ -948,8 +948,37 @@ class WebTradingBot:
             return {'signal_strength': 0.5, 'confidence': 0.1, 'direction': 'HOLD'}
 
     async def _collect_sentiment_signals(self, symbol: str, context: dict) -> dict:
-        """Collect sentiment analysis signals"""
+        """Collect sentiment analysis signals from the new FastAPI backend"""
         try:
+            import aiohttp
+            import json
+            
+            # Try to call the new FastAPI endpoint
+            async with aiohttp.ClientSession() as session:
+                url = "http://localhost:8000/evaluate_buy"
+                payload = {
+                    "symbol": symbol,
+                    "mode": "auto"
+                }
+                
+                try:
+                    async with session.post(url, json=payload, timeout=30) as response:
+                        if response.status == 200:
+                            result = await response.json()
+                            sentiment_score = result.get('sentiment', {}).get('compound', 0)
+                            confidence = result.get('confidence', 0.2)
+                            
+                            return {
+                                'signal_strength': (sentiment_score + 1) / 2,  # Normalize to 0-1
+                                'confidence': confidence,
+                                'direction': result.get('action', 'HOLD')
+                            }
+                except asyncio.TimeoutError:
+                    logger.warning(f"Timeout calling sentiment service for {symbol}, falling back to stock analyzer")
+                except Exception as http_error:
+                    logger.warning(f"Error calling sentiment service for {symbol}: {http_error}")
+            
+            # Fallback to original method if FastAPI service is not available
             if hasattr(self.trading_bot, 'stock_analyzer'):
                 # Get sentiment from stock analyzer
                 sentiment_data = self.trading_bot.stock_analyzer.fetch_combined_sentiment(symbol)

@@ -1,5 +1,5 @@
 {
-    "cash": 6400.51,
+    "cash": 6123.18,
     "holdings": {
         "KRBL": {
             "qty": 3,
@@ -122,8 +122,8 @@
             "last_price": 326.65
         }
     },
-    "starting_balance": 6402.71,
+    "starting_balance": 6123.18,
     "realized_pnl": 0.0,
     "unrealized_pnl": 0.0,
-    "last_updated": "2025-10-15T10:10:29.679551"
+    "last_updated": "2025-10-15T15:02:31.327844"
 }
