@@ -1,5 +1,5 @@
 {
-    "cash": 6058.14,
+    "cash": 6400.51,
     "holdings": {
         "KRBL": {
             "qty": 3,
@@ -42,9 +42,9 @@
             "last_price": 126.9
         },
         "NBCC": {
-            "qty": 1,
-            "avg_price": 113.11,
-            "last_price": 113.11
+            "qty": 5,
+            "avg_price": 110.262,
+            "last_price": 110.262
         },
         "BTML": {
             "qty": 1,
@@ -55,11 +55,6 @@
             "qty": 11,
             "avg_price": 43.75273,
             "last_price": 43.75273
-        },
-        "STALLION": {
-            "qty": 1,
-            "avg_price": 336.7,
-            "last_price": 336.7
         },
         "MRPL": {
             "qty": 5,
@@ -127,8 +122,8 @@
             "last_price": 326.65
         }
     },
-    "starting_balance": 6058.14,
+    "starting_balance": 6402.71,
     "realized_pnl": 0.0,
     "unrealized_pnl": 0.0,
-    "last_updated": "2025-10-14T15:29:01.895961"
+    "last_updated": "2025-10-15T10:10:29.679551"
 }

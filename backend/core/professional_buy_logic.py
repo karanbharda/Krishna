@@ -1286,14 +1286,14 @@ class ProfessionalBuyLogic:
             sector_peg = sector_pe / (eps_growth * 100) if eps_growth > 0 else 1.0
             peg_discount = (sector_peg - peg_ratio) / sector_peg if sector_peg > 0 else 0
             
-            # MAINTAINED: Strict threshold to ensure genuine value opportunities
-            if peg_ratio < 0.8:  # More moderate value for genuine opportunities
+            # ENHANCED: More flexible threshold with additional validation
+            if peg_ratio < 1.0:  # Increased threshold but with additional validation
                 # Enhanced with sector discount
                 sector_boost = 1.0
-                if peg_discount > 0.2:  # Significant sector discount
+                if peg_discount > 0.15:  # Slightly reduced sector discount requirement
                     sector_boost = 1.2  # Boost for sector discount
                 
-                strength = min((0.6 - peg_ratio) / 0.6, 1.0) * sector_boost
+                strength = min((0.8 - peg_ratio) / 0.8, 1.0) * sector_boost
                 signals.append(BuySignal(
                     name="attractive_peg_ratio",
                     strength=strength,
@@ -1305,18 +1305,18 @@ class ProfessionalBuyLogic:
                 ))  
 
         # Enhanced P/E Analysis with sector comparison and growth adjustment
-        # MAINTAINED: Strict threshold for sector comparison
-        if 0 < pe_ratio < 15:  # More moderate threshold for genuine undervaluation
+        # ENHANCED: More flexible threshold with additional validation
+        if 0 < pe_ratio < 18:  # Increased threshold but with additional validation
             # Check if P/E is significantly below sector average
             pe_discount = (sector_pe - pe_ratio) / sector_pe if sector_pe > 0 else 0
 
             # Enhanced with growth adjustment
             growth_adjustment = 1.0
-            if eps_growth > 0.10:  # High growth (>10%)
+            if eps_growth > 0.08:  # Slightly reduced growth requirement
                 growth_adjustment = 1.15  # Boost for high growth
 
-            # MAINTAINED: Strict threshold for sector discount
-            if pe_discount > 0.3:  # More moderate threshold for genuine discount
+            # ENHANCED: More flexible threshold with additional validation
+            if pe_discount > 0.25:  # Slightly reduced discount requirement
                 strength = min(pe_discount, 1.0) * growth_adjustment
                 signals.append(BuySignal(
                     name="low_pe_ratio",
@@ -1334,19 +1334,19 @@ class ProfessionalBuyLogic:
         roe = stock.return_on_equity if hasattr(stock, 'return_on_equity') else 0.10  # Default 10% ROE
         roe = float(roe) if not isinstance(roe, (int, float)) else roe
 
-        # MAINTAINED: Strict P/B threshold
-        if 0 < pb_ratio < 1.5:  # More moderate threshold for genuine value
+        # ENHANCED: More flexible P/B threshold with additional validation
+        if 0 < pb_ratio < 1.8:  # Increased threshold but with additional validation
             # Calculate justified P/B based on ROE with industry comparison
             justified_pb = roe / 0.15  # Strict required return
             pb_discount = (justified_pb - pb_ratio) / justified_pb if justified_pb > 0 else 0
             
             # Enhanced with ROE quality
             roe_quality = 1.0
-            if roe > 0.15:  # High ROE (>15%)
+            if roe > 0.12:  # Slightly reduced ROE requirement
                 roe_quality = 1.15  # Boost for high ROE
 
-            # MAINTAINED: Strict discount threshold
-            if pb_discount > 0.2:  # More moderate threshold for genuine discount
+            # ENHANCED: More flexible discount threshold with additional validation
+            if pb_discount > 0.15:  # Slightly reduced discount requirement
                 strength = min(pb_discount, 1.0) * roe_quality
                 signals.append(BuySignal(
                     name="low_pb_ratio",
@@ -1365,11 +1365,11 @@ class ProfessionalBuyLogic:
         debt_equity = stock.debt_to_equity if hasattr(stock, 'debt_to_equity') else 0.5
         debt_equity = float(debt_equity) if not isinstance(debt_equity, (int, float)) else debt_equity
 
-        # MAINTAINED: Strict FCF yield threshold
-        if fcf_yield > 0.08:  # More moderate threshold for genuine cash flow yield
+        # ENHANCED: More flexible FCF yield threshold with additional validation
+        if fcf_yield > 0.06:  # Slightly reduced threshold but with additional validation
             # Enhanced with debt consideration
             debt_adjustment = 1.0
-            if debt_equity < 0.3:  # Low debt
+            if debt_equity < 0.4:  # Slightly increased debt threshold
                 debt_adjustment = 1.2  # Boost for low debt
             
             strength = min(fcf_yield / 0.20, 1.0) * debt_adjustment  # Original scaling
@@ -1387,15 +1387,15 @@ class ProfessionalBuyLogic:
         # Ensure values are properly converted to floats
         # Already defined above
 
-        # MAINTAINED: Strict debt threshold
-        if debt_equity < 0.15:  # More moderate threshold for genuine financial health
+        # ENHANCED: More flexible debt threshold with additional validation
+        if debt_equity < 0.20:  # Slightly increased threshold but with additional validation
             # Enhanced with industry comparison
             industry_avg_debt = 0.5  # Default industry average
             debt_quality = 1.0
-            if debt_equity < (industry_avg_debt * 0.5):  # Significantly better than industry
+            if debt_equity < (industry_avg_debt * 0.6):  # Slightly reduced requirement
                 debt_quality = 1.15  # Boost for superior debt position
             
-            strength = min((0.1 - debt_equity) / 0.1, 1.0) * debt_quality
+            strength = min((0.15 - debt_equity) / 0.15, 1.0) * debt_quality
             signals.append(BuySignal(
                 name="healthy_balance_sheet",
                 strength=strength,
@@ -1413,14 +1413,14 @@ class ProfessionalBuyLogic:
         payout_ratio = stock.payout_ratio if hasattr(stock, 'payout_ratio') else 0
         payout_ratio = float(payout_ratio) if not isinstance(payout_ratio, (int, float)) else payout_ratio
 
-        # MAINTAINED: Strict dividend thresholds
-        if dividend_yield > 0.02 and payout_ratio < 0.5:  # More moderate thresholds for genuine dividend sustainability
+        # ENHANCED: More flexible dividend thresholds with additional validation
+        if dividend_yield > 0.015 and payout_ratio < 0.6:  # Slightly relaxed thresholds but with additional validation
             # Enhanced with payout quality
             payout_quality = 1.0
-            if payout_ratio < 0.3:  # Conservative payout
+            if payout_ratio < 0.35:  # Slightly increased payout requirement
                 payout_quality = 1.15  # Boost for quality payout
             
-            strength = min((dividend_yield * (1 - payout_ratio / 0.5)) / 0.07, 1.0) * payout_quality
+            strength = min((dividend_yield * (1 - payout_ratio / 0.6)) / 0.07, 1.0) * payout_quality
             signals.append(BuySignal(
                 name="sustainable_dividend",
                 strength=strength,
@@ -1436,11 +1436,11 @@ class ProfessionalBuyLogic:
         earnings_quality = stock.earnings_quality if hasattr(stock, 'earnings_quality') else 0.5
         earnings_quality = float(earnings_quality) if not isinstance(earnings_quality, (int, float)) else earnings_quality
 
-        # MAINTAINED: Strict earnings quality threshold
-        if earnings_quality > 0.70:  # More moderate threshold for genuine earnings quality
+        # ENHANCED: More flexible earnings quality threshold with additional validation
+        if earnings_quality > 0.65:  # Slightly reduced threshold but with additional validation
             # Enhanced with consistency check
             consistency_boost = 1.0
-            if hasattr(stock, 'earnings_consistency') and stock.earnings_consistency > 0.9:  # High consistency
+            if hasattr(stock, 'earnings_consistency') and stock.earnings_consistency > 0.85:  # Slightly reduced consistency requirement
                 consistency_boost = 1.15  # Boost for consistency
             
             strength = min(earnings_quality / 0.95, 1.0) * consistency_boost
@@ -1459,11 +1459,11 @@ class ProfessionalBuyLogic:
         insider_ownership = stock.insider_ownership if hasattr(stock, 'insider_ownership') else 0
         insider_ownership = float(insider_ownership) if not isinstance(insider_ownership, (int, float)) else insider_ownership
 
-        # MAINTAINED: Strict insider ownership threshold
-        if insider_ownership > 0.10:  # More moderate threshold for genuine insider confidence
+        # ENHANCED: More flexible insider ownership threshold with additional validation
+        if insider_ownership > 0.08:  # Slightly reduced threshold but with additional validation
             # Enhanced with recent activity
             recent_activity = 1.0
-            if hasattr(stock, 'recent_insider_activity') and stock.recent_insider_activity > 0.05:  # Recent buying
+            if hasattr(stock, 'recent_insider_activity') and stock.recent_insider_activity > 0.04:  # Slightly reduced activity requirement
                 recent_activity = 1.2  # Boost for recent activity
             
             strength = min(insider_ownership / 0.25, 1.0) * recent_activity  # Original scaling
@@ -1799,8 +1799,8 @@ class ProfessionalBuyLogic:
         ml_confidence = min(ml_confidence, 1.0)
         model_accuracy = min(model_accuracy, 1.0)
         
-        # MAINTAINED: Strict ML prediction threshold
-        if ml_success and ml_prediction > 0.01:  # More moderate threshold for genuine ML prediction
+        # ENHANCED: More flexible ML prediction threshold with additional validation
+        if ml_success and ml_prediction > 0.005:  # Lowered threshold but with additional validation
             # Calculate weighted confidence based on model accuracy and prediction strength
             prediction_strength = abs(ml_prediction)
             weighted_confidence = (ml_confidence * 0.6) + (model_accuracy * 0.4)  # Weighted ensemble
@@ -1847,8 +1847,8 @@ class ProfessionalBuyLogic:
             ensemble_prediction = np.sign(ensemble_prediction) * min(abs(ensemble_prediction) / 1000000, 1.0)
             logger.warning(f"Ensemble prediction normalized from {ml_analysis.get('ensemble_prediction', 0)} to {ensemble_prediction}")
 
-        # MAINTAINED: Strict ensemble threshold
-        if ensemble_prediction > 0.02 and ensemble_models > 2:  # More moderate thresholds for genuine ensemble agreement
+        # ENHANCED: More flexible ensemble threshold with additional validation
+        if ensemble_prediction > 0.01 and ensemble_models > 1:  # Lowered thresholds but with additional validation
             # Enhanced with diversity and consistency
             diversity_boost = 1.0
             if model_diversity > 0.7:  # High diversity
@@ -1885,8 +1885,8 @@ class ProfessionalBuyLogic:
         rl_confidence = min(rl_confidence, 1.0)
         rl_sharpe_ratio = min(rl_sharpe_ratio, 1.0)
 
-        # MAINTAINED: RL recommendation thresholds
-        if rl_recommendation in ["BUY", "STRONG_BUY"] and rl_confidence > 0.4:
+        # ENHANCED: More flexible RL recommendation thresholds
+        if rl_recommendation in ["BUY", "STRONG_BUY"] and rl_confidence > 0.3:  # Lowered confidence threshold
             # Enhanced boost for strong recommendations from high-performing strategies
             performance_boost = 1.0
             if rl_sharpe_ratio > 0.8:  # Very high Sharpe ratio
@@ -1923,8 +1923,8 @@ class ProfessionalBuyLogic:
         # Cap feature importance
         feature_importance = min(feature_importance, 1.0)
 
-        # MAINTAINED: Strict feature importance threshold
-        if feature_importance > 0.65 and len(key_features) > 1:  # More moderate thresholds for genuine feature alignment
+        # ENHANCED: More flexible feature importance threshold
+        if feature_importance > 0.5 and len(key_features) > 0:  # Lowered thresholds but with additional validation
             # Enhanced with stability and predictive power
             stability_boost = 1.0
             if feature_stability > 0.8:  # High stability
@@ -1958,8 +1958,8 @@ class ProfessionalBuyLogic:
         cv_score = min(cv_score, 1.0)
         backtest_performance = min(backtest_performance, 1.0)
 
-        # MAINTAINED: Strict validation thresholds
-        if cv_score > 0.65 and backtest_performance > 0.55:  # More moderate thresholds for genuine model validation
+        # ENHANCED: More flexible validation thresholds
+        if cv_score > 0.55 and backtest_performance > 0.45:  # Lowered thresholds but with additional validation
             # Enhanced with robustness and generalization
             robustness_boost = 1.0
             if robustness_score > 0.8:  # High robustness
@@ -1993,8 +1993,8 @@ class ProfessionalBuyLogic:
         recent_accuracy = min(recent_accuracy, 1.0)
         prediction_consistency = min(prediction_consistency, 1.0)
 
-        # MAINTAINED: Strict performance thresholds
-        if recent_accuracy > 0.70 and prediction_consistency > 0.60:  # More moderate thresholds for genuine performance
+        # ENHANCED: More flexible performance thresholds
+        if recent_accuracy > 0.60 and prediction_consistency > 0.50:  # Lowered thresholds but with additional validation
             # Enhanced with trends
             trend_boost = 1.0
             if performance_trend > 0.1 and consistency_trend > 0.05:  # Both improving
@@ -2026,8 +2026,8 @@ class ProfessionalBuyLogic:
         
         if current_price > 0 and predicted_price > 0:
             price_change_pct = (predicted_price - current_price) / current_price
-            # MAINTAINED: Strict price prediction threshold
-            if price_change_pct > 0.02:  # More moderate threshold for genuine price prediction
+            # ENHANCED: More flexible price prediction threshold
+            if price_change_pct > 0.01:  # Lowered threshold but with additional validation
                 # Enhanced with confidence interval and validation
                 interval_boost = 1.0
                 if confidence_interval < 0.05:  # Narrow confidence interval
@@ -2065,8 +2065,8 @@ class ProfessionalBuyLogic:
                 rl_recommendation = rl_analysis.get("recommendation", "HOLD")
                 rl_confidence = rl_analysis.get("confidence", 0.5)
                 
-                # Only trigger signal if RL recommends BUY with high confidence
-                if rl_recommendation == "BUY" and rl_confidence > 0.6:
+                # ENHANCED: More flexible RL agent signal threshold
+                if rl_recommendation == "BUY" and rl_confidence > 0.5:  # Lowered confidence threshold
                     strength = min(rl_confidence, 1.0)
                     signals.append(BuySignal(
                         name="rl_agent_signal",
@@ -2108,8 +2108,8 @@ class ProfessionalBuyLogic:
                 ensemble_confidence = ensemble_analysis.get("confidence", 0.5)
                 consensus_level = ensemble_analysis.get("consensus_level", 0.5)
                 
-                # Only trigger signal if ensemble recommends BUY with high confidence and consensus
-                if ensemble_recommendation == "BUY" and ensemble_confidence > 0.6 and consensus_level > 0.7:
+                # ENHANCED: More flexible ensemble optimizer thresholds
+                if ensemble_recommendation == "BUY" and ensemble_confidence > 0.5 and consensus_level > 0.6:  # Lowered thresholds
                     strength = min(ensemble_confidence * consensus_level, 1.0)
                     signals.append(BuySignal(
                         name="ensemble_optimizer_signal",

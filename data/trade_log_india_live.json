@@ -22,5 +22,13 @@
         "qty": 5,
         "price": 93.18,
         "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-10-15 10:10:21.953242",
+        "asset": "PARAS.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 694.15,
+        "pnl": 0.0
     }
 ]
