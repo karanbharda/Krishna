@@ -17,6 +17,7 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 from concurrent.futures import ThreadPoolExecutor
 import requests
+import random
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -83,6 +84,8 @@ class FyersDataService:
         self.last_update = datetime.now()
         self.update_interval = 5  # seconds
         self.max_retries = 3
+        # Allow opt-in mock mode via environment variable FYERS_ALLOW_MOCK
+        self.allow_mock_mode = os.getenv('FYERS_ALLOW_MOCK', 'false').lower() in ('1', 'true', 'yes')
         
         # Dynamic watchlist - starts empty, stocks added on-demand
         self.watchlist = set()  # Use set for O(1) lookups and automatic deduplication
@@ -313,6 +316,11 @@ class FyersDataService:
     
     def fetch_market_data(self) -> Dict[str, MarketData]:
         """Fetch market data from Fyers API - ONLY REAL DATA"""
+        # If mock mode is enabled, generate mock data instead of requiring a live connection
+        if self.allow_mock_mode:
+            logger.debug("FYERS_ALLOW_MOCK enabled - generating mock market data")
+            return self.generate_mock_data()
+
         if not self.is_connected or not self.fyers_client:
             logger.error("Fyers not connected - cannot fetch real data")
             return {}
@@ -414,6 +422,47 @@ class FyersDataService:
             return {}
 
         return data
+
+    def generate_mock_data(self) -> Dict[str, MarketData]:
+        """Generate simple mock market data for watchlist symbols.
+
+        This is intentionally lightweight: it uses a random price within a range
+        and preserves reasonable fields so callers and the API can operate
+        without a live Fyers connection when FYERS_ALLOW_MOCK is enabled.
+        """
+        data: Dict[str, MarketData] = {}
+
+        try:
+            if not self.watchlist:
+                logger.debug("Mock mode: no symbols in watchlist yet")
+                return {}
+
+            for symbol in self.watchlist:
+                # Create a plausible mock price (randomized)
+                base_price = random.uniform(50.0, 2000.0)
+                # small random drift for change
+                change = random.uniform(-5.0, 5.0)
+                change_pct = (change / max(base_price - change, 1.0)) * 100.0
+
+                market_data = MarketData(
+                    symbol=symbol,
+                    price=round(base_price, 2),
+                    change=round(change, 2),
+                    change_pct=round(change_pct, 2),
+                    volume=int(random.uniform(1000, 100000)),
+                    high=round(base_price + abs(random.uniform(0.0, 10.0)), 2),
+                    low=round(base_price - abs(random.uniform(0.0, 10.0)), 2),
+                    open=round(base_price - change, 2),
+                    timestamp=datetime.now().isoformat()
+                )
+
+                data[symbol] = market_data
+
+            logger.info(f"Mock mode: generated mock data for {len(data)} symbols")
+        except Exception as e:
+            logger.error(f"Error generating mock data: {e}")
+
+        return data
     
     # REMOVED: generate_mock_data method - ONLY REAL FYERS DATA ALLOWED
 
@@ -422,12 +471,16 @@ class FyersDataService:
         if self.is_running:
             return
 
-        if not self.is_connected:
-            logger.error("Cannot start data updates - Fyers not connected")
+        # Allow starting updates if either connected to Fyers or mock mode is enabled
+        if not self.is_connected and not self.allow_mock_mode:
+            logger.error("Cannot start data updates - Fyers not connected and mock mode disabled")
             return
 
         self.is_running = True
-        logger.info("Starting background data updates with REAL Fyers data")
+        if self.allow_mock_mode and not self.is_connected:
+            logger.warning("Starting background data updates in MOCK mode (FYERS_ALLOW_MOCK=true)")
+        else:
+            logger.info("Starting background data updates with REAL Fyers data")
 
         # Start background task
         self.data_update_task = asyncio.create_task(self.data_update_loop())
@@ -486,13 +539,18 @@ class FyersDataService:
         logger.info("Watchlist starts empty - stocks added automatically when requested")
         logger.info("Starting background data updates")
 
-        # MUST connect to Fyers - no fallback allowed
+        # Try to connect to Fyers first
         connection_success = await self.connect_to_fyers()
 
         if not connection_success:
-            logger.error("CRITICAL: Failed to connect to Fyers API")
-            logger.error("Service cannot start without real data connection")
-            raise Exception("Fyers connection required - no mock data allowed")
+            if self.allow_mock_mode:
+                logger.warning("Failed to connect to Fyers API but FYERS_ALLOW_MOCK is enabled")
+                logger.warning("Starting service in MOCK DATA mode - not suitable for production!")
+            else:
+                logger.error("CRITICAL: Failed to connect to Fyers API")
+                logger.error("Service cannot start without real data connection")
+                logger.error("Set FYERS_ALLOW_MOCK=true to enable mock mode for development")
+                raise Exception("Fyers connection required - no mock data allowed")
 
         await self.start_data_updates()
 

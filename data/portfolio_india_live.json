@@ -1,5 +1,5 @@
 {
-    "cash": 6123.18,
+    "cash": 4429.81,
     "holdings": {
         "KRBL": {
             "qty": 3,
@@ -11,25 +11,10 @@
             "avg_price": 93.39,
             "last_price": 93.39
         },
-        "IDBI": {
-            "qty": 15,
-            "avg_price": 93.15,
-            "last_price": 93.15
-        },
-        "HINDALCO": {
-            "qty": 1,
-            "avg_price": 775.65,
-            "last_price": 775.65
-        },
-        "HDFCBANK": {
-            "qty": 1,
-            "avg_price": 974.15,
-            "last_price": 974.15
-        },
         "SUZLON": {
-            "qty": 6,
-            "avg_price": 56.25333,
-            "last_price": 56.25333
+            "qty": 11,
+            "avg_price": 54.57,
+            "last_price": 54.57
         },
         "INOXWIND": {
             "qty": 1,
@@ -51,15 +36,15 @@
             "avg_price": 8.93,
             "last_price": 8.93
         },
+        "PGINVIT": {
+            "qty": 1,
+            "avg_price": 95.51,
+            "last_price": 95.51
+        },
         "NSLNISP": {
             "qty": 11,
             "avg_price": 43.75273,
             "last_price": 43.75273
-        },
-        "MRPL": {
-            "qty": 5,
-            "avg_price": 141.544,
-            "last_price": 141.544
         },
         "JSWENERGY": {
             "qty": 1,
@@ -67,14 +52,19 @@
             "last_price": 552.4
         },
         "IREDA": {
-            "qty": 2,
-            "avg_price": 159.34,
-            "last_price": 159.34
+            "qty": 15,
+            "avg_price": 153.78467,
+            "last_price": 153.78467
         },
         "VEDL": {
-            "qty": 8,
-            "avg_price": 481.4,
-            "last_price": 481.4
+            "qty": 15,
+            "avg_price": 479.35333,
+            "last_price": 479.35333
+        },
+        "ONGC": {
+            "qty": 1,
+            "avg_price": 247.1,
+            "last_price": 247.1
         },
         "TATAPOWER": {
             "qty": 1,
@@ -92,9 +82,14 @@
             "last_price": 225.05
         },
         "HFCL": {
-            "qty": 2,
-            "avg_price": 75.63,
-            "last_price": 75.63
+            "qty": 6,
+            "avg_price": 75.64333,
+            "last_price": 75.64333
+        },
+        "ORIENTBELL": {
+            "qty": 1,
+            "avg_price": 287.9,
+            "last_price": 287.9
         },
         "IDEA": {
             "qty": 101,
@@ -106,6 +101,11 @@
             "avg_price": 263.55,
             "last_price": 263.55
         },
+        "NTPC": {
+            "qty": 1,
+            "avg_price": 341.35,
+            "last_price": 341.35
+        },
         "3IINFOLTD": {
             "qty": 1,
             "avg_price": 20.0,
@@ -115,15 +115,10 @@
             "qty": 2,
             "avg_price": 79.01,
             "last_price": 79.01
-        },
-        "TATACAP": {
-            "qty": 3,
-            "avg_price": 326.65,
-            "last_price": 326.65
         }
     },
-    "starting_balance": 6123.18,
+    "starting_balance": 4429.81,
     "realized_pnl": 0.0,
     "unrealized_pnl": 0.0,
-    "last_updated": "2025-10-15T15:02:31.327844"
+    "last_updated": "2025-10-25T12:36:53.509511"
 }

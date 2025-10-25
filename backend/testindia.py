@@ -5687,7 +5687,11 @@ class StockTradingBot:
                             buy_decision.get("stop_loss", current_price * 0.95),
                             buy_decision.get("take_profit", current_price * 1.15)
                         )
-                        logger.info(f"✅ BUY ORDER EXECUTED: {buy_qty} {ticker} at Rs.{current_price:.2f}")
+                        # Update the logging to show both ticker and the actual security name from the result
+                        executed_ticker = success_result.get("ticker", ticker)
+                        order_id = success_result.get("order_id", "N/A")
+                        logger.info(f"✅ BUY ORDER EXECUTED: {buy_qty} {executed_ticker} at Rs.{current_price:.2f}")
+                        logger.info(f"   Order ID: {order_id}")
                         return {
                             "action": "buy",
                             "ticker": ticker,

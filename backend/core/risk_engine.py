@@ -22,16 +22,19 @@ class DynamicRiskEngine:
         """Load risk config from live_config.json"""
         if os.path.exists(self.config_path):
             with open(self.config_path, 'r') as f:
-                return json.load(f)
+                config = json.load(f)
+                # Standardize percentage values to decimal format
+                self._standardize_percentages(config)
+                return config
         else:
             # Default config if file doesn't exist
             default = {
-                "mode": "live",
+                "mode": "paper",
                 "riskLevel": "MEDIUM",
-                "stop_loss_pct": 0.05,
-                "max_capital_per_trade": 0.20,
+                "stop_loss_pct": 0.05,          # Standardized as decimal
+                "max_capital_per_trade": 0.20,   # Standardized as decimal
                 "max_trade_limit": 100,
-                "drawdown_limit_pct": 0.15,
+                "drawdown_limit_pct": 0.15,      # Standardized as decimal
                 "created_at": datetime.now().isoformat()
             }
             os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
@@ -39,16 +42,36 @@ class DynamicRiskEngine:
                 json.dump(default, f, indent=2)
             return default
 
+    def _standardize_percentages(self, config: Dict[str, Any]):
+        """Standardize percentage values to decimal format"""
+        percentage_keys = ["stop_loss_pct", "max_capital_per_trade", "drawdown_limit_pct"]
+        
+        for key in percentage_keys:
+            if key in config:
+                value = config[key]
+                # If value is greater than 1, it's likely in percentage format
+                if isinstance(value, (int, float)) and value > 1:
+                    # Convert from percentage to decimal (e.g., 5 -> 0.05)
+                    config[key] = value / 100
+                # Ensure value is within reasonable bounds
+                config[key] = max(0.01, min(config[key], 0.5))  # 1% to 50%
+
     def set_trading_bot(self, trading_bot):
         """Set reference to the trading bot instance"""
         self.trading_bot = trading_bot
 
     def update_risk_profile(self, stop_loss_pct: float, capital_risk_pct: float, drawdown_limit_pct: float):
         """Update risk settings dynamically and save to live_config.json"""
-        self.config["stop_loss_pct"] = stop_loss_pct / 100  # Convert % to decimal
-        self.config["max_capital_per_trade"] = capital_risk_pct / 100
-        self.config["drawdown_limit_pct"] = drawdown_limit_pct / 100
+        # Ensure all values are in decimal format (not percentages)
+        self.config["stop_loss_pct"] = stop_loss_pct / 100 if stop_loss_pct > 1 else stop_loss_pct
+        self.config["max_capital_per_trade"] = capital_risk_pct / 100 if capital_risk_pct > 1 else capital_risk_pct
+        self.config["drawdown_limit_pct"] = drawdown_limit_pct / 100 if drawdown_limit_pct > 1 else drawdown_limit_pct
         self.config["updated_at"] = datetime.now().isoformat()
+        
+        # Validate bounds
+        self.config["stop_loss_pct"] = max(0.01, min(self.config["stop_loss_pct"], 0.20))  # 1% to 20%
+        self.config["max_capital_per_trade"] = max(0.05, min(self.config["max_capital_per_trade"], 0.50))  # 5% to 50%
+        self.config["drawdown_limit_pct"] = max(0.05, min(self.config["drawdown_limit_pct"], 0.30))  # 5% to 30%
         
         with open(self.config_path, 'w') as f:
             json.dump(self.config, f, indent=2)

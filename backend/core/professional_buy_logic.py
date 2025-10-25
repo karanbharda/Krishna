@@ -1886,9 +1886,15 @@ class ProfessionalBuyLogic:
             ml_confidence = min(ml_confidence / 1000000, 1.0)
             logger.warning(f"ML confidence value normalized from {ml_analysis.get('confidence', 0)} to {ml_confidence}")
         
-        # Cap confidence and accuracy values to prevent extreme values
-        ml_confidence = min(ml_confidence, 1.0)
-        model_accuracy = min(model_accuracy, 1.0)
+        # Validate ML values to prevent extreme values
+        if isinstance(ml_prediction, (int, float)):
+            ml_prediction = max(-1.0, min(ml_prediction, 1.0))  # Clamp to -1 to 1 range
+        
+        if isinstance(ml_confidence, (int, float)):
+            ml_confidence = max(0.0, min(ml_confidence, 1.0))  # Clamp to 0 to 1 range
+        
+        if isinstance(model_accuracy, (int, float)):
+            model_accuracy = max(0.0, min(model_accuracy, 1.0))  # Clamp to 0 to 1 range
         
         # ENHANCED: More flexible ML prediction threshold with additional validation
         if ml_success and ml_prediction > 0.005:  # Lowered threshold but with additional validation
@@ -1909,6 +1915,10 @@ class ProfessionalBuyLogic:
             
             # Enhanced with recent performance validation
             recent_performance = ml_analysis.get("recent_performance", 1.0)
+            # Validate recent performance
+            if isinstance(recent_performance, (int, float)):
+                recent_performance = max(0.0, min(recent_performance, 2.0))  # Clamp to 0 to 2 range
+            
             performance_boost = 1.0
             if recent_performance > 1.1:  # Outperforming recent trends
                 performance_boost = 1.15  # Boost for recent performance
@@ -1952,6 +1962,7 @@ class ProfessionalBuyLogic:
             # Higher confidence for multi-model agreement
             model_agreement = min(ensemble_models / 5, 1.0)  # Adjust scaling
             strength = min(abs(ensemble_prediction) / 0.07, 1.0) * (1 + model_agreement * 0.2) * diversity_boost * consistency_boost  # Enhanced scaling
+
 
             signals.append(BuySignal(
                 name="ensemble_bullish_consensus",
@@ -2562,27 +2573,58 @@ class ProfessionalBuyLogic:
             regime_detector = get_regime_detector()
             regime_params = regime_detector.get_regime_parameters()
             
-            return regime_params
-            
-            # Apply regime-specific adjustments
+            # Apply regime-specific adjustments with more sophisticated algorithms
             adapted_params = {
                 'rsi_buy_threshold': regime_params.get('rsi_buy_threshold', 30),
                 'rsi_sell_threshold': regime_params.get('rsi_sell_threshold', 70),
                 'position_size_multiplier': regime_params.get('position_size_multiplier', 1.0),
-                'stop_loss_multiplier': regime_params.get('stop_loss_multiplier', 1.0)
+                'stop_loss_multiplier': regime_params.get('stop_loss_multiplier', 1.0),
+                'signal_sensitivity': regime_params.get('signal_sensitivity', 1.0),
+                'volatility_adjustment': regime_params.get('volatility_adjustment', 1.0)
             }
             
-            logger.info(f"Market regime adaptation: {market_context.trend.value} -> {adapted_params}")
+            # Enhanced market regime classification
+            if market_context.trend in [MarketTrend.STRONG_UPTREND]:
+                market_regime = "BULLISH"
+            elif market_context.trend in [MarketTrend.STRONG_DOWNTREND]:
+                market_regime = "BEARISH"
+            elif market_context.trend in [MarketTrend.UPTREND]:
+                market_regime = "MODERATELY_BULLISH"
+            elif market_context.trend in [MarketTrend.DOWNTREND]:
+                market_regime = "MODERATELY_BEARISH"
+            else:
+                market_regime = "NEUTRAL"
+            
+            # Adjust parameters based on sophisticated regime analysis
+            if market_regime == "BULLISH":
+                adapted_params['signal_sensitivity'] = 1.2  # More sensitive to buy signals
+                adapted_params['position_size_multiplier'] = 1.1  # Slightly more aggressive
+            elif market_regime == "BEARISH":
+                adapted_params['signal_sensitivity'] = 0.7  # Less sensitive to buy signals
+                adapted_params['position_size_multiplier'] = 0.6  # More conservative
+            elif market_regime == "MODERATELY_BULLISH":
+                adapted_params['signal_sensitivity'] = 1.1
+                adapted_params['position_size_multiplier'] = 1.0
+            elif market_regime == "MODERATELY_BEARISH":
+                adapted_params['signal_sensitivity'] = 0.8
+                adapted_params['position_size_multiplier'] = 0.8
+            else:  # NEUTRAL
+                adapted_params['signal_sensitivity'] = 1.0
+                adapted_params['position_size_multiplier'] = 0.9
+            
+            logger.info(f"Market regime adaptation: {market_regime} -> {adapted_params}")
             return adapted_params
             
         except Exception as e:
             logger.warning(f"Market regime adaptation failed: {e}")
-            # Return default parameters
+            # Return default parameters with conservative settings
             return {
                 'rsi_buy_threshold': 30,
                 'rsi_sell_threshold': 70,
-                'position_size_multiplier': 1.0,
-                'stop_loss_multiplier': 1.0
+                'position_size_multiplier': 0.9,
+                'stop_loss_multiplier': 1.0,
+                'signal_sensitivity': 1.0,
+                'volatility_adjustment': 1.0
             }
     
     def _check_liquidity(self, ticker: str, stock_metrics: StockMetrics, technical_analysis: Dict) -> Dict:

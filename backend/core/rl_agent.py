@@ -277,6 +277,19 @@ class RLFilteringAgent:
             change = float(data.get('change', 0))
             change_pct = float(data.get('change_pct', 0))
             
+            # Validate inputs to prevent extreme values
+            if price < 0 or price > 1000000:  # Reasonable price range
+                price = 100.0  # Default fallback
+            
+            if volume < 0 or volume > 1e12:  # Reasonable volume range
+                volume = 1000000.0  # Default fallback
+            
+            if abs(change) > 1000:  # Reasonable change range
+                change = 0.0  # Default fallback
+            
+            if abs(change_pct) > 100:  # Reasonable percentage change
+                change_pct = 0.0  # Default fallback
+            
             # Normalize features
             price_norm = min(price / 1000, 10)  # Normalize price
             volume_norm = min(volume / 1000000, 10)  # Normalize volume
@@ -297,6 +310,11 @@ class RLFilteringAgent:
                 0,  # Reserved
                 0   # Reserved
             ], dtype=np.float32)
+            
+            # Validate that all features are finite numbers
+            if not np.isfinite(features).all():
+                logger.warning("Non-finite values detected in features, using defaults")
+                features = np.zeros(10, dtype=np.float32)
             
             return features
             

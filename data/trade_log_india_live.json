@@ -38,5 +38,13 @@
         "qty": 3,
         "price": 93.14,
         "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-10-24 14:40:55.408872",
+        "asset": "POWERGRID.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 287.25,
+        "pnl": 0.0
     }
 ]

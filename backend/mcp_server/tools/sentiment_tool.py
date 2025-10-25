@@ -46,6 +46,40 @@ except ImportError:
     END = None
     ToolExecutor = None
 
+# Fix for Prometheus CollectorRegistry issue - use a shared registry pattern
+try:
+    from prometheus_client import Counter, Histogram, Gauge
+    # Use the default registry to avoid duplication
+    import prometheus_client
+    
+    # Check if metrics already exist to avoid duplication
+    def get_or_create_counter(name, description, labelnames):
+        try:
+            return prometheus_client.Counter(name, description, labelnames)
+        except ValueError:
+            # Counter already exists, get it from the registry
+            return prometheus_client.REGISTRY._names_to_collectors[name]
+    
+    def get_or_create_histogram(name, description):
+        try:
+            return prometheus_client.Histogram(name, description)
+        except ValueError:
+            # Histogram already exists, get it from the registry
+            return prometheus_client.REGISTRY._names_to_collectors[name]
+    
+    SENTIMENT_TOOL_CALLS = get_or_create_counter('mcp_sentiment_tool_calls_total', 'Sentiment tool calls', ['status'])
+    SENTIMENT_ANALYSIS_DURATION = get_or_create_histogram('mcp_sentiment_analysis_duration_seconds', 'Sentiment analysis duration')
+except ImportError:
+    # Create dummy metrics if prometheus is not available
+    class DummyMetric:
+        def __init__(self, *args, **kwargs): pass
+        def labels(self, *args, **kwargs): return self
+        def inc(self): pass
+        def observe(self, value): pass
+    
+    SENTIMENT_TOOL_CALLS = DummyMetric()
+    SENTIMENT_ANALYSIS_DURATION = DummyMetric()
+
 logger = logging.getLogger(__name__)
 
 # Log LangChain availability after logger is defined

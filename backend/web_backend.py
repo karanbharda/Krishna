@@ -3383,6 +3383,9 @@ async def _ensure_mcp_initialized():
             # Import tools
             from mcp_server.tools.prediction_tool import PredictionTool
             from mcp_server.tools.scan_tool import ScanTool
+            from mcp_server.tools.execution_tool import ExecutionTool
+            from mcp_server.tools.portfolio_tool import PortfolioTool
+            from mcp_server.tools.risk_management_tool import RiskManagementTool
             
             # Initialize tools
             prediction_tool = PredictionTool({
@@ -3397,6 +3400,30 @@ async def _ensure_mcp_initialized():
                 "ollama_enabled": True,
                 "ollama_host": "http://localhost:11434",
                 "ollama_model": "llama3.1:8b"
+            })
+            
+            execution_tool = ExecutionTool({
+                "tool_id": "execution_tool",
+                "trading_mode": "paper",
+                "max_order_value": 100000,
+                "max_position_size": 0.25,
+                "daily_loss_limit": 0.05
+            })
+            
+            portfolio_tool = PortfolioTool({
+                "tool_id": "portfolio_tool",
+                "portfolio_agent": {},
+                "risk_agent": {}
+            })
+            
+            risk_management_tool = RiskManagementTool({
+                "tool_id": "risk_management_tool",
+                "risk_agent": {},
+                "portfolio_var_limit": 0.05,
+                "position_size_limit": 0.25,
+                "concentration_limit": 0.4,
+                "correlation_limit": 0.8,
+                "liquidity_threshold": 0.3
             })
             
             # Register prediction tool
@@ -3457,6 +3484,104 @@ async def _ensure_mcp_initialized():
                         "natural_query": {"type": "string"}
                     },
                     "required": []
+                }
+            )
+            
+            # Register execution tool
+            mcp_server.register_tool(
+                name="execute_trade",
+                function=execution_tool.execute_trade,
+                description="Execute a trade order with comprehensive risk checks",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "symbol": {"type": "string"},
+                        "side": {"type": "string"},
+                        "quantity": {"type": "number"},
+                        "order_type": {"type": "string"},
+                        "price": {"type": "number"},
+                        "stop_loss": {"type": "number"},
+                        "take_profit": {"type": "number"}
+                    },
+                    "required": ["symbol", "side", "quantity"]
+                }
+            )
+            
+            # Register portfolio analysis tool
+            mcp_server.register_tool(
+                name="analyze_portfolio",
+                function=portfolio_tool.analyze_portfolio,
+                description="Comprehensive portfolio analysis",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "portfolio_id": {"type": "string"},
+                        "analysis_type": {"type": "string"},
+                        "time_period": {"type": "string"},
+                        "benchmark": {"type": "string"},
+                        "include_recommendations": {"type": "boolean"}
+                    },
+                    "required": ["portfolio_id"]
+                }
+            )
+            
+            # Register portfolio optimization tool
+            mcp_server.register_tool(
+                name="optimize_portfolio",
+                function=portfolio_tool.optimize_portfolio,
+                description="Portfolio optimization with multiple methods",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "portfolio_id": {"type": "string"},
+                        "optimization_method": {"type": "string"},
+                        "risk_tolerance": {"type": "number"},
+                        "target_return": {"type": "number"},
+                        "constraints": {
+                            "type": "object",
+                            "properties": {
+                                "max_position_size": {"type": "number"}
+                            }
+                        }
+                    },
+                    "required": ["portfolio_id"]
+                }
+            )
+            
+            # Register risk assessment tool
+            mcp_server.register_tool(
+                name="assess_portfolio_risk",
+                function=risk_management_tool.assess_portfolio_risk,
+                description="Comprehensive portfolio risk assessment",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "portfolio_id": {"type": "string"},
+                        "assessment_type": {"type": "string"},
+                        "risk_metrics": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "confidence_level": {"type": "number"},
+                        "time_horizon": {"type": "number"}
+                    },
+                    "required": ["portfolio_id"]
+                }
+            )
+            
+            # Register position risk assessment tool
+            mcp_server.register_tool(
+                name="assess_position_risk",
+                function=risk_management_tool.assess_position_risk,
+                description="Individual position risk assessment",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "portfolio_id": {"type": "string"},
+                        "symbol": {"type": "string"},
+                        "position_size": {"type": "number"}
+                    },
+                    "required": ["portfolio_id", "symbol"]
                 }
             )
 

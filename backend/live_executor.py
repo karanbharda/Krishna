@@ -411,6 +411,7 @@ class LiveTradingExecutor:
                 self._update_daily_trade_count()
                 
                 logger.info(f"Buy order placed: {quantity} {symbol} at Rs.{current_price:.2f}")
+                logger.info(f"   Order ID: {order_id}")
                 
                 return {
                     "success": True,

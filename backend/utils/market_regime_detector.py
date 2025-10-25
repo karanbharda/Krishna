@@ -120,13 +120,27 @@ class MarketRegimeDetector:
             # RSI
             rsi = self._calculate_rsi(close, 14)
             
+            # MACD
+            macd_line, signal_line, _ = self._calculate_macd(close)
+            macd_histogram = macd_line - signal_line
+            
+            # Bollinger Bands
+            bb_upper, bb_lower, bb_middle = self._calculate_bollinger_bands(close)
+            bb_width = (bb_upper - bb_lower) / bb_middle if bb_middle != 0 else 0
+            
+            # ADX for trend strength
+            adx = self._calculate_adx(data, 14)
+            
             return {
                 'sma_20': sma_20.iloc[-1] if not pd.isna(sma_20.iloc[-1]) else close.iloc[-1],
                 'sma_50': sma_50.iloc[-1] if not pd.isna(sma_50.iloc[-1]) else close.iloc[-1],
                 'trend_slope': trend_slope,
                 'momentum_20': momentum_20,
                 'volatility': volatility,
-                'rsi': rsi
+                'rsi': rsi,
+                'macd_histogram': macd_histogram.iloc[-1] if not pd.isna(macd_histogram.iloc[-1]) else 0,
+                'bb_width': bb_width,
+                'adx': adx
             }
             
         except Exception as e:
@@ -159,25 +173,97 @@ class MarketRegimeDetector:
         except Exception:
             return 50.0
     
+    def _calculate_macd(self, close: pd.Series, fast_period: int = 12, slow_period: int = 26, signal_period: int = 9) -> Tuple:
+        """Calculate MACD"""
+        try:
+            ema_fast = close.ewm(span=fast_period).mean()
+            ema_slow = close.ewm(span=slow_period).mean()
+            macd_line = ema_fast - ema_slow
+            signal_line = macd_line.ewm(span=signal_period).mean()
+            histogram = macd_line - signal_line
+            return macd_line, signal_line, histogram
+        except Exception:
+            return pd.Series(0), pd.Series(0), pd.Series(0)
+    
+    def _calculate_bollinger_bands(self, close: pd.Series, period: int = 20, std_dev: int = 2) -> Tuple:
+        """Calculate Bollinger Bands"""
+        try:
+            sma = close.rolling(period).mean()
+            std = close.rolling(period).std()
+            upper_band = sma + (std * std_dev)
+            lower_band = sma - (std * std_dev)
+            return upper_band.iloc[-1], lower_band.iloc[-1], sma.iloc[-1]
+        except Exception:
+            current_price = close.iloc[-1] if len(close) > 0 else 100
+            return current_price * 1.02, current_price * 0.98, current_price
+    
+    def _calculate_adx(self, data: pd.DataFrame, period: int = 14) -> float:
+        """Calculate ADX for trend strength"""
+        try:
+            high = data['High']
+            low = data['Low']
+            close = data['Close']
+            
+            # Calculate True Range
+            tr1 = abs(high - low)
+            tr2 = abs(high - close.shift())
+            tr3 = abs(low - close.shift())
+            tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+            
+            # Calculate Directional Movement
+            up_move = high - high.shift()
+            down_move = low.shift() - low
+            
+            # Calculate +DM and -DM
+            plus_dm = up_move.where((up_move > down_move) & (up_move > 0), 0)
+            minus_dm = down_move.where((down_move > up_move) & (down_move > 0), 0)
+            
+            # Smooth values
+            atr = tr.rolling(period).mean()
+            plus_di = 100 * (plus_dm.rolling(period).sum() / atr)
+            minus_di = 100 * (minus_dm.rolling(period).sum() / atr)
+            
+            # Calculate ADX
+            dx = 100 * abs(plus_di - minus_di) / (plus_di + minus_di)
+            adx = dx.rolling(period).mean()
+            
+            return adx.iloc[-1] if not pd.isna(adx.iloc[-1]) else 20.0
+        except Exception:
+            return 20.0
+    
     def _detect_trend_regime(self, indicators: Dict) -> MarketRegime:
         """Detect regime based on trend"""
         trend_slope = indicators.get('trend_slope', 0)
+        adx = indicators.get('adx', 20)
+        sma_20 = indicators.get('sma_20', 100)
+        sma_50 = indicators.get('sma_50', 100)
         
-        if trend_slope > self.bull_threshold:
+        # Enhanced trend detection with ADX confirmation
+        if trend_slope > self.bull_threshold and adx > 25:
             return MarketRegime.BULL_MARKET
-        elif trend_slope < self.bear_threshold:
+        elif trend_slope < self.bear_threshold and adx > 25:
             return MarketRegime.BEAR_MARKET
-        else:
+        elif abs(trend_slope) < 0.1 and adx < 20:
             return MarketRegime.SIDEWAYS_MARKET
+        else:
+            # Use moving average relationship as fallback
+            if sma_20 > sma_50 * 1.05:
+                return MarketRegime.BULL_MARKET
+            elif sma_20 < sma_50 * 0.95:
+                return MarketRegime.BEAR_MARKET
+            else:
+                return MarketRegime.SIDEWAYS_MARKET
     
     def _detect_volatility_regime(self, indicators: Dict) -> MarketRegime:
         """Detect regime based on volatility"""
         volatility = indicators.get('volatility', 0.02)
+        bb_width = indicators.get('bb_width', 0.1)
         momentum = indicators.get('momentum_20', 0)
         
-        if volatility > self.volatility_threshold * 2:
+        # Enhanced volatility detection with Bollinger Band width
+        if volatility > self.volatility_threshold * 3 or bb_width > 0.1:
             return MarketRegime.VOLATILE_MARKET
-        elif volatility > self.volatility_threshold:
+        elif volatility > self.volatility_threshold * 1.5:
             return MarketRegime.BEAR_MARKET if momentum < -0.02 else MarketRegime.BULL_MARKET
         else:
             return MarketRegime.SIDEWAYS_MARKET
@@ -186,10 +272,12 @@ class MarketRegimeDetector:
         """Detect regime based on momentum"""
         rsi = indicators.get('rsi', 50)
         momentum = indicators.get('momentum_20', 0)
+        macd_hist = indicators.get('macd_histogram', 0)
         
-        if rsi > 55 and momentum > 0.05:
+        # Enhanced momentum detection with MACD confirmation
+        if rsi > 60 and momentum > 0.05 and macd_hist > 0:
             return MarketRegime.BULL_MARKET
-        elif rsi < 45 and momentum < -0.05:
+        elif rsi < 40 and momentum < -0.05 and macd_hist < 0:
             return MarketRegime.BEAR_MARKET
         else:
             return MarketRegime.SIDEWAYS_MARKET

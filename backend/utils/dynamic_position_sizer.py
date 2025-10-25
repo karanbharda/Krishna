@@ -113,6 +113,16 @@ class DynamicPositionSizer:
         Calculate optimal position size based on multiple factors
         """
         try:
+            # Validate inputs
+            validated_inputs = self._validate_inputs(
+                symbol, signal_strength, current_price, volatility, 
+                historical_data, portfolio_data
+            )
+            
+            if not validated_inputs['valid']:
+                logger.warning(f"Invalid inputs for {symbol}: {validated_inputs['errors']}")
+                return self._fallback_position_size(symbol, current_price)
+            
             # Update current capital
             self.current_capital = portfolio_data.get('total_value', self.initial_capital)
 
@@ -190,6 +200,63 @@ class DynamicPositionSizer:
             logger.error(f"Error calculating position size for {symbol}: {e}")
             return self._fallback_position_size(symbol, current_price)
     
+    def _validate_inputs(self, symbol: str, signal_strength: float, current_price: float, 
+                        volatility: float, historical_data: pd.DataFrame, portfolio_data: Dict) -> Dict:
+        """
+        Validate all inputs to prevent extreme values
+        """
+        errors = []
+        valid = True
+        
+        # Validate symbol
+        if not symbol or not isinstance(symbol, str):
+            errors.append("Invalid symbol")
+            valid = False
+        
+        # Validate signal strength (0.0 to 1.0)
+        if not isinstance(signal_strength, (int, float)) or signal_strength < 0 or signal_strength > 1:
+            errors.append(f"Invalid signal strength: {signal_strength}")
+            valid = False
+        
+        # Validate current price (must be positive)
+        if not isinstance(current_price, (int, float)) or current_price <= 0:
+            errors.append(f"Invalid current price: {current_price}")
+            valid = False
+        elif current_price > 1000000:  # Extremely high price
+            errors.append(f"Extremely high price: {current_price}")
+            valid = False
+        
+        # Validate volatility (0.0 to 1.0 is reasonable range)
+        if not isinstance(volatility, (int, float)) or volatility < 0:
+            errors.append(f"Invalid volatility: {volatility}")
+            valid = False
+        elif volatility > 1.0:  # Extremely high volatility
+            errors.append(f"Extremely high volatility: {volatility}")
+            valid = False
+        
+        # Validate historical data
+        if not isinstance(historical_data, pd.DataFrame):
+            errors.append("Invalid historical data type")
+            valid = False
+        elif len(historical_data) < 10:  # Need minimum data
+            errors.append(f"Insufficient historical data: {len(historical_data)} rows")
+            valid = False
+        
+        # Validate portfolio data
+        if not isinstance(portfolio_data, dict):
+            errors.append("Invalid portfolio data type")
+            valid = False
+        else:
+            total_value = portfolio_data.get('total_value', 0)
+            if not isinstance(total_value, (int, float)) or total_value < 0:
+                errors.append(f"Invalid portfolio total value: {total_value}")
+                valid = False
+            elif total_value > 1000000000:  # Extremely high portfolio value
+                errors.append(f"Extremely high portfolio value: {total_value}")
+                valid = False
+        
+        return {'valid': valid, 'errors': errors}
+    
     def _calculate_kelly_size(self, symbol: str, historical_data: pd.DataFrame, signal_strength: float) -> float:
         """
         Calculate position size using Kelly Criterion
@@ -218,16 +285,22 @@ class DynamicPositionSizer:
             
             # Kelly Criterion: f = (bp - q) / b
             # where b = odds received on the wager, p = win probability, q = loss probability
-            if avg_loss == 0:
+            if avg_loss <= 0 or avg_win <= 0:
                 return self.kelly_min_position
             
             odds_ratio = avg_win / avg_loss
+            # Prevent extreme odds ratios
+            odds_ratio = max(0.1, min(odds_ratio, 10.0))
+            
             kelly_fraction = (win_rate * odds_ratio - (1 - win_rate)) / odds_ratio
+            
+            # Prevent negative Kelly fractions
+            kelly_fraction = max(0.0, kelly_fraction)
             
             # Adjust for signal strength
             kelly_fraction *= signal_strength
             
-            # Apply bounds
+            # Apply bounds with more conservative maximum
             kelly_fraction = max(self.kelly_min_position, min(self.kelly_max_position, kelly_fraction))
             
             logger.debug(f"Kelly calculation: win_rate={win_rate:.3f}, avg_win={avg_win:.4f}, avg_loss={avg_loss:.4f}, kelly={kelly_fraction:.3f}")
@@ -276,15 +349,50 @@ class DynamicPositionSizer:
                 # No existing positions, use default
                 return 0.10
             
-            # Calculate risk contribution of existing positions
+            # Calculate risk contribution of existing positions with better correlation handling
             total_risk_contribution = 0
+            portfolio_volatility = 0
+            
+            # Get correlation data if available
+            correlations = portfolio_data.get('correlations', {})
+            
             for holding_symbol, holding_data in current_holdings.items():
                 holding_value = holding_data.get('current_value', 0)
-                holding_weight = holding_value / self.current_capital
-                # Assume average volatility for existing holdings if not available
-                holding_vol = 0.25  # Default assumption
-                risk_contribution = holding_weight * holding_vol
+                holding_weight = holding_value / self.current_capital if self.current_capital > 0 else 0
+                
+                # Use actual volatility if available, otherwise default
+                holding_vol = holding_data.get('volatility', 0.25)
+                
+                # Calculate risk contribution with correlation adjustment
+                if correlations and holding_symbol in correlations:
+                    # Use correlation-adjusted risk contribution
+                    correlation_adjusted_risk = 0
+                    for other_symbol, other_data in current_holdings.items():
+                        if other_symbol != holding_symbol:
+                            other_vol = other_data.get('volatility', 0.25)
+                            correlation = correlations.get(holding_symbol, {}).get(other_symbol, 0.5)
+                            correlation_adjusted_risk += holding_weight * holding_vol * other_vol * correlation
+                    risk_contribution = holding_weight * holding_vol + correlation_adjusted_risk
+                else:
+                    # Fallback to simple risk contribution
+                    risk_contribution = holding_weight * holding_vol
+                
                 total_risk_contribution += risk_contribution
+                portfolio_volatility += (holding_weight ** 2) * (holding_vol ** 2)
+            
+            # Add cross-correlation terms
+            if correlations:
+                for i, (symbol1, data1) in enumerate(current_holdings.items()):
+                    for j, (symbol2, data2) in enumerate(current_holdings.items()):
+                        if i < j:  # Avoid double counting
+                            weight1 = data1.get('current_value', 0) / self.current_capital if self.current_capital > 0 else 0
+                            weight2 = data2.get('current_value', 0) / self.current_capital if self.current_capital > 0 else 0
+                            vol1 = data1.get('volatility', 0.25)
+                            vol2 = data2.get('volatility', 0.25)
+                            correlation = correlations.get(symbol1, {}).get(symbol2, 0.5)
+                            portfolio_volatility += 2 * weight1 * weight2 * vol1 * vol2 * correlation
+            
+            portfolio_volatility = np.sqrt(portfolio_volatility) if portfolio_volatility > 0 else 0.25
             
             # Target equal risk contribution
             target_risk_per_position = self.volatility_target / (len(current_holdings) + 1)
@@ -453,9 +561,12 @@ class DynamicPositionSizer:
             atr_estimate = volatility * current_price
             stop_loss = current_price - (self.stop_loss_atr_multiplier * atr_estimate)
             
-            # Ensure stop loss is reasonable (not more than 15% down)
-            max_stop_loss = current_price * 0.85
-            stop_loss = max(stop_loss, max_stop_loss)
+            # Ensure stop loss is reasonable (not less than 15% down)
+            min_stop_loss = current_price * 0.85
+            stop_loss = max(stop_loss, min_stop_loss)
+            
+            # Ensure stop loss is always below current price for long positions
+            stop_loss = min(stop_loss, current_price * 0.99)  # At least 1% buffer
             
             return stop_loss
             
@@ -469,22 +580,35 @@ class DynamicPositionSizer:
         Calculate comprehensive risk metrics for the position
         """
         try:
+            # Validate inputs
+            if position_value <= 0 or current_price <= 0 or volatility <= 0:
+                raise ValueError("Invalid input values for risk metrics calculation")
+            
             # Position risk (max loss to stop loss)
-            max_loss = (current_price - stop_loss) / current_price
+            max_loss = (current_price - stop_loss) / current_price if current_price > 0 else 0
+            # Ensure max_loss is reasonable (0 to 1)
+            max_loss = max(0.0, min(max_loss, 1.0))
+            
             position_risk = position_value * max_loss
             
             # Portfolio risk (as % of total capital)
-            portfolio_risk_pct = position_risk / self.current_capital
+            portfolio_risk_pct = position_risk / self.current_capital if self.current_capital > 0 else 0
+            # Ensure portfolio risk is reasonable (0 to 1)
+            portfolio_risk_pct = max(0.0, min(portfolio_risk_pct, 1.0))
             
             # Daily VaR (95% confidence)
             daily_var_95 = position_value * volatility * 1.645  # 95% confidence
+            # Ensure VaR is reasonable
+            daily_var_95 = max(0.0, min(daily_var_95, position_value))
             
             # Sharpe ratio estimate (simplified)
             expected_return = 0.10  # Assume 10% expected annual return
             risk_free_rate = 0.03   # Assume 3% risk-free rate
-            excess_return = expected_return - risk_free_rate
+            excess_return = max(0, expected_return - risk_free_rate)  # Ensure non-negative
             annualized_vol = volatility * np.sqrt(252)
             sharpe_estimate = excess_return / annualized_vol if annualized_vol > 0 else 0
+            # Ensure Sharpe ratio is reasonable (-5 to 5)
+            sharpe_estimate = max(-5.0, min(sharpe_estimate, 5.0))
             
             return {
                 'position_risk': position_risk,
