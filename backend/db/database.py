@@ -88,10 +88,20 @@ def _default_db_uri() -> str:
 
 def init_db(db_path: str | None = None):
     """Initialize the database and create tables"""
-    db_uri = db_path if db_path else _default_db_uri()
-    engine = create_engine(db_uri)
-    Base.metadata.create_all(engine)
-    return engine
+    try:
+        db_uri = db_path if db_path else _default_db_uri()
+        logger.info(f"Initializing database with URI: {db_uri}")
+        engine = create_engine(db_uri)
+        logger.info("Creating database tables")
+        Base.metadata.create_all(engine)
+        logger.info("Database tables created successfully")
+        return engine
+    except Exception as e:
+        logger.error(f"Error initializing database: {e}")
+        logger.error(f"Error type: {type(e)}")
+        import traceback
+        logger.error(f"Full traceback: {traceback.format_exc()}")
+        raise
 
 def create_session(engine):
     """Create a new database session"""
@@ -100,8 +110,17 @@ def create_session(engine):
 
 class DatabaseManager:
     def __init__(self, db_path: str | None = None):
-        self.engine = init_db(db_path)
-        self.Session = sessionmaker(bind=self.engine)
+        logger.info(f"Initializing DatabaseManager with db_path: {db_path}")
+        try:
+            self.engine = init_db(db_path)
+            self.Session = sessionmaker(bind=self.engine)
+            logger.info("DatabaseManager initialized successfully")
+        except Exception as e:
+            logger.error(f"Error initializing DatabaseManager: {e}")
+            logger.error(f"Error type: {type(e)}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            raise
     
     def migrate_json_to_sqlite(self, data_dir: str):
         """Migrate existing JSON data to SQLite"""
@@ -120,12 +139,20 @@ class DatabaseManager:
             paper_trades = self._load_json(os.path.join(data_dir, 'trade_log_india_paper.json'))
             live_trades = self._load_json(os.path.join(data_dir, 'trade_log_india_live.json'))
             
+            # Debug logging
+            logger.info(f"Paper portfolio type: {type(paper_portfolio)}")
+            logger.info(f"Live portfolio type: {type(live_portfolio)}")
+            logger.info(f"Paper trades type: {type(paper_trades)}")
+            logger.info(f"Live trades type: {type(live_trades)}")
+            
             # Migrate paper portfolio
             if paper_portfolio:
+                logger.info("Migrating paper portfolio")
                 self._migrate_portfolio(session, paper_portfolio, 'paper', paper_trades)
             
             # Migrate live portfolio
             if live_portfolio:
+                logger.info("Migrating live portfolio")
                 self._migrate_portfolio(session, live_portfolio, 'live', live_trades)
             
             session.commit()
@@ -137,12 +164,13 @@ class DatabaseManager:
         except Exception as e:
             session.rollback()
             logger.error(f"Error during migration: {e}")
+            logger.error(f"Error type: {type(e)}")
             raise
         finally:
             session.close()
     
     def _load_json(self, filepath: str) -> Optional[Dict]:
-        """Load data from JSON file"""
+        """Load JSON file with error handling"""
         try:
             if os.path.exists(filepath):
                 with open(filepath, 'r') as f:
@@ -150,28 +178,29 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Error loading {filepath}: {e}")
         return None
-        
+    
     def _backup_json_files(self, data_dir: str):
-        """Create backups of JSON files"""
-        backup_dir = os.path.join(data_dir, 'backup', datetime.now().strftime('%Y%m%d_%H%M%S'))
+        """Create backup of original JSON files"""
+        backup_dir = os.path.join(data_dir, 'json_backup', datetime.now().strftime('%Y%m%d_%H%M%S'))
         os.makedirs(backup_dir, exist_ok=True)
         
-        files_to_backup = [
-            'portfolio_india_paper.json',
-            'portfolio_india_live.json',
-            'trade_log_india_paper.json',
-            'trade_log_india_live.json'
-        ]
-        
-        for filename in files_to_backup:
+        for filename in ['portfolio_india_paper.json', 'portfolio_india_live.json',
+                        'trade_log_india_paper.json', 'trade_log_india_live.json']:
             src = os.path.join(data_dir, filename)
             if os.path.exists(src):
-                dest = os.path.join(backup_dir, filename)
-                with open(src, 'r') as f_src, open(dest, 'w') as f_dest:
-                    f_dest.write(f_src.read())
-                    
+                dst = os.path.join(backup_dir, filename)
+                with open(src, 'r') as f_src, open(dst, 'w') as f_dst:
+                    f_dst.write(f_src.read())
+        
+        logger.info(f"Created JSON backups in {backup_dir}")
+    
     def _migrate_portfolio(self, session, portfolio_data: Dict, mode: str, trades_data: Optional[List] = None):
         """Migrate a portfolio and its trades to SQLite"""
+        logger.info(f"Migrating portfolio for mode {mode}")
+        logger.info(f"Portfolio data type: {type(portfolio_data)}")
+        logger.info(f"Trades data type: {type(trades_data)}")
+        logger.info(f"Trades data value: {trades_data}")
+        
         # Clean up any existing data for this mode
         portfolio = session.query(Portfolio).filter_by(mode=mode).first()
         if portfolio:
@@ -192,6 +221,8 @@ class DatabaseManager:
         
         # Create holdings
         holdings = portfolio_data.get('holdings', {})
+        logger.info(f"Holdings type: {type(holdings)}")
+        logger.info(f"Holdings value: {holdings}")
         for ticker, data in holdings.items():
             holding = Holding(
                 portfolio_id=portfolio.id,
@@ -203,8 +234,24 @@ class DatabaseManager:
             session.add(holding)
             
         # Create trades
-        if trades_data:
-            for trade_data in trades_data:
+        logger.info(f"Processing trades for {mode} mode")
+        if trades_data and isinstance(trades_data, list):
+            logger.info(f"Found {len(trades_data)} trades to migrate")
+            for i, trade_data in enumerate(trades_data):
+                logger.info(f"Processing trade {i}: {type(trade_data)}")
+                # Handle null values in trade data
+                pnl = trade_data.get('pnl')
+                if pnl is None:
+                    pnl = 0.0
+                    
+                stop_loss = trade_data.get('stop_loss')
+                if stop_loss is None:
+                    stop_loss = 0.0
+                    
+                take_profit = trade_data.get('take_profit')
+                if take_profit is None:
+                    take_profit = 0.0
+                
                 trade = Trade(
                     portfolio_id=portfolio.id,
                     timestamp=datetime.strptime(trade_data['timestamp'], '%Y-%m-%d %H:%M:%S.%f'),
@@ -212,36 +259,13 @@ class DatabaseManager:
                     action=trade_data['action'],
                     quantity=trade_data['qty'],
                     price=trade_data['price'],
-                    pnl=trade_data.get('pnl', 0.0),
-                    stop_loss=trade_data.get('stop_loss', 0.0),
-                    take_profit=trade_data.get('take_profit', 0.0),
+                    pnl=pnl,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit,
                     trade_metadata=trade_data.get('metadata', {})
                 )
                 session.add(trade)
+        else:
+            logger.info(f"No trades to migrate for {mode} mode")
                 
         session.flush()  # Ensure IDs are generated
-    
-    def _load_json(self, filepath: str) -> Dict:
-        """Load JSON file with error handling"""
-        try:
-            if os.path.exists(filepath):
-                with open(filepath, 'r') as f:
-                    return json.load(f)
-        except Exception as e:
-            logger.error(f"Error loading {filepath}: {e}")
-        return {}
-    
-    def _backup_json_files(self, data_dir: str):
-        """Create backup of original JSON files"""
-        backup_dir = os.path.join(data_dir, 'json_backup', datetime.now().strftime('%Y%m%d_%H%M%S'))
-        os.makedirs(backup_dir, exist_ok=True)
-        
-        for filename in ['portfolio_india_paper.json', 'portfolio_india_live.json',
-                        'trade_log_india_paper.json', 'trade_log_india_live.json']:
-            src = os.path.join(data_dir, filename)
-            if os.path.exists(src):
-                dst = os.path.join(backup_dir, filename)
-                with open(src, 'r') as f_src, open(dst, 'w') as f_dst:
-                    f_dst.write(f_src.read())
-        
-        logger.info(f"Created JSON backups in {backup_dir}")

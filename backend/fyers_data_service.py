@@ -578,7 +578,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Fyers Data Service")
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
-    parser.add_argument("--port", type=int, default=8001, help="Port to bind to")
+    parser.add_argument("--port", type=int, default=8002, help="Port to bind to")
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload")
 
     args = parser.parse_args()

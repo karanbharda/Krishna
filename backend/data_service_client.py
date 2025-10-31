@@ -17,7 +17,7 @@ class DataServiceError(Exception):
 class DataServiceClient:
     """Client to connect to Fyers Data Service"""
 
-    def __init__(self, base_url: str = "http://127.0.0.1:8001"):
+    def __init__(self, base_url: str = "http://127.0.0.1:8002"):
         self.base_url = base_url.rstrip('/')
         self.session = requests.Session()
         self.session.timeout = 10
@@ -212,9 +212,13 @@ class DataServiceClient:
         # Validate price is numeric
         try:
             price = float(data['price'])
-            if price <= 0:
-                logger.warning(f"Invalid price {price} for {symbol}")
+            # Allow zero prices but log a warning - some securities may have zero prices temporarily
+            if price < 0:
+                logger.warning(f"Invalid negative price {price} for {symbol}")
                 return False
+            elif price == 0:
+                logger.warning(f"Zero price for {symbol} - may indicate no trading activity or data issue")
+                # Still return True to allow processing, but with a warning
         except (ValueError, TypeError):
             logger.warning(f"Non-numeric price {data.get('price')} for {symbol}")
             return False
@@ -236,7 +240,11 @@ class DataServiceClient:
             price = float(data['price'])
             # Simple check: price should be within reasonable bounds
             # This would be more sophisticated with historical data
-            if price < 0.01 or price > 1000000:  # Reasonable bounds for Indian stocks
+            # Allow zero prices but check for extreme outliers
+            if price == 0:
+                # Zero prices are allowed but not considered outliers
+                return True
+            elif price < 0.01 or price > 1000000:  # Reasonable bounds for Indian stocks
                 return False
             return True
         except (ValueError, TypeError):

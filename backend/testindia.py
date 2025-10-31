@@ -50,6 +50,33 @@ import sys
 import signal
 import queue
 import logging.handlers
+import threading
+
+# Enhanced user agents to avoid detection
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:89.0) Gecko/20100101 Firefox/89.0",
+    "Mozilla/5.0 (X11; Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPad; CPU OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1"
+]
+
+# Enhanced web scraping imports
+try:
+    from selenium import webdriver
+    from selenium.webdriver.chrome.service import Service
+    from selenium.webdriver.common.by import By
+    from webdriver_manager.chrome import ChromeDriverManager
+    from selenium.webdriver.chrome.options import Options
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
+    SELENIUM_AVAILABLE = True
+except ImportError:
+    SELENIUM_AVAILABLE = False
+    logger.warning("Selenium not available for enhanced web scraping")
 
 # Fix import paths permanently - ensure backend modules can be imported
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -1493,9 +1520,15 @@ class DataFeed:
         data = {}
         for ticker in self.tickers:
             try:
+                # Add .NS suffix if ticker doesn't have an exchange suffix
+                formatted_ticker = ticker
+                if '.' not in ticker and not ticker.isdigit():
+                    formatted_ticker = ticker + '.NS'
+                    logger.debug(f"Auto-formatted ticker {ticker} to {formatted_ticker} in DataFeed")
+                
                 # Use Fyers first, fallback to yfinance - SAME LOGIC
-                df = get_stock_data_fyers_or_yf(ticker)
-                if not df.empty:
+                df = get_stock_data_fyers_or_yf(formatted_ticker)
+                if df is not None and not df.empty:
                     latest = df.iloc[-1]
                     data[ticker] = {
                         "price": latest["Close"],
@@ -1509,6 +1542,28 @@ class DataFeed:
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             **data
         }
+
+    def get_latest_price(self, ticker):
+        """Get the latest price for a specific ticker."""
+        try:
+            # Add .NS suffix if ticker doesn't have an exchange suffix
+            formatted_ticker = ticker
+            if '.' not in ticker and not ticker.isdigit():
+                formatted_ticker = ticker + '.NS'
+                logger.debug(f"Auto-formatted ticker {ticker} to {formatted_ticker} in DataFeed.get_latest_price")
+            
+            # Use Fyers first, fallback to yfinance - SAME LOGIC
+            df = get_stock_data_fyers_or_yf(formatted_ticker)
+            if df is not None and not df.empty:
+                latest = df.iloc[-1]
+                return latest["Close"]
+            else:
+                logger.warning(f"No data returned for {ticker}")
+                return None
+        except Exception as e:
+            logger.error(f"Error fetching latest price for {ticker}: {e}")
+            return None
+
 
 class VirtualPortfolio:
     def __init__(self, config):
@@ -2460,6 +2515,12 @@ class Stock:
         # PRODUCTION FIX: Add technical analysis caching for speed
         self.technical_cache = {}
         self.technical_cache_duration = 300  # 5 minutes cache
+        
+        # Initialize rate limiting trackers
+        self.rate_limit_tracker = {}
+        self.sentiment_rate_limit_tracker = {}
+        self.rate_limit_cooldown = 60  # 1 minute cooldown for regular rate limiting
+        self.sentiment_rate_limit_cooldown = 300  # 5 minute cooldown for sentiment APIs
 
     def get_company_names(self, ticker):
         """Get company names for news search using dynamic mapping"""
@@ -2952,104 +3013,487 @@ class Stock:
                     logger.warning(f"URL too long ({len(url)} chars), using simplified query")
                     # Use first company name only for very long queries
                     company_names = self.get_company_names(ticker.replace('.NS', ''))
-                    simple_query = f'"{company_names[0]}" stock' if company_names else ticker.replace('.NS', '')
-                    url = f"https://newsapi.org/v2/everything?q={quote(simple_query)}&from={yesterday}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
+                    if company_names:
+                        query = f'"{company_names[0]}" stock India'
 
-                # Add delay to avoid rate limits
-                import time
-                time.sleep(1.5)  # 1.5 second delay between requests to avoid 429 errors
+                # Build URL with simplified query
+                url = f"https://newsapi.org/v2/everything?q={quote(query)}&from={yesterday}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
 
-                # Fallback to general search if sources fail
-                try:
-                    response = requests.get(url, timeout=10)
-                    response.raise_for_status()
-                    data = response.json()
-                except (requests.exceptions.RequestException, requests.exceptions.HTTPError, ValueError, KeyError) as e:
-                    logger.warning(f"NewsAPI request with sources failed: {e}")
-                    # Fallback without specific sources but keep 24-hour filter
-                    fallback_url = f"https://newsapi.org/v2/everything?q={quote(query)}&from={yesterday}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
-                    # Check fallback URL length too
-                    if len(fallback_url) > 1800:
-                        company_names = self.get_company_names(ticker.replace('.NS', ''))
-                        simple_query = f'"{company_names[0]}" stock' if company_names else ticker.replace('.NS', '')
-                        fallback_url = f"https://newsapi.org/v2/everything?q={quote(simple_query)}&from={yesterday}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
-                    response = requests.get(fallback_url, timeout=10)
-                    response.raise_for_status()
-                    data = response.json()
+                response = requests.get(url, timeout=5)
+                response.raise_for_status()
+                data = response.json()
 
-                sentiments = {"positive": 0, "negative": 0, "neutral": 0}
-                total_articles = data.get("totalResults", 0)
+                # Process results
+                articles = data.get("articles", [])
+                sentiment = self.analyze_articles(articles)
+                return sentiment
 
-                if total_articles == 0:
-                    return sentiments
-
-                logger.info(f"Found {total_articles} articles for query: {query[:50]}...")
-
-                if "articles" in data:
-                    for article in data["articles"][:10]:
-                        description = article.get("description", "") or article.get("content", "")[:200]
-                        if description:
-                            sentiment = self.sentiment_analyzer.polarity_scores(description)
-
-                            # ENHANCED: Weight earnings/analyst news higher
-                            weight = 1.0
-                            earnings_keywords = ['earnings', 'quarterly', 'results', 'beat', 'miss', 'guidance',
-                                               'analyst', 'upgrade', 'downgrade', 'target', 'rating']
-                            if any(keyword in description.lower() for keyword in earnings_keywords):
-                                weight = 2.0  # Double weight for earnings/analyst news
-
-                            if sentiment["compound"] > 0.1:
-                                sentiments["positive"] += weight
-                            elif sentiment["compound"] < -0.1:
-                                sentiments["negative"] += weight
-                            else:
-                                sentiments["neutral"] += weight
-
-                return sentiments
-
-            except requests.exceptions.HTTPError as e:
-                if "429" in str(e):
-                    logger.warning(f"NewsAPI rate limit hit for query '{query[:50]}...': {e}")
-                    logger.info("Skipping this query to avoid further rate limits")
-                else:
-                    logger.warning(f"NewsAPI HTTP error for query '{query[:50]}...': {e}")
-                return {"positive": 0, "negative": 0, "neutral": 0}
             except Exception as e:
-                logger.warning(f"NewsAPI search failed for query '{query[:50]}...': {e}")
+                logger.error(f"Error fetching NewsAPI sentiment: {e}")
                 return {"positive": 0, "negative": 0, "neutral": 0}
 
-        try:
-            # Use simple, efficient search strategy to avoid rate limits
-            logger.info(f"Starting simple NewsAPI search for {ticker}")
+        return self.multi_level_search(ticker, search_with_query)
 
-            # Single focused query to avoid rate limits
-            basic_query = self.build_search_query(ticker)
-            result = search_with_query(basic_query)
+    def analyze_articles(self, articles):
+        """Analyze sentiment of articles"""
+        positive = 0
+        negative = 0
+        neutral = 0
 
-            # If basic search fails, try one fallback
-            if not self.has_meaningful_results(result):
-                logger.info(f"Basic search failed, trying company name search for {ticker}")
-                company_names = self.get_company_names(ticker.replace('.NS', ''))
-                if company_names:
-                    fallback_query = f'"{company_names[0]}" stock'
-                    result = search_with_query(fallback_query)
+        for article in articles:
+            try:
+                content = article.get("content", "") + " " + article.get("description", "")
+                sentiment = self.sentiment_analyzer.polarity_scores(content)
+                score = sentiment.get("compound", 0)
+
+                if score > 0.05:
+                    positive += 1
+                elif score < -0.05:
+                    negative += 1
                 else:
-                    result = {"positive": 0, "negative": 0, "neutral": 0}
+                    neutral += 1
 
-            return result
+            except Exception as e:
+                logger.error(f"Error analyzing article: {e}")
+                continue
 
+        return {"positive": positive, "negative": negative, "neutral": neutral}
+
+    def build_multi_level_search_queries(self, ticker):
+        """Build multi-level search queries for robust sentiment analysis"""
+        return [
+            {
+                "level": 1,
+                "description": "Primary financial news sources",
+                "query": self.build_source_specific_query(ticker, source_type='primary')
+            },
+            {
+                "level": 2,
+                "description": "Secondary news sources",
+                "query": self.build_source_specific_query(ticker, source_type='secondary')
+            },
+            {
+                "level": 3,
+                "description": "Regional news sources",
+                "query": self.build_source_specific_query(ticker, source_type='regional')
+            },
+            {
+                "level": 4,
+                "description": "Specialized financial sources",
+                "query": self.build_source_specific_query(ticker, source_type='specialized')
+            },
+            {
+                "level": 5,
+                "description": "Simple market-focused query",
+                "query": self.build_simple_market_query(ticker)
+            }
+        ]
+
+    def make_trading_decision(self, analysis):
+        """Make trading decision based on analysis"""
+        trade = self.trading_strategy.make_trade(analysis)
+        return trade
+
+    def run_analysis(self, ticker):
+        """Run analysis for a given ticker and return the result."""
+        analysis = self.stock_analyzer.analyze_stock(
+            ticker,
+            benchmark_tickers=self.config.get("benchmark_tickers", ["^NSEI"]),
+            prediction_days=self.config.get("prediction_days", 30),
+            training_period=self.config.get("period", "1y"),
+            bot_running=self.bot_running
+        )
+        
+        # Validate ML models if ML interface is available
+        if self.ml_interface:
+            try:
+                validation_result = self.ml_interface.validate_all_models()
+                if validation_result.get("success", False):
+                    logger.info(f"ML models validation completed for {ticker}")
+                    # Log any issues found
+                    validation_results = validation_result.get("validation_results", {})
+                    overall_health = validation_results.get("overall_health", {})
+                    if overall_health.get("status") != "healthy":
+                        logger.warning(f"ML models health status: {overall_health.get('status', 'unknown')}")
+                else:
+                    logger.warning(f"ML models validation failed: {validation_result.get('error', 'Unknown error')}")
+            except Exception as e:
+                logger.error(f"Error during ML models validation: {e}")
+        
+        return analysis
+
+    def start_real_time_monitoring(self):
+        """Start real-time monitoring for stop loss and take profit execution"""
+        if not self.real_time_monitoring:
+            self.real_time_monitoring = True
+            self.monitoring_active = True
+            # Perform one-time check for stop loss and take profit at startup
+            self._check_stop_loss_take_profit_once()
+            self.monitoring_active = False
+            logger.info("One-time stop loss and take profit check completed at startup")
+
+    def stop_real_time_monitoring(self):
+        """Stop real-time monitoring"""
+        self.monitoring_active = False
+        self.real_time_monitoring = False
+        logger.info("One-time monitoring completed")
+
+    def _monitoring_worker(self):
+        """Worker thread for real-time monitoring - now does nothing since we only check once at startup"""
+        logger.info("One-time monitoring check completed at startup - monitoring worker is now inactive")
+        # This function is kept for compatibility but does nothing since we only check once at startup
+        # The monitoring_active flag is set to False after the initial check
+        pass
+
+    def _get_current_price(self, ticker):
+        """Get current price for a ticker with improved rate limiting handling"""
+        try:
+            # Check if ticker is rate limited
+            if self._is_rate_limited(ticker):
+                logger.info(f"Skipping price fetch for {ticker} due to rate limit cooldown")
+                return None
+
+            # Check cache first
+            current_time = time.time()
+            if ticker in self.price_cache:
+                cached_price, cache_time = self.price_cache[ticker]
+                if current_time - cache_time < self.price_cache_timeout:
+                    return cached_price
+            
+            # Try to get from data feed first
+            if hasattr(self.data_feed, 'get_latest_price'):
+                price = self.data_feed.get_latest_price(ticker)
+                if price and price > 0:
+                    # Cache the price
+                    self.price_cache[ticker] = (price, current_time)
+                    return price
+            
+            # Fallback to Yahoo Finance with exponential backoff
+            max_retries = 3
+            base_delay = 1.0
+            
+            for attempt in range(max_retries):
+                try:
+                    # Add a small delay to prevent rate limiting
+                    time.sleep(random.uniform(0.5, 1.5))
+                    
+                    stock = yf.Ticker(ticker)
+                    hist = stock.history(period="1d", interval="1m")
+                    if not hist.empty:
+                        price = hist['Close'].iloc[-1]
+                        # Cache the price
+                        self.price_cache[ticker] = (price, current_time)
+                        return price
+                    return None
+                    
+                except Exception as e:
+                    if "Too Many Requests" in str(e) and attempt < max_retries - 1:
+                        # Exponential backoff with jitter
+                        delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+                        logger.warning(f"Rate limited for {ticker}, retrying in {delay:.2f} seconds...")
+                        time.sleep(delay)
+                        continue
+                    elif "Too Many Requests" in str(e):
+                        # Set rate limit cooldown
+                        self._set_rate_limit(ticker)
+                        logger.error(f"Rate limiting persisting for {ticker}, setting cooldown")
+                        return None
+                    else:
+                        raise e
+                        
+            return None
         except Exception as e:
-            logger.error(f"Error in enhanced NewsAPI sentiment for {ticker}: {e}")
-            return {"positive": 0, "negative": 0, "neutral": 0}
+            logger.error(f"Error getting current price for {ticker}: {e}")
+            return None
 
+    def _get_db_stop_loss_take_profit(self, ticker):
+        """Get stop loss and take profit values from database"""
+        try:
+            from backend.db.database import DatabaseManager
+            
+            db_manager = DatabaseManager()
+            session = db_manager.Session()
+            
+            try:
+                # Query the most recent buy trade for this ticker
+                from backend.db.database import Trade
+                latest_buy = session.query(Trade).filter(
+                    Trade.ticker == ticker,
+                    Trade.action == 'buy'
+                ).order_by(Trade.timestamp.desc()).first()
+                
+                if latest_buy:
+                    return latest_buy.stop_loss, latest_buy.take_profit
+                else:
+                    return None, None
+                    
+            finally:
+                session.close()
+                
+        except Exception as e:
+            logger.warning(f"Failed to fetch database stop-loss/target for {ticker}: {e}")
+            return None, None
+
+    def _is_rate_limited(self, ticker):
+        """Check if a ticker is currently rate limited"""
+        if ticker in self.rate_limit_tracker:
+            cooldown_end = self.rate_limit_tracker[ticker]
+            if datetime.now() < cooldown_end:
+                return True
+        return False
+
+    def _set_rate_limit(self, ticker):
+        """Set rate limit cooldown for a ticker"""
+        self.rate_limit_tracker[ticker] = datetime.now() + timedelta(seconds=self.rate_limit_cooldown)
+        logger.info(f"Rate limit set for {ticker} - cooldown until {self.rate_limit_tracker[ticker]}")
+
+    def _is_sentiment_rate_limited(self, service):
+        """Check if a sentiment service is currently rate limited"""
+        if service in self.sentiment_rate_limit_tracker:
+            cooldown_end = self.sentiment_rate_limit_tracker[service]
+            if datetime.now() < cooldown_end:
+                return True
+        return False
+
+    def _set_sentiment_rate_limit(self, service):
+        """Set rate limit cooldown for a sentiment service"""
+        self.sentiment_rate_limit_tracker[service] = datetime.now() + timedelta(seconds=self.sentiment_rate_limit_cooldown)
+        logger.info(f"Sentiment rate limit set for {service} - cooldown until {self.sentiment_rate_limit_tracker[service]}")
+
+    def run(self):
+        """Main bot loop to run analysis, make trades, and generate reports."""
+        logger.info("Starting Stock Trading Bot for Indian market...")
+        self.bot_running = True
+        
+        # Perform one-time check for stop loss and take profit at startup
+        self.start_real_time_monitoring()
+
+        while self.bot_running:
+            try:
+                # Check if bot should stop
+                if not self.bot_running:
+                    logger.info("Bot stop signal received, exiting main loop...")
+                    break
+
+                # Check if trading is paused
+                if self.chatbot.trading_paused:
+                    if self.chatbot.pause_until and datetime.now() >= self.chatbot.pause_until:
+                        self.chatbot.trading_paused = False
+                        self.chatbot.pause_until = None
+                        logger.info("Trading pause expired, resuming trading...")
+                    else:
+                        logger.info("Trading is paused, waiting...")
+                        time.sleep(60)  # Wait 1 minute
+                        continue
+
+                # if not self.is_market_open():
+                #     logger.info("NSE market is closed, waiting...")
+                #     time.sleep(300)  # Wait 5 minutes
+                #     continue
+
+                logger.info("Logging portfolio metrics at start of trading cycle...")
+                self.tracker.log_metrics()
+
+                for ticker in self.config["tickers"]:
+                    try:
+                        # Check if bot should stop before processing each ticker
+                        if not self.bot_running:
+                            logger.info("Bot stop signal received, stopping ticker processing...")
+                            break
+
+                        # Skip invalid ticker formats
+                        if ticker.startswith('$'):
+                            logger.warning(f"Skipping invalid ticker format: {ticker}")
+                            continue
+                            
+                        analysis = self.run_analysis(ticker)
+                        if analysis.get("success"):
+                            save_result = self.stock_analyzer.save_analysis_to_files(analysis)
+                            if save_result.get("success"):
+                                logger.info(f"Saved analysis files: {save_result}")
+                            else:
+                                logger.warning(f"Failed to save analysis: {save_result.get('message')}")
+                            trade = self.make_trading_decision(analysis)
+                            if trade and trade["success"]:
+                                logger.info(f"Trade executed: {trade}")
+                        else:
+                            logger.warning(f"Analysis failed for {ticker}: {analysis.get('message')}")
+                            
+                    except Exception as e:
+                        logger.error(f"Error processing ticker {ticker}: {e}")
+                        # Continue with next ticker instead of crashing
+                        continue
+
+                # Check if bot should stop before generating report
+                if not self.bot_running:
+                    logger.info("Bot stop signal received, skipping report generation...")
+                    break
+
+                report = self.reporter.generate_report()
+                logger.info(f"Daily Report: {report}")
+
+                logger.info("Logging portfolio metrics at end of trading cycle...")
+                self.tracker.log_metrics()
+
+                # Generate P&L summary for paper trading every cycle
+                if self.portfolio.mode == "paper":
+                    self.portfolio.generate_paper_pnl_summary()
+
+                time.sleep(self.config.get("sleep_interval", 300))
+            except Exception as e:
+                logger.error(f"Error in main loop: {e}")
+                # Add longer delay on error to prevent excessive logging
+                time.sleep(120)
+
+        # Stop real-time monitoring when bot stops
+        self.stop_real_time_monitoring()
+        logger.info("Stock Trading Bot stopped")
+    # Use module-level USER_AGENTS
+    USER_AGENTS = globals()['USER_AGENTS']
+    
+    # Common headers to mimic real browser behavior
+    COMMON_HEADERS = {
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+    }
+    
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10), retry=retry_if_exception_type(HTTPError))
-    def _make_request(self, url):
-        response = requests.get(url)
+    def _make_request(self, url, use_enhanced=False):
+        if use_enhanced:
+            # Use enhanced scraping with rotating user agents
+            headers = self.COMMON_HEADERS.copy()
+            headers["User-Agent"] = random.choice(self.USER_AGENTS)
+            
+            # Add random delay to mimic human behavior
+            time.sleep(random.uniform(1, 3))
+            
+            response = requests.get(url, headers=headers, timeout=15)
+        else:
+            response = requests.get(url, timeout=10)
         response.raise_for_status()
         return response
+    
+    def scrape_url_with_selenium(self, url, selectors=None):
+        """Scrape content from a URL using Selenium to bypass anti-scraping measures"""
+        if not SELENIUM_AVAILABLE:
+            logger.warning("Selenium not available for enhanced scraping")
+            return None
+
+    def _check_stop_loss_take_profit(self):
+        """Deprecated: This method is no longer used as we only check once at startup"""
+        logger.info("Deprecated method _check_stop_loss_take_profit called - using one-time check instead")
+        # This method is kept for backward compatibility but is no longer used
+        pass
+
+        
+        try:
+            # Configure Chrome options to avoid detection
+            chrome_options = Options()
+            chrome_options.add_argument("--headless")
+            chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+            chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+            chrome_options.add_experimental_option('useAutomationExtension', False)
+            chrome_options.add_argument(f"--user-agent={random.choice(self.USER_AGENTS)}")
+            
+            # Add random delay to avoid detection
+            time.sleep(random.uniform(1, 3))
+            
+            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+            driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+            
+            driver.get(url)
+            
+            # Wait for page to load
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+            
+            # Extract content based on selectors or default method
+            content = ""
+            if selectors:
+                for selector in selectors:
+                    try:
+                        elements = driver.find_elements(By.CSS_SELECTOR, selector)
+                        if elements:
+                            content = " ".join([elem.text.strip() for elem in elements if elem.text.strip()])
+                            break
+                    except Exception as e:
+                        logger.warning(f"Error using selector {selector}: {e}")
+                        continue
+            
+            if not content:
+                # Fallback to body content
+                try:
+                    body = driver.find_element(By.TAG_NAME, "body")
+                    content = body.text.strip()
+                except Exception as e:
+                    logger.warning(f"Error extracting body content: {e}")
+            
+            driver.quit()
+            
+            return content
+            
+        except Exception as e:
+            logger.error(f"Error scraping URL with Selenium {url}: {e}")
+            return None
+
+    def newsapi_sentiment(self, ticker):
+        """Comprehensive NewsAPI sentiment with global and Indian sources covering all market factors"""
+        if self._is_sentiment_rate_limited('newsapi'):
+            logger.info("Skipping NewsAPI sentiment due to rate limit cooldown")
+            return {"positive": 0, "negative": 0, "neutral": 1}
+
+        def search_with_query(query):
+            try:
+                # Get simple news sources to avoid rate limits
+                selected_sources = self.get_simple_news_sources()
+                sources_param = ",".join(selected_sources[:5])  # Limit to 5 sources to avoid rate limits
+
+                # Focus on last 24 hours for more actionable sentiment
+                from datetime import datetime, timedelta
+                yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+
+                # Build URL with Indian sources preference and 24-hour filter
+                url = f"https://newsapi.org/v2/everything?q={quote(query)}&sources={sources_param}&from={yesterday}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
+
+                # Check URL length to avoid 400 errors (NewsAPI has ~2000 char limit)
+                if len(url) > 1800:
+                    logger.warning(f"URL too long ({len(url)} chars), using simplified query")
+                    # Use first company name only for very long queries
+                    company_names = self.get_company_names(ticker.replace('.NS', ''))
+                    if company_names:
+                        query = f'"{company_names[0]}" stock India'
+
+                # Build URL with simplified query
+                url = f"https://newsapi.org/v2/everything?q={quote(query)}&from={yesterday}&apiKey={self.NEWSAPI_KEY}&language=en&sortBy=publishedAt"
+
+                response = requests.get(url, timeout=10)
+                response.raise_for_status()
+                data = response.json()
+
+                # Process results
+                articles = data.get("articles", [])
+                sentiment = self.analyze_articles(articles)
+                return sentiment
+
+            except Exception as e:
+                # Check if this is a rate limiting error
+                error_str = str(e).lower()
+                if 'rate limit' in error_str or 'too many requests' in error_str or response.status_code == 429:
+                    logger.warning("Rate limiting detected for NewsAPI, setting cooldown")
+                    self._set_sentiment_rate_limit('newsapi')
+                logger.error(f"Error fetching NewsAPI sentiment: {e}")
+                return {"positive": 0, "negative": 0, "neutral": 1}
+
+        return self.multi_level_search(ticker, search_with_query)
 
     def gnews_sentiment(self, ticker):
         """Comprehensive GNews sentiment with global market factors and Indian focus"""
+        if self._is_sentiment_rate_limited('gnews'):
+            logger.info("Skipping GNews sentiment due to rate limit cooldown")
+            return {"positive": 0, "negative": 0, "neutral": 1}
+
         def search_with_query(query):
             try:
                 # Focus on last 24 hours for more actionable sentiment
@@ -3060,11 +3504,12 @@ class Stock:
                 url = f"https://gnews.io/api/v4/search?q={encoded_query}&lang=en&country=in&from={yesterday}&token={self.GNEWS_API_KEY}"
                 logger.debug(f"Requesting GNews API: {url}")
 
-                response = self._make_request(url)
+                # Use enhanced scraping techniques
+                response = self._make_request(url, use_enhanced=True)
                 data = response.json()
                 logger.debug(f"Response status: {response.status_code}, content: {response.text[:200]}")
 
-                sentiments = {"positive": 0, "negative": 0, "neutral": 0}
+                sentiments = {"positive": 0, "negative": 0, "neutral": 1}
                 if not data or "articles" not in data or not data["articles"]:
                     return sentiments
 
@@ -3095,8 +3540,13 @@ class Stock:
                 return sentiments
 
             except Exception as e:
+                # Check if this is a rate limiting error
+                error_str = str(e).lower()
+                if 'rate limit' in error_str or 'too many requests' in error_str or (response and response.status_code == 429):
+                    logger.warning("Rate limiting detected for GNews, setting cooldown")
+                    self._set_sentiment_rate_limit('gnews')
                 logger.warning(f"GNews search failed for query '{query[:50]}...': {e}")
-                return {"positive": 0, "negative": 0, "neutral": 0}
+                return {"positive": 0, "negative": 0, "neutral": 1}
 
         try:
             # Use multi-level search strategy
@@ -3113,15 +3563,17 @@ class Stock:
 
         except Exception as e:
             logger.error(f"Error in enhanced GNews sentiment for {ticker}: {e}")
-            return {"positive": 0, "negative": 0, "neutral": 0}
+            return {"positive": 0, "negative": 0, "neutral": 1}
 
     def reddit_sentiment(self, ticker):
-        if not self.reddit:
-            return {"positive": 0, "negative": 0, "neutral": 0}
+        if not self.reddit or self._is_sentiment_rate_limited('reddit'):
+            if self._is_sentiment_rate_limited('reddit'):
+                logger.info("Skipping Reddit sentiment due to rate limit cooldown")
+            return {"positive": 0, "negative": 0, "neutral": 1}
         try:
             subreddit = self.reddit.subreddit("all")
             query = f"${ticker}"
-            sentiments = {"positive": 0, "negative": 0, "neutral": 0}
+            sentiments = {"positive": 0, "negative": 0, "neutral": 1}
             for submission in subreddit.search(query, limit=10):
                 submission.comments.replace_more(limit=0)
                 for comment in submission.comments.list()[:20]:
@@ -3134,17 +3586,28 @@ class Stock:
                         sentiments["neutral"] += 1
             return sentiments
         except Exception as e:
+            # Check if this is a rate limiting error
+            error_str = str(e).lower()
+            if 'rate limit' in error_str or 'too many requests' in error_str:
+                logger.warning("Rate limiting detected for Reddit, setting cooldown")
+                self._set_sentiment_rate_limit('reddit')
             logger.error(f"Error fetching Reddit sentiment: {e}")
-            return {"positive": 0, "negative": 0, "neutral": 0}
+            return {"positive": 0, "negative": 0, "neutral": 1}
 
     def google_news_sentiment(self, ticker):
+        if self._is_sentiment_rate_limited('google_news'):
+            logger.info("Skipping Google News sentiment due to rate limit cooldown")
+            return {"positive": 0, "negative": 0, "neutral": 1}
         try:
             # Use dynamic search query instead of raw ticker
             search_query = self.build_search_query(ticker)
             logger.info(f"Google News search query for {ticker}: {search_query}")
 
+            # Add delay to avoid rate limits
+            time.sleep(random.uniform(1, 2))
+            
             news = self.google_news.get_news(search_query)
-            sentiments = {"positive": 0, "negative": 0, "neutral": 0}
+            sentiments = {"positive": 0, "negative": 0, "neutral": 1}
 
             if not news:
                 logger.warning(f"No Google News articles found for ticker {ticker}")
@@ -3172,21 +3635,49 @@ class Stock:
                         sentiments["neutral"] += weight
             return sentiments
         except Exception as e:
+            # Check if this is a rate limiting error
+            error_str = str(e).lower()
+            if 'rate limit' in error_str or 'too many requests' in error_str:
+                logger.warning("Rate limiting detected for Google News, setting cooldown")
+                self._set_sentiment_rate_limit('google_news')
             logger.error(f"Error fetching Google News sentiment: {e}")
-            return {"positive": 0, "negative": 0, "neutral": 0}
+            return {"positive": 0, "negative": 0, "neutral": 1}
 
     def fetch_combined_sentiment(self, ticker):
         """Comprehensive market sentiment analysis covering all factors affecting stock prices"""
         try:
             logger.info(f"Starting comprehensive sentiment analysis for {ticker}")
 
-            # Get sentiment from all sources with enhanced coverage
-            newsapi_sentiment = self.newsapi_sentiment(ticker)
-            gnews_sentiment = self.gnews_sentiment(ticker)
-            reddit_sentiment = self.reddit_sentiment(ticker)
-            google_sentiment = self.google_news_sentiment(ticker)
+            # Initialize with neutral sentiment as fallback
+            neutral_sentiment = {"positive": 0, "negative": 0, "neutral": 1}
+            
+            # Get sentiment from all sources with enhanced coverage and error handling
+            try:
+                newsapi_sentiment = self.newsapi_sentiment(ticker)
+            except Exception as e:
+                logger.warning(f"NewsAPI sentiment failed for {ticker}: {e}")
+                newsapi_sentiment = neutral_sentiment.copy()
+                
+            try:
+                gnews_sentiment = self.gnews_sentiment(ticker)
+            except Exception as e:
+                logger.warning(f"GNews sentiment failed for {ticker}: {e}")
+                gnews_sentiment = neutral_sentiment.copy()
+                
+            try:
+                reddit_sentiment = self.reddit_sentiment(ticker)
+            except Exception as e:
+                logger.warning(f"Reddit sentiment failed for {ticker}: {e}")
+                reddit_sentiment = neutral_sentiment.copy()
+                
+            try:
+                google_sentiment = self.google_news_sentiment(ticker)
+            except Exception as e:
+                logger.warning(f"Google News sentiment failed for {ticker}: {e}")
+                google_sentiment = neutral_sentiment.copy()
             
             # NEW: Get sentiment from the updated SentimentTool with Indian news
+            indian_news_sentiment = neutral_sentiment.copy()
             try:
                 # Import SentimentTool
                 from backend.mcp_server.tools.sentiment_tool import SentimentTool
@@ -3232,10 +3723,10 @@ class Stock:
                         for key in indian_news_sentiment:
                             indian_news_sentiment[key] *= market_context_multiplier
                 else:
-                    indian_news_sentiment = {"positive": 0, "negative": 0, "neutral": 0}
+                    indian_news_sentiment = neutral_sentiment.copy()
             except Exception as e:
                 logger.warning(f"Error using SentimentTool for Indian news: {e}")
-                indian_news_sentiment = {"positive": 0, "negative": 0, "neutral": 0}
+                indian_news_sentiment = neutral_sentiment.copy()
 
             # ENHANCED: Dynamic weighted sentiment aggregation based on market impact
             # Higher weights for sources with better global and financial coverage
@@ -3335,16 +3826,17 @@ class Stock:
             }
         except Exception as e:
             logger.error(f"Error fetching comprehensive sentiment: {e}")
-            return {
-                "newsapi": {"positive": 0, "negative": 0, "neutral": 0},
-                "gnews": {"positive": 0, "negative": 0, "neutral": 0},
-                "reddit": {"positive": 0, "negative": 0, "neutral": 0},
-                "google_news": {"positive": 0, "negative": 0, "neutral": 0},
-                "indian_news": {"positive": 0, "negative": 0, "neutral": 0},  # NEW: Indian news sentiment
-                "aggregated": {"positive": 0, "negative": 0, "neutral": 0},
-                "weighted_aggregated": {"positive": 0, "negative": 0, "neutral": 0, "total_weight": 11.6},
+            # Return neutral sentiment as complete fallback
+            neutral_result = {
+                "newsapi": {"positive": 0, "negative": 0, "neutral": 1},
+                "gnews": {"positive": 0, "negative": 0, "neutral": 1},
+                "reddit": {"positive": 0, "negative": 0, "neutral": 1},
+                "google_news": {"positive": 0, "negative": 0, "neutral": 1},
+                "indian_news": {"positive": 0, "negative": 0, "neutral": 1},
+                "aggregated": {"positive": 0, "negative": 0, "neutral": 1},
+                "weighted_aggregated": {"positive": 0, "negative": 0, "neutral": 1, "total_weight": 11.6},
                 "comprehensive_analysis": {
-                    "sentiment_strength": {"bullish": 0, "bearish": 0, "neutral": 0},
+                    "sentiment_strength": {"bullish": 0, "bearish": 0, "neutral": 1},
                     "confidence_score": 0.0,
                     "market_context_applied": 1.0,
                     "sources_coverage": {
@@ -3356,6 +3848,7 @@ class Stock:
                     }
                 }
             }
+            return neutral_result
 
     def _generate_detailed_recommendation(self, stock_data, recommendation, buy_score, sell_score,
                                         price_to_sma200, trend_direction, sentiment_score,
@@ -5212,8 +5705,15 @@ class Stock:
             csv_filename = os.path.join(output_dir, f"{sanitized_ticker}_summary_{timestamp}.csv")
             log_filename = os.path.join(output_dir, "ml_logs.txt")
 
-            # Save full analysis to JSON
-            json_data = self.convert_np_types(analysis)
+            # Save full analysis to JSON using professional structure
+            # Import the professional structure converter
+            try:
+                from professional_analysis_structure import convert_to_professional_structure
+                json_data = convert_to_professional_structure(analysis)
+            except ImportError:
+                # Fallback to original method if professional structure module not available
+                json_data = self.convert_np_types(analysis)
+            
             with open(json_filename, "w", encoding="utf-8") as f:
                 json.dump(json_data, f, indent=4, ensure_ascii=False)
             logger.info(f"Saved full analysis to {json_filename}")
@@ -5361,28 +5861,6 @@ class StockTradingBot:
     def __init__(self, config):
         self.config = config
 
-# Add import for professional buy logic
-# Use absolute import to avoid relative import issues when imported by other modules
-try:
-    from core.professional_buy_integration import ProfessionalBuyIntegration
-except ImportError:
-    # Fallback for direct script execution
-    import sys
-    import os
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    parent_dir = os.path.dirname(current_dir)
-    if parent_dir not in sys.path:
-        sys.path.insert(0, parent_dir)
-    from core.professional_buy_integration import ProfessionalBuyIntegration
-
-# Setup logging
-import logging
-logger = logging.getLogger(__name__)
-
-class StockTradingBot:
-    def __init__(self, config):
-        self.config = config
-
         self.timezone = pytz.timezone("Asia/Kolkata")  # Changed to India timezone
         self.data_feed = DataFeed(config["tickers"])
         self.portfolio = VirtualPortfolio(config)
@@ -5394,6 +5872,16 @@ class StockTradingBot:
             reddit_client_secret=config.get("reddit_client_secret"),
             reddit_user_agent=config.get("reddit_user_agent")
         )
+
+        # Real-time monitoring attributes
+        self.real_time_monitoring = False
+        self.monitoring_thread = None
+        self.monitoring_queue = queue.Queue()
+        self.monitoring_active = False
+
+        # Price caching
+        self.price_cache = {}
+        self.price_cache_timeout = 60  # Cache prices for 60 seconds
 
         # Initialize professional buy integration
         try:
@@ -7390,10 +7878,172 @@ class StockTradingBot:
         
         return analysis
 
+    def start_real_time_monitoring(self):
+        """Start real-time monitoring for stop loss and take profit execution"""
+        if not self.real_time_monitoring:
+            self.real_time_monitoring = True
+            self.monitoring_active = True
+            self.monitoring_thread = threading.Thread(target=self._monitoring_worker, daemon=True)
+            self.monitoring_thread.start()
+            logger.info("Real-time monitoring started for stop loss and take profit execution")
+
+    def stop_real_time_monitoring(self):
+        """Stop real-time monitoring"""
+        self.monitoring_active = False
+        self.real_time_monitoring = False
+        logger.info("Monitoring stopped")
+
+    def _check_stop_loss_take_profit_once(self):
+        """Check all holdings for stop loss and take profit conditions - run only once"""
+        try:
+            logger.info("Performing one-time check for stop loss and take profit conditions")
+            
+            # Refresh portfolio holdings from database to ensure consistency
+            self.portfolio_manager.refresh_holdings_from_database()
+            
+            # Get current holdings from database to ensure consistency
+            from backend.db.database import DatabaseManager, Holding, Portfolio
+            db_manager = DatabaseManager()
+            session = db_manager.Session()
+            
+            try:
+                # Get live portfolio holdings from database
+                portfolio = session.query(Portfolio).filter_by(mode='live').first()
+                if not portfolio:
+                    return
+                    
+                holdings = session.query(Holding).filter_by(portfolio_id=portfolio.id).all()
+                holdings_dict = {holding.ticker: {
+                    "qty": holding.quantity,
+                    "avg_price": holding.avg_price,
+                    "last_price": holding.last_price
+                } for holding in holdings if holding.quantity > 0}
+            finally:
+                session.close()
+            
+            # Process each holding
+            for ticker, holding_data in holdings_dict.items():
+                # Add .NS suffix if ticker doesn't have an exchange suffix
+                formatted_ticker = ticker
+                if '.' not in ticker and not ticker.isdigit():
+                    formatted_ticker = ticker + '.NS'
+                    logger.debug(f"Auto-formatted ticker {ticker} to {formatted_ticker} for monitoring")
+                
+                try:
+                    # Get current price
+                    current_price = self._get_current_price(formatted_ticker)
+                    if current_price is None or current_price <= 0:
+                        continue
+                    
+                    # Get holding details
+                    quantity = holding_data["qty"]
+                    avg_price = holding_data["avg_price"]
+                    
+                    # Get stop loss and take profit from database
+                    stop_loss, take_profit = self._get_db_stop_loss_take_profit(ticker)
+                    
+                    # If we don't have database values, calculate from entry price
+                    if stop_loss is None:
+                        stop_loss = avg_price * (1 - self.config.get("stop_loss_pct", 0.05))
+                    if take_profit is None:
+                        take_profit = avg_price * (1 + self.config.get("target_profit_pct", 0.10))
+                    
+                    # Check conditions
+                    stop_loss_triggered = current_price <= stop_loss
+                    take_profit_triggered = current_price >= take_profit
+                    
+                    # Execute sell if conditions are met
+                    if stop_loss_triggered or take_profit_triggered:
+                        reason = "stop_loss" if stop_loss_triggered else "take_profit"
+                        logger.info(f"{'Stop Loss' if stop_loss_triggered else 'Take Profit'} triggered for {ticker}: "
+                                  f"Price Rs.{current_price:.2f} {'<=' if stop_loss_triggered else '>='} "
+                                  f"{'Stop Loss' if stop_loss_triggered else 'Take Profit'} Rs.{stop_loss if stop_loss_triggered else take_profit:.2f}")
+                        
+                        # Execute immediate sell
+                        success_result = self.executor.execute_trade("sell", ticker, quantity, current_price, stop_loss, take_profit)
+                        
+                        if isinstance(success_result, dict) and success_result.get("success"):
+                            logger.info(f"✅ IMMEDIATE SELL EXECUTED for {ticker}: {quantity} shares at Rs.{current_price:.2f}")
+                            # Refresh holdings after successful trade
+                            self.portfolio_manager.refresh_holdings_from_database()
+                        else:
+                            logger.error(f"❌ FAILED to execute immediate sell for {ticker}: {success_result}")
+                            
+                except Exception as e:
+                    logger.error(f"Error checking {ticker} for stop loss/take profit: {e}")
+                    continue
+                    
+        except Exception as e:
+            logger.error(f"Error in stop loss/take profit checking: {e}")
+
+    def _monitoring_worker(self):
+        """Worker thread for real-time monitoring - now does nothing since we only check once at startup"""
+        logger.info("One-time monitoring check completed at startup - monitoring worker is now inactive")
+        # This function is kept for compatibility but does nothing since we only check once at startup
+        # The monitoring_active flag is set to False after the initial check
+        pass
+
+    def _get_current_price(self, ticker):
+        """Get current price for a ticker"""
+        try:
+            # Add .NS suffix if ticker doesn't have an exchange suffix
+            formatted_ticker = ticker
+            if '.' not in ticker and not ticker.isdigit():
+                formatted_ticker = ticker + '.NS'
+                logger.debug(f"Auto-formatted ticker {ticker} to {formatted_ticker} for price fetching")
+            
+            # Try to get from data feed first
+            if hasattr(self.data_feed, 'get_latest_price'):
+                price = self.data_feed.get_latest_price(formatted_ticker)
+                if price and price > 0:
+                    return price
+            
+            # Fallback to Yahoo Finance
+            stock = yf.Ticker(formatted_ticker)
+            hist = stock.history(period="1d", interval="1m")
+            if not hist.empty:
+                return hist['Close'].iloc[-1]
+                
+            return None
+        except Exception as e:
+            logger.error(f"Error getting current price for {ticker}: {e}")
+            return None
+
+    def _get_db_stop_loss_take_profit(self, ticker):
+        """Get stop loss and take profit values from database"""
+        try:
+            from backend.db.database import DatabaseManager
+            
+            db_manager = DatabaseManager()
+            session = db_manager.Session()
+            
+            try:
+                # Query the most recent buy trade for this ticker
+                from backend.db.database import Trade
+                latest_buy = session.query(Trade).filter(
+                    Trade.ticker == ticker,
+                    Trade.action == 'buy'
+                ).order_by(Trade.timestamp.desc()).first()
+                
+                if latest_buy:
+                    return latest_buy.stop_loss, latest_buy.take_profit
+                else:
+                    return None, None
+                    
+            finally:
+                session.close()
+                
+        except Exception as e:
+            logger.warning(f"Failed to fetch database stop-loss/target for {ticker}: {e}")
+            return None, None
+
     def run(self):
         """Main bot loop to run analysis, make trades, and generate reports."""
         logger.info("Starting Stock Trading Bot for Indian market...")
         self.bot_running = True
+        
+        # Perform one-time check for stop loss and take profit at startup
+        self.start_real_time_monitoring()
 
         while self.bot_running:
             try:
@@ -7422,24 +8072,34 @@ class StockTradingBot:
                 self.tracker.log_metrics()
 
                 for ticker in self.config["tickers"]:
-                    # Check if bot should stop before processing each ticker
-                    if not self.bot_running:
-                        logger.info("Bot stop signal received, stopping ticker processing...")
-                        break
+                    try:
+                        # Check if bot should stop before processing each ticker
+                        if not self.bot_running:
+                            logger.info("Bot stop signal received, stopping ticker processing...")
+                            break
 
-                    logger.info(f"Processing {ticker}...")
-                    analysis = self.run_analysis(ticker)
-                    if analysis.get("success"):
-                        save_result = self.stock_analyzer.save_analysis_to_files(analysis)
-                        if save_result.get("success"):
-                            logger.info(f"Saved analysis files: {save_result}")
+                        # Skip invalid ticker formats
+                        if ticker.startswith('$'):
+                            logger.warning(f"Skipping invalid ticker format: {ticker}")
+                            continue
+                            
+                        analysis = self.run_analysis(ticker)
+                        if analysis.get("success"):
+                            save_result = self.stock_analyzer.save_analysis_to_files(analysis)
+                            if save_result.get("success"):
+                                logger.info(f"Saved analysis files: {save_result}")
+                            else:
+                                logger.warning(f"Failed to save analysis: {save_result.get('message')}")
+                            trade = self.make_trading_decision(analysis)
+                            if trade and trade["success"]:
+                                logger.info(f"Trade executed: {trade}")
                         else:
-                            logger.warning(f"Failed to save analysis: {save_result.get('message')}")
-                        trade = self.make_trading_decision(analysis)
-                        if trade and trade["success"]:
-                            logger.info(f"Trade executed: {trade}")
-                    else:
-                        logger.warning(f"Analysis failed for {ticker}: {analysis.get('message')}")
+                            logger.warning(f"Analysis failed for {ticker}: {analysis.get('message')}")
+                            
+                    except Exception as e:
+                        logger.error(f"Error processing ticker {ticker}: {e}")
+                        # Continue with next ticker instead of crashing
+                        continue
 
                 # Check if bot should stop before generating report
                 if not self.bot_running:
@@ -7459,8 +8119,11 @@ class StockTradingBot:
                 time.sleep(self.config.get("sleep_interval", 300))
             except Exception as e:
                 logger.error(f"Error in main loop: {e}")
-                time.sleep(60)
+                # Add longer delay on error to prevent excessive logging
+                time.sleep(120)
 
+        # Stop real-time monitoring when bot stops
+        self.stop_real_time_monitoring()
         logger.info("Stock Trading Bot stopped successfully")
 
 def main():

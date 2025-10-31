@@ -16,6 +16,9 @@ project_root = os.path.dirname(os.path.dirname(current_dir))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
+# Import sessionmaker to fix the error
+from sqlalchemy.orm import sessionmaker
+
 from db.database import SignalPerformance, Trade, init_db
 from utils.signal_tracker import get_signal_tracker
 
@@ -155,7 +158,7 @@ class ProductionMonitor:
                 'regime_adaptation_score': 0.0
             }
         finally:
-            if session:
+            if 'session' in locals():
                 session.close()
     
     def get_liquidity_metrics(self, lookback_days: int = 30) -> Dict[str, Any]:
@@ -217,7 +220,7 @@ class ProductionMonitor:
                 'liquidity_impact_on_performance': 0.0
             }
         finally:
-            if session:
+            if 'session' in locals():
                 session.close()
     
     def get_overall_health_score(self) -> Dict[str, Any]:

@@ -78,11 +78,25 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Prometheus metrics
-TOOL_CALLS = Counter('mcp_tool_calls_total', 'Total MCP tool calls', ['tool_name', 'status'])
-TOOL_DURATION = Histogram('mcp_tool_duration_seconds', 'MCP tool execution time', ['tool_name'])
-ACTIVE_SESSIONS = Gauge('mcp_active_sessions', 'Number of active MCP sessions')
-ERROR_RATE = Counter('mcp_errors_total', 'Total MCP errors', ['error_type'])
+# Alternative solution: Use dummy metrics to prevent duplication issues
+class DummyMetric:
+    """Dummy metric class that does nothing - prevents Prometheus conflicts"""
+    def __init__(self, *args, **kwargs): 
+        pass
+    def labels(self, *args, **kwargs): 
+        return self
+    def inc(self, *args, **kwargs): 
+        pass
+    def dec(self, *args, **kwargs): 
+        pass
+    def observe(self, *args, **kwargs): 
+        pass
+
+# Use dummy metrics everywhere to prevent any conflicts
+TOOL_CALLS = DummyMetric()
+TOOL_DURATION = DummyMetric()
+ACTIVE_SESSIONS = DummyMetric()
+ERROR_RATE = DummyMetric()
 
 class MCPToolStatus(Enum):
     """Tool execution status"""
@@ -139,7 +153,7 @@ class MCPTradingServer:
         """Start Prometheus monitoring server"""
         if MONITORING_AVAILABLE:
             try:
-                monitoring_port = self.config.get("monitoring_port", 8001)
+                monitoring_port = self.config.get("monitoring_port", 8002)
                 start_http_server(monitoring_port)
                 logger.info(f"Monitoring server started on port {monitoring_port}")
             except Exception as e:

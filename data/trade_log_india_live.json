@@ -46,5 +46,277 @@
         "qty": 1,
         "price": 287.25,
         "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-10-28 10:36:46.850834",
+        "asset": "POLYCAB.NS",
+        "action": "buy",
+        "qty": 1,
+        "price": 7672.5,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-10-28 11:29:27.830234",
+        "asset": "PNB.NS",
+        "action": "buy",
+        "qty": 2,
+        "price": 119.95,
+        "pnl": 0.0
+    },
+    {
+        "timestamp": "2025-10-29 10:59:03.687811",
+        "asset": "RVNL",
+        "action": "sell",
+        "qty": 1,
+        "price": 331.3,
+        "pnl": 18.150000000000034
+    },
+    {
+        "timestamp": "2025-10-29 12:08:55.330040",
+        "asset": "RVNL",
+        "action": "sell",
+        "qty": 1,
+        "price": 333.25,
+        "pnl": 20.100000000000023
+    },
+    {
+        "timestamp": "2025-10-29 13:22:00.838152",
+        "asset": "RVNL",
+        "action": "sell",
+        "qty": 1,
+        "price": 332.3,
+        "pnl": 19.150000000000034
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.494464",
+        "asset": "KRBL",
+        "action": "buy",
+        "qty": 3,
+        "price": 396.1,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.500638",
+        "asset": "SJVN",
+        "action": "buy",
+        "qty": 1,
+        "price": 93.39,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.504027",
+        "asset": "SUZLON",
+        "action": "buy",
+        "qty": 11,
+        "price": 54.57,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.506294",
+        "asset": "INOXWIND",
+        "action": "buy",
+        "qty": 1,
+        "price": 153.32,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.508453",
+        "asset": "BANKINDIA",
+        "action": "buy",
+        "qty": 3,
+        "price": 126.9,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.510911",
+        "asset": "NBCC",
+        "action": "buy",
+        "qty": 5,
+        "price": 110.262,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.514173",
+        "asset": "NSLNISP",
+        "action": "buy",
+        "qty": 11,
+        "price": 43.75273,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.516869",
+        "asset": "JSWENERGY",
+        "action": "buy",
+        "qty": 1,
+        "price": 552.4,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.519445",
+        "asset": "PNB",
+        "action": "buy",
+        "qty": 2,
+        "price": 119.95,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.521792",
+        "asset": "KELLTONTEC",
+        "action": "buy",
+        "qty": 101,
+        "price": 20.41,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.524394",
+        "asset": "IREDA",
+        "action": "buy",
+        "qty": 15,
+        "price": 153.78467,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.527951",
+        "asset": "ONGC",
+        "action": "buy",
+        "qty": 1,
+        "price": 247.1,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.530903",
+        "asset": "TATAPOWER",
+        "action": "buy",
+        "qty": 1,
+        "price": 397.0,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.533396",
+        "asset": "POLYCAB",
+        "action": "buy",
+        "qty": 1,
+        "price": 7669.5,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.536073",
+        "asset": "CANBK",
+        "action": "buy",
+        "qty": 3,
+        "price": 127.87,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.538481",
+        "asset": "SUVEN",
+        "action": "buy",
+        "qty": 1,
+        "price": 225.05,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.541077",
+        "asset": "HFCL",
+        "action": "buy",
+        "qty": 15,
+        "price": 76.34933,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.543709",
+        "asset": "ORIENTBELL",
+        "action": "buy",
+        "qty": 1,
+        "price": 287.9,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.546346",
+        "asset": "AWL",
+        "action": "buy",
+        "qty": 1,
+        "price": 263.55,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.548696",
+        "asset": "NTPC",
+        "action": "buy",
+        "qty": 1,
+        "price": 341.35,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.551069",
+        "asset": "ADANIPOWER",
+        "action": "buy",
+        "qty": 10,
+        "price": 162.6,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-29 15:43:51.554114",
+        "asset": "NHPC",
+        "action": "buy",
+        "qty": 2,
+        "price": 79.01,
+        "pnl": null
+    },
+    {
+        "timestamp": "2025-10-31 10:58:03.391625",
+        "asset": "KRBL",
+        "action": "sell",
+        "qty": 3,
+        "price": 376.15,
+        "pnl": -59.850000000000136
+    },
+    {
+        "timestamp": "2025-10-31 10:58:04.603011",
+        "asset": "SJVN",
+        "action": "sell",
+        "qty": 1,
+        "price": 88.05,
+        "pnl": -5.340000000000003
+    },
+    {
+        "timestamp": "2025-10-31 10:58:09.571163",
+        "asset": "SUVEN",
+        "action": "sell",
+        "qty": 1,
+        "price": 195.09,
+        "pnl": -29.960000000000008
+    },
+    {
+        "timestamp": "2025-10-31 10:58:39.204184",
+        "asset": "SUVEN",
+        "action": "sell",
+        "qty": 1,
+        "price": 194.77,
+        "pnl": -30.28
+    },
+    {
+        "timestamp": "2025-10-31 10:58:44.623065",
+        "asset": "SJVN",
+        "action": "sell",
+        "qty": 1,
+        "price": 88.09,
+        "pnl": -5.299999999999997
+    },
+    {
+        "timestamp": "2025-10-31 10:59:39.066713",
+        "asset": "SJVN",
+        "action": "sell",
+        "qty": 1,
+        "price": 88.07,
+        "pnl": -5.320000000000007
+    },
+    {
+        "timestamp": "2025-10-31 10:59:44.337267",
+        "asset": "SUVEN",
+        "action": "sell",
+        "qty": 1,
+        "price": 194.77,
+        "pnl": -30.28
     }
 ]

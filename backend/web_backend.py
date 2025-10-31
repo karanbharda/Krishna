@@ -3354,7 +3354,7 @@ async def _ensure_mcp_initialized():
         # Initialize MCP server
         if not mcp_server:
             mcp_config = {
-                "monitoring_port": 8001,
+                "monitoring_port": 8002,
                 "max_sessions": 100
             }
             mcp_server = MCPTradingServer(mcp_config)

@@ -20,6 +20,11 @@ import requests
 import re
 import feedparser
 from bs4 import BeautifulSoup
+import random
+import time
+from urllib.parse import quote
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from requests.exceptions import HTTPError
 
 # Import existing components
 import sys
@@ -46,41 +51,48 @@ except ImportError:
     END = None
     ToolExecutor = None
 
-# Fix for Prometheus CollectorRegistry issue - use a shared registry pattern
-try:
-    from prometheus_client import Counter, Histogram, Gauge
-    # Use the default registry to avoid duplication
-    import prometheus_client
-    
-    # Check if metrics already exist to avoid duplication
-    def get_or_create_counter(name, description, labelnames):
-        try:
-            return prometheus_client.Counter(name, description, labelnames)
-        except ValueError:
-            # Counter already exists, get it from the registry
-            return prometheus_client.REGISTRY._names_to_collectors[name]
-    
-    def get_or_create_histogram(name, description):
-        try:
-            return prometheus_client.Histogram(name, description)
-        except ValueError:
-            # Histogram already exists, get it from the registry
-            return prometheus_client.REGISTRY._names_to_collectors[name]
-    
-    SENTIMENT_TOOL_CALLS = get_or_create_counter('mcp_sentiment_tool_calls_total', 'Sentiment tool calls', ['status'])
-    SENTIMENT_ANALYSIS_DURATION = get_or_create_histogram('mcp_sentiment_analysis_duration_seconds', 'Sentiment analysis duration')
-except ImportError:
-    # Create dummy metrics if prometheus is not available
-    class DummyMetric:
-        def __init__(self, *args, **kwargs): pass
-        def labels(self, *args, **kwargs): return self
-        def inc(self): pass
-        def observe(self, value): pass
-    
-    SENTIMENT_TOOL_CALLS = DummyMetric()
-    SENTIMENT_ANALYSIS_DURATION = DummyMetric()
+# Alternative solution: Completely disable Prometheus metrics to avoid duplication issues
+class DummyMetric:
+    """Dummy metric class that does nothing - prevents Prometheus conflicts"""
+    def __init__(self, *args, **kwargs): 
+        pass
+    def labels(self, *args, **kwargs): 
+        return self
+    def inc(self, *args, **kwargs): 
+        pass
+    def dec(self, *args, **kwargs): 
+        pass
+    def observe(self, *args, **kwargs): 
+        pass
+
+# Use dummy metrics everywhere to prevent any conflicts
+SENTIMENT_TOOL_CALLS = DummyMetric()
+SENTIMENT_ANALYSIS_DURATION = DummyMetric()
+SENTIMENT_ACTIVE_SESSIONS = DummyMetric()
+SENTIMENT_ERROR_RATE = DummyMetric()
 
 logger = logging.getLogger(__name__)
+
+# Enhanced user agents to avoid detection
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:89.0) Gecko/20100101 Firefox/89.0",
+    "Mozilla/5.0 (X11; Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPad; CPU OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1"
+]
+
+# Common headers to mimic real browser behavior
+COMMON_HEADERS = {
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.5",
+    "Accept-Encoding": "gzip, deflate",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+}
 
 # Log LangChain availability after logger is defined
 try:
@@ -170,25 +182,26 @@ class SentimentTool:
         self.lookback_days = config.get("lookback_days", 7)
         self.mode = config.get("mode", "auto")  # "auto" or "approval"
         
-        # Indian RSS sources
+        # Indian RSS sources - updated with more reliable working URLs
         self.indian_rss_sources = [
-            "https://www.moneycontrol.com/rss/marketreports.xml",
-            "https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms",
-            "https://www.business-standard.com/rss/markets-106.rss",
-            "https://www.nseindia.com/content/equities/rssLatest.xml",
-            "https://www.hindubusinessline.com/markets/rssfeed/?id=1016",
-            "https://www.5paisa.com/api/MarketRSS",
-            "https://in.investing.com/rss/market_overview.rss",
-            "https://www.livemint.com/rss/markets",
-            "https://timesofindia.indiatimes.com/rssfeeds/2146842.cms",
-            "https://www.cnbc.com/id/10001147/device/rss/rss.html"  # Global source
+            "https://www.moneycontrol.com/rss/marketreports.xml",  # MoneyControl market reports
+            "https://economictimes.indiatimes.com/markets/stocks/rssfeeds/2146842.cms",  # Economic Times stocks
+            "https://www.business-standard.com/rss/markets-106.rss",  # Business Standard markets
+            "https://www.hindubusinessline.com/markets/rssfeed/?id=1016",  # Hindu Business Line markets (replace with alternative)
+            "https://in.investing.com/rss/market_overview.rss",  # Investing.com market overview
+            "https://www.livemint.com/rss/markets",  # LiveMint markets
+            "https://timesofindia.indiatimes.com/rssfeeds/2146842.cms",  # Times of India business (replace with alternative)
+            "https://economictimes.indiatimes.com/markets/stocks/rssfeeds/12741757.cms",  # Additional ET source (replace with alternative)
+            "https://www.reuters.com/news/archive/businessNews",  # Reuters business news (replace with alternative)
+            "https://www.cnbc.com/id/100003114/device/rss/rss.html"  # CNBC market news
         ]
         
-        # Global RSS sources
+        # Global RSS sources - updated with working URLs
         self.global_rss_sources = [
             "https://www.marketwatch.com/rss/marketpulse",
             "https://www.cnbc.com/id/100003114/device/rss/rss.html",
-            "https://feeds.reuters.com/reuters/businessNews"
+            "https://feeds.reuters.com/reuters/businessNews",
+            "https://www.reuters.com/news/archive/businessNews"  # Additional Reuters source
         ]
         
         # Performance tracking
@@ -214,6 +227,75 @@ class SentimentTool:
                 logger.warning(f"Failed to initialize LangGraph agent: {e}")
         
         logger.info(f"Sentiment Tool {self.tool_id} initialized with {len(self.indian_rss_sources)} Indian RSS sources")
+    
+    def _make_request(self, url, use_enhanced=False):
+        """Make HTTP request with enhanced scraping techniques and retry logic"""
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                logger.debug(f"Making request to {url} (attempt {attempt + 1}/{max_retries})")
+                
+                if use_enhanced:
+                    # Use enhanced scraping with rotating user agents
+                    headers = COMMON_HEADERS.copy()
+                    headers["User-Agent"] = random.choice(USER_AGENTS)
+                    
+                    # Add random delay to mimic human behavior
+                    delay = random.uniform(1, 3)
+                    logger.debug(f"Adding random delay of {delay:.2f}s before request")
+                    time.sleep(delay)
+                    
+                    logger.debug(f"Request headers: {headers}")
+                    response = requests.get(url, headers=headers, timeout=15)
+                else:
+                    response = requests.get(url, timeout=10)
+                
+                logger.debug(f"Response status: {response.status_code}")
+                logger.debug(f"Response headers: {dict(response.headers)}")
+                
+                response.raise_for_status()
+                logger.debug(f"Request successful for {url}")
+                return response
+            except requests.exceptions.HTTPError as e:
+                if e.response.status_code == 404:
+                    logger.warning(f"RSS source {url} not found (404 error) - this source may be deprecated")
+                    return None
+                elif e.response.status_code == 403:
+                    logger.warning(f"Access forbidden to RSS source {url} (403 error) - may require authentication")
+                    if attempt < max_retries - 1:
+                        logger.info(f"Retrying {url} (attempt {attempt + 2}/{max_retries})")
+                        time.sleep(2 ** attempt)  # Exponential backoff
+                        continue
+                    return None
+                else:
+                    logger.warning(f"HTTP error fetching from RSS source {url}: {e.response.status_code} - {e}")
+                    if attempt < max_retries - 1:
+                        logger.info(f"Retrying {url} (attempt {attempt + 2}/{max_retries})")
+                        time.sleep(2 ** attempt)  # Exponential backoff
+                        continue
+                    return None
+            except requests.exceptions.Timeout as e:
+                logger.warning(f"Timeout error fetching from RSS source {url}: {e}")
+                if attempt < max_retries - 1:
+                    logger.info(f"Retrying {url} (attempt {attempt + 2}/{max_retries})")
+                    time.sleep(2 ** attempt)  # Exponential backoff
+                    continue
+                return None
+            except requests.exceptions.ConnectionError as e:
+                logger.warning(f"Connection error fetching from RSS source {url}: {e}")
+                if attempt < max_retries - 1:
+                    logger.info(f"Retrying {url} (attempt {attempt + 2}/{max_retries})")
+                    time.sleep(2 ** attempt)  # Exponential backoff
+                    continue
+                return None
+            except Exception as e:
+                logger.warning(f"Error fetching from RSS source {url}: {e}")
+                if attempt < max_retries - 1:
+                    logger.info(f"Retrying {url} (attempt {attempt + 2}/{max_retries})")
+                    time.sleep(2 ** attempt)  # Exponential backoff
+                    continue
+                return None
+        return None
     
     async def analyze_sentiment(self, arguments: Dict[str, Any], session_id: str) -> MCPToolResult:
         """
@@ -569,10 +651,14 @@ class SentimentTool:
         try:
             articles = []
             
-            # Fetch from Indian RSS sources
+            # Fetch from Indian RSS sources with enhanced scraping
             for rss_url in self.indian_rss_sources:
                 try:
-                    feed = feedparser.parse(rss_url)
+                    # Use enhanced scraping techniques
+                    response = self._make_request(rss_url, use_enhanced=True)
+                    feed_content = response.content
+                    feed = feedparser.parse(feed_content)
+                    
                     for entry in feed.entries[:5]:  # Limit to 5 articles per source
                         # Check if the article is recent enough
                         published_date = getattr(entry, 'published_parsed', None)
@@ -601,84 +687,99 @@ class SentimentTool:
             logger.error(f"Indian news fetching error: {e}")
             return []
     
-    async def _analyze_indian_news_sentiment(self, symbol: str, lookback_days: int, 
-                                           include_items: bool) -> tuple[SentimentScore, List[NewsItem]]:
-        """Analyze sentiment from Indian news sources"""
+    async def _analyze_indian_news_sentiment(self, symbol: str, lookback_days: int, include_news_items: bool = True) -> Tuple[SentimentScore, List[NewsItem]]:
+        """Analyze Indian news sentiment with enhanced error handling and detailed logging"""
         try:
-            # Extract company name from symbol for better search
-            company_name = self._extract_company_name(symbol)
+            logger.info(f"Analyzing Indian news sentiment for {symbol}")
             
-            # Get Indian news articles
-            news_articles = await self._fetch_indian_news_articles(company_name, lookback_days)
+            all_news_items = []
+            successful_sources = 0
+            failed_sources = 0
             
-            if not news_articles:
-                return self._create_neutral_sentiment(), []
+            # Track which sources are consistently failing
+            failing_sources = []
+            working_sources = []
             
-            # Analyze sentiment for each article
-            news_items = []
-            sentiment_scores = []
+            # Fetch from all Indian RSS sources
+            for i, url in enumerate(self.indian_rss_sources):
+                try:
+                    logger.debug(f"[{i+1}/{len(self.indian_rss_sources)}] Processing RSS source: {url}")
+                    news_items = await self._fetch_rss_feed(url, max_items=5)
+                    if news_items:
+                        # Filter relevant news items
+                        relevant_items = self._filter_relevant_news(news_items, symbol, lookback_days)
+                        all_news_items.extend(relevant_items)
+                        successful_sources += 1
+                        working_sources.append(url)
+                        logger.info(f"✓ SUCCESS: {url} - Fetched {len(relevant_items)} relevant items")
+                    else:
+                        failed_sources += 1
+                        failing_sources.append(url)
+                        logger.warning(f"✗ FAILED: {url} - No items fetched")
+                except Exception as e:
+                    failed_sources += 1
+                    failing_sources.append(url)
+                    logger.error(f"✗ ERROR: {url} - {str(e)}")
+                    continue
             
-            for article in news_articles:
-                # Use VADER for initial sentiment analysis
-                text = f"{article.get('title', '')} {article.get('description', '')}"
-                if self.vader_available:
-                    # Use VADER for sentiment analysis
-                    sentiment = self.sentiment_analyzer.polarity_scores(text)
-                    
-                    sentiment_score = SentimentScore(
-                        positive=sentiment['pos'],
-                        negative=sentiment['neg'],
-                        neutral=sentiment['neu'],
-                        compound=sentiment['compound'],
-                        confidence=0.85  # Higher confidence for Indian sources
-                    )
-                else:
-                    # Fallback sentiment analysis
-                    sentiment_score = self._simple_sentiment_analysis(text)
+            # If we have too few successful sources, try alternative sources
+            if successful_sources < 3 and failing_sources:
+                logger.info(f"Trying alternative RSS sources due to low success rate ({successful_sources}/{len(self.indian_rss_sources)})")
+                alternative_sources = self._get_alternative_rss_sources(failing_sources)
                 
-                # Enhance sentiment with LLM if available
-                enhanced_sentiment = await self._enhance_sentiment_with_llm(text)
-                if enhanced_sentiment:
-                    # Blend VADER and LLM sentiment
-                    sentiment_score = SentimentScore(
-                        positive=(sentiment_score.positive + enhanced_sentiment.positive) / 2,
-                        negative=(sentiment_score.negative + enhanced_sentiment.negative) / 2,
-                        neutral=(sentiment_score.neutral + enhanced_sentiment.neutral) / 2,
-                        compound=(sentiment_score.compound + enhanced_sentiment.compound) / 2,
-                        confidence=min((sentiment_score.confidence + enhanced_sentiment.confidence) / 2, 1.0)
-                    )
-                
-                if include_items:
-                    news_item = NewsItem(
-                        title=article.get('title', ''),
-                        content=article.get('description', ''),
-                        source=article.get('source', {}).get('name', 'Unknown Indian Source'),
-                        url=article.get('url', ''),
-                        published_date=self._parse_date(article.get('publishedAt')),
-                        sentiment_score=sentiment_score,
-                        relevance_score=self._calculate_relevance(article, company_name)
-                    )
-                    news_items.append(news_item)
-                
-                sentiment_scores.append(sentiment_score)
+                for i, url in enumerate(alternative_sources):
+                    try:
+                        # Skip if we already tried this source
+                        if url in self.indian_rss_sources:
+                            continue
+                            
+                        logger.debug(f"[ALT {i+1}/{len(alternative_sources)}] Processing alternative RSS source: {url}")
+                        news_items = await self._fetch_rss_feed(url, max_items=3)
+                        if news_items:
+                            # Filter relevant news items
+                            relevant_items = self._filter_relevant_news(news_items, symbol, lookback_days)
+                            all_news_items.extend(relevant_items)
+                            successful_sources += 1
+                            working_sources.append(url)
+                            logger.info(f"✓ SUCCESS (ALT): {url} - Fetched {len(relevant_items)} relevant items")
+                        else:
+                            logger.warning(f"✗ FAILED (ALT): {url} - No items fetched")
+                    except Exception as e:
+                        logger.error(f"✗ ERROR (ALT): {url} - {str(e)}")
+                        continue
             
-            # Calculate aggregate Indian news sentiment
-            if sentiment_scores:
-                avg_sentiment = SentimentScore(
-                    positive=sum(s.positive for s in sentiment_scores) / len(sentiment_scores),
-                    negative=sum(s.negative for s in sentiment_scores) / len(sentiment_scores),
-                    neutral=sum(s.neutral for s in sentiment_scores) / len(sentiment_scores),
-                    compound=sum(s.compound for s in sentiment_scores) / len(sentiment_scores),
-                    confidence=sum(s.confidence for s in sentiment_scores) / len(sentiment_scores)
-                )
+            # Log detailed summary
+            logger.info(f"=== Indian News Sentiment Analysis Summary for {symbol} ===")
+            logger.info(f"Total sources: {len(self.indian_rss_sources)}")
+            logger.info(f"Working sources ({successful_sources}):")
+            for source in working_sources:
+                logger.info(f"  ✓ {source}")
+            
+            if failing_sources:
+                logger.info(f"Failing sources ({failed_sources}):")
+                for source in failing_sources:
+                    logger.info(f"  ✗ {source}")
+            
+            # If too many sources are failing, log a warning
+            if successful_sources < 3:
+                logger.warning(f"Warning: Only {successful_sources} out of {len(self.indian_rss_sources)} Indian RSS sources are working. Consider updating the source list.")
+            
+            # Calculate sentiment from collected news items
+            if all_news_items:
+                sentiment = self._calculate_news_sentiment(all_news_items)
+                logger.info(f"Successfully analyzed sentiment from {len(all_news_items)} news items")
+                return sentiment, all_news_items if include_news_items else []
             else:
-                avg_sentiment = self._create_neutral_sentiment()
-            
-            return avg_sentiment, news_items
-            
+                # Return neutral sentiment if no news items found
+                neutral_sentiment = self._create_neutral_sentiment()
+                logger.info("No news items found, returning neutral sentiment")
+                return neutral_sentiment, []
+                
         except Exception as e:
-            logger.error(f"Indian news sentiment analysis error: {e}")
-            return self._create_neutral_sentiment(), []
+            logger.error(f"Error in Indian news sentiment analysis for {symbol}: {e}")
+            # Return neutral sentiment as fallback
+            neutral_sentiment = self._create_neutral_sentiment()
+            return neutral_sentiment, []
     
     async def _fetch_from_newsapi(self, company_name: str, lookback_days: int) -> List[Dict[str, Any]]:
         """Fetch articles from NewsAPI"""
@@ -698,8 +799,9 @@ class SentimentTool:
                 'pageSize': 20
             }
             
-            response = requests.get(url, params=params, timeout=10)
-            response.raise_for_status()
+            # Use enhanced scraping techniques
+            response = self._make_request(url, use_enhanced=True)
+            # response.raise_for_status()  # Already handled in _make_request
             
             data = response.json()
             return data.get('articles', [])
@@ -1121,3 +1223,266 @@ class SentimentTool:
             "mode": self.mode,
             "status": "active"
         }
+    
+    async def _fetch_rss_feed(self, url: str, max_items: int = 10) -> List[NewsItem]:
+        """Fetch and parse RSS feed with enhanced error handling and detailed logging"""
+        try:
+            logger.debug(f"Fetching RSS feed: {url}")
+            
+            # Make request with error handling
+            response = self._make_request(url, use_enhanced=True)
+            if response is None:
+                logger.debug(f"Failed to fetch RSS feed: {url} - Request returned None")
+                return []  # Return empty list for failed requests
+            
+            # Log response details
+            logger.debug(f"Received response from {url} - Status: {response.status_code}, Content-Type: {response.headers.get('content-type', 'unknown')}")
+            
+            # Handle different response content types
+            content = response.content
+            if isinstance(content, bytes):
+                try:
+                    content = content.decode('utf-8')
+                except UnicodeDecodeError:
+                    try:
+                        content = content.decode('utf-8', errors='ignore')
+                    except:
+                        logger.warning(f"Failed to decode content from {url}")
+                        return []
+            
+            # Log content preview for debugging
+            content_preview = content[:200] if isinstance(content, str) else str(content)[:200]
+            logger.debug(f"Content preview from {url}: {content_preview}")
+            
+            # Parse RSS feed with better error handling
+            try:
+                feed = feedparser.parse(content)
+                logger.debug(f"Parsed feed from {url} - Entries: {len(getattr(feed, 'entries', []))}")
+            except Exception as e:
+                logger.warning(f"Failed to parse RSS feed {url}: {e}")
+                return []
+            
+            if feed.bozo and feed.bozo_exception:
+                # Log but don't fail on parsing warnings
+                logger.debug(f"RSS parsing warning for {url}: {feed.bozo_exception}")
+            
+            news_items = []
+            entries = getattr(feed, 'entries', [])
+            
+            logger.debug(f"Processing {min(len(entries), max_items)} entries from {url}")
+            
+            for i, entry in enumerate(entries[:max_items]):
+                try:
+                    # Log entry details for debugging
+                    logger.debug(f"Processing entry {i+1} from {url} - Title: {entry.get('title', 'No title')}")
+                    
+                    # Extract content with multiple fallbacks
+                    content = ""
+                    if hasattr(entry, 'content') and entry.content:
+                        # Handle list of content objects
+                        if isinstance(entry.content, list) and len(entry.content) > 0:
+                            content_obj = entry.content[0]
+                            if hasattr(content_obj, 'value'):
+                                content = content_obj.value
+                            else:
+                                content = str(content_obj)
+                        else:
+                            content = str(entry.content)
+                    elif hasattr(entry, 'summary'):
+                        content = entry.summary
+                    elif hasattr(entry, 'description'):
+                        content = entry.description
+                    else:
+                        content = str(entry.get('content', ''))
+                    
+                    # Get published date with multiple fallbacks
+                    published_date = datetime.now()
+                    date_fields = ['published_parsed', 'updated_parsed', 'created_parsed']
+                    
+                    for field in date_fields:
+                        if hasattr(entry, field) and getattr(entry, field):
+                            try:
+                                date_tuple = getattr(entry, field)
+                                if isinstance(date_tuple, (list, tuple)) and len(date_tuple) >= 6:
+                                    published_date = datetime(*date_tuple[:6])
+                                    logger.debug(f"Using date from {field} field for entry {i+1} from {url}")
+                                    break
+                            except Exception as date_error:
+                                logger.debug(f"Failed to parse date from {field} field: {date_error}")
+                                continue
+                    
+                    # Create news item
+                    news_item = NewsItem(
+                        title=str(entry.get('title', 'No title')),
+                        content=content,
+                        source=url,
+                        url=str(entry.get('link', '')),
+                        published_date=published_date,
+                        sentiment_score=self._create_neutral_sentiment(),
+                        relevance_score=0.0
+                    )
+                    news_items.append(news_item)
+                    logger.debug(f"Successfully processed entry {i+1} from {url}")
+                except Exception as e:
+                    logger.warning(f"Error processing RSS entry {i+1} from {url}: {e}")
+                    continue
+            
+            logger.info(f"Successfully fetched {len(news_items)} items from {url}")
+            return news_items
+            
+        except Exception as e:
+            logger.error(f"Error fetching RSS feed {url}: {e}")
+            return []
+
+    def _filter_relevant_news(self, news_items: List[NewsItem], symbol: str, lookback_days: int) -> List[NewsItem]:
+        """Filter news items relevant to the symbol within lookback period"""
+        try:
+            relevant_items = []
+            cutoff_date = datetime.now() - timedelta(days=lookback_days)
+            
+            # Get company names for matching
+            symbol_to_company = {
+                "RELIANCE.NS": "Reliance",
+                "TCS.NS": "TCS",
+                "INFY.NS": "Infosys",
+                "HDFCBANK.NS": "HDFC Bank",
+                "ICICIBANK.NS": "ICICI Bank",
+                "AXISBANK.NS": "Axis Bank",
+                "SBIN.NS": "SBI",
+                "BHARTIARTL.NS": "Bharti Airtel",
+                "ITC.NS": "ITC",
+                "KOTAKBANK.NS": "Kotak Bank",
+                "BAJFINANCE.NS": "Bajaj Finance",
+                "HINDUNILVR.NS": "Hindustan Unilever",
+                "ASIANPAINT.NS": "Asian Paints",
+                "MARUTI.NS": "Maruti Suzuki",
+                "TITAN.NS": "Titan",
+                "LT.NS": "Larsen & Toubro",
+                "DMART.NS": "Avenue Supermarts",
+                "SUNPHARMA.NS": "Sun Pharma",
+                "CIPLA.NS": "Cipla",
+                "DRREDDY.NS": "Dr Reddy's",
+                "DIVISLAB.NS": "Divi's Laboratories",
+                "NCC.NS": "NCC Limited"  # Add NCC mapping
+            }
+            
+            company_name = symbol_to_company.get(symbol, symbol.split('.')[0])
+            search_terms = [symbol.split('.')[0], company_name]
+            
+            logger.debug(f"Filtering news for {symbol} using search terms: {search_terms}")
+            
+            for item in news_items:
+                try:
+                    # Check date
+                    if item.published_date < cutoff_date:
+                        logger.debug(f"Skipping item (too old): {item.title[:50]}...")
+                        continue
+                    
+                    # Check relevance
+                    title_lower = item.title.lower()
+                    content_lower = item.content.lower()
+                    
+                    is_relevant = False
+                    matched_term = None
+                    for term in search_terms:
+                        if term.lower() in title_lower or term.lower() in content_lower:
+                            is_relevant = True
+                            matched_term = term
+                            break
+                    
+                    if is_relevant:
+                        # Calculate relevance score
+                        item.relevance_score = self._calculate_relevance_score(item, symbol, company_name)
+                        relevant_items.append(item)
+                        logger.debug(f"Relevant item found for {symbol} (matched term: {matched_term}): {item.title[:50]}...")
+                    else:
+                        logger.debug(f"Item not relevant for {symbol}: {item.title[:50]}...")
+                        
+                except Exception as e:
+                    logger.warning(f"Error filtering news item: {e}")
+                    continue
+            
+            logger.info(f"Found {len(relevant_items)} relevant items for {symbol} out of {len(news_items)} total items")
+            return relevant_items
+            
+        except Exception as e:
+            logger.error(f"Error in _filter_relevant_news: {e}")
+            return []
+
+    def _calculate_relevance_score(self, news_item: NewsItem, symbol: str, company_name: str) -> float:
+        """Calculate relevance score for a news item"""
+        try:
+            title_lower = news_item.title.lower()
+            content_lower = news_item.content.lower()
+            
+            score = 0.0
+            
+            # Symbol exact match (highest weight)
+            if symbol.split('.')[0].lower() in title_lower:
+                score += 0.4
+            elif symbol.split('.')[0].lower() in content_lower:
+                score += 0.2
+            
+            # Company name match
+            if company_name.lower() in title_lower:
+                score += 0.3
+            elif company_name.lower() in content_lower:
+                score += 0.15
+            
+            # Keyword matching
+            keywords = ['stock', 'share', 'market', 'price', 'trading', 'invest']
+            for keyword in keywords:
+                if keyword in title_lower:
+                    score += 0.05
+                elif keyword in content_lower:
+                    score += 0.02
+            
+            return min(score, 1.0)  # Cap at 1.0
+            
+        except Exception as e:
+            logger.warning(f"Error calculating relevance score: {e}")
+            return 0.0
+
+    def _get_alternative_rss_sources(self, failing_sources: List[str]) -> List[str]:
+        """Get alternative RSS sources for failed ones"""
+        # Alternative sources mapping
+        alternatives = {
+            "https://www.hindubusinessline.com/markets/rssfeed/?id=1016": [
+                "https://www.hindubusinessline.com/rss/markets-newsletter/?id=1016",
+                "https://www.hindubusinessline.com/rss/markets/?id=1008"
+            ],
+            "https://timesofindia.indiatimes.com/rssfeeds/2146842.cms": [
+                "https://timesofindia.indiatimes.com/rssfeeds/1898055.cms",  # TOI Business
+                "https://timesofindia.indiatimes.com/rssfeeds/49694176.cms"  # TOI Economy
+            ],
+            "https://economictimes.indiatimes.com/markets/stocks/rssfeeds/12741757.cms": [
+                "https://economictimes.indiatimes.com/markets/stocks/rssfeeds/12741757.cms",
+                "https://economictimes.indiatimes.com/markets/stocks/rssfeeds/12741757.cms?from=mr"
+            ],
+            "https://www.reuters.com/news/archive/businessNews": [
+                "https://www.reuters.com/news/archive/finance",
+                "https://www.reuters.com/news/archive/economicNews"
+            ]
+        }
+        
+        alternative_sources = []
+        for source in failing_sources:
+            if source in alternatives:
+                alternative_sources.extend(alternatives[source])
+            else:
+                # Add some general financial RSS feeds as fallback
+                alternative_sources.extend([
+                    "https://www.reuters.com/news/archive/finance",
+                    "https://www.bloomberg.com/feed/podcast/bloomberg-businessweek.rss",
+                    "https://feeds.marketwatch.com/marketwatch/topstories/"
+                ])
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_alternatives = []
+        for source in alternative_sources:
+            if source not in seen:
+                seen.add(source)
+                unique_alternatives.append(source)
+        
+        return unique_alternatives

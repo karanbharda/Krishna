@@ -434,10 +434,11 @@ class LiveTradingExecutor:
             return {"success": False, "message": f"Buy order failed: {str(e)}"}
 
     
-    def execute_sell_order(self, symbol: str, signal_data: Dict) -> Dict:
-        """Execute a sell order through Dhan API with comprehensive validation and error handling"""
+    def execute_sell_order(self, symbol: str, signal_data: Dict = None) -> Dict:
+        """Execute a sell order with comprehensive validation"""
         try:
-            # Enforce global sell disable flag
+            logger.info(f"Using database-integrated live executor for SELL {symbol}")
+            
             if not self.enable_sell:
                 logger.info("Sell disabled by configuration (ENABLE_SELL=false). Skipping sell for %s", symbol)
                 return {"success": False, "message": "Sell disabled by configuration"}
@@ -618,6 +619,20 @@ class LiveTradingExecutor:
                 # Reduce cash
                 portfolio.cash -= quantity * price
                 
+                # Update in-memory holdings in portfolio manager
+                if symbol in self.portfolio_manager.current_holdings_dict:
+                    self.portfolio_manager.current_holdings_dict[symbol]["qty"] += quantity
+                    # Recalculate average price
+                    total_qty = self.portfolio_manager.current_holdings_dict[symbol]["qty"]
+                    total_cost = (self.portfolio_manager.current_holdings_dict[symbol]["qty"] - quantity) * self.portfolio_manager.current_holdings_dict[symbol]["avg_price"] + (quantity * price)
+                    self.portfolio_manager.current_holdings_dict[symbol]["avg_price"] = total_cost / total_qty
+                else:
+                    self.portfolio_manager.current_holdings_dict[symbol] = {
+                        "qty": quantity,
+                        "avg_price": price,
+                        "last_price": price
+                    }
+                
             elif side == "SELL":
                 # Update holding
                 holding = session.query(Holding).filter_by(
@@ -635,17 +650,24 @@ class LiveTradingExecutor:
                     if remaining_qty > 0:
                         holding.quantity = remaining_qty
                         holding.last_price = price
+                        
+                        # Update in-memory holdings
+                        if symbol in self.portfolio_manager.current_holdings_dict:
+                            self.portfolio_manager.current_holdings_dict[symbol]["qty"] = remaining_qty
+                            self.portfolio_manager.current_holdings_dict[symbol]["last_price"] = price
                     else:
                         # Remove holding completely
-                        session.delete(holding)
-                    
-                    # Add cash
-                    portfolio.cash += quantity * price
-                    
-                    # Update realized P&L
-                    portfolio.realized_pnl += pnl
-                    
-                    logger.info(f"Trade P&L: Rs.{pnl:.2f} for {quantity} {symbol}")
+                        # Remove from in-memory holdings
+                        if symbol in self.portfolio_manager.current_holdings_dict:
+                            del self.portfolio_manager.current_holdings_dict[symbol]
+                
+                # Add cash
+                portfolio.cash += quantity * price
+                
+                # Update realized P&L
+                portfolio.realized_pnl += pnl
+                
+                logger.info(f"Trade P&L: Rs.{pnl:.2f} for {quantity} {symbol}")
             
             # Update portfolio timestamp
             portfolio.last_updated = datetime.now()
@@ -653,6 +675,9 @@ class LiveTradingExecutor:
             
             # Sync portfolio manager current portfolio
             self.portfolio_manager.current_portfolio = portfolio
+            
+            # Refresh holdings in portfolio manager to ensure consistency
+            self.portfolio_manager.refresh_holdings_from_database()
             
         except Exception as e:
             if session:

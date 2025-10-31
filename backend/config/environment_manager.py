@@ -38,10 +38,10 @@ class EnvironmentManager:
             
             # MCP Server
             mcp_server_host=os.getenv('MCP_SERVER_HOST', 'localhost'),
-            mcp_server_port=int(os.getenv('MCP_SERVER_PORT', '8001')),
+            mcp_server_port=int(os.getenv('MCP_SERVER_PORT', '8002')),
             
             # Data Services
-            data_service_url=os.getenv('DATA_SERVICE_URL', 'http://127.0.0.1:8001'),
+            data_service_url=os.getenv('DATA_SERVICE_URL', 'http://127.0.0.1:8002'),
             
             # WebSocket
             websocket_port=int(os.getenv('WEBSOCKET_PORT', '8765')),

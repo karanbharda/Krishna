@@ -43,14 +43,23 @@ class DualPortfolioManager:
         
         # Current session data
         self.current_portfolio = None
+        self.current_holdings_dict = {}  # Separate dict for backward compatibility
         self.config_data = {}
         
         # Ensure data directory exists
         os.makedirs(self.data_dir, exist_ok=True)
         
         # Initialize database and load initial mode
-        self._initialize_database()
-        logger.info(f"Dual Portfolio Manager initialized with SQLite database in {data_dir}")
+        logger.info("Starting portfolio manager initialization")
+        try:
+            self._initialize_database()
+            logger.info(f"Dual Portfolio Manager initialized with SQLite database in {data_dir}")
+        except Exception as e:
+            logger.error(f"Error initializing portfolio manager: {e}")
+            logger.error(f"Error type: {type(e)}")
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            raise
     
     def _initialize_database(self):
         """Initialize database with default data if needed"""
@@ -95,14 +104,27 @@ class DualPortfolioManager:
             # If we found JSON data but no database entries, migrate the data
             if need_migration:
                 logger.info("Migrating existing JSON data to database")
-                self.db.migrate_json_to_sqlite(self.data_dir)
-
+                try:
+                    self.db.migrate_json_to_sqlite(self.data_dir)
+                except Exception as e:
+                    logger.error(f"Error during JSON migration: {e}")
+                    logger.error(f"Error type: {type(e)}")
+                    import traceback
+                    logger.error(f"Full traceback: {traceback.format_exc()}")
+                    raise
+                    
             session.commit()
+            logger.info("Loading mode after database initialization")
             self.load_mode(self.current_mode)
+            logger.info("Mode loaded successfully")
             
         except Exception as e:
             session.rollback()
             logger.error(f"Error initializing database: {e}")
+            logger.error(f"Error type: {type(e)}")
+            # Log the full traceback for debugging
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             raise
         finally:
             session.close()
@@ -126,6 +148,19 @@ class DualPortfolioManager:
                 raise ValueError(f"Portfolio not found for mode: {mode}")
                 
             self.current_portfolio = portfolio
+            self.current_holdings_dict = {}  # Initialize holdings dict
+            
+            # Load holdings from database into holdings dict for backward compatibility
+            logger.info(f"Loading holdings for {mode} mode")
+            logger.info(f"Number of holdings in database: {len(portfolio.holdings)}")
+            for holding in portfolio.holdings:
+                logger.info(f"Processing holding: {holding.ticker}, quantity: {holding.quantity}")
+                if holding.quantity > 0:  # Only include active holdings
+                    self.current_holdings_dict[holding.ticker] = {
+                        "qty": holding.quantity,
+                        "avg_price": holding.avg_price,
+                        "last_price": holding.last_price
+                    }
             
             # Load config data
             config_file = self.config_files[mode]
@@ -138,12 +173,35 @@ class DualPortfolioManager:
                 
         except Exception as e:
             logger.error(f"Error loading {mode} mode: {e}")
+            logger.error(f"Error type: {type(e)}")
+            # Log the full traceback for debugging
+            import traceback
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             raise
         finally:
             session.close()
             
     def get_current_portfolio(self) -> Portfolio:
         """Get current portfolio data"""
+        # Ensure holdings dict is synchronized with database
+        if self.current_portfolio:
+            # Rebuild holdings dict from database to ensure consistency
+            session = self.db.Session()
+            try:
+                # Load holdings from database into holdings dict for backward compatibility
+                self.current_holdings_dict = {}
+                for holding in self.current_portfolio.holdings:
+                    if holding.quantity > 0:  # Only include active holdings
+                        self.current_holdings_dict[holding.ticker] = {
+                            "qty": holding.quantity,
+                            "avg_price": holding.avg_price,
+                            "last_price": holding.last_price
+                        }
+            except Exception as e:
+                logger.error(f"Error synchronizing portfolio holdings: {e}")
+            finally:
+                session.close()
+                
         return self.current_portfolio
 
     def switch_mode(self, mode: str) -> None:
@@ -163,32 +221,30 @@ class DualPortfolioManager:
         """Add a callback function to be called when trades are executed"""
         self.trade_callbacks.append(callback)
         
-    def record_trade(self, ticker: str, action: str, quantity: int, price: float,
-                    pnl: float = 0.0, stop_loss: Optional[float] = None,
-                    take_profit: Optional[float] = None) -> None:
-        """Record a trade and update portfolio in the database"""
-        if not isinstance(ticker, str) or not ticker:
-            raise ValueError("ticker must be a non-empty string")
-        if not isinstance(action, str) or action.lower() not in ["buy", "sell"]:
-            raise ValueError("Action must be 'buy' or 'sell'")
-        if not isinstance(quantity, (int, float)) or quantity <= 0:
-            raise ValueError("Quantity must be a positive number")
-        if not isinstance(price, (int, float)) or price <= 0:
-            raise ValueError("Price must be a positive number")
-            
-        action = action.lower()  # Normalize action to lowercase
+    def record_trade(self, ticker: str, action: str, quantity: float, price: float, 
+                     pnl: float = 0.0, stop_loss: float = None, take_profit: float = None):
+        """Record a trade in the database and update portfolio"""
         session = None
         try:
             session = self.db.Session()
-            # Get current portfolio from this session to prevent detached instance issues
             portfolio = session.query(Portfolio).filter_by(mode=self.current_mode).first()
+            
             if not portfolio:
-                raise ValueError(f"No portfolio found for mode {self.current_mode}")
-                
-            # Create new trade record
+                # Create portfolio if it doesn't exist
+                portfolio = Portfolio(
+                    mode=self.current_mode,
+                    cash=self.starting_balance if self.current_mode == "paper" else 100000.0,
+                    starting_balance=self.starting_balance,
+                    realized_pnl=0.0,
+                    unrealized_pnl=0.0,
+                    last_updated=datetime.now()
+                )
+                session.add(portfolio)
+                session.flush()
+            
+            # Create trade record
             trade = Trade(
                 portfolio_id=portfolio.id,
-                timestamp=datetime.now(),
                 ticker=ticker,
                 action=action,
                 quantity=quantity,
@@ -196,7 +252,7 @@ class DualPortfolioManager:
                 pnl=pnl,
                 stop_loss=stop_loss,
                 take_profit=take_profit,
-                metadata={"source": "auto"}
+                timestamp=datetime.now()
             )
             session.add(trade)
             
@@ -230,7 +286,20 @@ class DualPortfolioManager:
                         last_price=price
                     )
                     session.add(holding)
-            
+                
+                # Update in-memory holdings
+                if ticker in self.current_holdings_dict:
+                    self.current_holdings_dict[ticker]["qty"] += quantity
+                    # Recalculate average price
+                    total_qty = self.current_holdings_dict[ticker]["qty"]
+                    total_cost = (self.current_holdings_dict[ticker]["qty"] - quantity) * self.current_holdings_dict[ticker]["avg_price"] + trade_value
+                    self.current_holdings_dict[ticker]["avg_price"] = total_cost / total_qty
+                else:
+                    self.current_holdings_dict[ticker] = {
+                        "qty": quantity,
+                        "avg_price": price,
+                        "last_price": price
+                    }
             else:  # sell
                 # Check if we have enough holdings to sell
                 holding = session.query(Holding).filter_by(
@@ -253,7 +322,11 @@ class DualPortfolioManager:
                 if holding.quantity == 0:
                     session.delete(holding)
                 
-                logger.info(f"Realized P&L for {ticker}: {pnl:.2f} (Total: {portfolio.realized_pnl:.2f})")
+                # Update in-memory holdings
+                if ticker in self.current_holdings_dict:
+                    self.current_holdings_dict[ticker]["qty"] -= quantity
+                    if self.current_holdings_dict[ticker]["qty"] <= 0:
+                        del self.current_holdings_dict[ticker]
             
             portfolio.last_updated = datetime.now()
             session.commit()
@@ -348,6 +421,27 @@ class DualPortfolioManager:
         except Exception as e:
             logger.error(f"Error syncing to JSON: {e}")
             raise
+    
+    def refresh_holdings_from_database(self):
+        """Refresh holdings dict from database to ensure consistency"""
+        if not self.current_portfolio:
+            return
+            
+        session = self.db.Session()
+        try:
+            # Load holdings from database into holdings dict for backward compatibility
+            self.current_holdings_dict = {}
+            for holding in self.current_portfolio.holdings:
+                if holding.quantity > 0:  # Only include active holdings
+                    self.current_holdings_dict[holding.ticker] = {
+                        "qty": holding.quantity,
+                        "avg_price": holding.avg_price,
+                        "last_price": holding.last_price
+                    }
+        except Exception as e:
+            logger.error(f"Error refreshing portfolio holdings: {e}")
+        finally:
+            session.close()
     
     def get_portfolio_summary(self) -> Dict:
         """Get portfolio summary for current mode"""

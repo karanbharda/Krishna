@@ -202,7 +202,7 @@ LLAMA_BASE_URL=http://localhost:11434
 LLAMA_MODEL=llama3.1:8b
 
 # MCP Server Configuration
-MCP_MONITORING_PORT=8001
+MCP_MONITORING_PORT=8002
 MCP_MAX_SESSIONS=100
 
 # Trading Configuration
@@ -303,7 +303,7 @@ DEFAULT_STARTING_BALANCE=10000
             logger.info(f"{self.venv_path}/bin/python web_backend.py")
         
         logger.info("🌐 Web interface will be available at: http://localhost:5000")
-        logger.info("📊 MCP monitoring at: http://localhost:8001")
+        logger.info("📊 MCP monitoring at: http://localhost:8002")
         logger.info("📚 API docs at: http://localhost:5000/docs")
 
 def main():
