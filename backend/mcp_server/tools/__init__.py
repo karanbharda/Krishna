@@ -11,6 +11,10 @@ from .risk_management_tool import RiskManagementTool
 from .sentiment_tool import SentimentTool
 from .prediction_tool import PredictionTool
 from .scan_tool import ScanTool
+from .predict_tool import PredictTool
+from .analyze_tool import AnalyzeTool
+from .scan_all_tool import ScanAllTool
+from .confirm_tool import ConfirmTool
 
 __all__ = [
     "ExecutionTool",
@@ -19,5 +23,9 @@ __all__ = [
     "RiskManagementTool",
     "SentimentTool",
     "PredictionTool",
-    "ScanTool"
+    "ScanTool",
+    "PredictTool",
+    "AnalyzeTool",
+    "ScanAllTool",
+    "ConfirmTool"
 ]

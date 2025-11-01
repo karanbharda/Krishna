@@ -3584,6 +3584,136 @@ async def _ensure_mcp_initialized():
                     "required": ["portfolio_id", "symbol"]
                 }
             )
+            
+            # Register venting layer predict tool
+            from mcp_server.tools.predict_tool import PredictTool
+            predict_tool_venting = PredictTool({
+                "tool_id": "predict_tool_venting",
+                "lightgbm_enabled": True,
+                "rl_model_type": "linucb"
+            })
+            
+            mcp_server.register_tool(
+                name="tools/predict",
+                function=predict_tool_venting.predict,
+                description="Generate predictions using LightGBM + RL (LinUCB/PPO-Lite)",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "symbols": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "model_type": {"type": "string"},
+                        "horizon": {"type": "string"},
+                        "include_explanations": {"type": "boolean"}
+                    },
+                    "required": []
+                }
+            )
+            
+            # Register venting layer analyze tool
+            from mcp_server.tools.analyze_tool import AnalyzeTool
+            analyze_tool_venting = AnalyzeTool({
+                "tool_id": "analyze_tool_venting",
+                "llama_enabled": False,  # Set to True when LLaMA is available
+                "llama_host": "http://localhost:11434",
+                "llama_model": "llama2",
+                "langgraph_enabled": False
+            })
+            
+            mcp_server.register_tool(
+                name="tools/analyze",
+                function=analyze_tool_venting.analyze,
+                description="Send prediction output to local LLaMA via LangGraph to get reasoning and insights",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "predictions": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "symbol": {"type": "string"},
+                                    "prediction_score": {"type": "number"},
+                                    "confidence": {"type": "number"},
+                                    "model_type": {"type": "string"},
+                                    "features": {"type": "object"}
+                                }
+                            }
+                        },
+                        "analysis_depth": {"type": "string"},
+                        "include_risk_assessment": {"type": "boolean"}
+                    },
+                    "required": ["predictions"]
+                }
+            )
+            
+            # Register venting layer scan_all tool
+            from mcp_server.tools.scan_all_tool import ScanAllTool
+            scan_all_tool_venting = ScanAllTool({
+                "tool_id": "scan_all_tool_venting",
+                "rl_model_type": "linucb"
+            })
+            
+            mcp_server.register_tool(
+                name="tools/scan_all",
+                function=scan_all_tool_venting.scan_all,
+                description="Batch scan all cached stocks and rank by RL agent",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "min_score": {"type": "number"},
+                        "max_results": {"type": "number"},
+                        "sectors": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "market_caps": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "sort_by": {"type": "string"}
+                    },
+                    "required": []
+                }
+            )
+            
+            # Register venting layer confirm tool
+            from mcp_server.tools.confirm_tool import ConfirmTool
+            confirm_tool_venting = ConfirmTool({
+                "tool_id": "confirm_tool_venting",
+                "executor_enabled": True,
+                "trading_mode": "paper",
+                "max_position_size": 0.1,
+                "risk_tolerance": 0.05
+            })
+            
+            mcp_server.register_tool(
+                name="tools/confirm",
+                function=confirm_tool_venting.confirm,
+                description="Validate results with Executor via FastMCP and log confirmations",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "actions": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "symbol": {"type": "string"},
+                                    "action": {"type": "string"},
+                                    "confidence": {"type": "number"},
+                                    "analysis": {"type": "object"}
+                                }
+                            }
+                        },
+                        "portfolio_value": {"type": "number"},
+                        "risk_check": {"type": "boolean"}
+                    },
+                    "required": ["actions"]
+                }
+            )
 
         logger.info("MCP components initialized successfully")
 
