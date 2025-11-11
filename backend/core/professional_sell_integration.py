@@ -34,7 +34,6 @@ class ProfessionalSellIntegration:
         
         # Integration settings
         self.enable_professional_logic = config.get("enable_professional_sell_logic", True)
-        self.fallback_to_legacy = config.get("fallback_to_legacy_sell", False)
         
         logger.info("Professional Sell Integration initialized")
     
@@ -112,8 +111,11 @@ class ProfessionalSellIntegration:
             logger.info(f"  Signals Triggered: {len(sell_decision.signals_triggered)}")
             logger.info(f"  Reasoning: {sell_decision.reasoning}")
             
-            # Convert to legacy format
-            result = self._convert_to_legacy_format(sell_decision, position_metrics)
+            # Convert to standard format
+            result = self._convert_to_standard_format(sell_decision, position_metrics)
+            
+            # Add ticker information
+            result["ticker"] = ticker
             
             # Log the final result
             if result['action'] == 'sell':
@@ -139,11 +141,7 @@ class ProfessionalSellIntegration:
         except Exception as e:
             logger.error(f"Error in professional sell evaluation for {ticker}: {e}")
             logger.exception("Full traceback:")
-            if self.fallback_to_legacy:
-                logger.info("Falling back to legacy sell logic")
-                return self._legacy_sell_decision(ticker, current_price, portfolio_holdings, analysis_data)
-            else:
-                return self._error_decision(str(e))
+            return self._error_decision(str(e))
     
     def _build_position_metrics(
         self,
@@ -369,24 +367,20 @@ class ProfessionalSellIntegration:
                 volume_profile=0.5
             )
     
-    def _convert_to_legacy_format(self, sell_decision: SellDecision, position_metrics: PositionMetrics) -> Dict:
-        """Convert professional sell decision to legacy format"""
+    def _convert_to_standard_format(self, sell_decision: SellDecision, position_metrics: PositionMetrics) -> Dict:
+        """Convert professional sell decision to standard format"""
         
         # PRODUCTION ENHANCEMENT: Track signals for continuous learning
-        self._track_signals(sell_decision)
+        self._track_signals(sell_decision, position_metrics)
         
         if not sell_decision.should_sell:
-            # Use stored database values if available, otherwise use calculated values
-            stop_loss = position_metrics.db_stop_loss if position_metrics.db_stop_loss is not None else sell_decision.stop_loss_price
-            take_profit = position_metrics.db_target_price if position_metrics.db_target_price is not None else sell_decision.take_profit_price
-            
             return {
                 "action": "hold",
                 "ticker": "",
                 "qty": 0,
                 "price": position_metrics.current_price,
-                "stop_loss": stop_loss,
-                "take_profit": take_profit,
+                "stop_loss": sell_decision.stop_loss_price,
+                "take_profit": sell_decision.take_profit_price,
                 "success": True,
                 "confidence_score": sell_decision.confidence,
                 "signals": len(sell_decision.signals_triggered),
@@ -394,7 +388,24 @@ class ProfessionalSellIntegration:
                 "professional_reasoning": sell_decision.reasoning
             }
         
-        # Use stored database values if available, otherwise use calculated values
+        # Validate sell quantity
+        if sell_decision.sell_quantity <= 0:
+            logger.warning(f"Invalid sell quantity calculated: {sell_decision.sell_quantity}. No sell action taken.")
+            return {
+                "action": "hold",
+                "ticker": "",
+                "qty": 0,
+                "price": position_metrics.current_price,
+                "stop_loss": sell_decision.stop_loss_price,
+                "take_profit": sell_decision.take_profit_price,
+                "success": True,
+                "confidence_score": sell_decision.confidence,
+                "signals": len(sell_decision.signals_triggered),
+                "reason": "no_valid_quantity",
+                "professional_reasoning": f"Professional sell logic recommends selling but calculated quantity is {sell_decision.sell_quantity} which is invalid. No sell action taken."
+            }
+        
+        # Use database stop loss and take profit if available, otherwise use calculated values
         stop_loss = position_metrics.db_stop_loss if position_metrics.db_stop_loss is not None else sell_decision.stop_loss_price
         take_profit = position_metrics.db_target_price if position_metrics.db_target_price is not None else sell_decision.take_profit_price
         
@@ -430,23 +441,7 @@ class ProfessionalSellIntegration:
             "professional_reasoning": "No position to sell"
         }
     
-    def _legacy_sell_decision(self, ticker: str, current_price: float, portfolio_holdings: Dict, analysis_data: Dict) -> Dict:
-        """Fallback to legacy sell logic"""
-        return {
-            "action": "hold",
-            "ticker": ticker,
-            "qty": 0,
-            "price": current_price,
-            "stop_loss": 0.0,
-            "take_profit": 0.0,
-            "success": True,
-            "confidence_score": 0.0,
-            "signals": 0,
-            "reason": "legacy_fallback",
-            "professional_reasoning": "Using legacy sell logic"
-        }
-    
-    def _track_signals(self, sell_decision: SellDecision):
+    def _track_signals(self, sell_decision: SellDecision, position_metrics: PositionMetrics):
         """
         PRODUCTION ENHANCEMENT: Track signals for continuous learning
         """

@@ -11,11 +11,6 @@ from datetime import datetime
 import os
 import sys
 
-# Fix import paths
-current_dir = os.path.dirname(os.path.abspath(__file__))
-if current_dir not in sys.path:
-    sys.path.insert(0, current_dir)
-
 from .risk_engine import risk_engine
 
 # Set up logger first
@@ -29,10 +24,195 @@ except ImportError:
     logger.warning("Monitoring not available for RL agent")
     MONITORING_AVAILABLE = False
 
-class SimpleRLModel(nn.Module):
-    def __init__(self, input_size=10, hidden_size=64, output_size=3):  # 3 actions: buy, hold, sell
-        super().__init__()
-        self.net = nn.Sequential(
+# Multi-Objective Transformer-based RL Model
+class MultiObjectiveTransformerRLModel(nn.Module):
+    def __init__(self, input_size=25, d_model=128, num_heads=4, num_layers=3, output_size=3, num_objectives=4):
+        super(MultiObjectiveTransformerRLModel, self).__init__()
+        self.d_model = d_model
+        self.input_size = input_size
+        self.num_objectives = num_objectives
+        
+        # Input projection to transformer dimension
+        self.input_proj = nn.Linear(input_size, d_model)
+        
+        # Positional encoding
+        self.positional_encoding = nn.Parameter(torch.randn(1, 1, d_model))
+        
+        # Transformer encoder layers
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=num_heads,
+            dim_feedforward=512,
+            dropout=0.1,
+            activation='gelu',
+            batch_first=True,
+            norm_first=True
+        )
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+        
+        # Multi-head attention for pooling
+        self.attention_pool = nn.MultiheadAttention(d_model, num_heads, batch_first=True)
+        self.layer_norm = nn.LayerNorm(d_model)
+        
+        # Multi-objective actor-critic heads
+        self.actor_heads = nn.ModuleList([
+            nn.Sequential(
+                nn.Linear(d_model, d_model // 2),
+                nn.GELU(),
+                nn.Dropout(0.2),
+                nn.Linear(d_model // 2, output_size),
+                nn.Softmax(dim=-1)
+            ) for _ in range(num_objectives)
+        ])
+        
+        self.critic_heads = nn.ModuleList([
+            nn.Sequential(
+                nn.Linear(d_model, d_model // 2),
+                nn.GELU(),
+                nn.Dropout(0.2),
+                nn.Linear(d_model // 2, 1)
+            ) for _ in range(num_objectives)
+        ])
+        
+        # Objective weighting mechanism
+        self.objective_weights = nn.Parameter(torch.ones(num_objectives) / num_objectives)
+        
+    def forward(self, x, objective_weights=None):
+        import torch.nn.functional as F
+        
+        # Handle single sample case
+        if x.dim() == 1:
+            x = x.unsqueeze(0)
+            
+        batch_size = x.size(0)
+        
+        # Project input to transformer dimension
+        x = self.input_proj(x)
+        x = x.unsqueeze(1)  # Add sequence dimension
+        
+        # Add positional encoding
+        x = x + self.positional_encoding[:, :1, :]
+        
+        # Transformer encoding
+        x = self.transformer_encoder(x)
+        
+        # Attention pooling - use first token as query
+        query = x[:, :1, :]
+        pooled_output, _ = self.attention_pool(query, x, x)
+        pooled_output = pooled_output.squeeze(1)
+        
+        # Layer normalization
+        pooled_output = self.layer_norm(pooled_output)
+        
+        # Multi-objective outputs
+        action_probs_list = [head(pooled_output) for head in self.actor_heads]
+        state_values_list = [head(pooled_output) for head in self.critic_heads]
+        
+        # Apply objective weights if provided
+        if objective_weights is not None:
+            # Normalize weights
+            objective_weights = F.softmax(objective_weights, dim=0)
+            
+            # Weighted combination
+            action_probs = torch.stack(action_probs_list, dim=-1)
+            action_probs = torch.sum(action_probs * objective_weights, dim=-1)
+            
+            state_values = torch.stack(state_values_list, dim=-1)
+            state_values = torch.sum(state_values * objective_weights, dim=-1)
+        else:
+            # Use learned weights
+            weights = F.softmax(self.objective_weights, dim=0)
+            
+            # Weighted combination
+            action_probs = torch.stack(action_probs_list, dim=-1)
+            action_probs = torch.sum(action_probs * weights, dim=-1)
+            
+            state_values = torch.stack(state_values_list, dim=-1)
+            state_values = torch.sum(state_values * weights, dim=-1)
+        
+        return action_probs, state_values
+
+# Transformer-based RL Model
+class TransformerRLModel(nn.Module):
+    def __init__(self, input_size=25, d_model=128, num_heads=4, num_layers=3, output_size=3):
+        super(TransformerRLModel, self).__init__()
+        self.d_model = d_model
+        self.input_size = input_size
+        
+        # Input projection to transformer dimension
+        self.input_proj = nn.Linear(input_size, d_model)
+        
+        # Positional encoding
+        self.positional_encoding = nn.Parameter(torch.randn(1, 1, d_model))
+        
+        # Transformer encoder layers
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=num_heads,
+            dim_feedforward=512,
+            dropout=0.1,
+            activation='gelu',
+            batch_first=True,
+            norm_first=True
+        )
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+        
+        # Multi-head attention for pooling
+        self.attention_pool = nn.MultiheadAttention(d_model, num_heads, batch_first=True)
+        self.layer_norm = nn.LayerNorm(d_model)
+        
+        # Actor-Critic heads
+        self.actor = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.GELU(),
+            nn.Dropout(0.2),
+            nn.Linear(d_model // 2, output_size),
+            nn.Softmax(dim=-1)
+        )
+        
+        self.critic = nn.Sequential(
+            nn.Linear(d_model, d_model // 2),
+            nn.GELU(),
+            nn.Dropout(0.2),
+            nn.Linear(d_model // 2, 1)
+        )
+        
+    def forward(self, x):
+        # Handle single sample case
+        if x.dim() == 1:
+            x = x.unsqueeze(0)
+            
+        batch_size = x.size(0)
+        
+        # Project input to transformer dimension
+        x = self.input_proj(x)
+        x = x.unsqueeze(1)  # Add sequence dimension
+        
+        # Add positional encoding
+        x = x + self.positional_encoding[:, :1, :]
+        
+        # Transformer encoding
+        x = self.transformer_encoder(x)
+        
+        # Attention pooling - use first token as query
+        query = x[:, :1, :]
+        pooled_output, _ = self.attention_pool(query, x, x)
+        pooled_output = pooled_output.squeeze(1)
+        
+        # Layer normalization
+        pooled_output = self.layer_norm(pooled_output)
+        
+        # Actor-Critic outputs
+        action_probs = self.actor(pooled_output)
+        state_value = self.critic(pooled_output)
+        
+        return action_probs, state_value
+
+# PPO Agent Implementation
+class PPOAgent(nn.Module):
+    def __init__(self, input_size=10, hidden_size=128, output_size=3, lr=3e-4):
+        super(PPOAgent, self).__init__()
+        self.actor = nn.Sequential(
             nn.Linear(input_size, hidden_size),
             nn.ReLU(),
             nn.Linear(hidden_size, hidden_size),
@@ -40,9 +220,87 @@ class SimpleRLModel(nn.Module):
             nn.Linear(hidden_size, output_size),
             nn.Softmax(dim=-1)
         )
+        
+        self.critic = nn.Sequential(
+            nn.Linear(input_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, 1)
+        )
+        
+        self.optimizer = optim.Adam(self.parameters(), lr=lr)
+        
+    def forward(self, x):
+        return self.actor(x), self.critic(x)
+
+# Enhanced RL Model with multiple algorithms support
+class EnhancedRLModel(nn.Module):
+    def __init__(self, input_size=25, hidden_size=128, output_size=3, algorithm="ppo"):
+        super().__init__()
+        self.algorithm = algorithm
+        
+        # Enhanced network with more layers and neurons
+        self.feature_extractor = nn.Sequential(
+            nn.Linear(input_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, hidden_size//2),
+            nn.ReLU()
+        )
+        
+        # Actor-Critic for PPO
+        if algorithm == "ppo":
+            self.actor = nn.Sequential(
+                nn.Linear(hidden_size//2, hidden_size//2),
+                nn.ReLU(),
+                nn.Linear(hidden_size//2, output_size),
+                nn.Softmax(dim=-1)
+            )
+            
+            self.critic = nn.Sequential(
+                nn.Linear(hidden_size//2, hidden_size//2),
+                nn.ReLU(),
+                nn.Linear(hidden_size//2, 1)
+            )
+        else:  # Default to simple classification
+            self.net = nn.Sequential(
+                nn.Linear(hidden_size//2, hidden_size//2),
+                nn.ReLU(),
+                nn.Linear(hidden_size//2, output_size),
+                nn.Softmax(dim=-1)
+            )
 
     def forward(self, x):
-        return self.net(x)
+        features = self.feature_extractor(x)
+        if self.algorithm == "ppo":
+            action_probs = self.actor(features)
+            state_value = self.critic(features)
+            return action_probs, state_value
+        else:
+            return self.net(features)
+
+class ExperienceReplay:
+    def __init__(self, capacity=10000):
+        self.capacity = capacity
+        self.memory = []
+        self.position = 0
+
+    def push(self, state, action, reward, next_state, done):
+        if len(self.memory) < self.capacity:
+            self.memory.append(None)
+        self.memory[self.position] = (state, action, reward, next_state, done)
+        self.position = (self.position + 1) % self.capacity
+
+    def sample(self, batch_size):
+        indices = np.random.choice(len(self.memory), batch_size, replace=False)
+        batch = [self.memory[i] for i in indices]
+        state, action, reward, next_state, done = zip(*batch)
+        return np.array(state), np.array(action), np.array(reward), np.array(next_state), np.array(done)
+
+    def __len__(self):
+        return len(self.memory)
 
 class RLFilteringAgent:
     def __init__(self):
@@ -54,9 +312,20 @@ class RLFilteringAgent:
         else:
             logger.info("Using CPU for RL processing")
             
-        self.model = SimpleRLModel().to(self.device)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+        # Initialize enhanced models
+        self.ppo_model = EnhancedRLModel(input_size=25, algorithm="ppo").to(self.device)
+        self.transformer_model = TransformerRLModel(input_size=25).to(self.device)
+        self.simple_model = EnhancedRLModel(input_size=25, algorithm="simple").to(self.device)
+        self.current_model = self.ppo_model  # Default to PPO
+        self.optimizer = optim.Adam(self.current_model.parameters(), lr=0.001)
         self.criterion = nn.MSELoss()
+        
+        # Experience replay for training
+        self.replay_buffer = ExperienceReplay(capacity=50000)
+        
+        # Training parameters
+        self.training_step = 0
+        self.update_frequency = 10
         
         # Performance tracking
         self.processed_stocks = 0
@@ -69,16 +338,27 @@ class RLFilteringAgent:
     def get_rl_analysis(self, data: Dict[str, Any], horizon: str = "day") -> Dict[str, Any]:
         """Get RL analysis for a single stock for integration with professional buy logic"""
         try:
-            # Extract features
-            features = self._extract_features(data, horizon)
+            # Extract enhanced features
+            features = self._extract_enhanced_features(data, horizon)
             
             # Get RL scores
             with torch.no_grad():
                 input_tensor = torch.FloatTensor(features).unsqueeze(0).to(self.device)
-                scores = self.model(input_tensor)
-                buy_score = float(scores[0, 0].cpu().item())
-                hold_score = float(scores[0, 1].cpu().item())
-                sell_score = float(scores[0, 2].cpu().item())
+                if isinstance(self.current_model, TransformerRLModel):
+                    action_probs, _ = self.current_model(input_tensor)
+                    buy_score = float(action_probs[0, 0].cpu().item())
+                    hold_score = float(action_probs[0, 1].cpu().item())
+                    sell_score = float(action_probs[0, 2].cpu().item())
+                elif isinstance(self.current_model, PPOAgent) or self.current_model.algorithm == "ppo":
+                    action_probs, _ = self.current_model(input_tensor)
+                    buy_score = float(action_probs[0, 0].cpu().item())
+                    hold_score = float(action_probs[0, 1].cpu().item())
+                    sell_score = float(action_probs[0, 2].cpu().item())
+                else:
+                    scores = self.current_model(input_tensor)
+                    buy_score = float(scores[0, 0].cpu().item())
+                    hold_score = float(scores[0, 1].cpu().item())
+                    sell_score = float(scores[0, 2].cpu().item())
             
             # Determine recommendation based on highest score
             if buy_score > hold_score and buy_score > sell_score:
@@ -109,7 +389,7 @@ class RLFilteringAgent:
             logger.error(f"Error in RL analysis: {e}")
             # Fallback to CPU scoring
             try:
-                features = self._extract_features(data, horizon)
+                features = self._extract_enhanced_features(data, horizon)
                 cpu_score = self._get_rl_score_cpu(features)
                 return {
                     "success": True,
@@ -185,7 +465,7 @@ class RLFilteringAgent:
             if not data or 'price' not in data:
                 continue
                 
-            features = self._extract_features(data, horizon)
+            features = self._extract_enhanced_features(data, horizon)
             features_batch.append(features)
             symbols_batch.append((symbol, data))
         
@@ -197,9 +477,15 @@ class RLFilteringAgent:
             features_tensor = torch.FloatTensor(np.array(features_batch)).to(self.device)
             
             with torch.no_grad():
-                scores = self.model(features_tensor)
-                # Use buy action probability as score
-                buy_scores = scores[:, 0].cpu().numpy()
+                if isinstance(self.current_model, TransformerRLModel):
+                    action_probs, _ = self.current_model(features_tensor)
+                    buy_scores = action_probs[:, 0].cpu().numpy()
+                elif isinstance(self.current_model, PPOAgent) or self.current_model.algorithm == "ppo":
+                    action_probs, _ = self.current_model(features_tensor)
+                    buy_scores = action_probs[:, 0].cpu().numpy()
+                else:
+                    scores = self.current_model(features_tensor)
+                    buy_scores = scores[:, 0].cpu().numpy()
             
             # Apply risk filtering
             for i, (symbol, data) in enumerate(symbols_batch):
@@ -251,7 +537,7 @@ class RLFilteringAgent:
             # Fallback to CPU processing
             for symbol, data in symbols_batch:
                 try:
-                    features = self._extract_features(data, horizon)
+                    features = self._extract_enhanced_features(data, horizon)
                     score = self._get_rl_score_cpu(features)
                     
                     # Even in fallback, apply basic risk compliance
@@ -269,13 +555,27 @@ class RLFilteringAgent:
         
         return batch_results
 
-    def _extract_features(self, data: Dict[str, Any], horizon: str) -> np.ndarray:
-        """Extract features for RL model"""
+    def _extract_enhanced_features(self, data: Dict[str, Any], horizon: str) -> np.ndarray:
+        """Extract enhanced features for RL model with financial indicators"""
         try:
+            # Basic features
             price = float(data.get('price', 0))
             volume = float(data.get('volume', 0))
             change = float(data.get('change', 0))
             change_pct = float(data.get('change_pct', 0))
+            
+            # Technical indicators
+            rsi = float(data.get('rsi', 50))
+            macd = float(data.get('macd', 0))
+            macd_signal = float(data.get('macd_signal', 0))
+            sma_20 = float(data.get('sma_20', price))
+            sma_50 = float(data.get('sma_50', price))
+            sma_200 = float(data.get('sma_200', price))
+            
+            # Advanced financial features
+            atr = float(data.get('atr', price * 0.02))  # Average True Range
+            volatility = float(data.get('volatility', 0.02))
+            volume_ratio = float(data.get('volume_ratio', 1.0))
             
             # Validate inputs to prevent extreme values
             if price < 0 or price > 1000000:  # Reasonable price range
@@ -293,54 +593,94 @@ class RLFilteringAgent:
             # Normalize features
             price_norm = min(price / 1000, 10)  # Normalize price
             volume_norm = min(volume / 1000000, 10)  # Normalize volume
+            rsi_norm = rsi / 100  # Normalize RSI
+            sma_ratio = sma_20 / price if price > 0 else 1  # Price vs SMA ratio
+            
+            # Momentum indicators
+            price_momentum = change_pct
+            volume_momentum = volume_ratio - 1
+            
+            # Volatility features
+            normalized_atr = atr / price if price > 0 else 0.02
+            volatility_regime = volatility / 0.02  # Relative to normal market volatility
             
             # Horizon encoding
             horizon_encoding = {"day": 1, "week": 2, "month": 3, "year": 4}.get(horizon, 1)
             
-            # Create feature vector (10 features)
+            # Market regime features
+            trend_strength = (sma_20 - sma_200) / sma_200 if sma_200 > 0 else 0
+            support_resistance = (price - sma_50) / sma_50 if sma_50 > 0 else 0
+            
+            # Create enhanced feature vector (25 features)
             features = np.array([
-                price_norm,
-                volume_norm,
-                change,
-                change_pct,
-                horizon_encoding,
-                abs(change_pct),  # Volatility indicator
-                1 if change > 0 else 0,  # Positive momentum
-                min(price / 100, 1),  # Price tier
-                0,  # Reserved
-                0   # Reserved
+                price_norm,              # 1. Normalized price
+                volume_norm,             # 2. Normalized volume
+                change,                  # 3. Price change
+                change_pct,              # 4. Percentage change
+                horizon_encoding,        # 5. Horizon encoding
+                abs(change_pct),         # 6. Volatility indicator
+                1 if change > 0 else 0,  # 7. Positive momentum
+                min(price / 100, 1),     # 8. Price tier
+                rsi_norm,                # 9. Normalized RSI
+                macd,                    # 10. MACD
+                macd_signal,             # 11. MACD Signal
+                sma_ratio,               # 12. Price vs SMA ratio
+                price_momentum,          # 13. Price momentum
+                volume_momentum,         # 14. Volume momentum
+                normalized_atr,          # 15. Normalized ATR
+                volatility_regime,       # 16. Volatility regime
+                trend_strength,          # 17. Trend strength
+                support_resistance,      # 18. Support/Resistance
+                0,                       # 19. Reserved
+                0,                       # 20. Reserved
+                0,                       # 21. Reserved
+                0,                       # 22. Reserved
+                0,                       # 23. Reserved
+                0,                       # 24. Reserved
+                0                        # 25. Reserved
             ], dtype=np.float32)
             
             # Validate that all features are finite numbers
             if not np.isfinite(features).all():
                 logger.warning("Non-finite values detected in features, using defaults")
-                features = np.zeros(10, dtype=np.float32)
+                features = np.zeros(25, dtype=np.float32)
             
             return features
             
         except Exception as e:
             logger.debug(f"Feature extraction error: {e}")
-            return np.zeros(10, dtype=np.float32)
+            return np.zeros(25, dtype=np.float32)
 
     def _get_rl_score(self, features: np.ndarray) -> float:
         """Get RL score for features using GPU"""
         try:
             with torch.no_grad():
                 input_tensor = torch.FloatTensor(features).unsqueeze(0).to(self.device)
-                output = self.model(input_tensor)
-                # Return buy action probability
-                return float(output[0, 0].cpu().item())
+                if isinstance(self.current_model, TransformerRLModel):
+                    action_probs, _ = self.current_model(input_tensor)
+                    return float(action_probs[0, 0].cpu().item())
+                elif isinstance(self.current_model, PPOAgent) or self.current_model.algorithm == "ppo":
+                    action_probs, _ = self.current_model(input_tensor)
+                    return float(action_probs[0, 0].cpu().item())
+                else:
+                    output = self.current_model(input_tensor)
+                    return float(output[0, 0].cpu().item())
         except Exception as e:
             logger.debug(f"GPU scoring error: {e}")
             return self._get_rl_score_cpu(features)
 
     def _get_rl_score_cpu(self, features: np.ndarray) -> float:
-        """Fallback CPU scoring"""
+        """Fallback CPU scoring with enhanced heuristic"""
         try:
-            # Simple heuristic scoring
+            # Enhanced heuristic scoring with financial indicators
             price_norm = features[0]
             volume_norm = features[1]
             change_pct = features[3]
+            rsi_norm = features[8]
+            macd = features[9]
+            sma_ratio = features[11]
+            price_momentum = features[12]
+            volatility_regime = features[15]
             
             score = 0.5  # Base score
             
@@ -348,13 +688,29 @@ class RLFilteringAgent:
             if change_pct > 0:
                 score += min(change_pct / 10, 0.3)
             
-            # Volume bonus
+            # Volume confirmation bonus
             if volume_norm > 0.1:
                 score += 0.1
             
-            # Price tier bonus (mid-range stocks)
-            if 0.1 < price_norm < 5:
+            # RSI-based scoring (overbought/oversold)
+            if 0.3 < rsi_norm < 0.7:  # Not overbought or oversold
                 score += 0.1
+            
+            # MACD confirmation
+            if macd > 0:
+                score += 0.05
+            
+            # Price vs SMA confirmation
+            if 0.95 < sma_ratio < 1.05:  # Near SMA
+                score += 0.05
+            
+            # Momentum confirmation
+            if price_momentum > 0:
+                score += 0.05
+            
+            # Volatility adjustment (prefer normal volatility)
+            if 0.5 < volatility_regime < 1.5:
+                score += 0.05
             
             return min(max(score, 0), 1)
             
@@ -409,10 +765,11 @@ class RLFilteringAgent:
         """Get model performance statistics"""
         stats = {
             "device": str(self.device),
-            "model_parameters": sum(p.numel() for p in self.model.parameters()),
+            "model_parameters": sum(p.numel() for p in self.current_model.parameters()),
             "filtering_stats": self.filtering_stats,
             "gpu_available": torch.cuda.is_available(),
-            "gpu_memory_allocated": torch.cuda.memory_allocated() if torch.cuda.is_available() else 0
+            "gpu_memory_allocated": torch.cuda.memory_allocated() if torch.cuda.is_available() else 0,
+            "training_step": self.training_step
         }
         
         # Log performance metrics if monitoring is available
@@ -438,6 +795,84 @@ class RLFilteringAgent:
                 logger.debug(f"Failed to log RL agent performance: {e}")
         
         return stats
+
+    def train_step(self, state, action, reward, next_state, done):
+        """Perform a training step with experience replay"""
+        # Store experience
+        self.replay_buffer.push(state, action, reward, next_state, done)
+        
+        # Train if enough experiences
+        if len(self.replay_buffer) >= 32:
+            self._train_from_replay()
+        
+        self.training_step += 1
+
+    def _train_from_replay(self):
+        """Train model from experience replay"""
+        if len(self.replay_buffer) < 32:
+            return
+            
+        try:
+            states, actions, rewards, next_states, dones = self.replay_buffer.sample(32)
+            
+            states_tensor = torch.FloatTensor(states).to(self.device)
+            actions_tensor = torch.LongTensor(actions).to(self.device)
+            rewards_tensor = torch.FloatTensor(rewards).to(self.device)
+            next_states_tensor = torch.FloatTensor(next_states).to(self.device)
+            dones_tensor = torch.BoolTensor(dones).to(self.device)
+            
+            if isinstance(self.current_model, TransformerRLModel):
+                # Transformer training step
+                action_probs, state_values = self.current_model(states_tensor)
+                _, next_state_values = self.current_model(next_states_tensor)
+                
+                # Calculate advantages
+                next_state_values = next_state_values.squeeze()
+                target_values = rewards_tensor + 0.99 * next_state_values * ~dones_tensor
+                advantages = target_values - state_values.squeeze()
+                
+                # Policy loss
+                action_log_probs = torch.log(action_probs.gather(1, actions_tensor.unsqueeze(1)).squeeze())
+                policy_loss = -(action_log_probs * advantages).mean()
+                
+                # Value loss
+                value_loss = nn.MSELoss()(state_values.squeeze(), target_values)
+                
+                # Total loss
+                loss = policy_loss + 0.5 * value_loss
+                
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+            elif isinstance(self.current_model, PPOAgent) or self.current_model.algorithm == "ppo":
+                # PPO training step
+                action_probs, state_values = self.current_model(states_tensor)
+                _, next_state_values = self.current_model(next_states_tensor)
+                
+                # Calculate advantages
+                next_state_values = next_state_values.squeeze()
+                target_values = rewards_tensor + 0.99 * next_state_values * ~dones_tensor
+                advantages = target_values - state_values.squeeze()
+                
+                # Policy loss
+                action_log_probs = torch.log(action_probs.gather(1, actions_tensor.unsqueeze(1)).squeeze())
+                policy_loss = -(action_log_probs * advantages).mean()
+                
+                # Value loss
+                value_loss = nn.MSELoss()(state_values.squeeze(), target_values)
+                
+                # Total loss
+                loss = policy_loss + 0.5 * value_loss
+                
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+            else:
+                # Simple model training
+                pass  # For now, we'll focus on PPO and Transformer
+                
+        except Exception as e:
+            logger.error(f"Error in training from replay: {e}")
 
 # Global instance
 rl_agent = RLFilteringAgent()

@@ -29,6 +29,22 @@ except ImportError:
     logger.warning("Monitoring not available for ML Interface")
     MONITORING_AVAILABLE = False
 
+# Import alerting system
+try:
+    from utils.alerting_system import get_alerting_system, check_performance_threshold, check_anomaly
+    ALERTING_AVAILABLE = True
+except ImportError:
+    logger.warning("Alerting system not available for ML Interface")
+    ALERTING_AVAILABLE = False
+
+# Import performance attribution system
+try:
+    from utils.performance_attribution import get_performance_attribution_engine, analyze_performance
+    PERFORMANCE_ATTRIBUTION_AVAILABLE = True
+except ImportError:
+    logger.warning("Performance attribution system not available for ML Interface")
+    PERFORMANCE_ATTRIBUTION_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 class MLInterface:
@@ -168,12 +184,26 @@ class MLInterface:
         except Exception as e:
             logger.error(f"Error updating ensemble performance: {e}")
     
+    def update_rl_performance(self, prediction: float, actual: float):
+        """
+        Update RL performance tracking
+        
+        Args:
+            prediction: RL model prediction
+            actual: Actual outcome
+        """
+        try:
+            self.ensemble_optimizer.update_rl_performance(prediction, actual)
+            logger.debug("RL performance updated")
+        except Exception as e:
+            logger.error(f"Error updating RL performance: {e}")
+    
     def get_model_performance(self) -> Dict[str, Any]:
         """
-        Get performance metrics for all models
+        Get performance metrics for all models with computational efficiency insights
         
         Returns:
-            Dictionary with performance metrics
+            Dictionary with performance metrics and efficiency insights
         """
         try:
             return self.ensemble_optimizer.get_ensemble_insights()
@@ -182,23 +212,27 @@ class MLInterface:
             return {}
     
     def get_system_health(self) -> Dict[str, Any]:
-        """Get health status of all ML components
+        """Get health status of all ML components with computational efficiency metrics
         
         Returns:
-            Dictionary with health status
+            Dictionary with health status and efficiency metrics
         """
         try:
+            # Get basic health status
             health_status = {
                 "rl_agent": {
                     "available": True,
                     "device": str(self.rl_agent.device),
                     "gpu_available": self.rl_agent.get_model_stats().get("gpu_available", False),
-                    "processed_stocks": self.rl_agent.filtering_stats.get("total_processed", 0)
+                    "processed_stocks": self.rl_agent.filtering_stats.get("total_processed", 0),
+                    "training_step": self.rl_agent.get_model_stats().get("training_step", 0)
                 },
                 "ensemble_optimizer": {
                     "available": True,
                     "models_registered": len(self.ensemble_optimizer.models),
-                    "ensemble_method": self.ensemble_optimizer.ensemble_method.value
+                    "ensemble_method": self.ensemble_optimizer.ensemble_method.value,
+                    "rl_integration": hasattr(self.ensemble_optimizer, 'rl_weights'),
+                    "computational_efficiency": self._get_computational_efficiency_metrics()
                 },
                 "feature_engineer": {
                     "available": True,
@@ -223,6 +257,97 @@ class MLInterface:
                 "feature_engineer": {"available": False, "error": str(e)}
             }
     
+    def get_performance_attribution(self, portfolio_data: Dict[str, Any], 
+                                  market_data: Dict[str, Any],
+                                  period: str = "daily") -> Dict[str, Any]:
+        """Get performance attribution analysis to understand what drives returns
+        
+        Args:
+            portfolio_data: Portfolio holdings and performance data
+            market_data: Market data and benchmarks
+            period: Analysis period (daily, weekly, monthly)
+            
+        Returns:
+            Dictionary with performance attribution analysis
+        """
+        try:
+            if not PERFORMANCE_ATTRIBUTION_AVAILABLE:
+                return {"success": False, "error": "Performance attribution system not available"}
+            
+            # Get performance attribution engine
+            engine = get_performance_attribution_engine()
+            
+            # Analyze performance
+            attribution = engine.analyze_performance(portfolio_data, market_data, period)
+            
+            # Get top drivers
+            top_drivers = engine.get_top_drivers(5)
+            
+            # Get report
+            report = engine.get_attribution_report(period)
+            
+            return {
+                "success": True,
+                "attribution": {
+                    "total_return": attribution.total_return,
+                    "components": attribution.components,
+                    "weights": attribution.weights,
+                    "confidence": attribution.confidence,
+                    "timestamp": attribution.timestamp.isoformat(),
+                    "metadata": attribution.metadata
+                },
+                "top_drivers": top_drivers,
+                "report": report
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting performance attribution: {e}")
+            return {"success": False, "error": str(e)}
+    
+    def _get_computational_efficiency_metrics(self) -> Dict[str, Any]:
+        """Get computational efficiency metrics for ensemble optimizer"""
+        try:
+            insights = self.ensemble_optimizer.get_ensemble_insights()
+            computational_params = insights.get('computational_parameters', {})
+            model_efficiency = insights.get('model_efficiency', {})
+            
+            # Calculate average efficiency
+            if model_efficiency:
+                avg_efficiency = np.mean([metrics.get('efficiency_score', 0) for metrics in model_efficiency.values()])
+            else:
+                avg_efficiency = 0.0
+            
+            # ENHANCED ALERTING: Check for performance issues
+            if ALERTING_AVAILABLE:
+                # Check if average efficiency is below threshold
+                check_performance_threshold("ml_model_efficiency", avg_efficiency, {
+                    "component": "ensemble_optimizer",
+                    "models_count": len(model_efficiency)
+                })
+            
+            return {
+                "avg_model_efficiency": avg_efficiency,
+                "max_models_allowed": computational_params.get('max_models_in_ensemble', 8),
+                "selected_models_count": computational_params.get('selected_models_count', 0),
+                "selection_threshold": computational_params.get('model_selection_threshold', 0.7)
+            }
+        except Exception as e:
+            logger.error(f"Error getting computational efficiency metrics: {e}")
+            # ENHANCED ALERTING: Send alert for metric calculation error
+            if ALERTING_AVAILABLE:
+                get_alerting_system().create_alert(
+                    alert_type="METRIC_CALCULATION_ERROR",
+                    severity="ERROR",
+                    message=f"Failed to calculate computational efficiency metrics: {str(e)}",
+                    source="ml_interface"
+                )
+            return {
+                "avg_model_efficiency": 0.0,
+                "max_models_allowed": 8,
+                "selected_models_count": 0,
+                "selection_threshold": 0.7
+            }
+    
     def validate_all_models(self) -> Dict[str, Any]:
         """
         Validate all ML models and return comprehensive report
@@ -234,9 +359,31 @@ class MLInterface:
             if self.model_validator is None:
                 return {"success": False, "error": "Model validation not available"}
             
-            return self.model_validator.validate_all_ml_models()
+            validation_result = self.model_validator.validate_all_ml_models()
+            
+            # ENHANCED ALERTING: Check validation results
+            if ALERTING_AVAILABLE and validation_result.get("success", False):
+                failed_models = validation_result.get("failed_models", [])
+                if failed_models:
+                    get_alerting_system().create_alert(
+                        alert_type="MODEL_VALIDATION_FAILURE",
+                        severity="WARNING",
+                        message=f"{len(failed_models)} ML models failed validation",
+                        source="ml_interface",
+                        data={"failed_models": failed_models}
+                    )
+            
+            return validation_result
         except Exception as e:
             logger.error(f"Error validating all models: {e}")
+            # ENHANCED ALERTING: Send alert for validation error
+            if ALERTING_AVAILABLE:
+                get_alerting_system().create_alert(
+                    alert_type="MODEL_VALIDATION_ERROR",
+                    severity="ERROR",
+                    message=f"Failed to validate ML models: {str(e)}",
+                    source="ml_interface"
+                )
             return {"success": False, "error": str(e)}
     
     def validate_model_performance(self, model_name: str, current_metrics: Dict[str, Any], 
@@ -256,46 +403,38 @@ class MLInterface:
             if self.model_validator is None:
                 return {"success": False, "error": "Model validation not available"}
             
-            return self.model_validator.validate_model_performance(
+            validation_result = self.model_validator.validate_model_performance(
                 model_name, current_metrics, baseline_metrics
             )
+            
+            # ENHANCED ALERTING: Check performance degradation
+            if ALERTING_AVAILABLE and validation_result.get("success", False):
+                if not validation_result.get("passed", True):
+                    get_alerting_system().create_alert(
+                        alert_type="MODEL_PERFORMANCE_DEGRADATION",
+                        severity="WARNING",
+                        message=f"Model {model_name} performance degraded",
+                        source="ml_interface",
+                        data={
+                            "model_name": model_name,
+                            "current_metrics": current_metrics,
+                            "baseline_metrics": baseline_metrics,
+                            "validation_result": validation_result
+                        }
+                    )
+            
+            return validation_result
         except Exception as e:
             logger.error(f"Error validating model {model_name}: {e}")
+            # ENHANCED ALERTING: Send alert for validation error
+            if ALERTING_AVAILABLE:
+                get_alerting_system().create_alert(
+                    alert_type="MODEL_VALIDATION_ERROR",
+                    severity="ERROR",
+                    message=f"Failed to validate model {model_name}: {str(e)}",
+                    source="ml_interface"
+                )
             return {"success": False, "error": str(e)}
-    
-    def get_system_health(self) -> Dict[str, Any]:
-        """
-        Get health status of all ML components
-        
-        Returns:
-            Dictionary with health status
-        """
-        try:
-            health_status = {
-                "rl_agent": {
-                    "available": True,
-                    "device": str(self.rl_agent.device),
-                    "gpu_available": self.rl_agent.get_model_stats().get("gpu_available", False),
-                    "processed_stocks": self.rl_agent.filtering_stats.get("total_processed", 0)
-                },
-                "ensemble_optimizer": {
-                    "available": True,
-                    "models_registered": len(self.ensemble_optimizer.models),
-                    "ensemble_method": self.ensemble_optimizer.ensemble_method.value
-                },
-                "feature_engineer": {
-                    "available": True,
-                    "features_engineered": len(self.feature_engineer.feature_importance) if self.feature_engineer.feature_importance else 0
-                }
-            }
-            return health_status
-        except Exception as e:
-            logger.error(f"Error getting system health: {e}")
-            return {
-                "rl_agent": {"available": False, "error": str(e)},
-                "ensemble_optimizer": {"available": False, "error": str(e)},
-                "feature_engineer": {"available": False, "error": str(e)}
-            }
 
 # Global instance
 _ml_interface = None
@@ -313,14 +452,18 @@ def get_ml_interface() -> MLInterface:
     return _ml_interface
 
 def get_unified_ml_analysis(data: Dict[str, Any], features: Optional[np.ndarray] = None, 
-                          ohlcv_data: Optional[pd.DataFrame] = None) -> Dict[str, Any]:
+                          ohlcv_data: Optional[pd.DataFrame] = None,
+                          portfolio_data: Optional[Dict[str, Any]] = None,
+                          market_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
-    Get unified ML analysis from all models
+    Get unified ML analysis from all models with performance attribution
     
     Args:
         data: Dictionary containing stock data for RL agent
         features: Feature vector for ensemble optimizer (optional)
         ohlcv_data: OHLCV data for feature engineering (optional)
+        portfolio_data: Portfolio data for performance attribution (optional)
+        market_data: Market data for performance attribution (optional)
         
     Returns:
         Dictionary with unified ML analysis from all models
@@ -341,11 +484,21 @@ def get_unified_ml_analysis(data: Dict[str, Any], features: Optional[np.ndarray]
         if ohlcv_data is not None:
             engineered_features = ml_interface.engineer_features(ohlcv_data)
         
+        # Get performance attribution if portfolio and market data provided
+        performance_attribution = {}
+        if portfolio_data is not None and market_data is not None:
+            performance_attribution = ml_interface.get_performance_attribution(portfolio_data, market_data)
+        
+        # Get system health
+        system_health = ml_interface.get_system_health()
+        
         return {
             "success": True,
             "rl_analysis": rl_analysis,
             "ensemble_analysis": ensemble_analysis,
             "engineered_features": engineered_features,
+            "performance_attribution": performance_attribution,
+            "system_health": system_health,
             "timestamp": pd.Timestamp.now().isoformat()
         }
     except Exception as e:

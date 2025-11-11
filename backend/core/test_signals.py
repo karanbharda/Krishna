@@ -5,9 +5,6 @@ import sys
 import os
 import logging
 
-# Add the backend directory to the path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
 from core.professional_buy_logic import ProfessionalBuyLogic, BuySignal, StockMetrics
 from core.professional_sell_logic import ProfessionalSellLogic, SellSignal
 

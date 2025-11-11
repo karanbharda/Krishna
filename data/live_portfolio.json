@@ -1,22 +1,17 @@
 {
-  "cash": 8046.25,
-  "total_value": 20825.5899,
-  "starting_balance": 8046.25,
+  "cash": 1164.7,
+  "total_value": 22097.90015,
+  "starting_balance": 1164.7,
   "holdings": {
-    "KRBL": {
-      "qty": 3,
-      "avg_price": 396.1,
-      "last_price": 396.1
-    },
-    "SJVN": {
-      "qty": 1,
-      "avg_price": 93.39,
-      "last_price": 93.39
-    },
     "INOXWIND": {
       "qty": 1,
       "avg_price": 153.32,
       "last_price": 153.32
+    },
+    "ICICIBANK": {
+      "qty": 2,
+      "avg_price": 1357.0,
+      "last_price": 1357.0
     },
     "JSWENERGY": {
       "qty": 3,
@@ -28,11 +23,6 @@
       "avg_price": 153.74733,
       "last_price": 153.74733
     },
-    "SUVEN": {
-      "qty": 1,
-      "avg_price": 225.05,
-      "last_price": 225.05
-    },
     "HFCL": {
       "qty": 30,
       "avg_price": 75.50467,
@@ -43,10 +33,15 @@
       "avg_price": 287.9,
       "last_price": 287.9
     },
+    "RPOWER": {
+      "qty": 55,
+      "avg_price": 40.95273,
+      "last_price": 40.95273
+    },
     "NTPC": {
-      "qty": 1,
-      "avg_price": 341.35,
-      "last_price": 341.35
+      "qty": 15,
+      "avg_price": 335.70334,
+      "last_price": 335.70334
     },
     "JUBLFOOD": {
       "qty": 3,
@@ -64,5 +59,5 @@
   "total_trades": 0,
   "winning_trades": 0,
   "losing_trades": 0,
-  "last_updated": "2025-10-31T14:55:45.385553"
+  "last_updated": "2025-11-06T14:20:49.228265"
 }

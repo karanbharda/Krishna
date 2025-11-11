@@ -126,9 +126,16 @@ class FyersDataService:
             return fyers_symbol
         else:
             # Assume NSE if no suffix
-            fyers_symbol = f"NSE:{yahoo_symbol}-EQ"
-            self.symbol_cache[yahoo_symbol] = fyers_symbol
-            return fyers_symbol
+            # Handle case where symbol might already be in base format
+            if ':' in yahoo_symbol and '-EQ' in yahoo_symbol:
+                # Already in Fyers format, return as is
+                self.symbol_cache[yahoo_symbol] = yahoo_symbol
+                return yahoo_symbol
+            else:
+                # Assume it's a base symbol
+                fyers_symbol = f"NSE:{yahoo_symbol}-EQ"
+                self.symbol_cache[yahoo_symbol] = fyers_symbol
+                return fyers_symbol
 
     def add_stock_to_watchlist(self, yahoo_symbol: str) -> bool:
         """Dynamically add a stock to the watchlist"""
@@ -188,7 +195,9 @@ class FyersDataService:
             # If not in cache, add to watchlist and try to fetch immediately
             if fyers_symbol not in self.watchlist:
                 logger.info(f"New stock requested: {symbol} -> {fyers_symbol}")
-                self.add_stock_to_watchlist(symbol)
+                # Convert to Yahoo format for consistent handling
+                yahoo_symbol = self.convert_to_yahoo_format(symbol)
+                self.add_stock_to_watchlist(yahoo_symbol)
 
                 # Try to fetch data immediately for this specific stock
                 try:
@@ -222,6 +231,15 @@ class FyersDataService:
                 except Exception as e:
                     logger.error(f"Error fetching immediate data for {symbol}: {e}")
 
+            # If still no data available but in mock mode, generate mock data
+            if self.allow_mock_mode:
+                # Generate mock data for this symbol
+                mock_data = self.generate_mock_data_for_symbol(fyers_symbol)
+                if mock_data:
+                    self.market_data_cache[fyers_symbol] = mock_data
+                    logger.info(f"Generated mock data for {symbol} in mock mode")
+                    return asdict(mock_data)
+            
             # If still no data available, return 404
             raise HTTPException(status_code=404, detail=f"Data not available for {symbol}. Added to watchlist for future updates.")
         
@@ -273,6 +291,27 @@ class FyersDataService:
         else:
             # Assume NSE stock
             return f"NSE:{symbol}-EQ"
+    
+    def convert_to_yahoo_format(self, symbol: str) -> str:
+        """Convert symbol to Yahoo Finance format"""
+        # Handle different input formats
+        if symbol.endswith('.NS') or symbol.endswith('.BO'):
+            # Already in Yahoo format
+            return symbol
+        elif ':' in symbol and '-' in symbol:
+            # Fyers format: NSE:RELIANCE-EQ -> RELIANCE.NS
+            if symbol.startswith('NSE:') and symbol.endswith('-EQ'):
+                base_symbol = symbol.replace('NSE:', '').replace('-EQ', '')
+                return f"{base_symbol}.NS"
+            elif symbol.startswith('BSE:') and symbol.endswith('-EQ'):
+                base_symbol = symbol.replace('BSE:', '').replace('-EQ', '')
+                return f"{base_symbol}.BO"
+            else:
+                # Unknown format, assume NSE
+                return f"{symbol}.NS"
+        else:
+            # Assume NSE stock
+            return f"{symbol}.NS"
     
     async def connect_to_fyers(self) -> bool:
         """Connect to Fyers API - ONLY REAL DATA"""
@@ -463,6 +502,32 @@ class FyersDataService:
             logger.error(f"Error generating mock data: {e}")
 
         return data
+    
+    def generate_mock_data_for_symbol(self, symbol: str) -> Optional[MarketData]:
+        """Generate mock data for a specific symbol"""
+        try:
+            # Create a plausible mock price (randomized)
+            base_price = random.uniform(50.0, 2000.0)
+            # small random drift for change
+            change = random.uniform(-5.0, 5.0)
+            change_pct = (change / max(base_price - change, 1.0)) * 100.0
+
+            market_data = MarketData(
+                symbol=symbol,
+                price=round(base_price, 2),
+                change=round(change, 2),
+                change_pct=round(change_pct, 2),
+                volume=int(random.uniform(1000, 100000)),
+                high=round(base_price + abs(random.uniform(0.0, 10.0)), 2),
+                low=round(base_price - abs(random.uniform(0.0, 10.0)), 2),
+                open=round(base_price - change, 2),
+                timestamp=datetime.now().isoformat()
+            )
+
+            return market_data
+        except Exception as e:
+            logger.error(f"Error generating mock data for {symbol}: {e}")
+            return None
     
     # REMOVED: generate_mock_data method - ONLY REAL FYERS DATA ALLOWED
 

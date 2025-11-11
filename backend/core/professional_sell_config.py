@@ -87,7 +87,6 @@ class ProfessionalSellConfig:
             
             # Professional Features
             "enable_professional_sell_logic": True,   # Enable professional logic
-            "fallback_to_legacy_sell": False,         # Don't fallback to legacy
             "enable_profit_protection": True,         # Enable profit locking
             "enable_trailing_stops": True,            # Enable trailing stops
             "enable_market_context_filters": True,    # Enable trend filters

@@ -48,6 +48,5 @@ class ProfessionalBuyConfig:
             "momentum_strength_threshold": 0.035,    # CORRECTED: 3.5% as per project requirements
             "min_buy_confidence": 0.70,            # INCREASED: 70% minimum confidence (was 60%)
             "enable_professional_buy_logic": True,  # Enable professional logic
-            "fallback_to_legacy_buy": False,        # Don't fallback to legacy
             "max_capital_per_trade": max_capital_per_trade,  # From live_config.json
         }

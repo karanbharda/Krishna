@@ -90,7 +90,7 @@ class RiskAgent:
     
     async def assess_portfolio_risk(self, portfolio_data: Dict[str, Any], 
                                   market_data: Dict[str, Any]) -> RiskMetrics:
-        """Comprehensive portfolio risk assessment"""
+        """Comprehensive portfolio risk assessment with real-time metrics"""
         try:
             holdings = portfolio_data.get("holdings", {})
             total_value = portfolio_data.get("total_value", 0)
@@ -116,18 +116,25 @@ class RiskAgent:
             liquidity_risk = self._calculate_liquidity_risk(holdings, market_data)
             concentration_risk = self._calculate_concentration_risk(holdings)
             
-            # Overall risk score (1-10 scale)
+            # ENHANCED RISK MONITORING: Calculate real-time portfolio-level risk metrics
+            real_time_metrics = await self._calculate_real_time_risk_metrics(holdings, market_data)
+            
+            # Adjust risk metrics with real-time data
+            adjusted_var_95 = var_95 * real_time_metrics.get("var_adjustment_factor", 1.0)
+            adjusted_volatility = volatility * real_time_metrics.get("volatility_adjustment_factor", 1.0)
+            
+            # Overall risk score (1-10 scale) with real-time adjustments
             overall_risk_score = self._calculate_overall_risk_score(
-                var_95, volatility, concentration_risk, liquidity_risk
+                adjusted_var_95, adjusted_volatility, concentration_risk, liquidity_risk
             )
             
             self.risk_assessments_performed += 1
             
             return RiskMetrics(
-                var_95=var_95,
+                var_95=adjusted_var_95,
                 cvar_95=cvar_95,
                 max_drawdown=max_drawdown,
-                volatility=volatility,
+                volatility=adjusted_volatility,
                 sharpe_ratio=sharpe_ratio,
                 beta=beta,
                 correlation_risk=correlation_risk,
@@ -538,6 +545,135 @@ class RiskAgent:
         except Exception as e:
             logger.error(f"Concentration risk calculation error: {e}")
             return 0.5
+    
+    async def _calculate_real_time_risk_metrics(self, holdings: Dict[str, Any], 
+                                              market_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Calculate real-time portfolio-level risk metrics"""
+        try:
+            real_time_metrics = {
+                "timestamp": datetime.now().isoformat(),
+                "var_adjustment_factor": 1.0,
+                "volatility_adjustment_factor": 1.0,
+                "market_regime_factor": 1.0,
+                "liquidity_stress_factor": 1.0
+            }
+            
+            # Calculate market stress indicators
+            market_stress = await self._calculate_market_stress(market_data)
+            
+            # Adjust VaR based on market stress
+            if market_stress.get("high_volatility", False):
+                real_time_metrics["var_adjustment_factor"] = 1.5
+            elif market_stress.get("extreme_volatility", False):
+                real_time_metrics["var_adjustment_factor"] = 2.0
+            
+            # Adjust volatility based on market conditions
+            if market_stress.get("high_volume", False):
+                real_time_metrics["volatility_adjustment_factor"] = 1.2
+            
+            # Apply market regime adjustments
+            regime = market_stress.get("regime", "normal")
+            if regime == "volatile":
+                real_time_metrics["market_regime_factor"] = 1.3
+            elif regime == "crisis":
+                real_time_metrics["market_regime_factor"] = 1.8
+            
+            # Calculate liquidity stress
+            liquidity_stress = self._calculate_liquidity_stress(holdings, market_data)
+            real_time_metrics["liquidity_stress_factor"] = liquidity_stress
+            
+            return real_time_metrics
+            
+        except Exception as e:
+            logger.error(f"Real-time risk metrics calculation error: {e}")
+            return {
+                "timestamp": datetime.now().isoformat(),
+                "var_adjustment_factor": 1.0,
+                "volatility_adjustment_factor": 1.0,
+                "market_regime_factor": 1.0,
+                "liquidity_stress_factor": 1.0
+            }
+    
+    async def _calculate_market_stress(self, market_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Calculate market stress indicators"""
+        try:
+            stress_indicators = {
+                "high_volatility": False,
+                "extreme_volatility": False,
+                "high_volume": False,
+                "regime": "normal"
+            }
+            
+            volatility_threshold = 0.02  # 2% daily volatility
+            volume_threshold = 1.5  # 50% above average volume
+            
+            # Check volatility across symbols
+            volatilities = []
+            volumes = []
+            
+            for symbol_data in market_data.values():
+                if isinstance(symbol_data, dict):
+                    volatility = symbol_data.get("volatility", 0)
+                    volume_ratio = symbol_data.get("volume_ratio", 1.0)
+                    
+                    if volatility > 0:
+                        volatilities.append(volatility)
+                    if volume_ratio > 0:
+                        volumes.append(volume_ratio)
+            
+            if volatilities:
+                avg_volatility = np.mean(volatilities)
+                if avg_volatility > volatility_threshold * 2:
+                    stress_indicators["extreme_volatility"] = True
+                    stress_indicators["regime"] = "crisis"
+                elif avg_volatility > volatility_threshold:
+                    stress_indicators["high_volatility"] = True
+                    stress_indicators["regime"] = "volatile"
+            
+            if volumes:
+                avg_volume = np.mean(volumes)
+                if avg_volume > volume_threshold:
+                    stress_indicators["high_volume"] = True
+            
+            return stress_indicators
+            
+        except Exception as e:
+            logger.error(f"Market stress calculation error: {e}")
+            return {"high_volatility": False, "extreme_volatility": False, "high_volume": False, "regime": "normal"}
+    
+    def _calculate_liquidity_stress(self, holdings: Dict[str, Any], market_data: Dict[str, Any]) -> float:
+        """Calculate liquidity stress factor for the portfolio"""
+        try:
+            liquidity_scores = []
+            weights = []
+            
+            total_value = sum(holding.get("market_value", 0) for holding in holdings.values())
+            
+            for symbol, holding in holdings.items():
+                weight = holding.get("market_value", 0) / total_value if total_value > 0 else 0
+                symbol_data = market_data.get(symbol, {})
+                
+                # Get liquidity metrics
+                bid_ask_spread = symbol_data.get("bid_ask_spread", 0.01)
+                volume_ratio = symbol_data.get("volume_ratio", 1.0)
+                
+                # Calculate liquidity stress (higher spread or lower volume = higher stress)
+                spread_stress = min(bid_ask_spread / 0.02, 2.0)  # 2% spread = max stress
+                volume_stress = max(1.0 / volume_ratio, 0.5) if volume_ratio > 0 else 2.0
+                
+                liquidity_stress = (spread_stress + volume_stress) / 2
+                liquidity_scores.append(liquidity_stress)
+                weights.append(weight)
+            
+            if liquidity_scores:
+                weighted_stress = np.average(liquidity_scores, weights=weights)
+                return max(1.0, min(weighted_stress, 3.0))  # Range: 1.0 (normal) to 3.0 (severe stress)
+            else:
+                return 1.0
+                
+        except Exception as e:
+            logger.error(f"Liquidity stress calculation error: {e}")
+            return 1.0
     
     def _calculate_overall_risk_score(self, var_95: float, volatility: float,
                                     concentration_risk: float, liquidity_risk: float) -> float:

@@ -2,8 +2,7 @@
 Database configuration and initialization for LangGraph SQLite checkpoint system
 """
 from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, JSON, ForeignKey, Boolean, Text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, declarative_base
 from datetime import datetime
 from pathlib import Path
 import json
@@ -89,7 +88,14 @@ def _default_db_uri() -> str:
 def init_db(db_path: str | None = None):
     """Initialize the database and create tables"""
     try:
-        db_uri = db_path if db_path else _default_db_uri()
+        if db_path:
+            # Ensure proper URI format for SQLite
+            if not db_path.startswith('sqlite:///'):
+                db_uri = f"sqlite:///{db_path}"
+            else:
+                db_uri = db_path
+        else:
+            db_uri = _default_db_uri()
         logger.info(f"Initializing database with URI: {db_uri}")
         engine = create_engine(db_uri)
         logger.info("Creating database tables")
@@ -105,8 +111,7 @@ def init_db(db_path: str | None = None):
 
 def create_session(engine):
     """Create a new database session"""
-    Session = sessionmaker(bind=engine)
-    return Session()
+    return sessionmaker(bind=engine)
 
 class DatabaseManager:
     def __init__(self, db_path: str | None = None):
@@ -122,52 +127,54 @@ class DatabaseManager:
             logger.error(f"Full traceback: {traceback.format_exc()}")
             raise
     
+    def get_session(self):
+        """Get a new database session"""
+        return self.Session()
+    
     def migrate_json_to_sqlite(self, data_dir: str):
         """Migrate existing JSON data to SQLite"""
-        try:
-            session = self.Session()
-            
-            # Clean up existing data
-            session.query(Trade).delete()
-            session.query(Holding).delete()
-            session.query(Portfolio).delete()
-            session.commit()
-            
-            # Load JSON files
-            paper_portfolio = self._load_json(os.path.join(data_dir, 'portfolio_india_paper.json'))
-            live_portfolio = self._load_json(os.path.join(data_dir, 'portfolio_india_live.json'))
-            paper_trades = self._load_json(os.path.join(data_dir, 'trade_log_india_paper.json'))
-            live_trades = self._load_json(os.path.join(data_dir, 'trade_log_india_live.json'))
-            
-            # Debug logging
-            logger.info(f"Paper portfolio type: {type(paper_portfolio)}")
-            logger.info(f"Live portfolio type: {type(live_portfolio)}")
-            logger.info(f"Paper trades type: {type(paper_trades)}")
-            logger.info(f"Live trades type: {type(live_trades)}")
-            
-            # Migrate paper portfolio
-            if paper_portfolio:
-                logger.info("Migrating paper portfolio")
-                self._migrate_portfolio(session, paper_portfolio, 'paper', paper_trades)
-            
-            # Migrate live portfolio
-            if live_portfolio:
-                logger.info("Migrating live portfolio")
-                self._migrate_portfolio(session, live_portfolio, 'live', live_trades)
-            
-            session.commit()
-            logger.info("Successfully migrated JSON data to SQLite")
-            
-            # Create backup of JSON files
-            self._backup_json_files(data_dir)
-            
-        except Exception as e:
-            session.rollback()
-            logger.error(f"Error during migration: {e}")
-            logger.error(f"Error type: {type(e)}")
-            raise
-        finally:
-            session.close()
+        # Use context manager for automatic session cleanup
+        with self.get_session() as session:
+            try:
+                # Clean up existing data
+                session.query(Trade).delete()
+                session.query(Holding).delete()
+                session.query(Portfolio).delete()
+                session.commit()
+                
+                # Load JSON files
+                paper_portfolio = self._load_json(os.path.join(data_dir, 'portfolio_india_paper.json'))
+                live_portfolio = self._load_json(os.path.join(data_dir, 'portfolio_india_live.json'))
+                paper_trades = self._load_json(os.path.join(data_dir, 'trade_log_india_paper.json'))
+                live_trades = self._load_json(os.path.join(data_dir, 'trade_log_india_live.json'))
+                
+                # Debug logging
+                logger.info(f"Paper portfolio type: {type(paper_portfolio)}")
+                logger.info(f"Live portfolio type: {type(live_portfolio)}")
+                logger.info(f"Paper trades type: {type(paper_trades)}")
+                logger.info(f"Live trades type: {type(live_trades)}")
+                
+                # Migrate paper portfolio
+                if paper_portfolio:
+                    logger.info("Migrating paper portfolio")
+                    self._migrate_portfolio(session, paper_portfolio, 'paper', paper_trades)
+                
+                # Migrate live portfolio
+                if live_portfolio:
+                    logger.info("Migrating live portfolio")
+                    self._migrate_portfolio(session, live_portfolio, 'live', live_trades)
+                
+                session.commit()
+                logger.info("Successfully migrated JSON data to SQLite")
+                
+                # Create backup of JSON files
+                self._backup_json_files(data_dir)
+                
+            except Exception as e:
+                session.rollback()
+                logger.error(f"Error during migration: {e}")
+                logger.error(f"Error type: {type(e)}")
+                raise
     
     def _load_json(self, filepath: str) -> Optional[Dict]:
         """Load JSON file with error handling"""

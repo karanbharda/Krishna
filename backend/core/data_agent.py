@@ -1,20 +1,13 @@
-import os
-import json
-import sqlite3
 import logging
-from datetime import datetime, timedelta
+import os
+import sqlite3
+import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Dict, Any
+from datetime import datetime
 import pytz
 from apscheduler.schedulers.background import BackgroundScheduler
 import csv
-
-# Fix import paths
-import sys
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
 
 from data_service_client import get_data_client
 

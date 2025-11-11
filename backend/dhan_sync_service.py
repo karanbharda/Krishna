@@ -109,20 +109,42 @@ class DhanSyncService:
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
             
-            # Update live portfolio
-            cursor.execute("""
-                UPDATE portfolios 
-                SET cash = ?, last_updated = ?
-                WHERE mode = 'live'
-            """, (cash_amount, datetime.now().isoformat()))
+            # Get or create live portfolio
+            cursor.execute("SELECT id FROM portfolios WHERE mode = 'live'")
+            portfolio_row = cursor.fetchone()
             
-            if cursor.rowcount == 0:
+            if portfolio_row:
+                portfolio_id = portfolio_row[0]
+                # Update existing live portfolio
+                cursor.execute("""
+                    UPDATE portfolios 
+                    SET cash = ?, last_updated = ?
+                    WHERE id = ?
+                """, (cash_amount, datetime.now().isoformat(), portfolio_id))
+            else:
                 # Insert new live portfolio if it doesn't exist
                 cursor.execute("""
                     INSERT INTO portfolios (mode, cash, starting_balance, realized_pnl, unrealized_pnl, last_updated)
                     VALUES ('live', ?, ?, 0.0, 0.0, ?)
                 """, (cash_amount, cash_amount, datetime.now().isoformat()))
+                portfolio_id = cursor.lastrowid
                 logger.info("Created new live portfolio in database")
+            
+            # Clear existing holdings for this portfolio
+            cursor.execute("DELETE FROM holdings WHERE portfolio_id = ?", (portfolio_id,))
+            
+            # Insert current holdings
+            for holding in holdings:
+                symbol = holding.get("tradingSymbol", "")
+                quantity = int(holding.get("totalQty", 0))
+                avg_price = float(holding.get("avgCostPrice", 0))
+                last_price = float(holding.get("lastPrice", avg_price))
+                
+                if quantity > 0 and symbol:
+                    cursor.execute("""
+                        INSERT INTO holdings (portfolio_id, ticker, quantity, avg_price, last_price)
+                        VALUES (?, ?, ?, ?, ?)
+                    """, (portfolio_id, symbol, quantity, avg_price, last_price))
             
             conn.commit()
             conn.close()

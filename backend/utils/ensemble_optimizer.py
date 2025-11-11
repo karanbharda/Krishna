@@ -31,6 +31,7 @@ class EnsembleMethod(Enum):
     STACKING = "stacking"
     ADAPTIVE = "adaptive"
     CONFIDENCE_BASED = "confidence_based"
+    RL_INTEGRATED = "rl_integrated"  # New method for RL integration
 
 
 class ModelPerformanceTracker:
@@ -78,13 +79,14 @@ class ModelPerformanceTracker:
 class EnsembleOptimizer:
     """
     Optimizes ensemble model combinations for maximum prediction accuracy
+    with computational efficiency and performance optimization
     """
     
     def __init__(self):
         self.models = {}
         self.model_weights = {}
         self.performance_trackers = {}
-        self.ensemble_method = EnsembleMethod.ADAPTIVE
+        self.ensemble_method = EnsembleMethod.RL_INTEGRATED  # Default to RL-integrated method
         
         # Performance tracking
         self.ensemble_history = []
@@ -95,52 +97,76 @@ class EnsembleOptimizer:
         self.weight_adjustment_rate = 0.1
         self.performance_decay = 0.95  # Decay factor for older performance
         
-        logger.info("Ensemble Optimizer initialized")
+        # Computational optimization
+        self.model_computational_cost = {}  # Track computational cost of each model
+        self.model_selection_threshold = 0.7  # Minimum performance threshold for model inclusion
+        self.max_models_in_ensemble = 8  # Maximum models to include for computational efficiency
+        
+        # RL integration
+        self.rl_weights = {}
+        self.rl_performance_tracker = ModelPerformanceTracker()
+        
+        # Model efficiency tracking
+        self.model_efficiency_scores = {}  # Performance/cost ratio
+        
+        logger.info("Ensemble Optimizer initialized with RL integration and computational optimization")
     
-    def register_model(self, model_name: str, model: Any, initial_weight: float = 1.0):
-        """Register a model in the ensemble"""
+    def register_model(self, model_name: str, model: Any, initial_weight: float = 1.0, computational_cost: float = 1.0):
+        """Register a model in the ensemble with computational cost tracking"""
         try:
             self.models[model_name] = model
             self.model_weights[model_name] = initial_weight
             self.performance_trackers[model_name] = ModelPerformanceTracker()
+            self.model_computational_cost[model_name] = computational_cost
             
-            logger.info(f"Model '{model_name}' registered with weight {initial_weight}")
+            # Initialize RL weights for this model
+            self.rl_weights[model_name] = initial_weight
+            
+            # Calculate initial efficiency score
+            self._update_model_efficiency(model_name)
+            
+            logger.info(f"Model '{model_name}' registered with weight {initial_weight}, cost {computational_cost}")
             
         except Exception as e:
             logger.error(f"Error registering model {model_name}: {e}")
     
     def predict_ensemble(self, features: np.ndarray, method: Optional[EnsembleMethod] = None) -> Dict:
-        """Make ensemble prediction using specified method"""
+        """Make ensemble prediction using specified method with computational optimization"""
         try:
             if not self.models:
                 return {'prediction': 0.0, 'confidence': 0.0, 'model_predictions': {}}
             
             method = method or self.ensemble_method
             
-            # Get predictions from all models
+            # Select optimal models based on performance and computational cost
+            selected_models = self._select_optimal_models()
+            
+            # Get predictions from selected models
             model_predictions = {}
             valid_predictions = []
             valid_weights = []
             
-            for model_name, model in self.models.items():
-                try:
-                    prediction = model.predict(features.reshape(1, -1))[0]
-                    model_predictions[model_name] = prediction
-                    
-                    weight = self.model_weights.get(model_name, 1.0)
-                    valid_predictions.append(prediction)
-                    valid_weights.append(weight)
-                    
-                except Exception as e:
-                    logger.warning(f"Error getting prediction from {model_name}: {e}")
-                    continue
+            for model_name in selected_models:
+                if model_name in self.models:
+                    model = self.models[model_name]
+                    try:
+                        prediction = model.predict(features.reshape(1, -1))[0]
+                        model_predictions[model_name] = prediction
+                        
+                        weight = self.model_weights.get(model_name, 1.0)
+                        valid_predictions.append(prediction)
+                        valid_weights.append(weight)
+                        
+                    except Exception as e:
+                        logger.warning(f"Error getting prediction from {model_name}: {e}")
+                        continue
             
             if not valid_predictions:
                 return {'prediction': 0.0, 'confidence': 0.0, 'model_predictions': {}}
             
             # Combine predictions based on method
             ensemble_pred, confidence = self._combine_predictions(
-                valid_predictions, valid_weights, method
+                valid_predictions, valid_weights, method, model_predictions
             )
             
             return {
@@ -148,7 +174,8 @@ class EnsembleOptimizer:
                 'confidence': confidence,
                 'model_predictions': model_predictions,
                 'method_used': method.value,
-                'num_models': len(valid_predictions)
+                'num_models': len(valid_predictions),
+                'selected_models': list(selected_models)
             }
             
         except Exception as e:
@@ -157,7 +184,8 @@ class EnsembleOptimizer:
     
     def _combine_predictions(self, predictions: List[float], 
                            weights: List[float], 
-                           method: EnsembleMethod) -> Tuple[float, float]:
+                           method: EnsembleMethod,
+                           model_predictions: Dict[str, float]) -> Tuple[float, float]:
         """Combine predictions using specified method"""
         try:
             predictions = np.array(predictions)
@@ -211,6 +239,10 @@ class EnsembleOptimizer:
                 # Stacking with meta-learner
                 ensemble_pred, confidence = self._stacking_combination(predictions, weights)
                 
+            elif method == EnsembleMethod.RL_INTEGRATED:
+                # RL-integrated combination using reinforcement learning weights
+                ensemble_pred, confidence = self._rl_integrated_combination(predictions, weights, model_predictions)
+                
             else:  # Default to simple average
                 ensemble_pred = np.mean(predictions)
                 confidence = 1.0 / (1.0 + np.std(predictions))
@@ -249,6 +281,79 @@ class EnsembleOptimizer:
         except Exception as e:
             logger.error(f"Error calculating performance weights: {e}")
             return {name: 1.0 for name in self.models.keys()}
+    
+    def _select_optimal_models(self) -> List[str]:
+        """Select optimal models based on performance and computational efficiency"""
+        try:
+            if not self.models:
+                return []
+            
+            # Get performance weights
+            performance_weights = self._get_performance_weights()
+            
+            # Calculate efficiency scores for all models
+            efficiency_scores = {}
+            for model_name in self.models.keys():
+                self._update_model_efficiency(model_name)
+                efficiency_scores[model_name] = self.model_efficiency_scores.get(model_name, 0)
+            
+            # Filter models based on performance threshold
+            qualified_models = [
+                name for name, perf in performance_weights.items()
+                if perf >= self.model_selection_threshold
+            ]
+            
+            # If no models meet threshold, use all models
+            if not qualified_models:
+                qualified_models = list(self.models.keys())
+            
+            # Sort by efficiency score (performance/cost ratio)
+            qualified_models.sort(key=lambda x: efficiency_scores.get(x, 0), reverse=True)
+            
+            # Limit to maximum number of models for computational efficiency
+            selected_models = qualified_models[:self.max_models_in_ensemble]
+            
+            # Ensure we have at least one model
+            if not selected_models and self.models:
+                # Select the model with the best performance
+                best_model = max(performance_weights.keys(), key=lambda x: performance_weights[x])
+                selected_models = [best_model]
+            
+            logger.debug(f"Selected {len(selected_models)} models for ensemble: {selected_models}")
+            return selected_models
+            
+        except Exception as e:
+            logger.error(f"Error selecting optimal models: {e}")
+            # Fallback to all models
+            return list(self.models.keys())
+    
+    def _update_model_efficiency(self, model_name: str):
+        """Update efficiency score for a model (performance/cost ratio)"""
+        try:
+            if model_name not in self.performance_trackers:
+                return
+            
+            # Get performance metrics
+            metrics = self.performance_trackers[model_name].get_performance_metrics()
+            accuracy = metrics.get('accuracy', 0)
+            r2 = max(0, metrics.get('r2', 0))
+            
+            # Calculate performance score
+            performance_score = 0.6 * accuracy + 0.4 * r2
+            
+            # Get computational cost
+            computational_cost = self.model_computational_cost.get(model_name, 1.0)
+            
+            # Calculate efficiency (avoid division by zero)
+            if computational_cost > 0:
+                efficiency_score = performance_score / computational_cost
+            else:
+                efficiency_score = performance_score
+            
+            self.model_efficiency_scores[model_name] = efficiency_score
+            
+        except Exception as e:
+            logger.error(f"Error updating model efficiency for {model_name}: {e}")
     
     def _adaptive_combination(self, predictions: np.ndarray, weights: np.ndarray) -> Tuple[float, float]:
         """Adaptive prediction combination"""
@@ -326,6 +431,66 @@ class EnsembleOptimizer:
             logger.error(f"Error in stacking combination: {e}")
             return float(np.mean(predictions)), 0.5
     
+    def _rl_integrated_combination(self, predictions: np.ndarray, weights: np.ndarray, 
+                                 model_predictions: Dict[str, float]) -> Tuple[float, float]:
+        """RL-integrated combination using reinforcement learning weights with multi-objective optimization"""
+        try:
+            # Use RL weights for combination
+            rl_weights = np.array(list(self.rl_weights.values()))
+            
+            if len(rl_weights) == len(predictions):
+                # Normalize RL weights
+                rl_weights = rl_weights / rl_weights.sum()
+                ensemble_pred = np.average(predictions, weights=rl_weights)
+                
+                # Multi-objective confidence calculation
+                # Component 1: Weight concentration
+                weight_entropy = -np.sum(rl_weights * np.log(rl_weights + 1e-10))
+                confidence_from_weights = 1.0 / (1.0 + weight_entropy)
+                
+                # Component 2: Recent RL performance
+                rl_metrics = self.rl_performance_tracker.get_performance_metrics()
+                accuracy_from_rl = rl_metrics.get('accuracy', 0.5)
+                r2_from_rl = max(0, rl_metrics.get('r2', 0))
+                
+                # Multi-objective combination of performance metrics
+                performance_confidence = 0.7 * accuracy_from_rl + 0.3 * r2_from_rl
+                
+                # Component 3: Prediction stability
+                prediction_std = np.std(predictions)
+                stability_confidence = 1.0 / (1.0 + prediction_std)
+                
+                # Component 4: Model diversity
+                unique_predictions = len(set([round(p, 2) for p in predictions]))
+                diversity_score = unique_predictions / len(predictions)
+                
+                # Combined multi-objective confidence with dynamic weighting
+                weight_adaptation = 0.5 + (1 - stability_confidence) * 0.3  # Adjust weights based on stability
+                confidence = (weight_adaptation * confidence_from_weights + 
+                           (1 - weight_adaptation) * 0.4 * performance_confidence + 
+                           0.3 * stability_confidence + 
+                           0.3 * diversity_score)
+                
+                # Ensure confidence is bounded
+                confidence = max(0.1, min(0.9, confidence))
+            else:
+                # Fallback to weighted average with enhanced confidence calculation
+                weights = weights / weights.sum()
+                ensemble_pred = np.average(predictions, weights=weights)
+                
+                # Enhanced fallback confidence
+                prediction_std = np.std(predictions)
+                prediction_range = np.max(predictions) - np.min(predictions)
+                stability_score = 1.0 / (1.0 + prediction_std)
+                consensus_score = 1.0 / (1.0 + prediction_range)
+                confidence = 0.6 * stability_score + 0.4 * consensus_score
+            
+            return float(ensemble_pred), float(confidence)
+            
+        except Exception as e:
+            logger.error(f"Error in RL-integrated combination: {e}")
+            return float(np.mean(predictions)), 0.5
+    
     def update_with_outcome(self, model_predictions: Dict[str, float], actual_outcome: float):
         """Update model performance with actual outcome"""
         try:
@@ -357,13 +522,14 @@ class EnsembleOptimizer:
             logger.error(f"Error updating with outcome: {e}")
     
     def _optimize_weights(self):
-        """Optimize model weights based on recent performance"""
+        """Optimize model weights based on recent performance and computational efficiency"""
         try:
             if len(self.ensemble_history) < self.min_performance_samples:
                 return
             
-            # Calculate optimal weights using recent performance
+            # Calculate optimal weights using recent performance and efficiency
             performance_metrics = {}
+            efficiency_adjusted_metrics = {}
             total_performance = 0
             
             for model_name in self.models.keys():
@@ -375,12 +541,18 @@ class EnsembleOptimizer:
                 
                 performance_score = 0.6 * accuracy + 0.4 * r2
                 performance_metrics[model_name] = max(0.05, performance_score)  # Minimum 5%
-                total_performance += performance_metrics[model_name]
+                
+                # Adjust performance by efficiency score
+                efficiency_score = self.model_efficiency_scores.get(model_name, 1.0)
+                efficiency_adjusted_score = performance_score * efficiency_score
+                efficiency_adjusted_metrics[model_name] = max(0.05, efficiency_adjusted_score)
+                
+                total_performance += efficiency_adjusted_metrics[model_name]
             
             # Update weights with smoothing
             if total_performance > 0:
                 for model_name in self.models.keys():
-                    optimal_weight = performance_metrics[model_name] / total_performance
+                    optimal_weight = efficiency_adjusted_metrics[model_name] / total_performance
                     current_weight = self.model_weights[model_name]
                     
                     # Smooth weight adjustment
@@ -388,31 +560,45 @@ class EnsembleOptimizer:
                                 self.weight_adjustment_rate * optimal_weight
                     
                     self.model_weights[model_name] = new_weight
+                    
+                    # Also update RL weights
+                    self.rl_weights[model_name] = new_weight
+                    
+                    # Update efficiency score
+                    self._update_model_efficiency(model_name)
             
             # Record optimization
             self.optimization_history.append({
                 'timestamp': datetime.now().isoformat(),
                 'old_weights': {k: v for k, v in self.model_weights.items()},
-                'performance_metrics': performance_metrics.copy()
+                'performance_metrics': performance_metrics.copy(),
+                'efficiency_scores': self.model_efficiency_scores.copy()
             })
             
-            logger.debug(f"Weights optimized: {self.model_weights}")
+            logger.debug(f"Weights optimized with efficiency consideration: {self.model_weights}")
             
         except Exception as e:
             logger.error(f"Error optimizing weights: {e}")
     
     def get_ensemble_insights(self) -> Dict:
-        """Get insights about ensemble performance"""
+        """Get insights about ensemble performance and computational efficiency"""
         try:
             insights = {
                 'total_models': len(self.models),
                 'current_weights': self.model_weights.copy(),
+                'rl_weights': self.rl_weights.copy(),
                 'model_performance': {},
+                'model_efficiency': {},
                 'ensemble_method': self.ensemble_method.value,
-                'optimization_count': len(self.optimization_history)
+                'optimization_count': len(self.optimization_history),
+                'computational_parameters': {
+                    'max_models_in_ensemble': self.max_models_in_ensemble,
+                    'model_selection_threshold': self.model_selection_threshold,
+                    'selected_models_count': len(self._select_optimal_models())
+                }
             }
             
-            # Add individual model performance
+            # Add individual model performance and efficiency
             for model_name, tracker in self.performance_trackers.items():
                 metrics = tracker.get_performance_metrics()
                 insights['model_performance'][model_name] = {
@@ -420,7 +606,15 @@ class EnsembleOptimizer:
                     'r2_score': metrics.get('r2', 0),
                     'mse': metrics.get('mse', 0),
                     'prediction_count': metrics.get('count', 0),
-                    'weight': self.model_weights.get(model_name, 0)
+                    'weight': self.model_weights.get(model_name, 0),
+                    'computational_cost': self.model_computational_cost.get(model_name, 1.0)
+                }
+                
+                # Add efficiency metrics
+                efficiency_score = self.model_efficiency_scores.get(model_name, 0)
+                insights['model_efficiency'][model_name] = {
+                    'efficiency_score': efficiency_score,
+                    'performance_to_cost_ratio': efficiency_score
                 }
             
             # Calculate ensemble performance if we have history
@@ -600,6 +794,7 @@ class EnsembleOptimizer:
                 logger.info(f"Removing underperforming model: {model_name}")
                 del self.models[model_name]
                 del self.model_weights[model_name]
+                del self.rl_weights[model_name]
                 del self.performance_trackers[model_name]
             
             # Renormalize remaining weights
@@ -608,9 +803,20 @@ class EnsembleOptimizer:
                 for name in self.model_weights:
                     self.model_weights[name] /= total_weight
                     
+                total_rl_weight = sum(self.rl_weights.values())
+                for name in self.rl_weights:
+                    self.rl_weights[name] /= total_rl_weight
+                    
         except Exception as e:
             logger.error(f"Error removing underperforming models: {e}")
 
+    def update_rl_performance(self, prediction: float, actual: float):
+        """Update RL performance tracker"""
+        try:
+            timestamp = datetime.now().isoformat()
+            self.rl_performance_tracker.add_prediction(prediction, actual, timestamp)
+        except Exception as e:
+            logger.error(f"Error updating RL performance: {e}")
 
 # Global instance
 _ensemble_optimizer = None

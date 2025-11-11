@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from enum import Enum
 import numpy as np
 from datetime import datetime, timedelta
+import json
 
 # Fix relative imports to work when imported by other modules
 try:
@@ -169,26 +170,23 @@ class ProfessionalBuyLogic:
     def _load_dynamic_config(self):
         """Load dynamic configuration from live_config.json"""
         try:
-            import json
-            import os
-            
+            # FIXED: Correct path to project root data directory
             config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'live_config.json')
             if os.path.exists(config_path):
                 with open(config_path, 'r') as f:
-                    live_config = json.load(f)
+                    config = json.load(f)
+                    
+                # Extract values from live_config.json (already as decimal from frontend)
+                self.stop_loss_pct = config.get("stop_loss_pct", 0.03)  # Default 3%
+                self.target_price_pct = config.get("target_profit_pct", 0.02)  # Default 2%
+                self.max_capital_per_trade = config.get("max_capital_per_trade", 0.05)  # Default 5%
                 
-                # Get dynamic stop-loss percentage from frontend config (already as decimal)
-                self.stop_loss_pct = live_config.get("stop_loss_pct", 0.03)
-                
-                # Get target price configuration from frontend config
-                # First check for target_profit_pct (new format), then fall back to level-based approach
-                if "target_profit_pct" in live_config:
-                    # Use the direct target profit percentage
-                    self.target_price_pct = live_config.get("target_profit_pct", 0.02)
+                # Use target_profit_pct if available, otherwise fall back to level-based approach
+                if "target_profit_pct" in config:
+                    self.target_price_pct = config.get("target_profit_pct", 0.02)
                 else:
-                    # Fall back to level-based approach for backward compatibility
-                    target_level = live_config.get("target_price_level", "MEDIUM")
-                    target_multiplier = live_config.get("target_price_multiplier", 0.02)  # Already as decimal from frontend
+                    target_level = config.get("target_price_level", "MEDIUM")
+                    target_multiplier = config.get("target_price_multiplier", 0.02)  # Already as decimal from frontend
                     
                     # Map target level to percentage (as decimal)
                     target_percentages = {
@@ -197,21 +195,16 @@ class ProfessionalBuyLogic:
                         "HIGH": 0.06,     # 6% target price
                         "CUSTOM": target_multiplier  # Use custom value (already as decimal)
                     }
-                    
-                    # Store as decimal for calculation
                     self.target_price_pct = target_percentages.get(target_level, 0.02)
                 
-                logger.info(f"Loaded dynamic config - Stop Loss: {self.stop_loss_pct:.1%}, Target Price: {self.target_price_pct:.1%}")
+                logger.info(f"Loaded dynamic config - Stop Loss: {self.stop_loss_pct*100:.1f}%, Target Price: {self.target_price_pct*100:.1f}%")
             else:
-                logger.warning("live_config.json not found, using defaults")
-                self.stop_loss_pct = 0.03
-                self.target_price_pct = 0.02
-                
+                logger.warning(f"live_config.json not found at {config_path}, using defaults")
         except Exception as e:
-            logger.error(f"Failed to load dynamic config: {e}")
-            self.stop_loss_pct = 0.03
-            self.target_price_pct = 0.02
-    
+            logger.error(f"Error loading dynamic config: {e}")
+            # Keep defaults if loading fails
+            pass
+
     def refresh_dynamic_config(self):
         """Refresh dynamic configuration from live_config.json (call this periodically)"""
         self._load_dynamic_config()
@@ -2166,17 +2159,38 @@ class ProfessionalBuyLogic:
             if rl_analysis.get("success", False):
                 rl_recommendation = rl_analysis.get("recommendation", "HOLD")
                 rl_confidence = rl_analysis.get("confidence", 0.5)
+                rl_scores = rl_analysis.get("rl_scores", {})
                 
-                # ENHANCED: More flexible RL agent signal threshold
-                if rl_recommendation == "BUY" and rl_confidence > 0.5:  # Lowered confidence threshold
-                    strength = min(rl_confidence, 1.0)
+                # ENHANCED: Multi-objective RL analysis with dynamic weights
+                buy_score = rl_scores.get("buy", 0)
+                hold_score = rl_scores.get("hold", 0)
+                sell_score = rl_scores.get("sell", 0)
+                
+                # Calculate multi-objective score based on market conditions
+                market_volatility = market_context.volatility if hasattr(market_context, 'volatility') else 0.02
+                risk_adjusted_score = buy_score * (1 - market_volatility * 2)  # Adjust for volatility
+                
+                # ENHANCED: More flexible RL agent signal threshold with multi-objective optimization
+                if rl_recommendation == "BUY" and risk_adjusted_score > 0.4:  # Lowered confidence threshold with risk adjustment
+                    strength = min(risk_adjusted_score, 1.0)
                     signals.append(BuySignal(
                         name="rl_agent_signal",
                         strength=strength,
-                        weight=category_weight * 0.10,
+                        weight=category_weight * 0.15,  # Increased weight for enhanced RL
                         triggered=True,
                         confidence=rl_confidence,
-                        reasoning=f"RL Agent recommends BUY with confidence {rl_confidence:.2f}",
+                        reasoning=f"RL Agent recommends BUY with confidence {rl_confidence:.2f} (risk-adjusted: {risk_adjusted_score:.2f})",
+                        category="ML"
+                    ))
+                elif rl_recommendation == "BUY" and buy_score > 0.6:  # Alternative condition for strong buy signals
+                    strength = min(buy_score, 1.0)
+                    signals.append(BuySignal(
+                        name="strong_rl_agent_signal",
+                        strength=strength,
+                        weight=category_weight * 0.12,
+                        triggered=True,
+                        confidence=rl_confidence,
+                        reasoning=f"Strong RL Agent BUY signal with confidence {rl_confidence:.2f}",
                         category="ML"
                     ))
         except Exception as e:

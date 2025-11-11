@@ -35,10 +35,11 @@ from ..mcp_trading_server import MCPToolResult, MCPToolStatus
 
 # Import LangChain and LangGraph components
 try:
-    from langchain.agents import AgentExecutor, create_react_agent
-    from langchain.tools import tool
-    from langchain.prompts import PromptTemplate
-    from langchain.chat_models import ChatOpenAI  # We'll use this with xAI API for Grok
+    from langchain.agents import AgentExecutor
+    from langchain.agents.react.agent import create_react_agent
+    from langchain_core.tools import tool
+    from langchain_core.prompts import PromptTemplate
+    from langchain_openai import ChatOpenAI  # We'll use this with xAI API for Grok
     from langgraph.graph import StateGraph, END
     from langgraph.prebuilt import ToolExecutor
 except ImportError:

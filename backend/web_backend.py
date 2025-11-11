@@ -45,6 +45,17 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
+import os
+import sys
+import logging
+import json
+import traceback
+import asyncio
+import time
+from datetime import datetime
+from typing import Dict, Any, Optional
+from pathlib import Path
+
 # Import new components for live trading
 try:
     from portfolio_manager import DualPortfolioManager

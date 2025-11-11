@@ -42,6 +42,7 @@ from urllib.parse import quote
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import pickle
 
+
 from requests.exceptions import HTTPError
 from dotenv import load_dotenv
 from dhanhq import dhanhq
@@ -96,7 +97,7 @@ from ta.volume import VolumeWeightedAveragePrice
 from ta.volatility import AverageTrueRange
 # threading removed - not used in current implementation
 import queue
-from langchain.llms.base import LLM
+from langchain_core.language_models import LLM
 from langchain.memory import ConversationBufferMemory
 
 from typing import Optional, List
@@ -3139,11 +3140,21 @@ class Stock:
         logger.info("One-time monitoring completed")
 
     def _monitoring_worker(self):
-        """Worker thread for real-time monitoring - now does nothing since we only check once at startup"""
-        logger.info("One-time monitoring check completed at startup - monitoring worker is now inactive")
-        # This function is kept for compatibility but does nothing since we only check once at startup
-        # The monitoring_active flag is set to False after the initial check
-        pass
+        """Worker thread for real-time monitoring of stop loss and take profit conditions"""
+        logger.info("Real-time monitoring worker started for stop loss and take profit execution")
+        
+        while self.monitoring_active:
+            try:
+                logger.debug("Performing real-time monitoring check for stop loss and take profit")
+                self._check_stop_loss_take_profit_once()
+                # Wait for monitoring interval before next check
+                time.sleep(60)  # Check every minute
+            except Exception as e:
+                logger.error(f"Error in monitoring worker: {e}")
+                # Continue monitoring even if there's an error
+                time.sleep(60)
+        
+        logger.info("Real-time monitoring worker stopped")
 
     def _get_current_price(self, ticker):
         """Get current price for a ticker with improved rate limiting handling"""
@@ -6923,7 +6934,7 @@ class StockTradingBot:
             logger.info(f"  {signal}: strength={strength:.3f} × weight={weight:.3f} = {contribution:.3f}")
         logger.info(f"  TOTAL WEIGHTED SIGNAL SCORE: {weighted_signal_score:.3f}")
 
-        # Convert to legacy buy_signals for compatibility (but use weighted logic)
+        # Convert to standard buy_signals format (but use weighted logic)
         buy_signals = int(weighted_signal_score * 7)  # Scale to 0-7 for logging compatibility
 
         # Calculate weighted sell signal score (similar to buy signals)
@@ -7005,7 +7016,7 @@ class StockTradingBot:
             logger.info(f"  {signal}: strength={strength:.3f} × weight={weight:.3f} = {contribution:.3f}")
         logger.info(f"  TOTAL WEIGHTED SELL SIGNAL SCORE: {weighted_sell_signal_score:.3f}")
 
-        # Convert to legacy sell_signals for compatibility
+        # Convert to standard sell_signals format
         sell_signals = int(weighted_sell_signal_score * 7)
 
         # Portfolio Constraints (REMOVED SECTOR EXPOSURE LIMITS)
@@ -7428,6 +7439,51 @@ class StockTradingBot:
                 }.get(market_regime, 0.7)
                 
                 volatility_adjustment = max(0.6, min(1.0, 1.0 / (1 + volatility)))
+                
+                # ENHANCEMENT: Check market circuit breaker before proceeding
+                from utils.market_circuit_breaker import get_market_circuit_breaker
+                circuit_breaker = get_market_circuit_breaker()
+                
+                # Monitor current market conditions
+                portfolio_value = self.portfolio.get_total_value()
+                circuit_level = circuit_breaker.monitor_market_conditions(
+                    symbol=ticker,
+                    current_price=current_ticker_price,
+                    volume=history['Volume'].iloc[-1] if 'Volume' in history.columns else 0,
+                    portfolio_value=portfolio_value
+                )
+                
+                # Check if trading should be halted
+                if circuit_breaker.should_halt_trading():
+                    logger.warning(f"❌ TRADING HALTED due to circuit breaker for {ticker}")
+                    buy_qty = 0
+                elif circuit_breaker.should_reduce_positions():
+                    logger.warning(f"⚠️ REDUCING POSITIONS due to market stress for {ticker}")
+                    # Reduce position size by 50%
+                    buy_qty = max(1, int(buy_qty * 0.5))
+                
+                # ENHANCEMENT: Validate data quality before proceeding
+                from utils.data_validator import get_data_validator
+                data_validator = get_data_validator()
+                
+                # Validate historical data quality
+                data_metrics = data_validator.validate_stock_data(ticker, df)
+                
+                # Check if data quality is acceptable
+                if not data_validator.is_data_quality_acceptable(ticker, data_metrics):
+                    logger.warning(f"❌ POOR DATA QUALITY for {ticker} - Using fallback data")
+                    # Get fallback data
+                    fallback_data = data_validator.get_fallback_data(ticker, df)
+                    if len(fallback_data) > 0:
+                        # Use fallback data for position sizing
+                        historical_data = pd.DataFrame({
+                            'Close': fallback_data['Close'].tail(50).values if 'Close' in fallback_data.columns else df['Close'].values
+                        })
+                        logger.info(f"Using fallback data with {len(fallback_data)} points for {ticker}")
+                    else:
+                        # If no fallback data, skip trading
+                        logger.error(f"No fallback data available for {ticker} - Skipping trade")
+                        buy_qty = 0
                 
                 # ENHANCEMENT: Standardize Position Sizing Usage
                 # Instead of the current approach, use the DynamicPositionSizer consistently
@@ -8127,18 +8183,29 @@ class StockTradingBot:
         logger.info("Stock Trading Bot stopped successfully")
 
 def main():
+    # Enhanced configuration with risk management and configurable paths
     config = {
         "tickers": [],  # Empty by default - users can add tickers manually
-        "starting_balance": 10000,  # Default starting balance in INR
-        "current_portfolio_value": 10000,  # Initial portfolio value
-        "current_pnl": 0,  # Initial PnL
-        "mode": "paper",
+        "starting_balance": 10000,  # Rs.10 thousand
+        "current_portfolio_value": 10000,
+        "current_pnl": 0,
+        "mode": os.getenv("MODE", "paper"),
         "dhan_client_id": os.getenv("DHAN_CLIENT_ID"),
         "dhan_access_token": os.getenv("DHAN_ACCESS_TOKEN"),
         "period": "3y",
         "prediction_days": 30,
         "benchmark_tickers": ["^NSEI"],
-        "sleep_interval": 300  # 5 minutes
+        "sleep_interval": 300,  # 5 minutes
+        # Risk management settings from .env
+        "stop_loss_pct": float(os.getenv("STOP_LOSS_PCT", "0.05")),
+        "target_profit_pct": float(os.getenv("TARGET_PROFIT_PCT", "0.10")),
+        "max_capital_per_trade": float(os.getenv("MAX_CAPITAL_PER_TRADE", "0.25")),
+        "max_trade_limit": int(os.getenv("MAX_TRADE_LIMIT", "150")),
+        # Configurable paths
+        "data_dir": os.getenv("DATA_DIR", "data"),
+        "log_dir": os.getenv("LOG_DIR", "logs"),
+        "reports_dir": os.getenv("REPORTS_DIR", "reports"),
+        "analysis_dir": os.getenv("ANALYSIS_DIR", "stock_analysis")
     }
 
     bot = StockTradingBot(config)

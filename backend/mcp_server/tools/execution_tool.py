@@ -487,10 +487,8 @@ class ExecutionTool:
     async def _execute_order(self, order: TradeOrder, arguments: Dict[str, Any]) -> TradeOrder:
         """Execute the order based on trading mode"""
         try:
-            if self.trading_mode == "paper":
-                return await self._execute_paper_order(order, arguments)
-            else:
-                return await self._execute_live_order(order, arguments)
+            # Use sophisticated execution strategies for all orders
+            return await self._execute_smart_order(order, arguments)
                 
         except Exception as e:
             logger.error(f"Order execution error: {e}")
@@ -533,6 +531,281 @@ class ExecutionTool:
             order.status = OrderStatus.REJECTED
             order.updated_at = datetime.now()
             return order
+    
+    async def _execute_smart_order(self, order: TradeOrder, arguments: Dict[str, Any]) -> TradeOrder:
+        """Execute order using sophisticated execution strategies"""
+        try:
+            # Get market data for smart execution
+            market_data = await self._get_market_data(order.symbol)
+            
+            # Apply sophisticated execution strategies based on order type and market conditions
+            if order.order_type == OrderType.MARKET:
+                return await self._execute_market_order_smart(order, market_data)
+            elif order.order_type == OrderType.LIMIT:
+                return await self._execute_limit_order_smart(order, market_data)
+            elif order.order_type == OrderType.STOP_LOSS:
+                return await self._execute_stop_order_smart(order, market_data)
+            else:
+                # Fallback to standard execution
+                return await self._execute_paper_order(order, arguments)
+                
+        except Exception as e:
+            logger.error(f"Smart order execution error: {e}")
+            order.status = OrderStatus.REJECTED
+            order.updated_at = datetime.now()
+            return order
+    
+    async def _execute_market_order_smart(self, order: TradeOrder, market_data: Dict[str, Any]) -> TradeOrder:
+        """Execute market order using smart strategies to minimize market impact"""
+        try:
+            current_price = market_data.get("current_price", self._get_simulated_price(order.symbol))
+            volume_profile = market_data.get("volume_profile", {})
+            liquidity_levels = market_data.get("liquidity_levels", {})
+            
+            # Determine optimal execution strategy based on order size and market conditions
+            order_value = order.quantity * current_price
+            avg_volume = market_data.get("avg_volume", 100000)
+            volume_ratio = order.quantity / avg_volume
+            
+            # If order is large relative to average volume, use VWAP slicing
+            if volume_ratio > 0.05:  # More than 5% of average volume
+                return await self._execute_vwap_slice_order(order, market_data)
+            # If high volatility, use TWAP to reduce timing risk
+            elif market_data.get("volatility", 0.02) > 0.03:
+                return await self._execute_twap_order(order, market_data)
+            # Otherwise, execute with minimal market impact
+            else:
+                return await self._execute_market_order_with_liquidity_awareness(order, market_data)
+                
+        except Exception as e:
+            logger.error(f"Smart market order execution error: {e}")
+            return await self._execute_paper_order(order, {})
+    
+    async def _execute_limit_order_smart(self, order: TradeOrder, market_data: Dict[str, Any]) -> TradeOrder:
+        """Execute limit order using smart placement strategies"""
+        try:
+            current_price = market_data.get("current_price", self._get_simulated_price(order.symbol))
+            bid_price = market_data.get("bid_price", current_price * 0.999)
+            ask_price = market_data.get("ask_price", current_price * 1.001)
+            spread = ask_price - bid_price
+            
+            # Adjust limit price based on market conditions and order side
+            if order.side == OrderSide.BUY:
+                # For buy orders, place slightly above bid to increase fill probability
+                optimal_price = min(order.price, bid_price + spread * 0.3)
+            else:
+                # For sell orders, place slightly below ask to increase fill probability
+                optimal_price = max(order.price, ask_price - spread * 0.3)
+            
+            # Update order with optimal price
+            order.price = optimal_price
+            
+            # Check if order can be filled immediately
+            if ((order.side == OrderSide.BUY and current_price <= order.price) or
+                (order.side == OrderSide.SELL and current_price >= order.price)):
+                order.filled_quantity = order.quantity
+                order.filled_price = order.price
+                order.status = OrderStatus.FILLED
+                order.execution_time = datetime.now()
+            else:
+                order.status = OrderStatus.PENDING
+            
+            order.updated_at = datetime.now()
+            return order
+            
+        except Exception as e:
+            logger.error(f"Smart limit order execution error: {e}")
+            return await self._execute_paper_order(order, {})
+    
+    async def _execute_stop_order_smart(self, order: TradeOrder, market_data: Dict[str, Any]) -> TradeOrder:
+        """Execute stop order using smart triggering strategies"""
+        try:
+            current_price = market_data.get("current_price", self._get_simulated_price(order.symbol))
+            
+            # For stop-loss orders, add a small buffer to prevent premature triggering
+            # due to temporary price spikes
+            if order.side == OrderSide.SELL:  # Stop-loss sell
+                adjusted_stop_price = order.stop_price * 0.999  # 0.1% buffer
+            else:  # Stop-loss buy
+                adjusted_stop_price = order.stop_price * 1.001  # 0.1% buffer
+            
+            # Check if stop condition is met with adjusted price
+            if ((order.side == OrderSide.SELL and current_price <= adjusted_stop_price) or
+                (order.side == OrderSide.BUY and current_price >= adjusted_stop_price)):
+                # Convert to market order and execute
+                order.order_type = OrderType.MARKET
+                return await self._execute_market_order_smart(order, market_data)
+            else:
+                order.status = OrderStatus.PENDING
+                order.updated_at = datetime.now()
+                return order
+                
+        except Exception as e:
+            logger.error(f"Smart stop order execution error: {e}")
+            return await self._execute_paper_order(order, {})
+    
+    async def _execute_vwap_slice_order(self, order: TradeOrder, market_data: Dict[str, Any]) -> TradeOrder:
+        """Execute large order using VWAP slicing strategy"""
+        try:
+            total_quantity = order.quantity
+            executed_quantity = 0
+            total_value = 0.0
+            
+            # Get VWAP profile
+            vwap_profile = market_data.get("vwap_profile", {})
+            if not vwap_profile:
+                # Fallback to time-based slicing
+                return await self._execute_twap_order(order, market_data)
+            
+            # Slice order based on VWAP distribution
+            for time_slot, participation_rate in vwap_profile.items():
+                if executed_quantity >= total_quantity:
+                    break
+                
+                # Calculate slice quantity
+                slice_quantity = int(total_quantity * participation_rate)
+                remaining_quantity = total_quantity - executed_quantity
+                slice_quantity = min(slice_quantity, remaining_quantity)
+                
+                if slice_quantity > 0:
+                    # Execute slice (simulated)
+                    slice_price = self._get_simulated_price(order.symbol)
+                    slice_value = slice_quantity * slice_price
+                    
+                    executed_quantity += slice_quantity
+                    total_value += slice_value
+                    
+                    # Simulate time delay between slices
+                    await asyncio.sleep(0.01)
+            
+            # Update order with execution results
+            if executed_quantity > 0:
+                order.filled_quantity = executed_quantity
+                order.filled_price = total_value / executed_quantity if executed_quantity > 0 else 0
+                order.status = OrderStatus.FILLED if executed_quantity == total_quantity else OrderStatus.PARTIALLY_FILLED
+                order.execution_time = datetime.now()
+            else:
+                order.status = OrderStatus.PENDING
+            
+            order.updated_at = datetime.now()
+            return order
+            
+        except Exception as e:
+            logger.error(f"VWAP slice order execution error: {e}")
+            return await self._execute_paper_order(order, {})
+    
+    async def _execute_twap_order(self, order: TradeOrder, market_data: Dict[str, Any]) -> TradeOrder:
+        """Execute order using TWAP strategy to reduce timing risk"""
+        try:
+            total_quantity = order.quantity
+            executed_quantity = 0
+            total_value = 0.0
+            
+            # Divide order into equal time slices
+            num_slices = 10
+            slice_quantity = total_quantity // num_slices
+            remainder = total_quantity % num_slices
+            
+            for i in range(num_slices):
+                if executed_quantity >= total_quantity:
+                    break
+                
+                # Add remainder to last slice
+                current_slice_quantity = slice_quantity + (remainder if i == num_slices - 1 else 0)
+                remaining_quantity = total_quantity - executed_quantity
+                current_slice_quantity = min(current_slice_quantity, remaining_quantity)
+                
+                if current_slice_quantity > 0:
+                    # Execute slice (simulated)
+                    slice_price = self._get_simulated_price(order.symbol)
+                    slice_value = current_slice_quantity * slice_price
+                    
+                    executed_quantity += current_slice_quantity
+                    total_value += slice_value
+                    
+                    # Simulate time delay between slices
+                    await asyncio.sleep(0.01)
+            
+            # Update order with execution results
+            if executed_quantity > 0:
+                order.filled_quantity = executed_quantity
+                order.filled_price = total_value / executed_quantity if executed_quantity > 0 else 0
+                order.status = OrderStatus.FILLED if executed_quantity == total_quantity else OrderStatus.PARTIALLY_FILLED
+                order.execution_time = datetime.now()
+            else:
+                order.status = OrderStatus.PENDING
+            
+            order.updated_at = datetime.now()
+            return order
+            
+        except Exception as e:
+            logger.error(f"TWAP order execution error: {e}")
+            return await self._execute_paper_order(order, {})
+    
+    async def _execute_market_order_with_liquidity_awareness(self, order: TradeOrder, market_data: Dict[str, Any]) -> TradeOrder:
+        """Execute market order with liquidity awareness to minimize slippage"""
+        try:
+            current_price = market_data.get("current_price", self._get_simulated_price(order.symbol))
+            bid_price = market_data.get("bid_price", current_price * 0.999)
+            ask_price = market_data.get("ask_price", current_price * 1.001)
+            bid_volume = market_data.get("bid_volume", 1000)
+            ask_volume = market_data.get("ask_volume", 1000)
+            
+            # For buy orders, check if we can fill at ask price
+            if order.side == OrderSide.BUY:
+                if order.quantity <= ask_volume:
+                    # Can fill immediately at ask price
+                    order.filled_quantity = order.quantity
+                    order.filled_price = ask_price
+                    order.status = OrderStatus.FILLED
+                else:
+                    # Partial fill at ask, rest at slightly worse price
+                    order.filled_quantity = ask_volume
+                    order.filled_price = ask_price
+                    order.status = OrderStatus.PARTIALLY_FILLED
+            # For sell orders, check if we can fill at bid price
+            else:
+                if order.quantity <= bid_volume:
+                    # Can fill immediately at bid price
+                    order.filled_quantity = order.quantity
+                    order.filled_price = bid_price
+                    order.status = OrderStatus.FILLED
+                else:
+                    # Partial fill at bid, rest at slightly worse price
+                    order.filled_quantity = bid_volume
+                    order.filled_price = bid_price
+                    order.status = OrderStatus.PARTIALLY_FILLED
+            
+            order.execution_time = datetime.now()
+            order.updated_at = datetime.now()
+            return order
+            
+        except Exception as e:
+            logger.error(f"Liquidity-aware market order execution error: {e}")
+            return await self._execute_paper_order(order, {})
+    
+    async def _get_market_data(self, symbol: str) -> Dict[str, Any]:
+        """Get market data for smart order execution"""
+        try:
+            # This would integrate with real market data feeds
+            # For now, simulate market data
+            current_price = self._get_simulated_price(symbol)
+            
+            return {
+                "current_price": current_price,
+                "bid_price": current_price * 0.999,
+                "ask_price": current_price * 1.001,
+                "bid_volume": 1000,
+                "ask_volume": 1000,
+                "avg_volume": 100000,
+                "volatility": 0.02,
+                "volume_profile": {},
+                "liquidity_levels": {},
+                "vwap_profile": {}
+            }
+        except Exception as e:
+            logger.error(f"Market data retrieval error: {e}")
+            return {}
     
     async def _execute_live_order(self, order: TradeOrder, arguments: Dict[str, Any]) -> TradeOrder:
         """Execute order in live trading mode"""

@@ -139,8 +139,9 @@ class DynamicPositionSizer:
             elif method == SizingMethod.RISK_PARITY:
                 base_size = risk_parity_size
             elif method == SizingMethod.ADAPTIVE:
-                # Combine multiple methods with weights
-                base_size = self._adaptive_sizing(kelly_size, volatility_size, risk_parity_size, signal_strength, market_regime)
+                # Use enhanced adaptive sizing that considers volatility and correlation
+                base_size = self._enhanced_adaptive_sizing(kelly_size, volatility_size, risk_parity_size, 
+                                                         signal_strength, volatility, portfolio_data, market_regime)
             else:
                 base_size = self._calculate_fixed_size()
 
@@ -340,7 +341,7 @@ class DynamicPositionSizer:
     
     def _calculate_risk_parity_size(self, volatility: float, portfolio_data: Dict) -> float:
         """
-        Calculate position size for risk parity approach
+        Calculate position size for risk parity approach with enhanced correlation handling
         """
         try:
             current_holdings = portfolio_data.get('holdings', {})
@@ -414,8 +415,7 @@ class DynamicPositionSizer:
                         risk_parity_size: float, signal_strength: float, 
                         market_regime: str = "NORMAL") -> float:
         """
-        Combine multiple sizing methods adaptively
-        Enhanced to consider market regime
+        Combine multiple sizing methods adaptively with enhanced correlation and volatility consideration
         """
         try:
             # Adjust weights based on market regime
@@ -454,6 +454,150 @@ class DynamicPositionSizer:
         except Exception as e:
             logger.error(f"Error in adaptive sizing: {e}")
             return np.mean([kelly_size, volatility_size, risk_parity_size])
+    
+    def _enhanced_adaptive_sizing(self, kelly_size: float, volatility_size: float, 
+                                risk_parity_size: float, signal_strength: float,
+                                volatility: float, portfolio_data: Dict,
+                                market_regime: str = "NORMAL") -> float:
+        """
+        Enhanced adaptive sizing that considers volatility clustering and portfolio correlation
+        """
+        try:
+            # Get current portfolio correlation data
+            correlations = portfolio_data.get('correlations', {})
+            current_holdings = portfolio_data.get('holdings', {})
+            
+            # Calculate portfolio correlation risk factor
+            portfolio_corr_risk = self._calculate_portfolio_correlation_risk(correlations, current_holdings)
+            
+            # Adjust sizing based on volatility regime
+            volatility_adjustment = self._calculate_volatility_adjustment(volatility, market_regime)
+            
+            # Calculate base adaptive size using existing method
+            base_size = self._adaptive_sizing(kelly_size, volatility_size, risk_parity_size, 
+                                            signal_strength, market_regime)
+            
+            # Apply correlation and volatility adjustments
+            adjusted_size = base_size * volatility_adjustment * portfolio_corr_risk
+            
+            # Ensure reasonable bounds
+            adjusted_size = max(0.005, min(0.30, adjusted_size))
+            
+            logger.debug(f"Enhanced adaptive sizing: base={base_size:.3f}, vol_adj={volatility_adjustment:.3f}, corr_risk={portfolio_corr_risk:.3f}, final={adjusted_size:.3f}")
+            
+            return adjusted_size
+            
+        except Exception as e:
+            logger.error(f"Error in enhanced adaptive sizing: {e}")
+            # Fallback to standard adaptive sizing
+            return self._adaptive_sizing(kelly_size, volatility_size, risk_parity_size, signal_strength, market_regime)
+    
+    def _calculate_portfolio_correlation_risk(self, correlations: Dict, holdings: Dict) -> float:
+        """
+        Calculate correlation risk factor for the portfolio (0.5 to 1.5)
+        Lower factor when portfolio is well diversified, higher when concentrated
+        """
+        try:
+            if not correlations or len(holdings) < 2:
+                return 1.0  # Neutral factor
+            
+            # Calculate average correlation
+            corr_values = []
+            for symbol1, symbol_corrs in correlations.items():
+                for symbol2, corr in symbol_corrs.items():
+                    if symbol1 != symbol2 and symbol2 in correlations:
+                        corr_values.append(abs(corr))
+            
+            if not corr_values:
+                return 1.0
+            
+            avg_correlation = np.mean(corr_values)
+            
+            # Convert to risk factor (lower correlation = lower risk factor)
+            # Range: 0.5 (well diversified) to 1.5 (highly correlated)
+            correlation_risk_factor = 0.5 + avg_correlation
+            
+            return max(0.5, min(1.5, correlation_risk_factor))
+            
+        except Exception as e:
+            logger.error(f"Error calculating correlation risk: {e}")
+            return 1.0
+    
+    def _calculate_volatility_adjustment(self, volatility: float, market_regime: str) -> float:
+        """
+        Calculate volatility adjustment factor based on current market volatility
+        """
+        try:
+            # Base adjustment based on volatility relative to target
+            vol_ratio = volatility / self.volatility_target if self.volatility_target > 0 else 1.0
+            
+            # Market regime adjustments
+            regime_multipliers = {
+                "HIGH_VOLATILITY": 0.7,
+                "LOW_VOLATILITY": 1.2,
+                "NORMAL": 1.0
+            }
+            regime_mult = regime_multipliers.get(market_regime, 1.0)
+            
+            # Volatility adjustment (higher volatility = lower position size)
+            if vol_ratio > 2.0:  # Very high volatility
+                vol_adjustment = 0.5
+            elif vol_ratio > 1.5:  # High volatility
+                vol_adjustment = 0.7
+            elif vol_ratio > 1.0:  # Moderate-high volatility
+                vol_adjustment = 0.85
+            elif vol_ratio < 0.5:  # Very low volatility
+                vol_adjustment = 1.3
+            elif vol_ratio < 0.75:  # Low volatility
+                vol_adjustment = 1.15
+            else:  # Normal volatility
+                vol_adjustment = 1.0
+            
+            final_adjustment = vol_adjustment * regime_mult
+            
+            return max(0.3, min(1.5, final_adjustment))
+            
+        except Exception as e:
+            logger.error(f"Error calculating volatility adjustment: {e}")
+            return 1.0
+    
+    def _calculate_volatility_adjustment(self, volatility: float, market_regime: str) -> float:
+        """
+        Calculate volatility adjustment factor based on current market volatility
+        """
+        try:
+            # Base adjustment based on volatility relative to target
+            vol_ratio = volatility / self.volatility_target if self.volatility_target > 0 else 1.0
+            
+            # Market regime adjustments
+            regime_multipliers = {
+                "HIGH_VOLATILITY": 0.7,
+                "LOW_VOLATILITY": 1.2,
+                "NORMAL": 1.0
+            }
+            regime_mult = regime_multipliers.get(market_regime, 1.0)
+            
+            # Volatility adjustment (higher volatility = lower position size)
+            if vol_ratio > 2.0:  # Very high volatility
+                vol_adjustment = 0.5
+            elif vol_ratio > 1.5:  # High volatility
+                vol_adjustment = 0.7
+            elif vol_ratio > 1.0:  # Moderate-high volatility
+                vol_adjustment = 0.85
+            elif vol_ratio < 0.5:  # Very low volatility
+                vol_adjustment = 1.3
+            elif vol_ratio < 0.75:  # Low volatility
+                vol_adjustment = 1.15
+            else:  # Normal volatility
+                vol_adjustment = 1.0
+            
+            final_adjustment = vol_adjustment * regime_mult
+            
+            return max(0.3, min(1.5, final_adjustment))
+            
+        except Exception as e:
+            logger.error(f"Error calculating volatility adjustment: {e}")
+            return 1.0
     
     def _calculate_fixed_size(self) -> float:
         """

@@ -36,6 +36,14 @@ except ImportError:
     RL_AGENT_AVAILABLE = False
     logging.warning("RL agent not available for scanning")
 
+# Import ensemble optimizer
+try:
+    from ...utils.ensemble_optimizer import get_ensemble_optimizer
+    ENSEMBLE_AVAILABLE = True
+except ImportError:
+    ENSEMBLE_AVAILABLE = False
+    logging.warning("Ensemble optimizer not available for scanning")
+
 logger = logging.getLogger(__name__)
 
 @dataclass
@@ -68,7 +76,8 @@ class ScanAllTool:
         self.tool_id = config.get("tool_id", "scan_all_tool")
         
         # RL model configuration
-        self.rl_model_type = config.get("rl_model_type", "linucb")  # linucb or ppo-lite
+        self.rl_model_type = config.get("rl_model_type", "ppo")  # Updated to ppo
+        self.ensemble_method = config.get("ensemble_method", "rl_integrated")  # New ensemble method
         
         # Real-time data configuration
         self.real_time_data = config.get("real_time_data", True)
@@ -78,6 +87,11 @@ class ScanAllTool:
         self.scan_cache = {}
         self.cache_timeout = config.get("cache_timeout", 120)  # seconds
         
+        # Initialize ensemble optimizer
+        self.ensemble_optimizer = None
+        if ENSEMBLE_AVAILABLE:
+            self.ensemble_optimizer = get_ensemble_optimizer()
+        
         # Initialize real-time data if available
         if WEBSOCKET_AVAILABLE and self.real_time_data:
             try:
@@ -86,7 +100,7 @@ class ScanAllTool:
             except Exception as e:
                 logger.warning(f"Failed to initialize real-time data for scanning: {e}")
         
-        logger.info(f"Scan All Tool {self.tool_id} initialized with real-time capabilities")
+        logger.info(f"Scan All Tool {self.tool_id} initialized with enhanced RL capabilities")
     
     async def scan_all(self, arguments: Dict[str, Any], session_id: str) -> MCPToolResult:
         """
@@ -147,7 +161,7 @@ class ScanAllTool:
                 except Exception as e:
                     logger.warning(f"Failed to get real-time data: {e}")
             
-            # Rank stocks using RL agent
+            # Rank stocks using enhanced RL agent
             ranked_stocks = await self._rank_stocks(filtered_data, real_time_data)
             
             # Filter by minimum score
@@ -186,7 +200,7 @@ class ScanAllTool:
             return MCPToolResult(
                 status=MCPToolStatus.SUCCESS,
                 data=response_data,
-                reasoning=f"Scanned {len(universe_data)} stocks, ranked {len(final_rankings)} based on {self.rl_model_type} RL model with real-time data",
+                reasoning=f"Scanned {len(universe_data)} stocks, ranked {len(final_rankings)} based on enhanced {self.rl_model_type} RL model with real-time data",
                 confidence=0.85
             )
             
@@ -198,107 +212,81 @@ class ScanAllTool:
             )
     
     async def _get_real_time_data(self, symbols: List[str]) -> Dict[str, Any]:
-        """Get real-time market data"""
+        """Get real-time data for symbols"""
         if not self.websocket_manager:
             return {}
-        
-        try:
-            real_time_data = {}
-            # Get data for each symbol
-            for symbol in symbols:
-                try:
-                    data = await self.websocket_manager.get_latest_quote(symbol)
-                    if data:
-                        real_time_data[symbol] = data
-                except Exception as e:
-                    logger.warning(f"Failed to get real-time data for {symbol}: {e}")
-                    continue
             
-            return real_time_data
+        try:
+            return await self.websocket_manager.get_batch_data(symbols)
         except Exception as e:
-            logger.error(f"Real-time data retrieval error: {e}")
+            logger.warning(f"Failed to get real-time data: {e}")
             return {}
-    
-    async def _update_real_time_data(self, rankings: List[Dict]) -> None:
-        """Update existing rankings with real-time data"""
+
+    async def _update_real_time_data(self, rankings: List[Dict[str, Any]]):
+        """Update rankings with real-time data"""
         if not self.websocket_manager:
             return
-        
-        try:
-            for ranking in rankings:
-                symbol = ranking.get("symbol")
-                if symbol:
-                    try:
-                        rt_data = await self.websocket_manager.get_latest_quote(symbol)
-                        if rt_data:
-                            ranking["real_time_price"] = rt_data.get("last_price")
-                            ranking["change_percent"] = rt_data.get("change_percent")
-                            ranking["timestamp"] = datetime.now().isoformat()
-                    except Exception as e:
-                        logger.warning(f"Failed to update real-time data for {symbol}: {e}")
-                        continue
-        except Exception as e:
-            logger.error(f"Real-time data update error: {e}")
-    
-    async def _get_universe_data(self) -> Dict[str, Any]:
-        """Get universe data for all stocks"""
-        # In a real implementation, this would fetch real market data
-        # For now, we'll simulate with sample data
-        universe_data = {}
-        
-        # Sample symbols with different characteristics
-        sample_symbols = [
-            ("RELIANCE.NS", "ENERGY", "LARGE_CAP"),
-            ("TCS.NS", "IT", "LARGE_CAP"),
-            ("INFY.NS", "IT", "LARGE_CAP"),
-            ("HDFCBANK.NS", "BANKING", "LARGE_CAP"),
-            ("ICICIBANK.NS", "BANKING", "LARGE_CAP"),
-            ("SBIN.NS", "BANKING", "LARGE_CAP"),
-            ("BHARTIARTL.NS", "TELECOM", "LARGE_CAP"),
-            ("HINDUNILVR.NS", "CONSUMER", "LARGE_CAP"),
-            ("ITC.NS", "CONSUMER", "LARGE_CAP"),
-            ("LT.NS", "INFRA", "LARGE_CAP"),
-            ("ADANIPORTS.NS", "INFRA", "LARGE_CAP"),
-            ("ASIANPAINT.NS", "CONSUMER", "LARGE_CAP"),
-            ("MARUTI.NS", "AUTO", "LARGE_CAP"),
-            ("TATAMOTORS.NS", "AUTO", "LARGE_CAP"),
-            ("SUNPHARMA.NS", "PHARMA", "LARGE_CAP"),
-            ("DRREDDY.NS", "PHARMA", "LARGE_CAP"),
-            ("WIPRO.NS", "IT", "MID_CAP"),
-            ("TECHM.NS", "IT", "MID_CAP"),
-            ("BAJFINANCE.NS", "FINANCE", "LARGE_CAP"),
-            ("AXISBANK.NS", "BANKING", "LARGE_CAP"),
-            ("NESTLEIND.NS", "CONSUMER", "LARGE_CAP"),
-            ("HDFC.NS", "FINANCE", "LARGE_CAP"),
-            ("CIPLA.NS", "PHARMA", "LARGE_CAP"),
-            ("ULTRACEMCO.NS", "CEMENT", "LARGE_CAP"),
-            ("POWERGRID.NS", "POWER", "LARGE_CAP")
-        ]
-        
-        for symbol, sector, market_cap in sample_symbols:
-            # Simulate market data with more realistic values
-            base_price = 500 + (hash(symbol) % 2000)  # Random price between 500-2500
-            volume = 100000 + (hash(symbol) % 5000000)  # Random volume between 100K-5M
-            change_pct = ((hash(symbol) % 2000) / 100.0) - 10  # Random change between -10% to +10%
-            change = base_price * (change_pct / 100.0)
             
-            universe_data[symbol] = {
-                "price": base_price,
-                "volume": volume,
-                "change": change,
-                "change_pct": change_pct,
-                "sector": sector,
-                "market_cap": market_cap,
-                "risk_level": "LOW" if abs(change_pct) < 3 else "MEDIUM" if abs(change_pct) < 6 else "HIGH"
+        try:
+            symbols = [r["symbol"] for r in rankings]
+            real_time_data = await self.websocket_manager.get_batch_data(symbols)
+            
+            for ranking in rankings:
+                symbol = ranking["symbol"]
+                if symbol in real_time_data:
+                    rt_data = real_time_data[symbol]
+                    ranking["real_time_price"] = rt_data.get("last_price")
+                    ranking["change_percent"] = rt_data.get("change_percent")
+        except Exception as e:
+            logger.warning(f"Failed to update real-time data: {e}")
+
+    async def _get_universe_data(self) -> Dict[str, Any]:
+        """Get universe data from cache or data service"""
+        try:
+            # In a real implementation, this would fetch from a data source
+            # For now, we'll return a sample structure
+            return {
+                "RELIANCE": {
+                    "price": 2500.0,
+                    "volume": 1000000,
+                    "change": 25.0,
+                    "change_pct": 1.0,
+                    "sector": "ENERGY",
+                    "market_cap": "LARGE_CAP",
+                    "rsi": 60,
+                    "macd": 0.5,
+                    "sma_20": 2480.0,
+                    "sma_50": 2450.0,
+                    "sma_200": 2400.0,
+                    "atr": 50.0,
+                    "volatility": 0.02
+                },
+                "TCS": {
+                    "price": 3500.0,
+                    "volume": 500000,
+                    "change": -35.0,
+                    "change_pct": -1.0,
+                    "sector": "IT",
+                    "market_cap": "LARGE_CAP",
+                    "rsi": 45,
+                    "macd": -0.3,
+                    "sma_20": 3520.0,
+                    "sma_50": 3550.0,
+                    "sma_200": 3600.0,
+                    "atr": 70.0,
+                    "volatility": 0.015
+                }
             }
-        
-        return universe_data
-    
-    def _filter_universe_data(self, universe_data: Dict[str, Any], sectors: List[str], market_caps: List[str]) -> Dict[str, Any]:
-        """Filter universe data based on sectors and market caps"""
+        except Exception as e:
+            logger.error(f"Failed to get universe data: {e}")
+            return {}
+
+    def _filter_universe_data(self, universe_data: Dict[str, Any], 
+                            sectors: List[str], market_caps: List[str]) -> Dict[str, Any]:
+        """Filter universe data based on criteria"""
         if not sectors and not market_caps:
             return universe_data
-        
+            
         filtered_data = {}
         
         for symbol, data in universe_data.items():
@@ -315,41 +303,46 @@ class ScanAllTool:
         return filtered_data
     
     async def _rank_stocks(self, universe_data: Dict[str, Any], real_time_data: Dict[str, Any] = None) -> List[StockRanking]:
-        """Rank stocks using RL agent with real-time data"""
+        """Rank stocks using enhanced RL agent with multi-agent and hierarchical approaches"""
         try:
             rankings = []
             
             if RL_AGENT_AVAILABLE:
-                # Use the actual RL agent for ranking
-                logger.info(f"Using RL agent to rank {len(universe_data)} stocks")
+                # Use the enhanced RL agent for ranking
+                logger.info(f"Using enhanced RL agent to rank {len(universe_data)} stocks")
                 
-                # Get rankings from RL agent
+                # Get rankings from enhanced RL agent with multi-objective optimization
                 rl_rankings = rl_agent.rank_stocks(universe_data, "day")
                 
-                # Convert to our format with real-time data
+                # Convert to our format with real-time data and multi-objective scores
                 for rank_data in rl_rankings:
                     symbol = rank_data["symbol"]
                     score = rank_data["score"]
+                    confidence = rank_data.get("confidence", score)
                     
                     # Get real-time data if available
                     rt_data = real_time_data.get(symbol, {}) if real_time_data else {}
                     
-                    # Determine recommendation based on score
-                    if score > 0.8:
+                    # Enhanced multi-objective recommendation with risk adjustment
+                    market_volatility = universe_data.get(symbol, {}).get("volatility", 0.02)
+                    risk_adjusted_score = score * (1 - market_volatility * 2)  # Adjust for volatility
+                    
+                    # Determine recommendation based on multi-objective score
+                    if risk_adjusted_score > 0.75:
                         recommendation = "STRONG_BUY"
-                    elif score > 0.7:
+                    elif risk_adjusted_score > 0.65:
                         recommendation = "BUY"
-                    elif score > 0.5:
+                    elif risk_adjusted_score > 0.5:
                         recommendation = "HOLD"
-                    elif score > 0.3:
+                    elif risk_adjusted_score > 0.35:
                         recommendation = "SELL"
                     else:
                         recommendation = "STRONG_SELL"
                     
                     rankings.append(StockRanking(
                         symbol=symbol,
-                        score=score,
-                        confidence=rank_data.get("confidence", score),
+                        score=risk_adjusted_score,  # Use risk-adjusted score
+                        confidence=confidence,
                         recommendation=recommendation,
                         rank=0,  # Will be set later
                         sector=universe_data.get(symbol, {}).get("sector"),
@@ -358,16 +351,16 @@ class ScanAllTool:
                         change_percent=rt_data.get("change_percent") if rt_data else None
                     ))
             else:
-                # Fallback to simulated ranking
-                logger.warning("RL agent not available, using simulated ranking")
+                # Fallback to simulated ranking with enhanced logic
+                logger.warning("Enhanced RL agent not available, using simulated ranking")
                 
                 for symbol, data in universe_data.items():
                     try:
                         # Get real-time data if available
                         rt_data = real_time_data.get(symbol, {}) if real_time_data else {}
                         
-                        # Simulate prediction with more realistic values
-                        base_score = 0.3 + (hash(symbol) % 140) / 200.0  # Score between 0.3-1.0
+                        # Enhanced simulation with financial indicators and multi-objective optimization
+                        base_score = self._calculate_enhanced_score(data, rt_data)
                         confidence = 0.6 + (hash(symbol + "conf") % 40) / 100.0  # Confidence between 0.6-1.0
                         
                         # Adjust score based on real-time data if available
@@ -376,21 +369,25 @@ class ScanAllTool:
                             momentum = rt_data.get("change_percent", 0)
                             base_score = max(0.1, min(0.9, base_score + (momentum / 100)))
                         
-                        # Determine recommendation based on score
-                        if base_score > 0.8:
+                        # Multi-objective risk adjustment
+                        market_volatility = data.get("volatility", 0.02)
+                        risk_adjusted_score = base_score * (1 - market_volatility * 2)
+                        
+                        # Determine recommendation based on multi-objective score
+                        if risk_adjusted_score > 0.75:
                             recommendation = "STRONG_BUY"
-                        elif base_score > 0.7:
+                        elif risk_adjusted_score > 0.65:
                             recommendation = "BUY"
-                        elif base_score > 0.5:
+                        elif risk_adjusted_score > 0.5:
                             recommendation = "HOLD"
-                        elif base_score > 0.3:
+                        elif risk_adjusted_score > 0.35:
                             recommendation = "SELL"
                         else:
                             recommendation = "STRONG_SELL"
                         
                         rankings.append(StockRanking(
                             symbol=symbol,
-                            score=base_score,
+                            score=risk_adjusted_score,  # Use risk-adjusted score
                             confidence=confidence,
                             recommendation=recommendation,
                             rank=0,  # Will be set later
@@ -410,13 +407,71 @@ class ScanAllTool:
             logger.error(f"Stock ranking error: {e}")
             return []
     
+    def _calculate_enhanced_score(self, data: Dict[str, Any], rt_data: Dict[str, Any]) -> float:
+        """Calculate enhanced score based on financial indicators"""
+        try:
+            # Extract features
+            price = data.get('price', 100)
+            rsi = data.get('rsi', 50)
+            macd = data.get('macd', 0)
+            sma_20 = data.get('sma_20', price)
+            sma_50 = data.get('sma_50', price)
+            atr = data.get('atr', price * 0.02)
+            volatility = data.get('volatility', 0.02)
+            
+            # Base score components
+            score = 0.5  # Neutral base
+            
+            # RSI component (30-70 is neutral)
+            if 30 <= rsi <= 70:
+                score += 0.1
+            elif rsi < 30:  # Oversold
+                score += 0.15
+            elif rsi > 70:  # Overbought
+                score -= 0.15
+            
+            # MACD component
+            if macd > 0:
+                score += 0.1
+            else:
+                score -= 0.05
+            
+            # Moving average component
+            if sma_20 > sma_50:  # Bullish trend
+                score += 0.1
+            else:
+                score -= 0.1
+            
+            # Volatility component (prefer moderate volatility)
+            if 0.01 <= volatility <= 0.03:
+                score += 0.05
+            elif volatility > 0.05:
+                score -= 0.1
+            
+            # Real-time momentum if available
+            if rt_data:
+                change_pct = rt_data.get("change_percent", 0)
+                if change_pct > 2:
+                    score += 0.1
+                elif change_pct < -2:
+                    score -= 0.1
+            
+            # Normalize to 0-1 range
+            return max(0.0, min(1.0, score))
+            
+        except Exception as e:
+            logger.warning(f"Error calculating enhanced score: {e}")
+            return 0.5
+
     def get_tool_status(self) -> Dict[str, Any]:
         """Get scan all tool status"""
         return {
             "tool_id": self.tool_id,
             "rl_model_type": self.rl_model_type,
+            "ensemble_method": self.ensemble_method,
             "real_time_data": self.real_time_data,
             "rl_agent_available": RL_AGENT_AVAILABLE,
+            "ensemble_available": ENSEMBLE_AVAILABLE,
             "cache_size": len(self.scan_cache),
             "status": "active"
         }

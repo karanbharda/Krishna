@@ -11,11 +11,9 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any
 from copy import deepcopy
 import json
-
-# Fix import paths permanently
-current_dir = os.path.dirname(os.path.abspath(__file__))
-if current_dir not in sys.path:
-    sys.path.insert(0, current_dir)
+import os
+import sys
+import logging
 
 from db.database import DatabaseManager, Portfolio, Holding, Trade
 
@@ -24,18 +22,16 @@ logger = logging.getLogger(__name__)
 class DualPortfolioManager:
     """Manages separate portfolios for paper and live trading using SQLite database"""
     
-    def __init__(self, data_dir: str = "data"):
-        # Normalize to project-root data directory
-        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.data_dir = os.path.join(project_root, data_dir)
-        self.current_mode = "paper"  # Default mode
-        self.trade_callbacks = []  # List of callbacks to notify on trade execution
+    def __init__(self, data_dir: str = "data", mode: str = "paper"):
+        """
+        Initialize Dual Portfolio Manager with database integration
         
-        # Initialize database
-        db_path = f'sqlite:///{os.path.join(self.data_dir, "trading.db")}'
-        self.db = DatabaseManager(db_path)
-        
-        # Config files (keeping configs in JSON for flexibility)
+        Args:
+            data_dir: Directory for data storage
+            mode: Initial mode ('paper' or 'live')
+        """
+        self.data_dir = data_dir
+        self.current_mode = mode
         self.config_files = {
             "paper": os.path.join(self.data_dir, "paper_config.json"),
             "live": os.path.join(self.data_dir, "live_config.json")
@@ -43,10 +39,19 @@ class DualPortfolioManager:
         
         # Current session data
         self.current_portfolio = None
-        self.current_holdings_dict = {}  # Separate dict for backward compatibility
+        self.current_holdings_dict = {}  # Separate dict for holdings access
         self.config_data = {}
+        self.trade_callbacks = []  # Initialize trade callbacks list
+        self.starting_balance = 50000.0  # Default starting balance
         
-        # Ensure data directory exists
+        # Initialize database manager
+        db_path = os.path.join(self.data_dir, 'trading.db')
+        # Ensure proper path formatting for cross-platform compatibility
+        db_path = db_path.replace('\\', '/')
+        # Ensure data directory exists before initializing database
+        os.makedirs(self.data_dir, exist_ok=True)
+        
+        self.db = DatabaseManager(db_path)
         os.makedirs(self.data_dir, exist_ok=True)
         
         # Initialize database and load initial mode
@@ -190,7 +195,8 @@ class DualPortfolioManager:
             try:
                 # Load holdings from database into holdings dict for backward compatibility
                 self.current_holdings_dict = {}
-                for holding in self.current_portfolio.holdings:
+                holdings = session.query(Holding).filter_by(portfolio_id=self.current_portfolio.id).all()
+                for holding in holdings:
                     if holding.quantity > 0:  # Only include active holdings
                         self.current_holdings_dict[holding.ticker] = {
                             "qty": holding.quantity,
@@ -231,10 +237,11 @@ class DualPortfolioManager:
             
             if not portfolio:
                 # Create portfolio if it doesn't exist
+                starting_balance = 50000.0 if self.current_mode == "paper" else 100000.0
                 portfolio = Portfolio(
                     mode=self.current_mode,
-                    cash=self.starting_balance if self.current_mode == "paper" else 100000.0,
-                    starting_balance=self.starting_balance,
+                    cash=starting_balance,
+                    starting_balance=starting_balance,
                     realized_pnl=0.0,
                     unrealized_pnl=0.0,
                     last_updated=datetime.now()
@@ -423,81 +430,79 @@ class DualPortfolioManager:
             raise
     
     def refresh_holdings_from_database(self):
-        """Refresh holdings dict from database to ensure consistency"""
+        """Refresh holdings dict from database"""
         if not self.current_portfolio:
             return
             
-        session = self.db.Session()
-        try:
-            # Load holdings from database into holdings dict for backward compatibility
-            self.current_holdings_dict = {}
-            for holding in self.current_portfolio.holdings:
-                if holding.quantity > 0:  # Only include active holdings
-                    self.current_holdings_dict[holding.ticker] = {
-                        "qty": holding.quantity,
-                        "avg_price": holding.avg_price,
-                        "last_price": holding.last_price
-                    }
-        except Exception as e:
-            logger.error(f"Error refreshing portfolio holdings: {e}")
-        finally:
-            session.close()
-    
+        # Use context manager for automatic session cleanup
+        with self.db.get_session() as session:
+            try:
+                # Load holdings from database into holdings dict
+                self.current_holdings_dict = {}
+                holdings = session.query(Holding).filter_by(portfolio_id=self.current_portfolio.id).all()
+                for holding in holdings:
+                    if holding.quantity > 0:  # Only include active holdings
+                        self.current_holdings_dict[holding.ticker] = {
+                            "qty": holding.quantity,
+                            "avg_price": holding.avg_price,
+                            "last_price": holding.last_price
+                        }
+            except Exception as e:
+                logger.error(f"Error refreshing portfolio holdings: {e}")
+
     def get_portfolio_summary(self) -> Dict:
         """Get portfolio summary for current mode"""
-        try:
-            session = self.db.Session()
-            holdings = session.query(Holding).filter_by(portfolio_id=self.current_portfolio.id).all()
-            trades = session.query(Trade).filter_by(portfolio_id=self.current_portfolio.id).all()
-            
-            # Calculate holdings value using last_price from database
-            holdings_value = sum(holding.quantity * holding.last_price for holding in holdings)
-            
-            # Calculate unrealized P&L
-            cost_basis = sum(holding.quantity * holding.avg_price for holding in holdings)
-            unrealized_pnl = holdings_value - cost_basis
-            
-            # Calculate portfolio metrics
-            total_value = self.current_portfolio.cash + holdings_value
-            total_return = total_value - self.current_portfolio.starting_balance
-            return_percentage = (total_return / self.current_portfolio.starting_balance * 100) if self.current_portfolio.starting_balance > 0 else 0
-            
-            return {
-                "mode": self.current_portfolio.mode,
-                "cash": self.current_portfolio.cash,
-                "holdings_value": holdings_value,
-                "total_value": total_value,
-                "starting_balance": self.current_portfolio.starting_balance,
-                "total_return": total_return,
-                "return_percentage": return_percentage,
-                "unrealized_pnl": unrealized_pnl,
-                "realized_pnl": self.current_portfolio.realized_pnl,
-                "total_trades": len(trades),
-                "active_positions": len(holdings),
-                "last_updated": self.current_portfolio.last_updated
-            }
-            
-        except Exception as e:
-            logger.error(f"Failed to get portfolio summary: {e}")
-            raise
-        finally:
-            session.close()
-    
+        # Use context manager for automatic session cleanup
+        with self.db.get_session() as session:
+            try:
+                holdings = session.query(Holding).filter_by(portfolio_id=self.current_portfolio.id).all()
+                trades = session.query(Trade).filter_by(portfolio_id=self.current_portfolio.id).all()
+                
+                # Calculate holdings value using last_price from database
+                holdings_value = sum(holding.quantity * holding.last_price for holding in holdings)
+                
+                # Calculate unrealized P&L
+                cost_basis = sum(holding.quantity * holding.avg_price for holding in holdings)
+                unrealized_pnl = holdings_value - cost_basis
+                
+                # Calculate portfolio metrics
+                total_value = self.current_portfolio.cash + holdings_value
+                total_return = total_value - self.current_portfolio.starting_balance
+                return_percentage = (total_return / self.current_portfolio.starting_balance * 100) if self.current_portfolio.starting_balance > 0 else 0
+                
+                return {
+                    "mode": self.current_portfolio.mode,
+                    "cash": self.current_portfolio.cash,
+                    "holdings_value": holdings_value,
+                    "total_value": total_value,
+                    "starting_balance": self.current_portfolio.starting_balance,
+                    "total_return": total_return,
+                    "return_percentage": return_percentage,
+                    "unrealized_pnl": unrealized_pnl,
+                    "realized_pnl": self.current_portfolio.realized_pnl,
+                    "total_trades": len(trades),
+                    "active_positions": len(holdings),
+                    "last_updated": self.current_portfolio.last_updated
+                }
+                
+            except Exception as e:
+                logger.error(f"Failed to get portfolio summary: {e}")
+                raise
+
     def get_trade_history(self, limit: Optional[int] = None) -> List[Trade]:
         """Get trade history for current mode"""
-        session = self.db.Session()
-        try:
-            query = session.query(Trade).filter_by(portfolio_id=self.current_portfolio.id)
-            if limit:
-                query = query.limit(limit)
-            return query.all()
-            
-        except Exception as e:
-            logger.error(f"Failed to get trade history: {e}")
-            raise
-        finally:
-            session.close()
-    
+        # Use context manager for automatic session cleanup
+        with self.db.get_session() as session:
+            try:
+                query = session.query(Trade).filter_by(portfolio_id=self.current_portfolio.id)
+                if limit:
+                    query = query.limit(limit)
+                return query.all()
+                
+            except Exception as e:
+                logger.error(f"Failed to get trade history: {e}")
+                raise
+
     def reset_portfolio(self, mode: Optional[str] = None) -> bool:
         """Reset portfolio to initial state"""
         try:
@@ -507,35 +512,34 @@ class DualPortfolioManager:
                 logger.error(f"Invalid mode for reset: {target_mode}")
                 return False
             
-            session = self.db.Session()
-            try:
-                # Delete all holdings and trades for the target portfolio
-                portfolio = session.query(Portfolio).filter_by(mode=target_mode).first()
-                if not portfolio:
-                    raise ValueError(f"Portfolio not found for mode: {target_mode}")
-                
-                # Delete holdings and trades
-                session.query(Holding).filter_by(portfolio_id=portfolio.id).delete()
-                session.query(Trade).filter_by(portfolio_id=portfolio.id).delete()
-                
-                # Reset portfolio values
-                portfolio.cash = 50000.0
-                portfolio.starting_balance = 50000.0
-                portfolio.realized_pnl = 0.0
-                portfolio.unrealized_pnl = 0.0
-                portfolio.last_updated = datetime.now()
-                
-                session.commit()
-                logger.info(f"Reset {target_mode} portfolio to default values")
-                return True
-                
-            except Exception as e:
-                session.rollback()
-                logger.error(f"Failed to reset portfolio: {e}")
-                raise
-            finally:
-                session.close()
-                
+            # Use context manager for automatic session cleanup
+            with self.db.get_session() as session:
+                try:
+                    # Delete all holdings and trades for the target portfolio
+                    portfolio = session.query(Portfolio).filter_by(mode=target_mode).first()
+                    if not portfolio:
+                        raise ValueError(f"Portfolio not found for mode: {target_mode}")
+                    
+                    # Delete holdings and trades
+                    session.query(Holding).filter_by(portfolio_id=portfolio.id).delete()
+                    session.query(Trade).filter_by(portfolio_id=portfolio.id).delete()
+                    
+                    # Reset portfolio values
+                    portfolio.cash = 50000.0
+                    portfolio.starting_balance = 50000.0
+                    portfolio.realized_pnl = 0.0
+                    portfolio.unrealized_pnl = 0.0
+                    portfolio.last_updated = datetime.now()
+                    
+                    session.commit()
+                    logger.info(f"Reset {target_mode} portfolio to default values")
+                    return True
+                    
+                except Exception as e:
+                    session.rollback()
+                    logger.error(f"Failed to reset portfolio: {e}")
+                    raise
+                    
         except Exception as e:
             logger.error(f"Failed to reset portfolio: {e}")
             return False

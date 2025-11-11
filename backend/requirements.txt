@@ -1,7 +1,7 @@
 # FastAPI and Web Server Dependencies
-fastapi>=0.104.0
-uvicorn[standard]>=0.24.0
-pydantic>=2.4.0
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.9.0
 python-dotenv>=1.0.0
 
 # Data Processing and Analysis
@@ -20,10 +20,10 @@ torch>=2.0.0
 gymnasium>=0.29.0
 
 # Database and Storage
-SQLAlchemy>=2.0.0
-alembic>=1.12.0
-aiosqlite>=0.19.0
-langgraph>=0.0.15
+SQLAlchemy>=2.0.36
+alembic>=1.14.0
+aiosqlite>=0.20.0
+langgraph>=0.2.0
 
 # Development and Testing
 pytest>=7.4.0
@@ -47,7 +47,7 @@ redis>=4.5.0
 webdriver-manager>=4.0.0
 
 # LangChain for AI Chat
-langchain>=0.0.300
+langchain>=0.3.0
 
 # MCP (Model Context Protocol) and Advanced AI
 aiohttp>=3.9.0

@@ -37,7 +37,6 @@ class ProfessionalBuyIntegration:
         
         # Integration settings
         self.enable_professional_logic = config.get("enable_professional_buy_logic", True)
-        self.fallback_to_legacy = config.get("fallback_to_legacy_buy", False)  # Changed to False for consistency
         
         logger.info("Professional Buy Integration initialized")
     
@@ -115,8 +114,8 @@ class ProfessionalBuyIntegration:
             logger.info(f"  Signals Triggered: {len(buy_decision.signals_triggered)}")
             logger.info(f"  Reasoning: {buy_decision.reasoning}")
             
-            # Convert to legacy format
-            result = self._convert_to_legacy_format(buy_decision, stock_metrics, portfolio_context)
+            # Convert to standard format
+            result = self._convert_to_standard_format(buy_decision, stock_metrics, portfolio_context)
             
             # Add ticker information
             result["ticker"] = ticker
@@ -276,8 +275,8 @@ class ProfessionalBuyIntegration:
                 volume_profile=0.5
             )
     
-    def _convert_to_legacy_format(self, buy_decision: BuyDecision, stock_metrics: StockMetrics, portfolio_context: Dict = None) -> Dict:
-        """Convert professional buy decision to legacy format"""
+    def _convert_to_standard_format(self, buy_decision: BuyDecision, stock_metrics: StockMetrics, portfolio_context: Dict = None) -> Dict:
+        """Convert professional buy decision to standard format"""
         
         # PRODUCTION ENHANCEMENT: Track signals for continuous learning
         self._track_signals(buy_decision, stock_metrics)
@@ -313,11 +312,15 @@ class ProfessionalBuyIntegration:
             
             # Convert to quantity
             if current_price > 0:
-                calculated_qty = int(target_position_value / current_price)
-                qty = max(1, calculated_qty)  # Minimum 1 share
+                qty = int(target_position_value / current_price)
+            
+            # Ensure minimum quantity of 1 if we have enough cash
+            if qty == 0 and target_position_value >= current_price:
+                qty = 1
         
+        # Validate quantity
         if qty <= 0:
-            # Instead of defaulting to a small position, return hold decision
+            logger.warning(f"Invalid quantity calculated: {qty}. No buy action taken.")
             return {
                 "action": "hold",
                 "ticker": "",

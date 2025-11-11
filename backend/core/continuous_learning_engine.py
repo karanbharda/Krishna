@@ -51,6 +51,63 @@ class PatternInsight:
     sample_size: int
     discovered_at: datetime
 
+# Meta-Learning Model for Fast Adaptation
+class MetaLearningModel(nn.Module):
+    """Meta-learning model for fast adaptation to new market conditions"""
+    
+    def __init__(self, input_size=25, hidden_size=128, output_size=3):
+        super(MetaLearningModel, self).__init__()
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        
+        # Base model for fast adaptation
+        self.base_model = nn.Sequential(
+            nn.Linear(input_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, output_size)
+        )
+        
+        # Meta-learner for parameter adaptation
+        self.meta_learner = nn.Sequential(
+            nn.Linear(input_size + output_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, hidden_size // 2),
+            nn.ReLU(),
+            nn.Linear(hidden_size // 2, hidden_size)  # Output adaptation parameters
+        )
+        
+        # Enhanced meta-learning with attention mechanism
+        self.meta_attention = nn.MultiheadAttention(hidden_size, num_heads=4, batch_first=True)
+        self.meta_norm = nn.LayerNorm(hidden_size)
+        
+    def forward(self, x, adaptation_context=None):
+        # Base prediction
+        base_output = self.base_model(x)
+        
+        # If adaptation context provided, apply meta-learning
+        if adaptation_context is not None:
+            # Combine input with adaptation context
+            meta_input = torch.cat([x, adaptation_context], dim=-1)
+            adaptation_params = self.meta_learner(meta_input)
+            
+            # Apply attention-based meta-learning
+            query = adaptation_params.unsqueeze(1)
+            key = adaptation_params.unsqueeze(1)
+            value = adaptation_params.unsqueeze(1)
+            
+            attended_params, _ = self.meta_attention(query, key, value)
+            attended_params = attended_params.squeeze(1)
+            attended_params = self.meta_norm(attended_params)
+            
+            # Apply adaptation (simplified version)
+            # In practice, this would modify the base model parameters
+            adapted_output = base_output + attended_params[:, :base_output.size(-1)]
+            return adapted_output
+        
+        return base_output
+
 class TradingEnvironment(gym.Env):
     """RL Environment for trading decisions"""
     
@@ -134,7 +191,7 @@ class TradingEnvironment(gym.Env):
         return reward
     
     def _get_observation(self) -> np.ndarray:
-        """Get current observation state"""
+        """Get current observation state with enhanced features"""
         if self.current_step >= len(self.historical_data):
             return np.zeros(25, dtype=np.float32)
         
@@ -154,6 +211,8 @@ class TradingEnvironment(gym.Env):
             row.get('macd', 0),
             row.get('bb_position', 0.5) - 0.5,  # Bollinger band position
             row.get('sma_ratio', 1) - 1,  # Price vs SMA ratio
+            row.get('atr', 0) / row['close'],  # Normalized ATR
+            row.get('volatility', 0.02) / 0.02,  # Volatility regime
         ]
         
         # Portfolio state
@@ -168,114 +227,341 @@ class TradingEnvironment(gym.Env):
             row.get('market_volatility', 0.02),
             row.get('market_trend', 0),
             row.get('market_stress', 0.3),
+            row.get('sector_performance', 0),
+            row.get('volume_profile', 0.5),
         ]
         
         # Combine all features
         observation = np.array(
-            price_features + technical_features + portfolio_features + market_features + [0] * 9,  # Pad to 25
+            price_features + technical_features + portfolio_features + market_features + [0] * 4,  # Pad to 25
             dtype=np.float32
         )[:25]  # Ensure exactly 25 features
         
         return observation
 
-class DQNAgent:
-    """Deep Q-Network agent for trading decisions"""
+# PPO Agent Implementation
+class PPOAgent:
+    """Proximal Policy Optimization agent for trading decisions"""
     
-    def __init__(self, state_size: int = 25, action_size: int = 3, learning_rate: float = 0.001):
+    def __init__(self, state_size: int = 25, action_size: int = 3, learning_rate: float = 3e-4):
         if not RL_AVAILABLE:
             raise ImportError("RL dependencies not available")
         
         self.state_size = state_size
         self.action_size = action_size
         self.learning_rate = learning_rate
-        self.epsilon = 1.0  # Exploration rate
-        self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
-        self.memory = []
-        self.memory_size = 10000
+        self.gamma = 0.99  # Discount factor
+        self.eps_clip = 0.2  # Clipping parameter
+        self.K_epochs = 4  # Number of epochs
+        self.update_timestep = 2000  # Update policy every n timesteps
         
-        # Neural network
-        self.q_network = self._build_network()
-        self.target_network = self._build_network()
-        self.optimizer = optim.Adam(self.q_network.parameters(), lr=learning_rate)
+        # Neural networks
+        self.actor = self._build_actor()
+        self.critic = self._build_critic()
+        self.optimizer = optim.Adam([
+            {'params': self.actor.parameters(), 'lr': learning_rate},
+            {'params': self.critic.parameters(), 'lr': learning_rate}
+        ])
         
-        # Update target network
-        self.update_target_network()
-    
-    def _build_network(self) -> nn.Module:
-        """Build neural network for Q-learning"""
+        # Memory for experience replay
+        self.memory = {
+            'states': [],
+            'actions': [],
+            'log_probs': [],
+            'rewards': [],
+            'dones': [],
+            'values': [],
+            'returns': [],
+            'advantages': []
+        }
+        
+        self.timestep = 0
+        
+    def _build_actor(self) -> nn.Module:
+        """Build actor network"""
         return nn.Sequential(
             nn.Linear(self.state_size, 128),
             nn.ReLU(),
-            nn.Dropout(0.2),
             nn.Linear(128, 64),
             nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(64, 32),
-            nn.ReLU(),
-            nn.Linear(32, self.action_size)
+            nn.Linear(64, self.action_size),
+            nn.Softmax(dim=-1)
         )
     
-    def remember(self, state, action, reward, next_state, done):
-        """Store experience in replay memory"""
-        self.memory.append((state, action, reward, next_state, done))
-        if len(self.memory) > self.memory_size:
-            self.memory.pop(0)
+    def _build_critic(self) -> nn.Module:
+        """Build critic network"""
+        return nn.Sequential(
+            nn.Linear(self.state_size, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, 1)
+        )
     
-    def act(self, state) -> int:
-        """Choose action using epsilon-greedy policy"""
-        if np.random.random() <= self.epsilon:
-            return np.random.choice(self.action_size)
-        
+    def act(self, state) -> Tuple[int, float]:
+        """Choose action using current policy"""
         state_tensor = torch.FloatTensor(state).unsqueeze(0)
-        q_values = self.q_network(state_tensor)
-        return q_values.argmax().item()
+        
+        action_probs = self.actor(state_tensor)
+        dist = torch.distributions.Categorical(action_probs)
+        action = dist.sample()
+        
+        log_prob = dist.log_prob(action)
+        value = self.critic(state_tensor)
+        
+        return action.item(), log_prob.item(), value.item()
     
-    def replay(self, batch_size: int = 32):
-        """Train the model on a batch of experiences"""
-        if len(self.memory) < batch_size:
+    def remember(self, state, action, log_prob, reward, done, value):
+        """Store experience in memory"""
+        self.memory['states'].append(state)
+        self.memory['actions'].append(action)
+        self.memory['log_probs'].append(log_prob)
+        self.memory['rewards'].append(reward)
+        self.memory['dones'].append(done)
+        self.memory['values'].append(value)
+        
+        self.timestep += 1
+    
+    def compute_returns_and_advantages(self):
+        """Compute returns and advantages for PPO update"""
+        rewards = self.memory['rewards']
+        values = self.memory['values']
+        dones = self.memory['dones']
+        
+        # Compute returns
+        returns = []
+        discounted_reward = 0
+        for reward, done in zip(reversed(rewards), reversed(dones)):
+            if done:
+                discounted_reward = 0
+            discounted_reward = reward + (self.gamma * discounted_reward)
+            returns.insert(0, discounted_reward)
+        
+        # Compute advantages
+        returns = torch.tensor(returns, dtype=torch.float32)
+        values = torch.tensor(values, dtype=torch.float32)
+        advantages = returns - values
+        
+        self.memory['returns'] = returns
+        self.memory['advantages'] = advantages
+    
+    def update(self):
+        """Update policy using PPO algorithm"""
+        if len(self.memory['states']) < 32:
             return
         
-        batch = np.random.choice(len(self.memory), batch_size, replace=False)
-        states = torch.FloatTensor([self.memory[i][0] for i in batch])
-        actions = torch.LongTensor([self.memory[i][1] for i in batch])
-        rewards = torch.FloatTensor([self.memory[i][2] for i in batch])
-        next_states = torch.FloatTensor([self.memory[i][3] for i in batch])
-        dones = torch.BoolTensor([self.memory[i][4] for i in batch])
+        # Compute returns and advantages
+        self.compute_returns_and_advantages()
         
-        current_q_values = self.q_network(states).gather(1, actions.unsqueeze(1))
-        next_q_values = self.target_network(next_states).max(1)[0].detach()
-        target_q_values = rewards + (0.95 * next_q_values * ~dones)
+        # Convert to tensors
+        states = torch.FloatTensor(self.memory['states'])
+        actions = torch.LongTensor(self.memory['actions'])
+        old_log_probs = torch.FloatTensor(self.memory['log_probs'])
+        returns = self.memory['returns']
+        advantages = self.memory['advantages']
         
-        loss = F.mse_loss(current_q_values.squeeze(), target_q_values)
+        # Normalize advantages
+        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
         
-        self.optimizer.zero_grad()
-        loss.backward()
-        self.optimizer.step()
+        # Optimize policy for K epochs
+        for _ in range(self.K_epochs):
+            # Evaluate old actions and values
+            action_probs = self.actor(states)
+            dist = torch.distributions.Categorical(action_probs)
+            log_probs = dist.log_prob(actions)
+            
+            values = self.critic(states).squeeze()
+            
+            # Ratio (pi_theta / pi_theta__old)
+            ratios = torch.exp(log_probs - old_log_probs)
+            
+            # Surrogate loss
+            surr1 = ratios * advantages
+            surr2 = torch.clamp(ratios, 1 - self.eps_clip, 1 + self.eps_clip) * advantages
+            actor_loss = -torch.min(surr1, surr2).mean()
+            
+            # Critic loss
+            critic_loss = F.mse_loss(values, returns)
+            
+            # Total loss
+            loss = actor_loss + 0.5 * critic_loss
+            
+            # Update parameters
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
         
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
-    
-    def update_target_network(self):
-        """Update target network with current network weights"""
-        self.target_network.load_state_dict(self.q_network.state_dict())
+        # Clear memory
+        self.memory = {
+            'states': [],
+            'actions': [],
+            'log_probs': [],
+            'rewards': [],
+            'dones': [],
+            'values': [],
+            'returns': [],
+            'advantages': []
+        }
     
     def save_model(self, filepath: str):
         """Save model to file"""
         torch.save({
-            'q_network_state_dict': self.q_network.state_dict(),
-            'target_network_state_dict': self.target_network.state_dict(),
+            'actor_state_dict': self.actor.state_dict(),
+            'critic_state_dict': self.critic.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
-            'epsilon': self.epsilon
         }, filepath)
     
     def load_model(self, filepath: str):
         """Load model from file"""
         checkpoint = torch.load(filepath)
-        self.q_network.load_state_dict(checkpoint['q_network_state_dict'])
-        self.target_network.load_state_dict(checkpoint['target_network_state_dict'])
+        self.actor.load_state_dict(checkpoint['actor_state_dict'])
+        self.critic.load_state_dict(checkpoint['critic_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        self.epsilon = checkpoint['epsilon']
+
+class MultiAgentSystem:
+    """Multi-agent system with specialized agents for different market conditions"""
+    
+    def __init__(self, state_size: int = 25, action_size: int = 3):
+        self.agents = {
+            'trending': PPOAgent(state_size, action_size),
+            'volatile': PPOAgent(state_size, action_size),
+            'sideways': PPOAgent(state_size, action_size),
+            'general': PPOAgent(state_size, action_size),
+            'bullish': PPOAgent(state_size, action_size),
+            'bearish': PPOAgent(state_size, action_size)
+        }
+        self.current_agent = 'general'
+        self.market_condition_detector = self._build_condition_detector(state_size)
+        
+    def _build_condition_detector(self, state_size: int) -> nn.Module:
+        """Build neural network for market condition detection"""
+        return nn.Sequential(
+            nn.Linear(state_size, 64),
+            nn.ReLU(),
+            nn.Linear(64, 32),
+            nn.ReLU(),
+            nn.Linear(32, len(self.agents)),
+            nn.Softmax(dim=-1)
+        )
+    
+    def detect_market_condition(self, state: np.ndarray) -> str:
+        """Detect current market condition using neural network"""
+        with torch.no_grad():
+            state_tensor = torch.FloatTensor(state).unsqueeze(0)
+            condition_probs = self.market_condition_detector(state_tensor)
+            condition_idx = torch.argmax(condition_probs, dim=-1).item()
+            conditions = list(self.agents.keys())
+            return conditions[condition_idx]
+    
+    def select_agent(self, market_condition: str) -> str:
+        """Select appropriate agent based on market condition"""
+        if market_condition in self.agents:
+            self.current_agent = market_condition
+        else:
+            self.current_agent = 'general'
+        return self.current_agent
+    
+    def act(self, state, market_condition: str = 'general'):
+        """Choose action using selected agent"""
+        # Auto-detect market condition if not provided
+        if market_condition == 'general':
+            market_condition = self.detect_market_condition(state)
+        
+        agent_key = self.select_agent(market_condition)
+        return self.agents[agent_key].act(state)
+    
+    def remember(self, state, action, log_prob, reward, done, value, market_condition: str = 'general'):
+        """Store experience in selected agent's memory"""
+        # Auto-detect market condition if not provided
+        if market_condition == 'general':
+            market_condition = self.detect_market_condition(state)
+            
+        agent_key = self.select_agent(market_condition)
+        self.agents[agent_key].remember(state, action, log_prob, reward, done, value)
+    
+    def update(self):
+        """Update all agents"""
+        for agent in self.agents.values():
+            agent.update()
+    
+    def save_models(self, base_path: str):
+        """Save all agent models"""
+        for name, agent in self.agents.items():
+            agent.save_model(f"{base_path}_{name}.pth")
+    
+    def load_models(self, base_path: str):
+        """Load all agent models"""
+        for name, agent in self.agents.items():
+            try:
+                agent.load_model(f"{base_path}_{name}.pth")
+            except FileNotFoundError:
+                logger.warning(f"Model file not found for {name} agent")
+
+class HierarchicalRLAgent:
+    """Hierarchical RL agent for complex trading decisions"""
+    
+    def __init__(self, state_size: int = 25, action_size: int = 3):
+        # High-level policy for strategic decisions
+        self.high_level_agent = PPOAgent(state_size, 6)  # 6 strategies: conservative, moderate, aggressive, momentum, mean_reversion, breakout
+        
+        # Low-level policies for tactical execution
+        self.low_level_agents = {
+            'conservative': PPOAgent(state_size, action_size),
+            'moderate': PPOAgent(state_size, action_size),
+            'aggressive': PPOAgent(state_size, action_size),
+            'momentum': PPOAgent(state_size, action_size),
+            'mean_reversion': PPOAgent(state_size, action_size),
+            'breakout': PPOAgent(state_size, action_size)
+        }
+        
+        # Strategy selector network
+        self.strategy_selector = nn.Sequential(
+            nn.Linear(state_size, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, 6),
+            nn.Softmax(dim=-1)
+        )
+        
+    def act(self, state, high_level_action: Optional[int] = None):
+        """Hierarchical action selection"""
+        if high_level_action is None:
+            # Select high-level strategy using neural network
+            with torch.no_grad():
+                state_tensor = torch.FloatTensor(state).unsqueeze(0)
+                strategy_probs = self.strategy_selector(state_tensor)
+                high_level_action = torch.multinomial(strategy_probs, 1).item()
+        
+        # Select low-level action based on strategy
+        strategy_map = {0: 'conservative', 1: 'moderate', 2: 'aggressive', 
+                       3: 'momentum', 4: 'mean_reversion', 5: 'breakout'}
+        strategy = strategy_map.get(high_level_action, 'moderate')
+        return self.low_level_agents[strategy].act(state)
+    
+    def remember(self, state, action, log_prob, reward, done, value, high_level_action: Optional[int] = None):
+        """Store experience for both levels"""
+        if high_level_action is None:
+            # Select high-level strategy using neural network
+            with torch.no_grad():
+                state_tensor = torch.FloatTensor(state).unsqueeze(0)
+                strategy_probs = self.strategy_selector(state_tensor)
+                high_level_action = torch.multinomial(strategy_probs, 1).item()
+        
+        # Store experience for high-level agent
+        self.high_level_agent.remember(state, high_level_action, log_prob, reward, done, value)
+        
+        # Store experience for low-level agent
+        strategy_map = {0: 'conservative', 1: 'moderate', 2: 'aggressive',
+                       3: 'momentum', 4: 'mean_reversion', 5: 'breakout'}
+        strategy = strategy_map.get(high_level_action, 'moderate')
+        self.low_level_agents[strategy].remember(state, action, log_prob, reward, done, value)
+    
+    def update(self):
+        """Update both high-level and low-level agents"""
+        self.high_level_agent.update()
+        for agent in self.low_level_agents.values():
+            agent.update()
 
 class ContinuousLearningEngine:
     """Production-level continuous learning system"""
@@ -292,6 +578,9 @@ class ContinuousLearningEngine:
 
         # Learning components
         self.rl_agent = None
+        self.multi_agent_system = None
+        self.hierarchical_agent = None
+        self.meta_learning_model = None  # NEW: Meta-learning model
         self.trading_env = None
         self.pattern_analyzer = PatternAnalyzer()
         self.performance_tracker = PerformanceTracker()
@@ -333,6 +622,14 @@ class ContinuousLearningEngine:
             'signal_quality_reward': 0.1 # Quality of signals used
         }
         
+        # Multi-objective optimization parameters
+        self.objective_weights = {
+            'profitability': 0.4,
+            'risk_adjusted_return': 0.3,
+            'drawdown_control': 0.2,
+            'consistency': 0.1
+        }
+        
         # Advanced learning parameters
         self.reward_shaping_enabled = True
         self.risk_penalty_multiplier = 2.0
@@ -364,21 +661,37 @@ class ContinuousLearningEngine:
                 'high': np.random.randn(1000) * 0.02 + 102,
                 'low': np.random.randn(1000) * 0.02 + 98,
                 'close': np.random.randn(1000) * 0.02 + 100,
-                'volume': np.random.randint(10000, 100000, 1000)
+                'volume': np.random.randint(10000, 100000, 1000),
+                'rsi': np.random.randint(30, 70, 1000),
+                'macd': np.random.randn(1000) * 0.5,
+                'sma_ratio': np.random.randn(1000) * 0.05 + 1,
+                'atr': np.random.randn(1000) * 2 + 5,
+                'volatility': np.random.randn(1000) * 0.01 + 0.02
             })
 
             self.trading_env = TradingEnvironment(dummy_data)
-            self.rl_agent = DQNAgent()
+            self.rl_agent = PPOAgent()
+            self.multi_agent_system = MultiAgentSystem()
+            self.hierarchical_agent = HierarchicalRLAgent()
+            self.meta_learning_model = MetaLearningModel()  # NEW: Initialize meta-learning model
 
-            # Try to load existing model
+            # Try to load existing models
             model_path = self.storage_path / "rl_model.pth"
             if model_path.exists():
                 self.rl_agent.load_model(str(model_path))
                 logger.info("Loaded existing RL model")
-
+            
+            multi_agent_path = self.storage_path / "multi_agent"
+            if multi_agent_path.exists():
+                self.multi_agent_system.load_models(str(multi_agent_path))
+                logger.info("Loaded existing multi-agent models")
+                
         except Exception as e:
             logger.error(f"Error initializing RL components: {e}")
             self.rl_agent = None
+            self.multi_agent_system = None
+            self.hierarchical_agent = None
+            self.meta_learning_model = None  # NEW: Set to None on error
             self.trading_env = None
 
     async def learn_from_decision_outcome(self, decision_data: Dict[str, Any], outcome_data: Dict[str, Any]):
@@ -424,20 +737,33 @@ class ContinuousLearningEngine:
             next_state = state  # Simplified - in practice, this would be the next market state
             done = True  # Each decision is treated as a complete episode
             
+            # Get log probability and value for PPO
+            _, log_prob, value = self.rl_agent.act(state)
+            
             # Store experience with enhanced reward
-            self.rl_agent.remember(state, action, reward, next_state, done)
+            self.rl_agent.remember(state, action, log_prob, reward, done, value)
+            
+            # Update multi-agent system if available
+            if self.multi_agent_system:
+                market_condition = decision_data.get('market_context', {}).get('volatility_regime', 'general')
+                _, log_prob_ma, value_ma = self.multi_agent_system.act(state, market_condition)
+                self.multi_agent_system.remember(state, action, log_prob_ma, reward, done, value_ma, market_condition)
+            
+            # Update hierarchical agent if available
+            if self.hierarchical_agent:
+                _, log_prob_ha, value_ha = self.hierarchical_agent.act(state)
+                self.hierarchical_agent.remember(state, action, log_prob_ha, reward, done, value_ha)
             
             # Train if enough experiences
-            if len(self.rl_agent.memory) >= self.learning_config['min_experiences']:
-                self.rl_agent.replay()
-            
-            # Update target network periodically
-            if self.learning_metrics.total_episodes % self.learning_config['target_update_frequency'] == 0:
-                self.rl_agent.update_target_network()
+            if len(self.rl_agent.memory['states']) >= self.learning_config['min_experiences']:
+                self.rl_agent.update()
+                if self.multi_agent_system:
+                    self.multi_agent_system.update()
+                if self.hierarchical_agent:
+                    self.hierarchical_agent.update()
             
             # Update learning metrics
             self.learning_metrics.total_episodes += 1
-            self.learning_metrics.exploration_rate = self.rl_agent.epsilon
             
         except Exception as e:
             logger.error(f"Error in enhanced RL learning step: {e}")
@@ -481,6 +807,33 @@ class ContinuousLearningEngine:
         
         return total_reward
     
+    def _adjust_objective_weights(self, market_conditions: Dict[str, Any]):
+        """Dynamically adjust objective weights based on market conditions"""
+        volatility = market_conditions.get('volatility', 0.02)
+        trend_strength = market_conditions.get('trend_strength', 0.0)
+        volume_profile = market_conditions.get('volume_profile', 0.5)
+        
+        # In high volatility markets, prioritize risk control and consistency
+        if volatility > 0.04:
+            self.objective_weights['profitability'] = 0.2
+            self.objective_weights['risk_adjusted_return'] = 0.4
+            self.objective_weights['drawdown_control'] = 0.3
+            self.objective_weights['consistency'] = 0.1
+        # In trending markets, prioritize profitability
+        elif abs(trend_strength) > 0.3:
+            self.objective_weights['profitability'] = 0.5
+            self.objective_weights['risk_adjusted_return'] = 0.3
+            self.objective_weights['drawdown_control'] = 0.1
+            self.objective_weights['consistency'] = 0.1
+        # In normal markets, balanced approach
+        else:
+            self.objective_weights['profitability'] = 0.4
+            self.objective_weights['risk_adjusted_return'] = 0.3
+            self.objective_weights['drawdown_control'] = 0.2
+            self.objective_weights['consistency'] = 0.1
+            
+        logger.debug(f"Adjusted objective weights: {self.objective_weights}")
+    
     def _calculate_recent_consistency(self) -> float:
         """Calculate recent performance consistency"""
         # Look at last 10 trades for consistency
@@ -509,13 +862,13 @@ class ContinuousLearningEngine:
         
         # Factor in signal diversity and strength
         signals_triggered = decision_data.get('signals_triggered', [])
-        signal_diversity = len(set(s.get('category', '') for s in signals_triggered)) / 5.0  # Max 5 categories
+        signal_count = len(signals_triggered)
+        avg_signal_strength = np.mean([s.get('strength', 0) for s in signals_triggered]) if signals_triggered else 0.0
+        signal_diversity = len(set(s.get('category', '') for s in signals_triggered))
         
-        # Average signal strength
-        avg_strength = np.mean([s.get('strength', 0) for s in signals_triggered]) if signals_triggered else 0.0
-        
+        # Quality score based on multiple factors
         quality_score = (signal_consensus * 0.4 + confidence * 0.3 + 
-                        signal_diversity * 0.2 + avg_strength * 0.1)
+                        (signal_count/10) * 0.2 + (signal_diversity/5) * 0.1)
         
         return quality_score
 
@@ -539,22 +892,42 @@ class ContinuousLearningEngine:
         market_open = current_time.replace(hour=9, minute=15, second=0, microsecond=0)
         time_factor = (current_time - market_open).total_seconds() / (6.5 * 3600)  # 6.5 hour trading day
         
-        # Create enhanced state vector (expanded to 25 features)
+        # Technical indicators from decision data
+        technical_data = decision_data.get('technical_analysis', {})
+        rsi = technical_data.get('rsi', 50) / 100  # Normalize RSI
+        macd = technical_data.get('macd', 0)
+        sma_ratio = technical_data.get('sma_ratio', 1.0)
+        atr = technical_data.get('atr', 0)
+        volatility = technical_data.get('volatility', 0.02)
+        
+        # Create enhanced state vector (25 features)
         state = np.array([
-            signal_consensus,
-            confidence,
-            risk_score,
-            market_context.get('volatility', 0.02),
-            market_context.get('trend_strength', 0.0),
-            market_context.get('stress_level', 0.3),
-            signal_count / 10.0,  # Normalize
-            avg_signal_strength,
-            signal_diversity / 5.0,  # Normalize
-            time_factor,
-            market_context.get('volume_profile', 0.5),
-            market_context.get('sector_performance', 0.0),
-            # Add more features as needed
-        ] + [0.0] * 13, dtype=np.float32)[:25]  # Pad/trim to 25 features
+            signal_consensus,                           # 1. Signal consensus
+            confidence,                                 # 2. Confidence level
+            risk_score,                                 # 3. Risk score
+            market_context.get('volatility', 0.02),     # 4. Market volatility
+            market_context.get('trend_strength', 0.0),  # 5. Trend strength
+            market_context.get('stress_level', 0.3),    # 6. Market stress
+            signal_count / 10.0,                        # 7. Signal count (normalized)
+            avg_signal_strength,                        # 8. Average signal strength
+            signal_diversity / 5.0,                     # 9. Signal diversity (normalized)
+            time_factor,                                # 10. Time factor
+            market_context.get('volume_profile', 0.5),  # 11. Volume profile
+            market_context.get('sector_performance', 0.0), # 12. Sector performance
+            rsi,                                        # 13. RSI (normalized)
+            macd,                                       # 14. MACD
+            sma_ratio,                                  # 15. SMA ratio
+            atr,                                        # 16. ATR
+            volatility,                                 # 17. Volatility
+            market_context.get('market_trend', 0),      # 18. Market trend
+            market_context.get('support_level', 0),     # 19. Support level
+            market_context.get('resistance_level', 0),  # 20. Resistance level
+            market_context.get('liquidity_score', 0.5), # 21. Liquidity score
+            market_context.get('momentum', 0),          # 22. Momentum
+            market_context.get('volume_ratio', 1.0),    # 23. Volume ratio
+            0.0,                                        # 24. Reserved
+            0.0                                         # 25. Reserved
+        ], dtype=np.float32)
         
         return state
 
@@ -711,6 +1084,12 @@ class ContinuousLearningEngine:
             if self.rl_agent and self.learning_metrics.total_episodes % self.learning_config['model_save_frequency'] == 0:
                 model_path = self.storage_path / f"rl_model_v{self.learning_metrics.model_version}.pth"
                 self.rl_agent.save_model(str(model_path))
+                
+                # Save multi-agent models if available
+                if self.multi_agent_system:
+                    multi_agent_path = self.storage_path / f"multi_agent_v{self.learning_metrics.model_version}"
+                    self.multi_agent_system.save_models(str(multi_agent_path))
+                
                 self.learning_metrics.model_version += 1
 
             # Update learning metrics
@@ -808,7 +1187,10 @@ class ContinuousLearningEngine:
             ],
             'signal_weights': self.signal_weights,
             'recommendations': recommendations,
-            'rl_available': RL_AVAILABLE and self.rl_agent is not None
+            'rl_available': RL_AVAILABLE and self.rl_agent is not None,
+            'multi_agent_available': self.multi_agent_system is not None,
+            'hierarchical_agent_available': self.hierarchical_agent is not None,
+            'meta_learning_available': self.meta_learning_model is not None  # NEW: Meta-learning availability
         }
 
 class PatternAnalyzer:

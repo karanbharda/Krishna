@@ -1,6 +1,6 @@
-import json
-import logging
 import time
+import logging
+import json
 from datetime import datetime
 from typing import Dict, Any, List
 import threading
@@ -8,10 +8,14 @@ import os
 import sys
 
 # Fix import paths
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.insert(0, parent_dir)
+import os
+import sys
+import logging
+import time
+import threading
+import json
+from typing import List, Dict, Any
+from datetime import datetime
 
 from .risk_engine import risk_engine
 from data_service_client import get_data_client

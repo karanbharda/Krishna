@@ -20,9 +20,77 @@ import redis
 from mcp_server.tools.sentiment_tool import SentimentTool
 from testindia import Stock
 
+# Import performance attribution system
+try:
+    from utils.performance_attribution import get_performance_attribution_engine
+    PERFORMANCE_ATTRIBUTION_AVAILABLE = True
+except ImportError:
+    logger.warning("Performance attribution system not available")
+    PERFORMANCE_ATTRIBUTION_AVAILABLE = False
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Enhanced logging configuration with alerting
+class AlertingHandler(logging.Handler):
+    """Custom logging handler that sends alerts for critical issues"""
+    
+    def __init__(self):
+        super().__init__()
+        self.alert_threshold = logging.WARNING
+        self.alerts_sent = 0
+        
+    def emit(self, record):
+        """Send alert for critical log records"""
+        try:
+            # Only send alerts for WARNING level and above
+            if record.levelno >= self.alert_threshold:
+                self.send_alert(record)
+        except Exception as e:
+            # Don't let alerting errors break logging
+            pass
+    
+    def send_alert(self, record):
+        """Send alert for critical system events"""
+        try:
+            # In a real implementation, this would integrate with alerting systems
+            # For now, we'll log the alert and increment counter
+            self.alerts_sent += 1
+            logger.info(f"ALERT SENT [{record.levelname}]: {record.getMessage()}")
+            
+            # Save alert to file for persistence
+            self.save_alert_to_file(record)
+            
+        except Exception as e:
+            logger.error(f"Failed to send alert: {e}")
+    
+    def save_alert_to_file(self, record):
+        """Save alert to file for persistence"""
+        try:
+            import json
+            from datetime import datetime
+            
+            alert_data = {
+                "timestamp": datetime.now().isoformat(),
+                "level": record.levelname,
+                "message": record.getMessage(),
+                "module": record.module,
+                "function": record.funcName,
+                "line": record.lineno
+            }
+            
+            # Append to alerts log file
+            with open("alerts.log", "a") as f:
+                f.write(json.dumps(alert_data) + "\n")
+                
+        except Exception as e:
+            logger.error(f"Failed to save alert to file: {e}")
+
+# Add alerting handler to root logger
+alerting_handler = AlertingHandler()
+alerting_handler.setLevel(logging.WARNING)
+logging.getLogger().addHandler(alerting_handler)
 
 # Pydantic models for requests
 class EvaluateBuyRequest(BaseModel):
@@ -265,6 +333,179 @@ async def predict_symbol(request: EvaluateBuyRequest):
         
     except Exception as e:
         logger.error(f"Error predicting for {request.symbol}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/performance/attribution")
+async def get_performance_attribution(period: str = "daily"):
+    """Get performance attribution analysis"""
+    try:
+        if not PERFORMANCE_ATTRIBUTION_AVAILABLE:
+            raise HTTPException(status_code=500, detail="Performance attribution system not available")
+        
+        # Get performance attribution engine
+        engine = get_performance_attribution_engine()
+        
+        # For demo purposes, create sample data
+        # In a real implementation, this would come from actual portfolio and market data
+        portfolio_data = {
+            "total_value": 1000000,
+            "holdings": {
+                "RELIANCE.NS": {"market_value": 400000, "sector": "Energy"},
+                "TCS.NS": {"market_value": 300000, "sector": "IT"},
+                "INFY.NS": {"market_value": 200000, "sector": "IT"},
+                "HDFCBANK.NS": {"market_value": 100000, "sector": "Banking"}
+            },
+            "portfolio_beta": 1.1
+        }
+        
+        market_data = {
+            "market_return": 0.005,  # 0.5% market return
+            "sector_returns": {
+                "Energy": 0.008,
+                "IT": 0.003,
+                "Banking": 0.002
+            },
+            "style_factors": {
+                "value": 0.0005,
+                "momentum": 0.0003,
+                "quality": 0.0002,
+                "size": -0.0001
+            },
+            "aggregate_sentiment": 0.2
+        }
+        
+        # Analyze performance
+        attribution = engine.analyze_performance(portfolio_data, market_data, period)
+        
+        # Get report
+        report = engine.get_attribution_report(period)
+        
+        return {
+            "status": "success",
+            "attribution": attribution.__dict__,
+            "report": report
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in performance attribution: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/performance/top-drivers")
+async def get_top_performance_drivers(limit: int = 5):
+    """Get top performance drivers"""
+    try:
+        if not PERFORMANCE_ATTRIBUTION_AVAILABLE:
+            raise HTTPException(status_code=500, detail="Performance attribution system not available")
+        
+        # Get top drivers
+        top_drivers = get_top_performance_drivers(limit)
+        
+        return {
+            "status": "success",
+            "top_drivers": top_drivers
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting top performance drivers: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/alerts/recent")
+async def get_recent_alerts(hours: int = 24, severity: str = None):
+    """Get recent system alerts"""
+    try:
+        # Import alerting system
+        from utils.alerting_system import get_alerting_system
+        alerting_system = get_alerting_system()
+        
+        # Get recent alerts
+        alerts = alerting_system.get_recent_alerts(hours, severity)
+        
+        return {
+            "status": "success",
+            "alerts": alerts,
+            "count": len(alerts)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting recent alerts: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/alerts/statistics")
+async def get_alert_statistics():
+    """Get alert statistics"""
+    try:
+        # Import alerting system
+        from utils.alerting_system import get_alerting_system
+        alerting_system = get_alerting_system()
+        
+        # Get statistics
+        stats = alerting_system.get_alert_statistics()
+        
+        return {
+            "status": "success",
+            "statistics": stats
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting alert statistics: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/tools/performance_analysis")
+async def performance_analysis(request: dict):
+    """Perform comprehensive performance analysis with attribution"""
+    try:
+        # Import ML interface
+        from ml_interface import get_unified_ml_analysis
+        
+        # Extract data from request
+        symbol = request.get("symbol", "RELIANCE.NS")
+        portfolio_data = request.get("portfolio_data", {})
+        market_data = request.get("market_data", {})
+        
+        # Create sample data if not provided
+        if not portfolio_data:
+            portfolio_data = {
+                "total_value": 1000000,
+                "holdings": {
+                    "RELIANCE.NS": {"market_value": 400000, "sector": "Energy"},
+                    "TCS.NS": {"market_value": 300000, "sector": "IT"},
+                    "INFY.NS": {"market_value": 200000, "sector": "IT"},
+                    "HDFCBANK.NS": {"market_value": 100000, "sector": "Banking"}
+                },
+                "portfolio_beta": 1.1
+            }
+        
+        if not market_data:
+            market_data = {
+                "market_return": 0.005,  # 0.5% market return
+                "sector_returns": {
+                    "Energy": 0.008,
+                    "IT": 0.003,
+                    "Banking": 0.002
+                },
+                "style_factors": {
+                    "value": 0.0005,
+                    "momentum": 0.0003,
+                    "quality": 0.0002,
+                    "size": -0.0001
+                },
+                "aggregate_sentiment": 0.2
+            }
+        
+        # Perform unified analysis
+        analysis = get_unified_ml_analysis(
+            data={"symbol": symbol, "price": 2500, "volume": 100000, "change": 25, "change_pct": 1.0},
+            portfolio_data=portfolio_data,
+            market_data=market_data
+        )
+        
+        return {
+            "status": "success",
+            "analysis": analysis
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in performance analysis: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.websocket("/ws/news")

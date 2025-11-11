@@ -778,6 +778,58 @@ class ProfessionalSellLogic:
             "active_stop": active_stop
         }
 
+    def _get_stop_loss_levels(self, position_metrics: PositionMetrics) -> Dict[str, float]:
+        """
+        Calculate multiple stop loss levels for different market conditions
+        """
+        # Base stop loss from position metrics
+        base_stop_loss = position_metrics.db_stop_loss if position_metrics.db_stop_loss is not None else (
+            position_metrics.entry_price * (1 - self.stop_loss_pct)
+        )
+        
+        # Volatility-adjusted stop loss
+        volatility_stop_loss = position_metrics.entry_price - (position_metrics.atr * self.atr_multiplier)
+        
+        # Trailing stop based on highest price achieved
+        trailing_stop = position_metrics.highest_price_achieved * (1 - self.trailing_stop_pct)
+        
+        # Determine active stop based on market conditions
+        active_stop = base_stop_loss  # Default to base stop loss
+        
+        return {
+            "base_stop": base_stop_loss,
+            "volatility_stop": volatility_stop_loss,
+            "trailing_stop": trailing_stop,
+            "active_stop": active_stop
+        }
+
+    def _get_take_profit_levels(self, position_metrics: PositionMetrics) -> Dict[str, float]:
+        """
+        Calculate multiple take profit levels for different market conditions
+        """
+        # Base take profit from position metrics
+        base_take_profit = position_metrics.db_target_price if position_metrics.db_target_price is not None else (
+            position_metrics.entry_price * (1 + self.take_profit_pct)
+        )
+        
+        # Risk-reward ratio based take profit
+        risk_reward_take_profit = position_metrics.entry_price + (
+            abs(position_metrics.entry_price - self._get_stop_loss_levels(position_metrics)["active_stop"]) * self.risk_reward_ratio
+        )
+        
+        # Technical resistance based take profit
+        technical_take_profit = position_metrics.resistance_level
+        
+        # Determine active take profit based on market conditions
+        active_take_profit = base_take_profit  # Default to base take profit
+        
+        return {
+            "base_take_profit": base_take_profit,
+            "risk_reward_take_profit": risk_reward_take_profit,
+            "technical_take_profit": technical_take_profit,
+            "active_take_profit": active_take_profit
+        }
+
     def _check_cross_category_confirmation(self, signals: List[SellSignal]) -> bool:
         """Cross-category confirmation: At least 2 categories must align"""
         # With combined signals, we check if at least 2 categories have triggered signals
