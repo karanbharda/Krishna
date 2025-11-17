@@ -1,0 +1,635 @@
+{
+  "price_history": {},
+  "price_history_metadata": {
+    "data_source": "none",
+    "rows": 0
+  },
+  "info": {},
+  "key_metrics": {},
+  "financials": {},
+  "quarterly_financials": {},
+  "balance_sheet": {},
+  "quarterly_balance_sheet": {},
+  "cashflow": {},
+  "quarterly_cashflow": {},
+  "recommendations": {},
+  "major_holders": {},
+  "earnings": {},
+  "quarterly_earnings": null,
+  "splits": {},
+  "dividends": {},
+  "news": [
+    {
+      "id": "ca1d13c4-53fe-34ca-9f6d-92e36bc9e645",
+      "content": {
+        "id": "ca1d13c4-53fe-34ca-9f6d-92e36bc9e645",
+        "contentType": "STORY",
+        "title": "Indian Refiner Reliance Offers Rare Sale of Middle East Crude",
+        "description": "",
+        "summary": "Reliance Industries is making a rare spot sale of Middle Eastern and Iraqi crude as it pivots away from Russian oil following new U.S. sanctions.",
+        "pubDate": "2025-11-06T10:45:00Z",
+        "displayTime": "2025-11-06T10:45:00Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/oilprice.com/d2a84be27d8d32933d5084397a8473b5",
+          "originalWidth": 718,
+          "originalHeight": 300,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/mLHuPjWt6zwnDb8g_TMLyQ--~B/aD0zMDA7dz03MTg7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/oilprice.com/d2a84be27d8d32933d5084397a8473b5",
+              "width": 718,
+              "height": 300,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/pj0hJrMbY1wjb73Fr5zmdw--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/oilprice.com/d2a84be27d8d32933d5084397a8473b5",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Oilprice.com",
+          "url": "http://oilprice.com"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/indian-refiner-reliance-offers-rare-104500537.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/indian-refiner-reliance-offers-rare-104500537.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "77f694db-8b1d-377a-84ad-23ff2df629e3",
+      "content": {
+        "id": "77f694db-8b1d-377a-84ad-23ff2df629e3",
+        "contentType": "VIDEO",
+        "title": "Top Indian film producer Jyoti Deshpande thinks those who don't embrace AI could get replaced",
+        "description": "Jyoti Deshpande, President of Media and Content Business at Reliance Industries, shares with Fortune Global Forum why she believes AI won\u2019t replace people, but those who ignore it might be left behind.",
+        "summary": "Jyoti Deshpande, President of Media and Content Business at Reliance Industries, shares with Fortune Global Forum why she believes AI won\u2019t replace people, but those who ignore it might be left behind.",
+        "pubDate": "2025-11-05T01:00:13Z",
+        "displayTime": "",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/fortune_video_333/290ad8f4f2754470e063a7ca881fc7ac",
+          "originalWidth": 1280,
+          "originalHeight": 720,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/wCssFaERxAlScR1IRjV3MQ--~B/aD03MjA7dz0xMjgwO2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/fortune_video_333/290ad8f4f2754470e063a7ca881fc7ac",
+              "width": 1280,
+              "height": 720,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/CWRMFRR5Z7vKVsqs46JxSQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/fortune_video_333/290ad8f4f2754470e063a7ca881fc7ac",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Fortune",
+          "url": "https://fortune.com/videos/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/video/top-indian-film-producer-jyoti-010013437.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/video/top-indian-film-producer-jyoti-010013437.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "49389ab0-0977-3659-a7bd-b7a555da89d8",
+      "content": {
+        "id": "49389ab0-0977-3659-a7bd-b7a555da89d8",
+        "contentType": "STORY",
+        "title": "What Could Shift the Narrative for Reliance Industries After Recent Analyst Upgrades?",
+        "description": "",
+        "summary": "Reliance Industries has seen a modest upward revision in its fair value estimate, rising from \u20b91,664.47 to \u20b91,685.61. This shift reflects changing analyst expectations, influenced by evolving market sentiment and improving company fundamentals. Read on to find out how you can stay informed about future shifts in the Reliance Industries stock narrative as they occur. Stay updated as the Fair Value for Reliance Industries shifts by adding it to your watchlist or portfolio. Alternatively,...",
+        "pubDate": "2025-11-04T18:09:30Z",
+        "displayTime": "2025-11-04T18:09:30Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/simply_wall_st__316/0485d0c1021bfa3ad2518a171bbc021d",
+          "originalWidth": 1194,
+          "originalHeight": 432,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/afwZ9FGjLmcR0P9A0eObAg--~B/aD00MzI7dz0xMTk0O2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/simply_wall_st__316/0485d0c1021bfa3ad2518a171bbc021d",
+              "width": 1194,
+              "height": 432,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/hgDWMeCKA94KLZ_d6_T8pg--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/simply_wall_st__316/0485d0c1021bfa3ad2518a171bbc021d",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Simply Wall St.",
+          "url": "https://simplywall.st/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/could-shift-narrative-reliance-industries-180930701.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/could-shift-narrative-reliance-industries-180930701.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "315fc40b-5ce8-394b-bb75-46ca8ff3d2fb",
+      "content": {
+        "id": "315fc40b-5ce8-394b-bb75-46ca8ff3d2fb",
+        "contentType": "STORY",
+        "title": "Google partners with Ambani\u2019s Reliance to offer free AI Pro access to millions of Jio users in India",
+        "description": "",
+        "summary": "U.S. tech giants increasingly view India as the next big frontier \u2014 a place to gather diverse data, refine models, and test AI use cases that could later scale across other emerging markets.",
+        "pubDate": "2025-10-30T14:06:19Z",
+        "displayTime": "2025-10-30T14:06:19Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/techcrunch_finance_785/2a9271b8c6fdc2287bd4da401bb41cfc",
+          "originalWidth": 1920,
+          "originalHeight": 1280,
+          "caption": "Google Gemini",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/llbHBfTGVdWgYqQVSHwQ.Q--~B/aD0xMjgwO3c9MTkyMDthcHBpZD15dGFjaHlvbg--/https://media.zenfs.com/en/techcrunch_finance_785/2a9271b8c6fdc2287bd4da401bb41cfc",
+              "width": 1920,
+              "height": 1280,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/ensimy1mcCMWo555QLRVBQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/techcrunch_finance_785/2a9271b8c6fdc2287bd4da401bb41cfc",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "TechCrunch",
+          "url": "https://techcrunch.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/google-partners-ambani-reliance-offer-140619419.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/google-partners-ambani-reliance-offer-140619419.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "40466be5-4dc6-3338-9697-266d54278f63",
+      "content": {
+        "id": "40466be5-4dc6-3338-9697-266d54278f63",
+        "contentType": "STORY",
+        "title": "Russian Oil Tanker Turns Back Under U.S. Sanctions Threat",
+        "description": "",
+        "summary": "A Russian oil tanker bound for India has reversed course in the Baltic Sea following new U.S. sanctions on Rosneft and Lukoil, disrupting crude flows but raising doubts about the long-term impact on global oil markets.",
+        "pubDate": "2025-10-29T09:30:00Z",
+        "displayTime": "2025-10-29T09:30:00Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/oilprice.com/685c6adbebdc2eab1fafd266ecc8b1ef",
+          "originalWidth": 718,
+          "originalHeight": 300,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/GPdUNT9p325fYUZVl5HpZA--~B/aD0zMDA7dz03MTg7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/oilprice.com/685c6adbebdc2eab1fafd266ecc8b1ef",
+              "width": 718,
+              "height": 300,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/WSfvLT5OkYyE9ldNCFq1Qg--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/oilprice.com/685c6adbebdc2eab1fafd266ecc8b1ef",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Oilprice.com",
+          "url": "http://oilprice.com"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/russian-oil-tanker-turns-back-093000237.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/russian-oil-tanker-turns-back-093000237.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "08633ebf-9a1d-3728-badd-8017cdcf9d24",
+      "content": {
+        "id": "08633ebf-9a1d-3728-badd-8017cdcf9d24",
+        "contentType": "STORY",
+        "title": "Indian Refiners Pause Russian Oil Orders as U.S. Sanctions Bite",
+        "description": "",
+        "summary": "Indian refiners have suspended new Russian crude orders amid tightening U.S. sanctions, awaiting government guidance on how to proceed without violating payment restrictions.",
+        "pubDate": "2025-10-28T09:00:00Z",
+        "displayTime": "2025-10-28T09:00:00Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/oilprice.com/4ab96db38087fc77c9377934b2445383",
+          "originalWidth": 718,
+          "originalHeight": 300,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/e91m0vUcZXEnoBTDUWHmVA--~B/aD0zMDA7dz03MTg7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/oilprice.com/4ab96db38087fc77c9377934b2445383",
+              "width": 718,
+              "height": 300,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/.5IgHOxP46d5zGXJqs7rWg--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/oilprice.com/4ab96db38087fc77c9377934b2445383",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Oilprice.com",
+          "url": "http://oilprice.com"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/indian-refiners-pause-russian-oil-090000221.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/indian-refiners-pause-russian-oil-090000221.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "4044d105-2a60-3392-84fa-bbc0aa79b9c4",
+      "content": {
+        "id": "4044d105-2a60-3392-84fa-bbc0aa79b9c4",
+        "contentType": "STORY",
+        "title": "Asia to spearhead global polypropylene capacity additions until 2030",
+        "description": "",
+        "summary": "Rapid urbanisation, expanding middle\u2011class consumption and ongoing industrialisation across key Asian markets are accelerating demand.",
+        "pubDate": "2025-10-27T16:08:25Z",
+        "displayTime": "2025-10-27T16:08:25Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/offshore_technology_431/4d9f506fa0d3d5faa3a1af51c43b125c",
+          "originalWidth": 1000,
+          "originalHeight": 750,
+          "caption": "The highest capacity addition in the region is expected from a major project in India",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/g6cjfuVUmkx5fUqgiAkiHQ--~B/aD03NTA7dz0xMDAwO2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/offshore_technology_431/4d9f506fa0d3d5faa3a1af51c43b125c",
+              "width": 1000,
+              "height": 750,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/LowyJiuvH6reoR0S3XbmVw--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/offshore_technology_431/4d9f506fa0d3d5faa3a1af51c43b125c",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Offshore Technology",
+          "url": "https://www.globaldata.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://www.offshore-technology.com/analyst-comment/asia-global-polypropylene-capacity-additions-2030/",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/asia-spearhead-global-polypropylene-capacity-160825164.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "52d5a171-be06-33c4-9c88-4a32a9d153f0",
+      "content": {
+        "id": "52d5a171-be06-33c4-9c88-4a32a9d153f0",
+        "contentType": "STORY",
+        "title": "Reliance races to get battery gear orders out of China ahead of export curbs, sources say",
+        "description": "",
+        "summary": "By Lewis Jackson and Aditi Shah BEIJING/NEW DELHI (Reuters) -Indian billionaire Mukesh Ambani's Reliance Industries is rushing to get its orders of battery components out of China ahead of new export",
+        "pubDate": "2025-10-27T01:59:51Z",
+        "displayTime": "2025-10-27T01:59:51Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/reuters.com/0d4103af1d41a540acee2e1c82edf6f1",
+          "originalWidth": 800,
+          "originalHeight": 503,
+          "caption": "FILE PHOTO: Reliance logo is seen in this illustration taken, August 13, 2024. REUTERS/Dado Ruvic/Illustration/File Photo",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/Q7WB8Okj.S9qb0emY5Fqfg--~B/aD01MDM7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/0d4103af1d41a540acee2e1c82edf6f1",
+              "width": 800,
+              "height": 503,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/Bv23if6V82SMR.anoQFIBQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/0d4103af1d41a540acee2e1c82edf6f1",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Reuters",
+          "url": "https://www.reuters.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://sg.finance.yahoo.com/news/reliance-races-battery-gear-orders-015951179.html",
+          "site": "finance",
+          "region": "SG",
+          "lang": "en-SG"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/reliance-races-battery-gear-orders-015951179.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "4fa5302c-37ae-3c2b-a52d-77f60583f0fd",
+      "content": {
+        "id": "4fa5302c-37ae-3c2b-a52d-77f60583f0fd",
+        "contentType": "STORY",
+        "title": "Sanctioned Russian Oil Will Find New Ways to Flow",
+        "description": "",
+        "summary": "It will take months for Russia to find ways to evade new U.S. sanctions.  Brent crude rose by around $5 this week to $66 a barrel after the U.S. sanctioned Russian oil producers Rosneft and Lukoil.  The move will disrupt supply to Moscow\u2019s top energy customers, China and India.",
+        "pubDate": "2025-10-25T09:30:00Z",
+        "displayTime": "2025-10-25T09:30:00Z",
+        "isHosted": false,
+        "bypassModal": false,
+        "previewUrl": "https://finance.yahoo.com/m/4fa5302c-37ae-3c2b-a52d-77f60583f0fd/sanctioned-russian-oil-will.html",
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/wsj.com/1bef9c10adacd4a805847ebde3ba9dae",
+          "originalWidth": 1280,
+          "originalHeight": 640,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/jCjlFcdNMku9osaW4sT9Fw--~B/aD02NDA7dz0xMjgwO2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/wsj.com/1bef9c10adacd4a805847ebde3ba9dae",
+              "width": 1280,
+              "height": 640,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/n1Pr3CDDqdLb_pdtf2E_0A--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/wsj.com/1bef9c10adacd4a805847ebde3ba9dae",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "The Wall Street Journal",
+          "url": "http://www.wsj.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://www.wsj.com/finance/commodities-futures/sanctioned-russian-oil-will-find-new-ways-to-flow-652d0601?siteid=yhoof2&yptr=yahoo",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": null,
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "876982cf-8e05-3c64-bb89-fb9281c1aa69",
+      "content": {
+        "id": "876982cf-8e05-3c64-bb89-fb9281c1aa69",
+        "contentType": "STORY",
+        "title": "India poised to sharply cut Russian oil imports after sanctions, sources say",
+        "description": "",
+        "summary": "By Nidhi Verma NEW DELHI (Reuters) -Indian refiners are poised to sharply curtail imports of Russian oil to comply with new U.S. sanctions on two top Russian producers, industry sources said on",
+        "pubDate": "2025-10-23T14:56:17Z",
+        "displayTime": "2025-10-23T14:56:17Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/reuters.com/e42f84db613a36ecfd337805a84484bb",
+          "originalWidth": 800,
+          "originalHeight": 532,
+          "caption": "A worker walks atop a tanker wagon to check the freight level at an oil terminal on the outskirts of Kolkata, India in this November 27, 2013.  REUTERS/Rupak De Chowdhuri/File Photo",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/ScaH9TDd0OaVAO.b0g1FZw--~B/aD01MzI7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/e42f84db613a36ecfd337805a84484bb",
+              "width": 800,
+              "height": 532,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/Qf3gNwpU4jCojcNQ.SE9PQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/e42f84db613a36ecfd337805a84484bb",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Reuters",
+          "url": "https://www.reuters.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://www.yahoo.com/news/articles/india-poised-sharply-cut-russian-145617026.html",
+          "site": "news",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://www.yahoo.com/news/articles/india-poised-sharply-cut-russian-145617026.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    }
+  ],
+  "metadata": {
+    "symbol": "RELIANCE.NS",
+    "fetch_timestamp": "2025-11-17T13:10:58.467504",
+    "period": "2y",
+    "data_source": "yfinance",
+    "has_news": true
+  }
+}

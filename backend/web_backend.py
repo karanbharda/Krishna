@@ -57,6 +57,7 @@ from typing import Dict, Any, Optional
 from pathlib import Path
 
 # Import new components for live trading
+# Moved after path setup to ensure imports work correctly
 try:
     from portfolio_manager import DualPortfolioManager
     from dhan_client import DhanAPIClient

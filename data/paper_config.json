@@ -1,11 +1,11 @@
 {
   "mode": "paper",
-  "riskLevel": "CUSTOM",
-  "stop_loss_pct": 0.02,
-  "target_profit_pct": 0.02,
+  "riskLevel": "MEDIUM",
+  "stop_loss_pct": 0.05,
+  "target_profit_pct": 0.08,
   "use_risk_reward": true,
   "risk_reward_ratio": 2.0,
-  "max_capital_per_trade": 0.02,
+  "max_capital_per_trade": 0.25,
   "max_trade_limit": 150,
-  "created_at": "2025-11-11T11:21:00.730946"
+  "created_at": "2025-11-17T13:05:59.076711"
 }
