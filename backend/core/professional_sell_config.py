@@ -6,6 +6,9 @@ Centralized configuration for professional-grade sell logic
 import json
 import os
 from typing import Dict
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ProfessionalSellConfig:
     """
@@ -21,7 +24,7 @@ class ProfessionalSellConfig:
             with open(config_path, 'r') as f:
                 return json.load(f)
         except Exception as e:
-            print(f"⚠️ Failed to load live_config.json: {e}")
+            logger.warning(f"⚠️ Failed to load live_config.json: {e}")
             return {}
     
     @staticmethod
@@ -111,25 +114,25 @@ class ProfessionalSellConfig:
         # Check required keys
         for key in required_keys:
             if key not in config:
-                print(f"❌ Missing required config key: {key}")
+                logger.error(f"❌ Missing required config key: {key}")
                 return False
         
         # Validate ranges
         if not (0.0 <= config["min_sell_confidence"] <= 1.0):
-            print("❌ min_sell_confidence must be between 0.0 and 1.0")
+            logger.error("❌ min_sell_confidence must be between 0.0 and 1.0")
             return False
         
         if not (0.0 <= config["stop_loss_pct"] <= 0.20):
-            print("❌ stop_loss_pct must be between 0.0 and 0.20 (20%)")
+            logger.error("❌ stop_loss_pct must be between 0.0 and 0.20 (20%)")
             return False
         
         if config["conservative_exit_threshold"] >= config["full_exit_threshold"]:
-            print("❌ conservative_exit_threshold must be less than full_exit_threshold")
+            logger.error("❌ conservative_exit_threshold must be less than full_exit_threshold")
             return False
         
         if config["partial_exit_threshold"] >= config["aggressive_exit_threshold"]:
-            print("❌ partial_exit_threshold must be less than aggressive_exit_threshold")
+            logger.error("❌ partial_exit_threshold must be less than aggressive_exit_threshold")
             return False
         
-        print("✅ Professional sell configuration validated successfully")
+        logger.info("✅ Professional sell configuration validated successfully")
         return True

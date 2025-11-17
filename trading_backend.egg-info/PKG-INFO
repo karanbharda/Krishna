@@ -1,8 +1,0 @@
-Metadata-Version: 2.4
-Name: trading-backend
-Version: 0.1
-Requires-Dist: sqlalchemy>=2.0.0
-Requires-Dist: alembic>=1.12.0
-Requires-Dist: aiosqlite>=0.19.0
-Requires-Dist: langgraph>=0.0.15
-Dynamic: requires-dist

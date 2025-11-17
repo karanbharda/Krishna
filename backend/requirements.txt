@@ -71,6 +71,9 @@ ta>=0.10.2
 dataclasses-json>=0.6.0
 typing-extensions>=4.8.0
 
+# FastMCP and related dependencies
+fastmcp>=0.1.0
+
 # Optional: Additional ML libraries (install if needed)
 # mcp>=1.0.0  # Install when MCP SDK is available
 # tensorflow>=2.13.0

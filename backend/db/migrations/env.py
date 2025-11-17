@@ -8,10 +8,12 @@ from sqlalchemy import pool
 from alembic import context
 
 # Add the parent directory to sys.path to make the backend package importable
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
 
 # Import the SQLAlchemy declarative Base
-from backend.db.database import Base
+from db.database import Base
 
 # This is the Alembic Config object
 config = context.config

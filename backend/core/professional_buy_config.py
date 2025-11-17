@@ -1,5 +1,8 @@
 import json
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ProfessionalBuyConfig:
     """Configuration for Professional Buy Logic"""
@@ -13,7 +16,7 @@ class ProfessionalBuyConfig:
             with open(config_path, 'r') as f:
                 return json.load(f)
         except Exception as e:
-            print(f"⚠️ Failed to load live_config.json: {e}")
+            logger.warning(f"⚠️ Failed to load live_config.json: {e}")
             return {}
     
     @staticmethod
