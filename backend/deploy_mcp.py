@@ -23,67 +23,69 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
 class MCPDeploymentManager:
     """Production deployment manager for MCP integration"""
-    
+
     def __init__(self):
         self.project_root = Path(__file__).parent
         self.venv_path = self.project_root / ".venv"
         self.requirements_file = self.project_root / "requirements.txt"
-        
+
     def deploy(self):
         """Execute complete deployment pipeline"""
         logger.info("🚀 Starting MCP Production Deployment")
-        
+
         try:
             # Step 1: Environment setup
             self.setup_environment()
-            
+
             # Step 2: Install dependencies
             self.install_dependencies()
-            
-            # Step 3: Setup Ollama (if needed)
-            self.setup_ollama()
-            
+
+            # Step 3: Setup Groq API (if needed)
+            self.setup_groq_api()
+
             # Step 4: Configure services
             self.configure_services()
-            
+
             # Step 5: Run health checks
             self.run_health_checks()
-            
+
             # Step 6: Start services
             self.start_services()
-            
+
             logger.info("✅ MCP deployment completed successfully!")
-            
+
         except Exception as e:
             logger.error(f"❌ Deployment failed: {e}")
             sys.exit(1)
-    
+
     def setup_environment(self):
         """Setup Python virtual environment"""
         logger.info("🔧 Setting up Python environment...")
-        
+
         # Check Python version
         python_version = sys.version_info
         if python_version.major < 3 or python_version.minor < 8:
             raise RuntimeError("Python 3.8+ required")
-        
-        logger.info(f"✅ Python {python_version.major}.{python_version.minor} detected")
-        
+
+        logger.info(
+            f"✅ Python {python_version.major}.{python_version.minor} detected")
+
         # Create virtual environment if it doesn't exist
         if not self.venv_path.exists():
             logger.info("Creating virtual environment...")
             subprocess.run([
                 sys.executable, "-m", "venv", str(self.venv_path)
             ], check=True)
-        
+
         logger.info("✅ Virtual environment ready")
-    
+
     def install_dependencies(self):
         """Install Python dependencies"""
         logger.info("📦 Installing dependencies...")
-        
+
         # Get pip executable
         if os.name == 'nt':  # Windows
             pip_exe = self.venv_path / "Scripts" / "pip.exe"
@@ -91,19 +93,20 @@ class MCPDeploymentManager:
         else:  # Unix/Linux/macOS
             pip_exe = self.venv_path / "bin" / "pip"
             python_exe = self.venv_path / "bin" / "python"
-        
+
         # Upgrade pip
         subprocess.run([
             str(python_exe), "-m", "pip", "install", "--upgrade", "pip"
         ], check=True)
-        
+
         # Install requirements
         if self.requirements_file.exists():
             subprocess.run([
                 str(pip_exe), "install", "-r", str(self.requirements_file)
             ], check=True)
         else:
-            logger.warning("⚠️ requirements.txt not found, installing core dependencies")
+            logger.warning(
+                "⚠️ requirements.txt not found, installing core dependencies")
             core_deps = [
                 "fastapi>=0.104.0",
                 "uvicorn[standard]>=0.24.0",
@@ -116,14 +119,15 @@ class MCPDeploymentManager:
             subprocess.run([
                 str(pip_exe), "install"
             ] + core_deps, check=True)
-        
+
         # Install optional dependencies with error handling
         optional_deps = [
             ("fyers-apiv3", "Fyers API integration"),
             ("prometheus-client", "Monitoring"),
-            ("psutil", "System monitoring")
+            ("psutil", "System monitoring"),
+            ("groq", "Groq API integration")
         ]
-        
+
         for dep, description in optional_deps:
             try:
                 subprocess.run([
@@ -131,60 +135,47 @@ class MCPDeploymentManager:
                 ], check=True, capture_output=True)
                 logger.info(f"✅ Installed {dep} ({description})")
             except subprocess.CalledProcessError:
-                logger.warning(f"⚠️ Failed to install {dep} - {description} may not work")
-        
+                logger.warning(
+                    f"⚠️ Failed to install {dep} - {description} may not work")
+
         logger.info("✅ Dependencies installed")
-    
-    def setup_ollama(self):
-        """Setup Ollama for Llama AI integration"""
-        logger.info("🦙 Setting up Ollama...")
-        
-        # Check if Ollama is installed
-        try:
-            result = subprocess.run(["ollama", "--version"], 
-                                  capture_output=True, text=True)
-            if result.returncode == 0:
-                logger.info(f"✅ Ollama already installed: {result.stdout.strip()}")
-            else:
-                raise FileNotFoundError()
-        except FileNotFoundError:
-            logger.info("📥 Installing Ollama...")
-            
-            # Install Ollama based on OS
-            if os.name == 'nt':  # Windows
-                logger.info("Please install Ollama manually from: https://ollama.ai/download")
-                logger.info("After installation, run: ollama pull llama3.1:8b")
-            else:  # Unix/Linux/macOS
-                subprocess.run([
-                    "curl", "-fsSL", "https://ollama.ai/install.sh"
-                ], check=True)
-        
-        # Pull required model
-        try:
-            logger.info("📥 Pulling Llama 3.1 model...")
-            subprocess.run(["ollama", "pull", "llama3.1:8b"], 
-                          check=True, timeout=300)
-            logger.info("✅ Llama model ready")
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-            logger.warning("⚠️ Failed to pull Llama model - manual setup required")
-    
+
+    def setup_groq_api(self):
+        """Setup Groq API integration"""
+        logger.info("🤖 Setting up Groq API...")
+
+        # Check if Groq API key is configured
+        from dotenv import load_dotenv
+        import os
+        project_root = os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__)))
+        load_dotenv(os.path.join(project_root, '.env'))
+
+        groq_api_key = os.getenv('GROQ_API_KEY')
+        if not groq_api_key:
+            logger.warning(
+                "⚠️ GROQ_API_KEY not found in environment variables")
+            logger.info("Please set your Groq API key in the .env file")
+        else:
+            logger.info("✅ Groq API key configured")
+
     def configure_services(self):
         """Configure system services and environment"""
         logger.info("⚙️ Configuring services...")
-        
+
         # Create data directories
         data_dirs = [
             "data",
-            "logs", 
+            "logs",
             "mcp_server/logs",
             "reports"
         ]
-        
+
         for dir_name in data_dirs:
             dir_path = self.project_root / dir_name
             dir_path.mkdir(exist_ok=True)
             logger.info(f"✅ Created directory: {dir_name}")
-        
+
         # Create environment template if not exists
         env_file = self.project_root / ".env"
         if not env_file.exists():
@@ -197,9 +188,10 @@ FYERS_ACCESS_TOKEN=your_access_token_here
 DHAN_CLIENT_ID=your_client_id_here
 DHAN_ACCESS_TOKEN=your_access_token_here
 
-# Llama AI Configuration
-LLAMA_BASE_URL=http://localhost:11434
-LLAMA_MODEL=llama3.1:8b
+# Groq API Configuration
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_BASE_URL=https://api.groq.com/openai/v1
+GROQ_MODEL=llama-3.1-8b-instant
 
 # MCP Server Configuration
 MCP_MONITORING_PORT=8002
@@ -211,22 +203,23 @@ DEFAULT_STARTING_BALANCE=10000
 """
             with open(env_file, 'w') as f:
                 f.write(env_template)
-            logger.info("✅ Created .env template - please configure your API keys")
-        
+            logger.info(
+                "✅ Created .env template - please configure your API keys")
+
         logger.info("✅ Services configured")
-    
+
     def run_health_checks(self):
         """Run comprehensive health checks"""
         logger.info("🏥 Running health checks...")
-        
+
         checks = [
             ("Python Environment", self.check_python_env),
             ("Dependencies", self.check_dependencies),
-            ("Ollama Service", self.check_ollama),
+            ("Groq API", self.check_groq_api),
             ("API Credentials", self.check_credentials),
             ("File Permissions", self.check_permissions)
         ]
-        
+
         for check_name, check_func in checks:
             try:
                 result = check_func()
@@ -236,11 +229,11 @@ DEFAULT_STARTING_BALANCE=10000
                     logger.warning(f"⚠️ {check_name}: Issues detected")
             except Exception as e:
                 logger.error(f"❌ {check_name}: {e}")
-    
+
     def check_python_env(self) -> bool:
         """Check Python environment"""
         return self.venv_path.exists() and (self.venv_path / "pyvenv.cfg").exists()
-    
+
     def check_dependencies(self) -> bool:
         """Check critical dependencies"""
         try:
@@ -252,24 +245,42 @@ DEFAULT_STARTING_BALANCE=10000
             return True
         except ImportError:
             return False
-    
-    def check_ollama(self) -> bool:
-        """Check Ollama service"""
+
+    def check_groq_api(self) -> bool:
+        """Check Groq API service"""
         try:
+            from dotenv import load_dotenv
+            import os
+            project_root = os.path.dirname(
+                os.path.dirname(os.path.abspath(__file__)))
+            load_dotenv(os.path.join(project_root, '.env'))
+
+            groq_api_key = os.getenv('GROQ_API_KEY')
+            if not groq_api_key:
+                return False
+
             import requests
-            response = requests.get("http://localhost:11434/api/tags", timeout=5)
+            headers = {
+                "Authorization": f"Bearer {groq_api_key}",
+                "Content-Type": "application/json"
+            }
+            response = requests.get(
+                "https://api.groq.com/openai/v1/models", headers=headers, timeout=5)
             return response.status_code == 200
         except:
             return False
-    
+
     def check_credentials(self) -> bool:
         """Check API credentials"""
         from dotenv import load_dotenv
-        load_dotenv()
-        
+        import os
+        project_root = os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__)))
+        load_dotenv(os.path.join(project_root, '.env'))
+
         required_vars = ["FYERS_APP_ID", "FYERS_ACCESS_TOKEN"]
         return all(os.getenv(var) for var in required_vars)
-    
+
     def check_permissions(self) -> bool:
         """Check file permissions"""
         test_file = self.project_root / "data" / "test_write.tmp"
@@ -280,48 +291,49 @@ DEFAULT_STARTING_BALANCE=10000
             return True
         except:
             return False
-    
+
     def start_services(self):
         """Start MCP services"""
         logger.info("🚀 Starting services...")
-        
-        # Start Ollama if not running
-        if not self.check_ollama():
-            logger.info("Starting Ollama service...")
-            if os.name != 'nt':  # Unix/Linux/macOS
-                subprocess.Popen(["ollama", "serve"])
-                time.sleep(5)  # Wait for service to start
-        
+
+        # Check Groq API key
+        if not self.check_groq_api():
+            logger.warning("⚠️ Groq API key not configured or invalid")
+            logger.info("Please set your Groq API key in the .env file")
+
         # Start the trading bot with MCP integration
         logger.info("🤖 Starting Trading Bot with MCP integration...")
         logger.info("Run the following command to start the server:")
         logger.info(f"cd {self.project_root}")
-        
+
         if os.name == 'nt':  # Windows
             logger.info(f"{self.venv_path}/Scripts/python.exe web_backend.py")
         else:  # Unix/Linux/macOS
             logger.info(f"{self.venv_path}/bin/python web_backend.py")
-        
-        logger.info("🌐 Web interface will be available at: http://localhost:5000")
+
+        logger.info(
+            "🌐 Web interface will be available at: http://localhost:5000")
         logger.info("📊 MCP monitoring at: http://localhost:8002")
         logger.info("📚 API docs at: http://localhost:5000/docs")
+
 
 def main():
     """Main deployment function"""
     print("🚀 MCP Production Deployment Manager")
     print("=" * 50)
-    
+
     manager = MCPDeploymentManager()
     manager.deploy()
-    
+
     print("\n" + "=" * 50)
     print("🎉 Deployment Complete!")
     print("\nNext Steps:")
     print("1. Configure your API keys in .env file")
-    print("2. Start Ollama: ollama serve")
+    print("2. Configure your Groq API key in .env file")
     print("3. Start the trading bot: python web_backend.py")
     print("4. Open browser: http://localhost:5000")
     print("5. Test MCP integration: python test_mcp_integration.py")
+
 
 if __name__ == "__main__":
     main()

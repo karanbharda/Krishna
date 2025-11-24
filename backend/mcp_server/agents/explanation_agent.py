@@ -4,7 +4,7 @@ MCP Explanation Agent
 =====================
 
 AI-powered explanation agent for the Model Context Protocol server
-that provides detailed reasoning for trading decisions using Llama.
+that provides detailed reasoning for trading decisions using Groq API.
 """
 
 import logging
@@ -14,6 +14,7 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
+
 
 @dataclass
 class Explanation:
@@ -25,74 +26,78 @@ class Explanation:
     market_context: Dict[str, Any]
     metadata: Dict[str, Any]
 
+
 class ExplanationAgent:
     """
     MCP Explanation Agent
     Provides detailed AI-powered explanations for trading decisions
     """
-    
+
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         self.agent_id = config.get("agent_id", "default_explanation_agent")
-        
+
         # Initialize components
         self.is_initialized = False
-        self.llama_engine = None
-        
+        self.groq_engine = None
+
         logger.info(f"Explanation Agent {self.agent_id} initialized")
-    
+
     async def initialize(self):
         """Initialize the explanation agent"""
         try:
-            # Import Llama engine if available
+            # Import Groq engine if available
             try:
-                from ...llama_integration import LlamaReasoningEngine
-                if "llama" in self.config:
-                    llama_config = self.config["llama"]
-                    self.llama_engine = LlamaReasoningEngine(llama_config)
-                    logger.info("Llama engine connected to explanation agent")
+                from ...groq_api import GroqAPIEngine
+                if "groq" in self.config:
+                    groq_config = self.config["groq"]
+                    self.groq_engine = GroqAPIEngine(groq_config)
+                    logger.info("Groq engine connected to explanation agent")
             except ImportError:
-                logger.warning("Llama integration not available")
-            
+                logger.warning("Groq API integration not available")
+
             self.is_initialized = True
-            logger.info(f"Explanation Agent {self.agent_id} initialized successfully")
-            
+            logger.info(
+                f"Explanation Agent {self.agent_id} initialized successfully")
+
         except Exception as e:
-            logger.error(f"Failed to initialize Explanation Agent {self.agent_id}: {e}")
+            logger.error(
+                f"Failed to initialize Explanation Agent {self.agent_id}: {e}")
             raise
-    
+
     async def generate_explanation(
-        self, 
-        symbol: str, 
-        decision: str, 
+        self,
+        symbol: str,
+        decision: str,
         confidence: float,
         market_context: Optional[Dict[str, Any]] = None,
         depth: str = "detailed"
     ) -> Explanation:
         """
         Generate detailed explanation for a trading decision
-        
+
         Args:
             symbol: Stock symbol
             decision: Trading decision (BUY/SELL/HOLD)
             confidence: Confidence level (0.0-1.0)
             market_context: Additional market context
             depth: Explanation depth ("basic", "detailed", "comprehensive")
-            
+
         Returns:
             Explanation with detailed reasoning
         """
         if not self.is_initialized:
             raise RuntimeError("Explanation agent not initialized")
-        
+
         start_time = time.time()
-        
+
         try:
-            # Generate explanation with Llama if available
+            # Generate explanation with Groq if available
             content = f"Recommendation to {decision} {symbol} with {confidence:.1%} confidence based on technical analysis."
-            key_factors = ["Technical indicators", "Market trends", "Risk assessment"]
-            
-            if self.llama_engine:
+            key_factors = ["Technical indicators",
+                           "Market trends", "Risk assessment"]
+
+            if self.groq_engine:
                 try:
                     context = {
                         "symbol": symbol,
@@ -101,8 +106,8 @@ class ExplanationAgent:
                         "market_context": market_context or {},
                         "depth": depth
                     }
-                    
-                    # In a real implementation, we would call the Llama engine here
+
+                    # In a real implementation, we would call the Groq engine here
                     # For now, we'll provide a more detailed simulated response
                     content = f"""AI-powered analysis recommends {decision} for {symbol} with {confidence:.1%} confidence.
                     
@@ -117,18 +122,18 @@ Risk considerations:
 - Stop-loss levels provide adequate protection
 
 Market outlook suggests favorable conditions for this trade over the selected time horizon."""
-                    
+
                     key_factors = [
                         "Technical indicator convergence",
-                        "Market momentum analysis", 
+                        "Market momentum analysis",
                         "Risk-adjusted return potential",
                         "Volatility assessment",
                         "Position sizing optimization"
                     ]
-                    
+
                 except Exception as e:
-                    logger.warning(f"Llama explanation generation failed: {e}")
-            
+                    logger.warning(f"Groq explanation generation failed: {e}")
+
             explanation = Explanation(
                 content=content,
                 confidence=confidence,
@@ -141,10 +146,10 @@ Market outlook suggests favorable conditions for this trade over the selected ti
                     "timestamp": datetime.now().isoformat()
                 }
             )
-            
+
             logger.info(f"Explanation generated for {symbol}: {decision}")
             return explanation
-            
+
         except Exception as e:
             logger.error(f"Error in generate_explanation for {symbol}: {e}")
             # Return basic explanation as fallback
@@ -161,14 +166,15 @@ Market outlook suggests favorable conditions for this trade over the selected ti
                     "error": str(e)
                 }
             )
-    
+
     def get_agent_status(self) -> Dict[str, Any]:
         """Get current agent status"""
         return {
             "agent_id": self.agent_id,
             "initialized": self.is_initialized,
-            "llama_available": self.llama_engine is not None
+            "groq_available": self.groq_engine is not None
         }
+
 
 # Agent availability flag
 EXPLANATION_AGENT_AVAILABLE = True

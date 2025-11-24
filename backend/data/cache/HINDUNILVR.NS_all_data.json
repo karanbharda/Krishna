@@ -1,0 +1,634 @@
+{
+  "price_history": {},
+  "price_history_metadata": {
+    "data_source": "none",
+    "rows": 0
+  },
+  "info": {},
+  "key_metrics": {},
+  "financials": {},
+  "quarterly_financials": {},
+  "balance_sheet": {},
+  "quarterly_balance_sheet": {},
+  "cashflow": {},
+  "quarterly_cashflow": {},
+  "recommendations": {},
+  "major_holders": {},
+  "earnings": {},
+  "quarterly_earnings": null,
+  "splits": {},
+  "dividends": {},
+  "news": [
+    {
+      "id": "f95fc092-d8c3-3099-9c73-a2cadbd01e8a",
+      "content": {
+        "id": "f95fc092-d8c3-3099-9c73-a2cadbd01e8a",
+        "contentType": "STORY",
+        "title": "How the Narrative Surrounding Hindustan Unilever Is Evolving After Recent Analyst Updates",
+        "description": "",
+        "summary": "Hindustan Unilever\u2019s fair value estimate has ticked up slightly in the latest update, reflecting shifts in analyst projections. Viewed against the backdrop of a modest decrease in the discount rate and subtle adjustments to growth expectations, this new price target signals nuanced optimism about the company\u2019s future. Stay tuned to learn how investors and market watchers can keep abreast of these evolving views and incorporate them into their own analysis moving forward. Analyst Price Targets...",
+        "pubDate": "2025-11-16T05:08:13Z",
+        "displayTime": "2025-11-16T05:08:13Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/simply_wall_st__316/326ea124a116b3a8e74f95b715189124",
+          "originalWidth": 1194,
+          "originalHeight": 432,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/LCxOusrEgEfz6TcdqUQh8Q--~B/aD00MzI7dz0xMTk0O2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/simply_wall_st__316/326ea124a116b3a8e74f95b715189124",
+              "width": 1194,
+              "height": 432,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/JdWBjVXjOal3Tv.QGRfbjQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/simply_wall_st__316/326ea124a116b3a8e74f95b715189124",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Simply Wall St.",
+          "url": "https://simplywall.st/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/narrative-surrounding-hindustan-unilever-evolving-050813977.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/narrative-surrounding-hindustan-unilever-evolving-050813977.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "a6146f57-5a43-31aa-be7e-3eb593d58b3c",
+      "content": {
+        "id": "a6146f57-5a43-31aa-be7e-3eb593d58b3c",
+        "contentType": "STORY",
+        "title": "Britannia Industries names new CEO as sales, profits rise",
+        "description": "",
+        "summary": "The Jim Jam biscuits maker said net sales for the quarter stood at Rs47.52bn ($535.6m), a year-on-year increase of 4.1%.",
+        "pubDate": "2025-11-07T13:16:13Z",
+        "displayTime": "2025-11-07T13:16:13Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/just_food_692/b9fe36e13d1abdec16db080dce11bffb",
+          "originalWidth": 1440,
+          "originalHeight": 810,
+          "caption": "Credit: ZikG/Shutterstock.",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/lSQp6QJMMS5BRBAmnKHAhA--~B/aD04MTA7dz0xNDQwO2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/just_food_692/b9fe36e13d1abdec16db080dce11bffb",
+              "width": 1440,
+              "height": 810,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/_G0oPl7O4bviZaZ_mEAv0Q--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/just_food_692/b9fe36e13d1abdec16db080dce11bffb",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Just Food",
+          "url": "https://www.globaldata.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://www.just-food.com/news/britannia-q2-profit-new-ceo/",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/britannia-industries-names-ceo-sales-131613808.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "c7c775f2-67c2-30ca-9b35-89ef7e953a80",
+      "content": {
+        "id": "c7c775f2-67c2-30ca-9b35-89ef7e953a80",
+        "contentType": "STORY",
+        "title": "Matthews Pacific Tiger Fund's Strategic Move: Hindustan Unilever Ltd Takes Center Stage",
+        "description": "",
+        "summary": "Insights into Matthews Pacific Tiger Fund (Trades, Portfolio)'s Third Quarter 2025 Investment Strategy",
+        "pubDate": "2025-11-04T23:01:01Z",
+        "displayTime": "2025-11-04T23:01:01Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/us.finance.gurufocus/e0afa65725e61559e6cb0016d8796611",
+          "originalWidth": 1242,
+          "originalHeight": 902,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/xsbGO7Pj5VdOIGc1UFAnQw--~B/aD05MDI7dz0xMjQyO2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/us.finance.gurufocus/e0afa65725e61559e6cb0016d8796611",
+              "width": 1242,
+              "height": 902,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/xSBUv0rdNGun416VHArirw--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/us.finance.gurufocus/e0afa65725e61559e6cb0016d8796611",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "GuruFocus.com",
+          "url": "http://www.gurufocus.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/matthews-pacific-tiger-funds-strategic-230101817.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/matthews-pacific-tiger-funds-strategic-230101817.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "4aab5e8d-a5d9-3d5d-8588-534e496ab5df",
+      "content": {
+        "id": "4aab5e8d-a5d9-3d5d-8588-534e496ab5df",
+        "contentType": "STORY",
+        "title": "Looking at the Story Behind Hindustan Unilever as Analyst Views and Targets Shift",
+        "description": "",
+        "summary": "Hindustan Unilever's stock has recently seen its consensus analyst price target raised from \u20b92,751 to \u20b92,772. This reflects a modest improvement in analysts' view of the company's fair value. This revision is accompanied by a slight reduction in the discount rate, now set at 13.92 percent, which signals increased confidence in the broader risk environment. Stay tuned to discover how you can keep track of further shifts in Hindustan Unilever's investment narrative as market conditions and...",
+        "pubDate": "2025-11-02T03:10:26Z",
+        "displayTime": "2025-11-02T03:10:26Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/simply_wall_st__316/326ea124a116b3a8e74f95b715189124",
+          "originalWidth": 1194,
+          "originalHeight": 432,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/LCxOusrEgEfz6TcdqUQh8Q--~B/aD00MzI7dz0xMTk0O2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/simply_wall_st__316/326ea124a116b3a8e74f95b715189124",
+              "width": 1194,
+              "height": 432,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/JdWBjVXjOal3Tv.QGRfbjQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/simply_wall_st__316/326ea124a116b3a8e74f95b715189124",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Simply Wall St.",
+          "url": "https://simplywall.st/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/looking-story-behind-hindustan-unilever-031026622.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/looking-story-behind-hindustan-unilever-031026622.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "1da4530f-a7bc-3736-a3e5-f011c0f3ec4a",
+      "content": {
+        "id": "1da4530f-a7bc-3736-a3e5-f011c0f3ec4a",
+        "contentType": "STORY",
+        "title": "What Catalysts Could Shift the Narrative for HUL Amid Recent Analyst and Business Changes",
+        "description": "",
+        "summary": "Hindustan Unilever\u2019s consensus analyst price target has inched upward, rising from \u20b92,735 to \u20b92,751 in the latest update. This subtle increase points to growing, albeit measured, optimism among market experts. This comes despite a slightly lower projected revenue growth rate and a marginally reduced risk premium. Stay tuned to see how these shifting outlooks might influence strategic decisions and ways to stay informed on the evolving narrative for the stock. What Wall Street Has Been...",
+        "pubDate": "2025-10-18T14:10:31Z",
+        "displayTime": "2025-10-18T14:10:31Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/simply_wall_st__316/326ea124a116b3a8e74f95b715189124",
+          "originalWidth": 1194,
+          "originalHeight": 432,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/LCxOusrEgEfz6TcdqUQh8Q--~B/aD00MzI7dz0xMTk0O2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/simply_wall_st__316/326ea124a116b3a8e74f95b715189124",
+              "width": 1194,
+              "height": 432,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/JdWBjVXjOal3Tv.QGRfbjQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/simply_wall_st__316/326ea124a116b3a8e74f95b715189124",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Simply Wall St.",
+          "url": "https://simplywall.st/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/catalysts-could-shift-narrative-hul-141031432.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/catalysts-could-shift-narrative-hul-141031432.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "5a4af7f2-5af4-314a-ade2-b67c847a8d68",
+      "content": {
+        "id": "5a4af7f2-5af4-314a-ade2-b67c847a8d68",
+        "contentType": "STORY",
+        "title": "Nestle's India unit posts marginal profit rise on Maggi, Nescafe demand; shares jump",
+        "description": "",
+        "summary": "(Reuters) -Nestle India posted a marginal increase in second-quarter profit on Thursday, benefiting from improving urban demand for items such as Maggi noodles and Nescafe coffee, sending its shares",
+        "pubDate": "2025-10-16T07:44:23Z",
+        "displayTime": "2025-10-16T07:44:23Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/reuters.com/6d73e38b3071e725a240960378e8ebbd",
+          "originalWidth": 800,
+          "originalHeight": 557,
+          "caption": "A worker arranges packets of Nestle's Maggi noodles next to Reliance's Snac tac noodles on a shelf inside a Reliance supermarket in Mumbai, India, March 16, 2021. REUTERS/Niharika Kulkarni",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/qqgiBpABZ9Vs0Z8sdpnoWg--~B/aD01NTc7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/6d73e38b3071e725a240960378e8ebbd",
+              "width": 800,
+              "height": 557,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/SMS8KYAIb92iFOuIySLQRA--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/6d73e38b3071e725a240960378e8ebbd",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Reuters",
+          "url": "https://www.reuters.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://sg.finance.yahoo.com/news/nestles-india-unit-posts-marginal-074423237.html",
+          "site": "finance",
+          "region": "SG",
+          "lang": "en-SG"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/nestles-india-unit-posts-marginal-074423237.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "b347b1ed-8312-34fc-9001-4688f61690b1",
+      "content": {
+        "id": "b347b1ed-8312-34fc-9001-4688f61690b1",
+        "contentType": "STORY",
+        "title": "India's Godrej Consumer says second-quarter core profit likely to decline",
+        "description": "",
+        "summary": "(Reuters) -Godrej Consumer Products said on Tuesday core profit in its consolidated business is likely to decline in the second quarter on account of a temporary sales disruption after the",
+        "pubDate": "2025-10-07T14:29:47Z",
+        "displayTime": "2025-10-07T14:29:47Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/reuters.com/ad9b9093ddca01a02b40ce0f92ba706b",
+          "originalWidth": 800,
+          "originalHeight": 554,
+          "caption": "A man walks past the new Godrej brand logo during an event in Mumbai, India, November 28, 2024. REUTERS/Francis Mascarenhas",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/zsPt2JYCzHbWFwfcijoNdA--~B/aD01NTQ7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/ad9b9093ddca01a02b40ce0f92ba706b",
+              "width": 800,
+              "height": 554,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/RtM4zSB6XVRj6VF_Jq3wxA--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/ad9b9093ddca01a02b40ce0f92ba706b",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Reuters",
+          "url": "https://www.reuters.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://sg.finance.yahoo.com/news/indias-godrej-consumer-says-second-142947377.html",
+          "site": "finance",
+          "region": "SG",
+          "lang": "en-SG"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/indias-godrej-consumer-says-second-142947377.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "42f5e5b7-103c-3048-a96c-f55b14e97d06",
+      "content": {
+        "id": "42f5e5b7-103c-3048-a96c-f55b14e97d06",
+        "contentType": "STORY",
+        "title": "What Catalysts Could Shift the Story for Hindustan Unilever Stock?",
+        "description": "",
+        "summary": "Hindustan Unilever\u2019s stock narrative has evolved. Analysts have raised the Fair Value Estimate from \u20b92,704.39 to \u20b92,735.32 due to increased optimism about the company's long-term performance. This upward revision reflects renewed confidence in the company\u2019s revenue outlook, though some caution remains amid ongoing shifts in consumer demand. Stay tuned to discover how you can keep track of these narrative updates and better understand market movements as they happen. What Wall Street Has Been...",
+        "pubDate": "2025-10-04T13:56:13Z",
+        "displayTime": "2025-10-04T13:56:13Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/simply_wall_st__316/326ea124a116b3a8e74f95b715189124",
+          "originalWidth": 1194,
+          "originalHeight": 432,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/LCxOusrEgEfz6TcdqUQh8Q--~B/aD00MzI7dz0xMTk0O2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/simply_wall_st__316/326ea124a116b3a8e74f95b715189124",
+              "width": 1194,
+              "height": 432,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/JdWBjVXjOal3Tv.QGRfbjQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/simply_wall_st__316/326ea124a116b3a8e74f95b715189124",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Simply Wall St.",
+          "url": "https://simplywall.st/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/catalysts-could-shift-story-hindustan-135613605.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/catalysts-could-shift-story-hindustan-135613605.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "8a483270-51a8-3d38-bcac-6634a64baf5a",
+      "content": {
+        "id": "8a483270-51a8-3d38-bcac-6634a64baf5a",
+        "contentType": "STORY",
+        "title": "Hindustan Unilever pares losses on hopes demand will recover as prices stabilise",
+        "description": "",
+        "summary": "(Reuters) -Indian consumer giant Hindustan Unilever pared most losses after falling as much as 2.7% on Monday as investors sought comfort from an expected recovery in demand after a consumption tax",
+        "pubDate": "2025-09-29T07:16:30Z",
+        "displayTime": "2025-09-29T07:16:30Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/reuters.com/018a2d814425924be43bd7a7f6889f51",
+          "originalWidth": 0,
+          "originalHeight": 0,
+          "caption": "FILE PHOTO: A man arrives at the Hindustan Unilever Limited (HUL) headquarters in Mumbai May 14, 2013.  REUTERS/Danish Siddiqui/File Photo",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/MtspnPSmiCHUz4li4Cz_kA--~B/aD0wO3c9MDthcHBpZD15dGFjaHlvbg--/https://media.zenfs.com/en/reuters.com/018a2d814425924be43bd7a7f6889f51",
+              "width": 0,
+              "height": 0,
+              "tag": "original"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Reuters",
+          "url": "https://www.reuters.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://sg.finance.yahoo.com/news/hindustan-unilever-pares-losses-hopes-071630591.html",
+          "site": "finance",
+          "region": "SG",
+          "lang": "en-SG"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/hindustan-unilever-pares-losses-hopes-071630591.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "ec63c430-0a59-3bf9-a48d-6ce62199d303",
+      "content": {
+        "id": "ec63c430-0a59-3bf9-a48d-6ce62199d303",
+        "contentType": "STORY",
+        "title": "Indian PM Modi's tax reform set to slash levies on shampoos, hybrid cars, TVs",
+        "description": "",
+        "summary": "NEW DELHI (Reuters) -India plans to cut consumption tax by at least 10 percentage points on nearly 175 products ranging from shampoos and hybrid cars to consumer electronics, two sources said, revealing new details of Prime Minister Narendra Modi's tax overhaul.  The biggest reform of the goods and services tax system in nearly a decade comes amid strained trade ties with the U.S., with Modi making repeated calls for increased use of Indian products.  Modi first flagged his reform plan last month on Independence Day when he said he would make daily products cheaper for people in the world's fifth largest economy.",
+        "pubDate": "2025-09-01T10:21:56Z",
+        "displayTime": "2025-09-01T10:21:56Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/reuters.com/f1b03eea84a31cf4d8d6f2c344376c78",
+          "originalWidth": 800,
+          "originalHeight": 533,
+          "caption": "FILE PHOTO: Independence Day celebrations at the historic Red Fort in Delhi",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/HGzUXojxbI_x9HDKoM1j6Q--~B/aD01MzM7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/f1b03eea84a31cf4d8d6f2c344376c78",
+              "width": 800,
+              "height": 533,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/qD4fZ9xNKEHzBMS1PIY1bA--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/f1b03eea84a31cf4d8d6f2c344376c78",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Reuters",
+          "url": "https://www.reuters.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://sg.finance.yahoo.com/news/modis-tax-overhaul-seen-slashing-102156868.html",
+          "site": "finance",
+          "region": "SG",
+          "lang": "en-SG"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/modis-tax-overhaul-seen-slashing-102156868.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    }
+  ],
+  "metadata": {
+    "symbol": "HINDUNILVR.NS",
+    "fetch_timestamp": "2025-11-18T17:00:25.627343",
+    "period": "2y",
+    "data_source": "yfinance",
+    "has_news": true
+  }
+}

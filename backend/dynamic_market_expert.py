@@ -16,9 +16,9 @@ logger.setLevel(logging.INFO)
 
 # Import from main trading bot
 try:
-    from testindia import LlamaLLM
+    from testindia import GroqLLM
 except ImportError:
-    LlamaLLM = None
+    GroqLLM = None
 
 # Import Fyers directly
 try:
@@ -60,11 +60,13 @@ try:
                 fyers_symbols = []
                 for symbol in symbols:
                     if not symbol.startswith("NSE:"):
-                        fyers_symbols.append(f"NSE:{symbol.replace('.NS', '')}-EQ")
+                        fyers_symbols.append(
+                            f"NSE:{symbol.replace('.NS', '')}-EQ")
                     else:
                         fyers_symbols.append(symbol)
 
-                response = self.fyers.quotes({"symbols": ",".join(fyers_symbols)})
+                response = self.fyers.quotes(
+                    {"symbols": ",".join(fyers_symbols)})
                 return response
             except Exception as e:
                 logger.error(f"Error getting quotes: {e}")
@@ -76,12 +78,13 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+
 class DynamicMarketExpert:
     """
     Professional Stock Market Expert with Live Data Integration
     Simplified but powerful - no complex graphs, just intelligent responses
     """
-    
+
     def __init__(self):
         """Initialize the market expert"""
 
@@ -91,15 +94,20 @@ class DynamicMarketExpert:
         else:
             self.fyers_data = None
 
-        if LlamaLLM:
+        # Initialize Groq LLM if API key is available
+        groq_api_key = os.getenv("GROQ_API_KEY", "")
+        if groq_api_key:
             try:
-                self.llm = LlamaLLM(model_name="llama3.2:latest")
+                from testindia import GroqLLM
+                self.llm = GroqLLM(model_name="llama-3.1-8b-instant",
+                                   api_key=groq_api_key)
+                logger.info("Groq LLM initialized successfully")
             except Exception as e:
-                logger.error(f"Error initializing LLM: {e}")
+                logger.error(f"Error initializing Groq LLM: {e}")
                 self.llm = None
         else:
             self.llm = None
-        
+
         # Stock symbol mapping
         self.symbol_map = {
             'reliance': 'RELIANCE',
@@ -133,30 +141,31 @@ class DynamicMarketExpert:
             'sun pharma': 'SUNPHARMA',
             'dr reddy': 'DRREDDY'
         }
-        
+
         logger.info("Dynamic Market Expert initialized successfully")
-    
+
     def extract_symbols(self, query: str) -> List[str]:
         """Extract stock symbols from user query"""
-        
+
         symbols = []
         query_lower = query.lower()
-        
+
         # Check for exact matches
         for keyword, symbol in self.symbol_map.items():
             if keyword in query_lower:
                 if symbol not in symbols:
                     symbols.append(symbol)
-        
+
         # If no symbols found but query seems stock-related, use popular ones
         if not symbols:
-            stock_keywords = ['stock', 'share', 'price', 'market', 'trading', 'invest', 'buy', 'sell']
+            stock_keywords = ['stock', 'share', 'price',
+                              'market', 'trading', 'invest', 'buy', 'sell']
             if any(keyword in query_lower for keyword in stock_keywords):
                 # Return popular stocks for general market queries
                 symbols = ['RELIANCE', 'TCS', 'HDFCBANK', 'INFY']
-        
+
         return symbols
-    
+
     def get_live_market_data(self, symbols: List[str]) -> Dict[str, Any]:
         """Get live market data for symbols with Fyers primary and yfinance fallback"""
 
@@ -172,11 +181,13 @@ class DynamicMarketExpert:
                 fyers_symbols = [f"{symbol}.NS" for symbol in symbols]
 
                 # Fetch live data
-                quotes_response = self.fyers_data.get_live_quotes(fyers_symbols)
+                quotes_response = self.fyers_data.get_live_quotes(
+                    fyers_symbols)
 
                 if quotes_response.get('code') == 200:
                     for quote in quotes_response.get('d', []):
-                        symbol_name = quote.get('n', '').replace('NSE:', '').replace('-EQ', '')
+                        symbol_name = quote.get('n', '').replace(
+                            'NSE:', '').replace('-EQ', '')
                         price_data = quote.get('v', {})
 
                         market_data[symbol_name] = {
@@ -190,7 +201,8 @@ class DynamicMarketExpert:
                         }
 
                     if market_data:
-                        logger.info(f"[SUCCESS] Fetched live data from Fyers for {len(market_data)} symbols")
+                        logger.info(
+                            f"[SUCCESS] Fetched live data from Fyers for {len(market_data)} symbols")
                         return market_data
                 else:
                     logger.warning(f"Fyers API error: {quotes_response}")
@@ -206,7 +218,8 @@ class DynamicMarketExpert:
             for symbol in symbols:
                 try:
                     # Convert symbol to yfinance format
-                    yf_symbol = f"{symbol}.NS" if not symbol.endswith('.NS') else symbol
+                    yf_symbol = f"{symbol}.NS" if not symbol.endswith(
+                        '.NS') else symbol
 
                     ticker = yf.Ticker(yf_symbol)
 
@@ -216,9 +229,11 @@ class DynamicMarketExpert:
 
                     if not hist.empty and info:
                         current_price = hist['Close'].iloc[-1]
-                        prev_close = hist['Close'].iloc[-2] if len(hist) > 1 else current_price
+                        prev_close = hist['Close'].iloc[-2] if len(
+                            hist) > 1 else current_price
                         change = current_price - prev_close
-                        change_pct = (change / prev_close * 100) if prev_close != 0 else 0
+                        change_pct = (change / prev_close *
+                                      100) if prev_close != 0 else 0
 
                         market_data[symbol] = {
                             'price': float(current_price),
@@ -235,35 +250,37 @@ class DynamicMarketExpert:
                     continue
 
             if market_data:
-                logger.info(f"[SUCCESS] Fetched live data from yfinance for {len(market_data)} symbols")
+                logger.info(
+                    f"[SUCCESS] Fetched live data from yfinance for {len(market_data)} symbols")
             else:
-                logger.warning("[ERROR] No market data available from any source")
+                logger.warning(
+                    "[ERROR] No market data available from any source")
 
         except Exception as e:
             logger.error(f"yfinance fallback failed: {e}")
 
         return market_data
-    
+
     def create_market_summary(self, market_data: Dict[str, Any]) -> str:
         """Create a formatted market data summary"""
-        
+
         if not market_data:
             return "No live market data available at the moment."
-        
+
         summary = "**Live Market Data:**\n"
         for symbol, data in market_data.items():
             change_emoji = "[+]" if data['change'] >= 0 else "[-]"
             summary += f"{change_emoji} **{symbol}**: Rs.{data['price']:.2f} ({data['change']:+.2f}, {data['change_pct']:+.2f}%)\n"
             summary += f"   High: Rs.{data['high']:.2f} | Low: Rs.{data['low']:.2f} | Volume: {data['volume']:,}\n"
-        
+
         return summary
-    
+
     def generate_professional_analysis(self, query: str, market_data: Dict[str, Any]) -> str:
         """Generate professional market analysis - ENHANCED REAL-TIME VERSION"""
 
         # Use enhanced analysis for better insights
         return self.generate_enhanced_analysis(query, market_data)
-    
+
     def create_intelligent_analysis(self, query: str, market_data: Dict[str, Any]) -> str:
         """Create intelligent analysis without LLM delays"""
 
@@ -272,18 +289,24 @@ class DynamicMarketExpert:
 
         # Analyze query intent
         query_lower = query.lower()
-        is_price_query = any(word in query_lower for word in ['price', 'cost', 'value', 'trading at'])
-        is_performance_query = any(word in query_lower for word in ['performing', 'performance', 'doing', 'movement'])
-        is_buy_query = any(word in query_lower for word in ['buy', 'invest', 'purchase', 'should i'])
-        is_comparison = any(word in query_lower for word in ['vs', 'versus', 'compare', 'between'])
+        is_price_query = any(word in query_lower for word in [
+                             'price', 'cost', 'value', 'trading at'])
+        is_performance_query = any(word in query_lower for word in [
+                                   'performing', 'performance', 'doing', 'movement'])
+        is_buy_query = any(word in query_lower for word in [
+                           'buy', 'invest', 'purchase', 'should i'])
+        is_comparison = any(word in query_lower for word in [
+                            'vs', 'versus', 'compare', 'between'])
 
         # Create dynamic response based on query type and live data
         response = "📊 **Professional Market Analysis**\n\n"
 
         # Add live data summary
         total_stocks = len(market_data)
-        positive_stocks = sum(1 for data in market_data.values() if data['change'] >= 0)
-        avg_change = sum(data['change_pct'] for data in market_data.values()) / total_stocks
+        positive_stocks = sum(
+            1 for data in market_data.values() if data['change'] >= 0)
+        avg_change = sum(data['change_pct']
+                         for data in market_data.values()) / total_stocks
 
         # Market sentiment analysis
         if avg_change > 2:
@@ -347,7 +370,8 @@ class DynamicMarketExpert:
 
         elif is_comparison:
             response += f"**Comparative Analysis:**\n"
-            sorted_stocks = sorted(market_data.items(), key=lambda x: x[1]['change_pct'], reverse=True)
+            sorted_stocks = sorted(
+                market_data.items(), key=lambda x: x[1]['change_pct'], reverse=True)
 
             for i, (symbol, data) in enumerate(sorted_stocks):
                 rank = "#1" if i == 0 else "#2" if i == 1 else "#3" if i == 2 else "#"
@@ -388,17 +412,19 @@ class DynamicMarketExpert:
 **Try asking:** "What's the current price of Reliance?" or "How is TCS performing today?"
 
 *Note: Using yfinance data as Fyers token needs refresh*"""
-        
+
         # Analyze the data
         total_stocks = len(market_data)
-        positive_stocks = sum(1 for data in market_data.values() if data['change'] >= 0)
+        positive_stocks = sum(
+            1 for data in market_data.values() if data['change'] >= 0)
         negative_stocks = total_stocks - positive_stocks
-        
-        avg_change = sum(data['change_pct'] for data in market_data.values()) / total_stocks
-        
+
+        avg_change = sum(data['change_pct']
+                         for data in market_data.values()) / total_stocks
+
         # Create intelligent response
         response = f"📊 **Professional Market Analysis for your query:**\n\n"
-        
+
         # Market sentiment
         if avg_change > 1:
             sentiment = "positive momentum"
@@ -406,22 +432,22 @@ class DynamicMarketExpert:
             sentiment = "bearish pressure"
         else:
             sentiment = "mixed sentiment"
-        
+
         response += f"**Market Overview:** {positive_stocks}/{total_stocks} stocks showing gains, indicating {sentiment} in your selected stocks.\n\n"
-        
+
         # Individual stock insights
         for symbol, data in market_data.items():
             change_emoji = "[+]" if data['change'] >= 0 else "[-]"
-            
+
             if abs(data['change_pct']) > 2:
                 movement = "significant movement"
             elif abs(data['change_pct']) > 1:
                 movement = "moderate movement"
             else:
                 movement = "stable trading"
-            
+
             response += f"{change_emoji} **{symbol}** at ₹{data['price']:.2f} ({data['change_pct']:+.2f}%) - {movement} with volume of {data['volume']:,} shares.\n"
-        
+
         # Professional advice
         response += f"\n💡 **Professional Insight:** "
         if avg_change > 2:
@@ -430,9 +456,9 @@ class DynamicMarketExpert:
             response += "Weakness observed. Wait for better entry points or consider stop-losses."
         else:
             response += "Consolidation phase. Good time for selective stock picking based on fundamentals."
-        
+
         return response
-    
+
     def process_query(self, user_query: str) -> str:
         """Process user query with enhanced real-time analysis"""
 
@@ -451,21 +477,26 @@ class DynamicMarketExpert:
                 elif any(word in query_lower for word in ['high volume', 'most traded', 'active']):
                     symbols = self.get_high_volume_stocks()
                 elif any(word in query_lower for word in ['tech', 'it', 'software', 'technology']):
-                    symbols = ["TCS.NS", "INFY.NS", "WIPRO.NS", "HCLTECH.NS", "TECHM.NS"]
+                    symbols = ["TCS.NS", "INFY.NS",
+                               "WIPRO.NS", "HCLTECH.NS", "TECHM.NS"]
                 elif any(word in query_lower for word in ['bank', 'finance', 'financial']):
-                    symbols = ["HDFCBANK.NS", "ICICIBANK.NS", "SBIN.NS", "KOTAKBANK.NS", "AXISBANK.NS"]
+                    symbols = ["HDFCBANK.NS", "ICICIBANK.NS",
+                               "SBIN.NS", "KOTAKBANK.NS", "AXISBANK.NS"]
                 elif any(word in query_lower for word in ['pharma', 'healthcare', 'medical']):
-                    symbols = ["SUNPHARMA.NS", "DRREDDY.NS", "CIPLA.NS", "DIVISLAB.NS", "BIOCON.NS"]
+                    symbols = ["SUNPHARMA.NS", "DRREDDY.NS",
+                               "CIPLA.NS", "DIVISLAB.NS", "BIOCON.NS"]
                 else:
                     # Default diverse portfolio for general queries
-                    symbols = ["RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "INFY.NS", "ICICIBANK.NS"]
+                    symbols = ["RELIANCE.NS", "TCS.NS",
+                               "HDFCBANK.NS", "INFY.NS", "ICICIBANK.NS"]
 
             # Get live market data
             market_data = self.get_live_market_data(symbols)
 
             # Generate enhanced professional analysis
             if market_data:
-                response = self.generate_enhanced_analysis(user_query, market_data)
+                response = self.generate_enhanced_analysis(
+                    user_query, market_data)
             else:
                 # Fallback with intelligent response
                 response = self.generate_fallback_response(user_query)
@@ -509,9 +540,11 @@ class DynamicMarketExpert:
         response = f"🔴 **Live Market Overview** (as of {datetime.now().strftime('%H:%M PM')})\n\n"
 
         # Calculate market sentiment
-        positive_stocks = sum(1 for data in market_data.values() if data['change'] > 0)
+        positive_stocks = sum(
+            1 for data in market_data.values() if data['change'] > 0)
         total_stocks = len(market_data)
-        sentiment_pct = (positive_stocks / total_stocks) * 100 if total_stocks > 0 else 0
+        sentiment_pct = (positive_stocks / total_stocks) * \
+            100 if total_stocks > 0 else 0
 
         if sentiment_pct > 60:
             sentiment = "Positive"
@@ -626,7 +659,8 @@ class DynamicMarketExpert:
         gainers = sum(1 for data in market_data.values() if data['change'] > 0)
         losers = total_stocks - gainers
 
-        avg_change = sum(data['change_pct'] for data in market_data.values()) / total_stocks
+        avg_change = sum(data['change_pct']
+                         for data in market_data.values()) / total_stocks
         total_volume = sum(data['volume'] for data in market_data.values())
 
         analysis += f"**Market Statistics:**\n"
@@ -635,7 +669,8 @@ class DynamicMarketExpert:
         analysis += f"• Total Volume: {total_volume:,}\n\n"
 
         # Top performers
-        sorted_stocks = sorted(market_data.items(), key=lambda x: x[1]['change_pct'], reverse=True)
+        sorted_stocks = sorted(market_data.items(),
+                               key=lambda x: x[1]['change_pct'], reverse=True)
 
         analysis += "**Top Performers:**\n"
         for symbol, data in sorted_stocks[:3]:
@@ -673,8 +708,10 @@ class DynamicMarketExpert:
     def get_market_insight(self, market_data: Dict[str, Any]) -> str:
         """Generate professional market insight"""
 
-        avg_change = sum(data['change_pct'] for data in market_data.values()) / len(market_data)
-        high_volume_stocks = sum(1 for data in market_data.values() if data['volume'] > 1000000)
+        avg_change = sum(data['change_pct']
+                         for data in market_data.values()) / len(market_data)
+        high_volume_stocks = sum(
+            1 for data in market_data.values() if data['volume'] > 1000000)
 
         if avg_change > 1:
             return "Strong bullish momentum across sectors. Consider increasing equity exposure with proper risk management."
@@ -719,22 +756,25 @@ class DynamicMarketExpert:
         return response
 
 # Test function
+
+
 def test_expert():
     """Test the dynamic market expert"""
-    
+
     expert = DynamicMarketExpert()
-    
+
     test_queries = [
         "What is the price of Tata Steel?",
         "How is Reliance performing?",
         "Should I buy TCS stock?",
         "Compare HDFC Bank vs ICICI Bank"
     ]
-    
+
     for query in test_queries:
         print(f"\nQuery: {query}")
         response = expert.process_query(query)
         print(f"Response: {response[:300]}...")
+
 
 if __name__ == "__main__":
     test_expert()

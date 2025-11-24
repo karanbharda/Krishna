@@ -23,8 +23,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables with explicit path
+import os
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(project_root, '.env'))
 
 # Configure logging
 logging.basicConfig(
@@ -46,6 +48,7 @@ except ImportError as e:
     FYERS_AVAILABLE = False
     logger.warning(f"Fyers API not available: {e}")
 
+
 @dataclass
 class MarketData:
     """Market data structure"""
@@ -59,6 +62,7 @@ class MarketData:
     low: float = 0.0
     open: float = 0.0
 
+
 @dataclass
 class ServiceHealth:
     """Service health status"""
@@ -68,14 +72,15 @@ class ServiceHealth:
     data_points: int
     uptime_seconds: int
 
+
 class FyersDataService:
     """Standalone Fyers data service"""
-    
+
     def __init__(self):
         self.app = FastAPI(title="Fyers Data Service", version="1.0.0")
         self.setup_cors()
         self.setup_routes()
-        
+
         # Service state
         self.start_time = datetime.now()
         self.fyers_client = None
@@ -85,12 +90,13 @@ class FyersDataService:
         self.update_interval = 5  # seconds
         self.max_retries = 3
         # Allow opt-in mock mode via environment variable FYERS_ALLOW_MOCK
-        self.allow_mock_mode = os.getenv('FYERS_ALLOW_MOCK', 'false').lower() in ('1', 'true', 'yes')
-        
+        self.allow_mock_mode = os.getenv(
+            'FYERS_ALLOW_MOCK', 'false').lower() in ('1', 'true', 'yes')
+
         # Dynamic watchlist - starts empty, stocks added on-demand
         self.watchlist = set()  # Use set for O(1) lookups and automatic deduplication
         self.requested_stocks = set()  # Track all stocks ever requested
-        
+
         # Background task management
         self.executor = ThreadPoolExecutor(max_workers=2)
         self.data_update_task = None
@@ -146,7 +152,8 @@ class FyersDataService:
             self.watchlist.add(fyers_symbol)
             self.requested_stocks.add(yahoo_symbol)
 
-            logger.info(f"Added {yahoo_symbol} ({fyers_symbol}) to dynamic watchlist")
+            logger.info(
+                f"Added {yahoo_symbol} ({fyers_symbol}) to dynamic watchlist")
             return True
         except Exception as e:
             logger.error(f"Failed to add {yahoo_symbol} to watchlist: {e}")
@@ -161,14 +168,14 @@ class FyersDataService:
             allow_methods=["*"],
             allow_headers=["*"],
         )
-    
+
     def setup_routes(self):
         """Setup API routes"""
-        
+
         @self.app.get("/")
         async def root():
             return {"message": "Fyers Data Service", "status": "running"}
-        
+
         @self.app.get("/health")
         async def health_check():
             """Health check endpoint"""
@@ -181,7 +188,7 @@ class FyersDataService:
                 uptime_seconds=int(uptime)
             )
             return asdict(health)
-        
+
         @self.app.get("/data/{symbol}")
         async def get_symbol_data(symbol: str):
             """Get data for specific symbol - dynamically adds to watchlist if not present"""
@@ -202,22 +209,27 @@ class FyersDataService:
                 # Try to fetch data immediately for this specific stock
                 try:
                     if self.fyers_client and self.is_connected:
-                        quotes_response = self.fyers_client.quotes({"symbols": fyers_symbol})
+                        quotes_response = self.fyers_client.quotes(
+                            {"symbols": fyers_symbol})
 
                         if quotes_response and quotes_response.get('s') == 'ok':
                             quote_data = quotes_response.get('d', [])
 
                             if quote_data and len(quote_data) > 0:
                                 # Process the immediate response
-                                quote_item = quote_data[0] if isinstance(quote_data, list) else quote_data
-                                symbol_data = quote_item.get('v', {}) if isinstance(quote_item, dict) and 'v' in quote_item else quote_item
+                                quote_item = quote_data[0] if isinstance(
+                                    quote_data, list) else quote_data
+                                symbol_data = quote_item.get('v', {}) if isinstance(
+                                    quote_item, dict) and 'v' in quote_item else quote_item
 
                                 market_data = MarketData(
                                     symbol=fyers_symbol,
                                     price=float(symbol_data.get('lp', 0.0)),
                                     change=float(symbol_data.get('ch', 0.0)),
-                                    change_pct=float(symbol_data.get('chp', 0.0)),
-                                    volume=int(symbol_data.get('volume', symbol_data.get('v', 0))),
+                                    change_pct=float(
+                                        symbol_data.get('chp', 0.0)),
+                                    volume=int(symbol_data.get(
+                                        'volume', symbol_data.get('v', 0))),
                                     high=float(symbol_data.get('h', 0.0)),
                                     low=float(symbol_data.get('l', 0.0)),
                                     open=float(symbol_data.get('o', 0.0)),
@@ -226,10 +238,12 @@ class FyersDataService:
 
                                 # Cache the data
                                 self.market_data_cache[fyers_symbol] = market_data
-                                logger.info(f"Immediately fetched data for {symbol}: Rs.{market_data.price}")
+                                logger.info(
+                                    f"Immediately fetched data for {symbol}: Rs.{market_data.price}")
                                 return asdict(market_data)
                 except Exception as e:
-                    logger.error(f"Error fetching immediate data for {symbol}: {e}")
+                    logger.error(
+                        f"Error fetching immediate data for {symbol}: {e}")
 
             # If still no data available but in mock mode, generate mock data
             if self.allow_mock_mode:
@@ -237,17 +251,19 @@ class FyersDataService:
                 mock_data = self.generate_mock_data_for_symbol(fyers_symbol)
                 if mock_data:
                     self.market_data_cache[fyers_symbol] = mock_data
-                    logger.info(f"Generated mock data for {symbol} in mock mode")
+                    logger.info(
+                        f"Generated mock data for {symbol} in mock mode")
                     return asdict(mock_data)
-            
+
             # If still no data available, return 404
-            raise HTTPException(status_code=404, detail=f"Data not available for {symbol}. Added to watchlist for future updates.")
-        
+            raise HTTPException(
+                status_code=404, detail=f"Data not available for {symbol}. Added to watchlist for future updates.")
+
         @self.app.get("/data")
         async def get_all_data():
             """Get all cached market data"""
             return {symbol: asdict(data) for symbol, data in self.market_data_cache.items()}
-        
+
         @self.app.post("/watchlist")
         async def update_watchlist(symbols: List[str]):
             """Update watchlist - adds to existing dynamic watchlist"""
@@ -264,7 +280,7 @@ class FyersDataService:
                 "requested_stocks": list(self.requested_stocks),
                 "total_symbols": len(self.watchlist)
             }
-        
+
         @self.app.post("/connect")
         async def connect_fyers():
             """Manually trigger Fyers connection"""
@@ -272,8 +288,9 @@ class FyersDataService:
             if success:
                 return {"message": "Connected to Fyers successfully"}
             else:
-                raise HTTPException(status_code=500, detail="Failed to connect to Fyers")
-    
+                raise HTTPException(
+                    status_code=500, detail="Failed to connect to Fyers")
+
     def convert_to_fyers_format(self, symbol: str) -> str:
         """Convert symbol to Fyers format"""
         # Handle different input formats
@@ -282,7 +299,7 @@ class FyersDataService:
             base_symbol = symbol.replace('.NS', '')
             return f"NSE:{base_symbol}-EQ"
         elif symbol.endswith('.BO'):
-            # BSE format: RELIANCE.BO -> BSE:RELIANCE-EQ  
+            # BSE format: RELIANCE.BO -> BSE:RELIANCE-EQ
             base_symbol = symbol.replace('.BO', '')
             return f"BSE:{base_symbol}-EQ"
         elif ':' in symbol and '-' in symbol:
@@ -291,7 +308,7 @@ class FyersDataService:
         else:
             # Assume NSE stock
             return f"NSE:{symbol}-EQ"
-    
+
     def convert_to_yahoo_format(self, symbol: str) -> str:
         """Convert symbol to Yahoo Finance format"""
         # Handle different input formats
@@ -312,11 +329,12 @@ class FyersDataService:
         else:
             # Assume NSE stock
             return f"{symbol}.NS"
-    
+
     async def connect_to_fyers(self) -> bool:
         """Connect to Fyers API - ONLY REAL DATA"""
         if not FYERS_AVAILABLE:
-            logger.error("Fyers API not available - cannot proceed without real data")
+            logger.error(
+                "Fyers API not available - cannot proceed without real data")
             return False
 
         try:
@@ -325,7 +343,8 @@ class FyersDataService:
             access_token = os.getenv('FYERS_ACCESS_TOKEN')
 
             if not app_id or not access_token:
-                logger.error("Fyers credentials not found in environment variables")
+                logger.error(
+                    "Fyers credentials not found in environment variables")
                 logger.error("Required: FYERS_APP_ID and FYERS_ACCESS_TOKEN")
                 return False
 
@@ -342,7 +361,8 @@ class FyersDataService:
 
             if test_quote and test_quote.get('s') == 'ok':
                 self.is_connected = True
-                logger.info("Successfully connected to Fyers API with real data")
+                logger.info(
+                    "Successfully connected to Fyers API with real data")
                 logger.info(f"Test quote successful for {test_symbols}")
                 return True
             else:
@@ -352,12 +372,13 @@ class FyersDataService:
         except Exception as e:
             logger.error(f"Error connecting to Fyers: {e}")
             return False
-    
+
     def fetch_market_data(self) -> Dict[str, MarketData]:
         """Fetch market data from Fyers API - ONLY REAL DATA"""
         # If mock mode is enabled, generate mock data instead of requiring a live connection
         if self.allow_mock_mode:
-            logger.debug("FYERS_ALLOW_MOCK enabled - generating mock market data")
+            logger.debug(
+                "FYERS_ALLOW_MOCK enabled - generating mock market data")
             return self.generate_mock_data()
 
         if not self.is_connected or not self.fyers_client:
@@ -368,19 +389,21 @@ class FyersDataService:
             if FYERS_AVAILABLE and self.fyers_client:
                 real_data = self.fetch_real_data()
                 if real_data:
-                    logger.info(f"Successfully fetched real data for {len(real_data)} symbols")
+                    logger.info(
+                        f"Successfully fetched real data for {len(real_data)} symbols")
                     return real_data
                 else:
                     logger.error("No real data received from Fyers")
                     return {}
             else:
-                logger.error("Fyers API not available - cannot proceed without real data")
+                logger.error(
+                    "Fyers API not available - cannot proceed without real data")
                 return {}
 
         except Exception as e:
             logger.error(f"Error fetching Fyers data: {e}")
             return {}
-    
+
     def fetch_real_data(self) -> Dict[str, MarketData]:
         """Fetch ONLY real data from Fyers API - NO MOCK DATA"""
         data = {}
@@ -398,7 +421,8 @@ class FyersDataService:
             symbols_str = ",".join(self.watchlist)
             logger.info(f"Fetching real Fyers data for: {symbols_str}")
 
-            quotes_response = self.fyers_client.quotes({"symbols": symbols_str})
+            quotes_response = self.fyers_client.quotes(
+                {"symbols": symbols_str})
 
             if quotes_response and quotes_response.get('s') == 'ok':
                 quote_data = quotes_response.get('d', [])
@@ -414,10 +438,15 @@ class FyersDataService:
 
                             market_data = MarketData(
                                 symbol=symbol,
-                                price=float(symbol_data.get('lp', 0.0)),  # Last price
-                                change=float(symbol_data.get('ch', 0.0)),  # Change
-                                change_pct=float(symbol_data.get('chp', 0.0)),  # Change percentage
-                                volume=int(symbol_data.get('volume', symbol_data.get('v', 0))),  # Volume
+                                price=float(symbol_data.get(
+                                    'lp', 0.0)),  # Last price
+                                change=float(symbol_data.get(
+                                    'ch', 0.0)),  # Change
+                                change_pct=float(symbol_data.get(
+                                    'chp', 0.0)),  # Change percentage
+                                volume=int(symbol_data.get(
+                                    # Volume
+                                    'volume', symbol_data.get('v', 0))),
                                 high=float(symbol_data.get('h', 0.0)),  # High
                                 low=float(symbol_data.get('l', 0.0)),  # Low
                                 open=float(symbol_data.get('o', 0.0)),  # Open
@@ -425,7 +454,8 @@ class FyersDataService:
                             )
 
                             data[symbol] = market_data
-                            logger.info(f"Real data for {symbol}: Rs.{market_data.price}")
+                            logger.info(
+                                f"Real data for {symbol}: Rs.{market_data.price}")
                         except Exception as e:
                             logger.error(f"Error processing {symbol}: {e}")
                             continue
@@ -435,9 +465,12 @@ class FyersDataService:
                         try:
                             market_data = MarketData(
                                 symbol=symbol,
-                                price=float(symbol_data.get('lp', 0.0)),  # Last price
-                                change=float(symbol_data.get('ch', 0.0)),  # Change
-                                change_pct=float(symbol_data.get('chp', 0.0)),  # Change percentage
+                                price=float(symbol_data.get(
+                                    'lp', 0.0)),  # Last price
+                                change=float(symbol_data.get(
+                                    'ch', 0.0)),  # Change
+                                change_pct=float(symbol_data.get(
+                                    'chp', 0.0)),  # Change percentage
                                 volume=int(symbol_data.get('v', 0)),  # Volume
                                 high=float(symbol_data.get('h', 0.0)),  # High
                                 low=float(symbol_data.get('l', 0.0)),  # Low
@@ -446,12 +479,14 @@ class FyersDataService:
                             )
 
                             data[symbol] = market_data
-                            logger.info(f"Real data for {symbol}: ₹{market_data.price}")
+                            logger.info(
+                                f"Real data for {symbol}: ₹{market_data.price}")
                         except Exception as e:
                             logger.error(f"Error processing {symbol}: {e}")
                             continue
 
-                logger.info(f"Successfully fetched REAL data for {len(data)} symbols")
+                logger.info(
+                    f"Successfully fetched REAL data for {len(data)} symbols")
             else:
                 logger.error(f"Fyers quotes API error: {quotes_response}")
                 return {}
@@ -497,12 +532,13 @@ class FyersDataService:
 
                 data[symbol] = market_data
 
-            logger.info(f"Mock mode: generated mock data for {len(data)} symbols")
+            logger.info(
+                f"Mock mode: generated mock data for {len(data)} symbols")
         except Exception as e:
             logger.error(f"Error generating mock data: {e}")
 
         return data
-    
+
     def generate_mock_data_for_symbol(self, symbol: str) -> Optional[MarketData]:
         """Generate mock data for a specific symbol"""
         try:
@@ -528,7 +564,7 @@ class FyersDataService:
         except Exception as e:
             logger.error(f"Error generating mock data for {symbol}: {e}")
             return None
-    
+
     # REMOVED: generate_mock_data method - ONLY REAL FYERS DATA ALLOWED
 
     async def start_data_updates(self):
@@ -538,14 +574,17 @@ class FyersDataService:
 
         # Allow starting updates if either connected to Fyers or mock mode is enabled
         if not self.is_connected and not self.allow_mock_mode:
-            logger.error("Cannot start data updates - Fyers not connected and mock mode disabled")
+            logger.error(
+                "Cannot start data updates - Fyers not connected and mock mode disabled")
             return
 
         self.is_running = True
         if self.allow_mock_mode and not self.is_connected:
-            logger.warning("Starting background data updates in MOCK mode (FYERS_ALLOW_MOCK=true)")
+            logger.warning(
+                "Starting background data updates in MOCK mode (FYERS_ALLOW_MOCK=true)")
         else:
-            logger.info("Starting background data updates with REAL Fyers data")
+            logger.info(
+                "Starting background data updates with REAL Fyers data")
 
         # Start background task
         self.data_update_task = asyncio.create_task(self.data_update_loop())
@@ -586,22 +625,27 @@ class FyersDataService:
 
             except Exception as e:
                 retry_count += 1
-                logger.error(f"Error in data update loop (attempt {retry_count}): {e}")
+                logger.error(
+                    f"Error in data update loop (attempt {retry_count}): {e}")
 
                 if retry_count >= self.max_retries:
-                    logger.error("Max retries reached, attempting to reconnect")
+                    logger.error(
+                        "Max retries reached, attempting to reconnect")
                     await self.connect_to_fyers()
                     retry_count = 0
 
                 # Wait before retry
-                await asyncio.sleep(min(retry_count * 2, 30))  # Exponential backoff
+                # Exponential backoff
+                await asyncio.sleep(min(retry_count * 2, 30))
 
     async def startup_event(self):
         """Startup event handler - ONLY REAL FYERS DATA"""
         logger.info("*** FYERS DATA SERVICE STARTING - DYNAMIC REAL DATA ***")
-        logger.info("Service will provide REAL data for ANY Indian stock on-demand")
+        logger.info(
+            "Service will provide REAL data for ANY Indian stock on-demand")
         logger.info(f"Update interval: {self.update_interval} seconds")
-        logger.info("Watchlist starts empty - stocks added automatically when requested")
+        logger.info(
+            "Watchlist starts empty - stocks added automatically when requested")
         logger.info("Starting background data updates")
 
         # Try to connect to Fyers first
@@ -609,13 +653,18 @@ class FyersDataService:
 
         if not connection_success:
             if self.allow_mock_mode:
-                logger.warning("Failed to connect to Fyers API but FYERS_ALLOW_MOCK is enabled")
-                logger.warning("Starting service in MOCK DATA mode - not suitable for production!")
+                logger.warning(
+                    "Failed to connect to Fyers API but FYERS_ALLOW_MOCK is enabled")
+                logger.warning(
+                    "Starting service in MOCK DATA mode - not suitable for production!")
             else:
                 logger.error("CRITICAL: Failed to connect to Fyers API")
-                logger.error("Service cannot start without real data connection")
-                logger.error("Set FYERS_ALLOW_MOCK=true to enable mock mode for development")
-                raise Exception("Fyers connection required - no mock data allowed")
+                logger.error(
+                    "Service cannot start without real data connection")
+                logger.error(
+                    "Set FYERS_ALLOW_MOCK=true to enable mock mode for development")
+                raise Exception(
+                    "Fyers connection required - no mock data allowed")
 
         await self.start_data_updates()
 
@@ -625,17 +674,22 @@ class FyersDataService:
         await self.stop_data_updates()
         self.executor.shutdown(wait=True)
 
+
 # Global service instance
 service = FyersDataService()
 
 # Add startup and shutdown events
+
+
 @service.app.on_event("startup")
 async def startup():
     await service.startup_event()
 
+
 @service.app.on_event("shutdown")
 async def shutdown():
     await service.shutdown_event()
+
 
 def main():
     """Main entry point"""
@@ -643,8 +697,10 @@ def main():
 
     parser = argparse.ArgumentParser(description="Fyers Data Service")
     parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
-    parser.add_argument("--port", type=int, default=8002, help="Port to bind to")
-    parser.add_argument("--reload", action="store_true", help="Enable auto-reload")
+    parser.add_argument("--port", type=int, default=8002,
+                        help="Port to bind to")
+    parser.add_argument("--reload", action="store_true",
+                        help="Enable auto-reload")
 
     args = parser.parse_args()
 
@@ -669,6 +725,7 @@ def main():
     except Exception as e:
         logger.error(f"Service error: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

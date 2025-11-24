@@ -1,0 +1,564 @@
+{
+  "price_history": {},
+  "price_history_metadata": {
+    "data_source": "none",
+    "rows": 0
+  },
+  "info": {},
+  "key_metrics": {},
+  "financials": {},
+  "quarterly_financials": {},
+  "balance_sheet": {},
+  "quarterly_balance_sheet": {},
+  "cashflow": {},
+  "quarterly_cashflow": {},
+  "recommendations": {},
+  "major_holders": {},
+  "earnings": {},
+  "quarterly_earnings": null,
+  "splits": {},
+  "dividends": {},
+  "news": [
+    {
+      "id": "73f1acac-dd35-3528-89f8-e519379cd923",
+      "content": {
+        "id": "73f1acac-dd35-3528-89f8-e519379cd923",
+        "contentType": "STORY",
+        "title": "HDB or CMWAY: Which Is the Better Value Stock Right Now?",
+        "description": "",
+        "summary": "HDB vs. CMWAY: Which Stock Is the Better Value Option?",
+        "pubDate": "2025-11-10T16:40:06Z",
+        "displayTime": "2025-11-10T16:40:06Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/zacks.com/46ebfcbff417ac1bbde85ad33fa0d4be",
+          "originalWidth": 900,
+          "originalHeight": 594,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/Fj4TPQveJWuth16WIsEVAw--~B/aD01OTQ7dz05MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/46ebfcbff417ac1bbde85ad33fa0d4be",
+              "width": 900,
+              "height": 594,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/62dkWUCwtvZuSH5R1aSTiA--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/46ebfcbff417ac1bbde85ad33fa0d4be",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Zacks",
+          "url": "http://www.zacks.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/hdb-cmway-better-value-stock-164006398.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/hdb-cmway-better-value-stock-164006398.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "faabe970-694e-3030-87d9-75e19c28f18c",
+      "content": {
+        "id": "faabe970-694e-3030-87d9-75e19c28f18c",
+        "contentType": "STORY",
+        "title": "IIFL Finance Ltd (BOM:532636) Q2 2026 Earnings Call Highlights: Robust Profit Growth Amid Asset ...",
+        "description": "",
+        "summary": "IIFL Finance Ltd (BOM:532636) reports a 52% profit surge driven by gold loans, while navigating asset quality issues in microfinance and MSME segments.",
+        "pubDate": "2025-11-08T01:01:36Z",
+        "displayTime": "2025-11-08T01:01:36Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": null,
+        "provider": {
+          "displayName": "GuruFocus.com",
+          "url": "http://www.gurufocus.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/iifl-finance-ltd-bom-532636-010136308.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/iifl-finance-ltd-bom-532636-010136308.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "13d0340f-7354-353d-9c84-2e9f8d0a9117",
+      "content": {
+        "id": "13d0340f-7354-353d-9c84-2e9f8d0a9117",
+        "contentType": "STORY",
+        "title": "Asian Equities Traded in the US as American Depositary Receipts Rise Sharply in Monday Trading",
+        "description": "",
+        "summary": "Asian equities traded in the US as American depositary receipts kicked off the week sharply higher M",
+        "pubDate": "2025-10-27T14:38:41Z",
+        "displayTime": "2025-10-27T14:38:41Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": null,
+        "provider": {
+          "displayName": "MT Newswires",
+          "url": "https://www.mtnewswires.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/asian-equities-traded-us-american-143841683.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/asian-equities-traded-us-american-143841683.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": true,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "60e5e860-c51b-3147-964b-8295149a5f8d",
+      "content": {
+        "id": "60e5e860-c51b-3147-964b-8295149a5f8d",
+        "contentType": "STORY",
+        "title": "HDFC Bank Ltd (HDB) Q2 2026 Earnings Call Highlights: Strong Loan Growth Amidst Margin Pressures",
+        "description": "",
+        "summary": "HDFC Bank Ltd (HDB) reports robust loan growth and market share gains, but faces challenges with compressed margins and competitive pressures.",
+        "pubDate": "2025-10-20T01:00:31Z",
+        "displayTime": "2025-10-20T01:00:31Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/us.finance.gurufocus/5e2475e282daf59dda755837d90721a9",
+          "originalWidth": 134,
+          "originalHeight": 134,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/xlS5jajQAJ2k10VicwV6_g--~B/aD0xMzQ7dz0xMzQ7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/us.finance.gurufocus/5e2475e282daf59dda755837d90721a9",
+              "width": 134,
+              "height": 134,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/KEdqSExSYqgOD6Q4jIa7Tg--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/us.finance.gurufocus/5e2475e282daf59dda755837d90721a9",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "GuruFocus.com",
+          "url": "http://www.gurufocus.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/hdfc-bank-ltd-hdb-q2-010031159.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/hdfc-bank-ltd-hdb-q2-010031159.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "60512b12-0157-35cb-94f0-84dec78e005b",
+      "content": {
+        "id": "60512b12-0157-35cb-94f0-84dec78e005b",
+        "contentType": "STORY",
+        "title": "India's HDFC Bank beats quarterly profit estimates; margins remain weak",
+        "description": "",
+        "summary": "MUMBAI (Reuters) -Indian private lender HDFC Bank reported a higher-than-expected profit for the second quarter on Saturday, on steady loan growth and higher trading income even as lending margins",
+        "pubDate": "2025-10-18T12:24:11Z",
+        "displayTime": "2025-10-18T12:24:11Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/reuters.com/9ab02b0b42d4458718386e75fedd1059",
+          "originalWidth": 800,
+          "originalHeight": 534,
+          "caption": "HDFC Bank logo is seen in this illustration taken June 19, 2025. REUTERS/Dado Ruvic/Illustration",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/xGJl9jn0zDd6zh.EstuE3A--~B/aD01MzQ7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/9ab02b0b42d4458718386e75fedd1059",
+              "width": 800,
+              "height": 534,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/MCDGLwKKCAgrOtiWa_jBHQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/9ab02b0b42d4458718386e75fedd1059",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Reuters",
+          "url": "https://www.reuters.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://sg.finance.yahoo.com/news/indias-hdfc-bank-beats-quarterly-122411813.html",
+          "site": "finance",
+          "region": "SG",
+          "lang": "en-SG"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/indias-hdfc-bank-beats-quarterly-122411813.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "dbf994b6-ec9c-3127-86cb-4195779762c7",
+      "content": {
+        "id": "dbf994b6-ec9c-3127-86cb-4195779762c7",
+        "contentType": "STORY",
+        "title": "Earnings, demand rebound hopes lift India's Nifty to one-year high",
+        "description": "",
+        "summary": "By Bharath Rajeswaran (Reuters) -India's equity benchmarks advanced on Friday as heavyweights HDFC Bank, ICICI bank and Reliance Industries rose, and logged weekly gains, as optimism over an earnings",
+        "pubDate": "2025-10-17T10:18:08Z",
+        "displayTime": "2025-10-17T10:18:08Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/reuters.com/1837e432e42ed5a30c98567b4bb4c277",
+          "originalWidth": 800,
+          "originalHeight": 533,
+          "caption": "Men move past a logo of the Bombay Stock Exchange (BSE) in Mumbai, India, August 1, 2025. REUTERS/Hemanshi Kamani",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/qGz4Ap7F7VRr5C0DfNyI2A--~B/aD01MzM7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/1837e432e42ed5a30c98567b4bb4c277",
+              "width": 800,
+              "height": 533,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/ls5HjsQ6lDm4bWjyQpaGNg--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/1837e432e42ed5a30c98567b4bb4c277",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Reuters",
+          "url": "https://www.reuters.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://sg.finance.yahoo.com/news/earnings-demand-rebound-hopes-lift-101808534.html",
+          "site": "finance",
+          "region": "SG",
+          "lang": "en-SG"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/earnings-demand-rebound-hopes-lift-101808534.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "8a17a73e-4cea-33fc-9062-0fed53a47738",
+      "content": {
+        "id": "8a17a73e-4cea-33fc-9062-0fed53a47738",
+        "contentType": "STORY",
+        "title": "Asian Equities Traded in the US as American Depositary Receipts Rise Sharply in Wednesday Trading",
+        "description": "",
+        "summary": "Asian equities traded in the US as American depositary receipts surged higher Wednesday morning, ris",
+        "pubDate": "2025-10-15T14:35:51Z",
+        "displayTime": "2025-10-15T14:35:51Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": null,
+        "provider": {
+          "displayName": "MT Newswires",
+          "url": "https://www.mtnewswires.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/asian-equities-traded-us-american-143551187.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/asian-equities-traded-us-american-143551187.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": true,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "2e8a16db-6895-30cf-815b-6ab6641e9c6c",
+      "content": {
+        "id": "2e8a16db-6895-30cf-815b-6ab6641e9c6c",
+        "contentType": "STORY",
+        "title": "Indian non-bank lender HDB Financial posts profit drop on loan losses",
+        "description": "",
+        "summary": "BENGALURU (Reuters) -Indian non-bank lender HDB Financial Services posted a near 2% drop in quarterly profit on Wednesday, hurt by rising bad loans and funds kept aside to meet potential losses.",
+        "pubDate": "2025-10-15T12:55:39Z",
+        "displayTime": "2025-10-15T12:55:39Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/reuters.com/8b2f3bcf5836882b8ca4b3a8453c531a",
+          "originalWidth": 800,
+          "originalHeight": 534,
+          "caption": "HDB Financial Services logo is seen in this illustration taken June 19, 2025. REUTERS/Dado Ruvic/Illustration",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/4HrcBTmJXfxBJ6UjlTsMVw--~B/aD01MzQ7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/8b2f3bcf5836882b8ca4b3a8453c531a",
+              "width": 800,
+              "height": 534,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/yI1dqxSy2gzupM9b8ubVLA--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/8b2f3bcf5836882b8ca4b3a8453c531a",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Reuters",
+          "url": "https://www.reuters.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://sg.finance.yahoo.com/news/indian-non-bank-lender-hdb-125539908.html",
+          "site": "finance",
+          "region": "SG",
+          "lang": "en-SG"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/indian-non-bank-lender-hdb-125539908.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "f4d134c8-0aa5-3bc8-896c-73737b4c8940",
+      "content": {
+        "id": "f4d134c8-0aa5-3bc8-896c-73737b4c8940",
+        "contentType": "STORY",
+        "title": "BSBR or HDB: Which Is the Better Value Stock Right Now?",
+        "description": "",
+        "summary": "BSBR vs. HDB: Which Stock Is the Better Value Option?",
+        "pubDate": "2025-10-13T15:40:02Z",
+        "displayTime": "2025-10-13T15:40:02Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/zacks.com/670d1917693293f70179651625deb88f",
+          "originalWidth": 900,
+          "originalHeight": 675,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/5w_iAw5naBqMPrzpIECi9Q--~B/aD02NzU7dz05MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/670d1917693293f70179651625deb88f",
+              "width": 900,
+              "height": 675,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/Iu37D2mm3Zx1u.iQQ4MxUw--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/670d1917693293f70179651625deb88f",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Zacks",
+          "url": "http://www.zacks.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/bsbr-hdb-better-value-stock-154002463.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/bsbr-hdb-better-value-stock-154002463.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "67107f87-9dae-3994-be1e-fda64383ff2c",
+      "content": {
+        "id": "67107f87-9dae-3994-be1e-fda64383ff2c",
+        "contentType": "STORY",
+        "title": "Asian Equities Traded in the US as American Depositary Receipts Fall in Friday Trading; Lose 2.5% for Week",
+        "description": "",
+        "summary": "Asian equities traded in the US as American depositary receipts closed out the week lower Friday mor",
+        "pubDate": "2025-10-10T15:12:05Z",
+        "displayTime": "2025-10-10T15:12:05Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": null,
+        "provider": {
+          "displayName": "MT Newswires",
+          "url": "https://www.mtnewswires.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/asian-equities-traded-us-american-151205465.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/asian-equities-traded-us-american-151205465.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": true,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    }
+  ],
+  "metadata": {
+    "symbol": "HDFCBANK.NS",
+    "fetch_timestamp": "2025-11-18T16:58:30.609253",
+    "period": "2y",
+    "data_source": "yfinance",
+    "has_news": true
+  }
+}

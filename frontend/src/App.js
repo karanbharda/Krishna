@@ -9,6 +9,7 @@ import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import Portfolio from './components/Portfolio';
 import ChatAssistant from './components/ChatAssistant';
+import MCPChatAssistant from './components/MCPChatAssistant';
 import LoadingOverlay from './components/LoadingOverlay';
 import SettingsModal from './components/SettingsModal';
 
@@ -69,28 +70,31 @@ const TabContent = styled.div`
 `;
 
 function App() {
-  // State Management
-  const [activeTab, setActiveTab] = useState('dashboard');
   const [botData, setBotData] = useState({
-    portfolio: {
-      totalValue: 1000000,
-      cash: 1000000,
-      holdings: {},
-      tradeLog: [],
-      startingBalance: 1000000
-    },
+    isRunning: false,
     config: {
       mode: 'paper',
-      tickers: [], // Empty by default - users can add tickers manually
-      riskLevel: 'MEDIUM',
-      maxAllocation: 25
+      tickers: [],
+      stopLossPct: 0.05,
+      maxAllocation: 0.25,
+      maxTradeLimit: 10
     },
-    isRunning: false,
-    chatMessages: []
+    portfolio: {
+      totalValue: 10000,
+      cash: 10000,
+      holdings: {},
+      startingBalance: 10000,
+      unrealizedPnL: 0,
+      realizedPnL: 0,
+      tradeLog: []
+    },
+    chatMessages: [],
+    lastUpdate: new Date().toISOString()
   });
-
-  const [loading, setLoading] = useState(false);
+  const [realtimeData, setRealtimeData] = useState(null);
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [showSettings, setShowSettings] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [liveStatus, setLiveStatus] = useState(null);
   const [mcpAvailable, setMcpAvailable] = useState(false);
 
@@ -278,7 +282,12 @@ function App() {
               analysis_type: 'comprehensive'
             });
             response = {
-              response: `Recommendation: ${analysis.recommendation}\nConfidence: ${(analysis.confidence * 100).toFixed(2)}%\nCurrent: ₹${analysis.current_price?.toFixed?.(2) ?? analysis.current_price}\nTarget: ₹${analysis.target_price?.toFixed?.(2) ?? analysis.target_price}\nStop Loss: ₹${analysis.stop_loss?.toFixed?.(2) ?? analysis.stop_loss}\nReasoning: ${analysis.reasoning || 'N/A'}`,
+              response: `Recommendation: ${analysis.recommendation}
+Confidence: ${(analysis.confidence * 100).toFixed(2)}%
+Current: ₹${analysis.current_price?.toFixed?.(2) ?? analysis.current_price}
+Target: ₹${analysis.target_price?.toFixed?.(2) ?? analysis.target_price}
+Stop Loss: ₹${analysis.stop_loss?.toFixed?.(2) ?? analysis.stop_loss}
+Reasoning: ${analysis.reasoning || 'N/A'}`,
               timestamp: new Date().toISOString()
             };
           } catch (err) {
@@ -351,6 +360,35 @@ function App() {
     localStorage.setItem('tradingBotData', JSON.stringify(botData));
   }, [botData]);
 
+  // Listen for portfolio updates from MCP chat
+  useEffect(() => {
+    const handlePortfolioUpdate = (event) => {
+      const portfolioData = event.detail;
+
+      // Update the botData with the new portfolio information
+      setBotData(prev => ({
+        ...prev,
+        portfolio: {
+          ...prev.portfolio,
+          ...portfolioData,
+          // Ensure we maintain the correct structure for holdings
+          holdings: portfolioData.holdings || prev.portfolio.holdings,
+          totalValue: portfolioData.total_value || prev.portfolio.totalValue,
+          cash: portfolioData.cash !== undefined ? portfolioData.cash : prev.portfolio.cash,
+          unrealizedPnL: portfolioData.unrealized_pnl !== undefined ? portfolioData.unrealized_pnl : prev.portfolio.unrealizedPnL
+        }
+      }));
+    };
+
+    // Add event listener
+    window.addEventListener('portfolioUpdate', handlePortfolioUpdate);
+
+    // Clean up event listener
+    return () => {
+      window.removeEventListener('portfolioUpdate', handlePortfolioUpdate);
+    };
+  }, []);
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -364,7 +402,9 @@ function App() {
           />
         );
       case 'chat':
-        return (
+        return mcpAvailable ? (
+          <MCPChatAssistant />
+        ) : (
           <ChatAssistant
             messages={botData.chatMessages}
             onSendMessage={sendChatMessage}
@@ -405,7 +445,7 @@ function App() {
                   onRemoveTicker={removeTicker}
                 />
               } />
-              <Route path="/chat" element={<ChatAssistant messages={botData.chatMessages} onSendMessage={sendChatMessage} />} />
+              <Route path="/chat" element={mcpAvailable ? <MCPChatAssistant /> : <ChatAssistant messages={botData.chatMessages} onSendMessage={sendChatMessage} />} />
             </Routes>
           </TabContent>
         </MainContent>

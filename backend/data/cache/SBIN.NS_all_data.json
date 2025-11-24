@@ -1,0 +1,602 @@
+{
+  "price_history": {},
+  "price_history_metadata": {
+    "data_source": "none",
+    "rows": 0
+  },
+  "info": {},
+  "key_metrics": {},
+  "financials": {},
+  "quarterly_financials": {},
+  "balance_sheet": {},
+  "quarterly_balance_sheet": {},
+  "cashflow": {},
+  "quarterly_cashflow": {},
+  "recommendations": {},
+  "major_holders": {},
+  "earnings": {},
+  "quarterly_earnings": null,
+  "splits": {},
+  "dividends": {},
+  "news": [
+    {
+      "id": "cfc83c86-9eba-3014-8caf-fff92924c45b",
+      "content": {
+        "id": "cfc83c86-9eba-3014-8caf-fff92924c45b",
+        "contentType": "STORY",
+        "title": "KPI Green Energy Ltd (BOM:542323) Q2 2026 Earnings Call Highlights: Record Revenue Growth and ...",
+        "description": "",
+        "summary": "KPI Green Energy Ltd (BOM:542323) reports robust revenue growth and strategic advancements, while addressing concerns over margins and investor confidence.",
+        "pubDate": "2025-11-11T21:00:39Z",
+        "displayTime": "2025-11-11T21:00:39Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": null,
+        "provider": {
+          "displayName": "GuruFocus.com",
+          "url": "http://www.gurufocus.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/kpi-green-energy-ltd-bom-210039818.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/kpi-green-energy-ltd-bom-210039818.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "d30b6c8f-3fe5-3bd8-9092-9a470cbc36a1",
+      "content": {
+        "id": "d30b6c8f-3fe5-3bd8-9092-9a470cbc36a1",
+        "contentType": "STORY",
+        "title": "SBI and Amundi to sell 10% SBI Funds Management in IPO",
+        "description": "",
+        "summary": "SBI, which currently holds 61.9% of the asset manager, will offload 6.3% of its stake, while Amundi, which owns 36.4%, will sell 3.7%.",
+        "pubDate": "2025-11-07T11:35:59Z",
+        "displayTime": "2025-11-07T11:35:59Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/private_banker_international_938/7fcd9621abbf8739ca994567f08c9027",
+          "originalWidth": 1440,
+          "originalHeight": 810,
+          "caption": "SBI Funds Management provides mutual fund and investment portfolio services to both retail and institutional investors. Credit: fadfebrian/Shutterstock.com",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/7jDIFonuXytcZrF6pu_ZiQ--~B/aD04MTA7dz0xNDQwO2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/private_banker_international_938/7fcd9621abbf8739ca994567f08c9027",
+              "width": 1440,
+              "height": 810,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/2vHXQxxZA3tMRSPtN9aOdg--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/private_banker_international_938/7fcd9621abbf8739ca994567f08c9027",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Private Banker International",
+          "url": "https://www.globaldata.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://www.privatebankerinternational.com/news/sbi-amundi-asset-manager-ipo/",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/sbi-amundi-sell-10-sbi-113559910.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "72bc0adf-cc35-3978-b1c5-553373bc1ab9",
+      "content": {
+        "id": "72bc0adf-cc35-3978-b1c5-553373bc1ab9",
+        "contentType": "STORY",
+        "title": "Chainlink Price Poised to hit $20 as SBI Digital Markets Partners to Bridge TradFi and DeFi",
+        "description": "",
+        "summary": "As crypto market sentiment improved, Chainlink price maintained stability above the $14 mark on November 6. The token\u2019s resilience followed a modest 24-hour recovery across major cryptocurrencies. Chainlink\u2019s strength was further supported by SBI Digital Markets\u2019 adoption of its network, aiming to bridge traditional finance with decentralized finance solutions through enhanced blockchain connectivity. Meanwhile, the",
+        "pubDate": "2025-11-06T07:53:21Z",
+        "displayTime": "2025-11-06T07:53:21Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/coingape_360/38123ac6a0acd5ef719380e25d3549bb",
+          "originalWidth": 1200,
+          "originalHeight": 800,
+          "caption": "Chainlink Price Targets $20 as SBI Digital Markets Partners to Bridge TradFi and DeFi.",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/WWRVh8oaxfueoXuSHtTJkA--~B/aD04MDA7dz0xMjAwO2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/coingape_360/38123ac6a0acd5ef719380e25d3549bb",
+              "width": 1200,
+              "height": 800,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/r8jQkZuG6HCpjlDIpY8UDA--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/coingape_360/38123ac6a0acd5ef719380e25d3549bb",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "CoinGape",
+          "url": "https://coingape.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://coingape.com/markets/chainlink-price-targets-20-as-sbi-digital-markets-partners-to-bridge-tradfi-and-defi/",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/chainlink-price-poised-hit-20-075321806.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "9da88155-19fa-3953-9f5a-55d925e2a7da",
+      "content": {
+        "id": "9da88155-19fa-3953-9f5a-55d925e2a7da",
+        "contentType": "STORY",
+        "title": "State Bank of India (SBKFF) Q2 2026 Earnings Call Highlights: Strong NIM Growth and Record ...",
+        "description": "",
+        "summary": "State Bank of India (SBKFF) showcases robust credit growth and digital transformation amid challenges in deposit growth and treasury profits.",
+        "pubDate": "2025-11-04T19:01:28Z",
+        "displayTime": "2025-11-04T19:01:28Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/us.finance.gurufocus/87ed4d5ce9ce2f5c949f8e5363b44839",
+          "originalWidth": 400,
+          "originalHeight": 400,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/Xy9lSNDKUhPx2D.BDzc4Zw--~B/aD00MDA7dz00MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/us.finance.gurufocus/87ed4d5ce9ce2f5c949f8e5363b44839",
+              "width": 400,
+              "height": 400,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/FrAljReHMapVO_PF9atEsg--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/us.finance.gurufocus/87ed4d5ce9ce2f5c949f8e5363b44839",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "GuruFocus.com",
+          "url": "http://www.gurufocus.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/state-bank-india-sbkff-q2-190128239.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/state-bank-india-sbkff-q2-190128239.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "360469de-9a65-3e6e-b744-43b34acaa3f9",
+      "content": {
+        "id": "360469de-9a65-3e6e-b744-43b34acaa3f9",
+        "contentType": "STORY",
+        "title": "Indian regulator blocks SBI\u2019s bid to increase stake in Investec JV-report",
+        "description": "",
+        "summary": "SBI Capital Markets, a subsidiary of State Bank of India (SBI), sought approval to increase its holding in the JV from 20% to around 40%.",
+        "pubDate": "2025-10-31T11:56:36Z",
+        "displayTime": "2025-10-31T11:56:36Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/private_banker_international_938/57d971ae59d27a0999c30280d0baafbc",
+          "originalWidth": 1440,
+          "originalHeight": 810,
+          "caption": "SBI intends to submit a revised application after the RBI issues the final regulations. Credit: mrinalpal/Shutterstock.com.",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/oVzJS57KFYMCRna_u28Y2w--~B/aD04MTA7dz0xNDQwO2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/private_banker_international_938/57d971ae59d27a0999c30280d0baafbc",
+              "width": 1440,
+              "height": 810,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/MhlYhCBEL_EjmzyWcCCUJQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/private_banker_international_938/57d971ae59d27a0999c30280d0baafbc",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Private Banker International",
+          "url": "https://www.globaldata.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://www.privatebankerinternational.com/news/rbi-blocks-sbi-stake-rise-in-investec/",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/indian-regulator-blocks-sbi-bid-115636097.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "39d3cf95-3a2c-3f2a-8fe9-3147f798c4c4",
+      "content": {
+        "id": "39d3cf95-3a2c-3f2a-8fe9-3147f798c4c4",
+        "contentType": "STORY",
+        "title": "Honda Motor buys stake in India's OMC Power to develop clean energy batteries",
+        "description": "",
+        "summary": "By Sethuraman N R and Komal Salecha NEW DELHI/BENGALURU (Reuters) -Indian renewables firm OMC Power, backed by Japan's Mitsui & Co and Chubu Electric Power, said on Monday that automaker Honda Motor",
+        "pubDate": "2025-10-27T09:42:10Z",
+        "displayTime": "2025-10-27T09:42:10Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/reuters.com/144a36d08c567c44b7844aef7508c47a",
+          "originalWidth": 800,
+          "originalHeight": 533,
+          "caption": "The logo of Honda is pictured in Cuautitlan Izcalli, Mexico, January 30, 2025 REUTERS/Raquel Cunha",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/hmxSg2g20xT.XMvdvgk4wQ--~B/aD01MzM7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/144a36d08c567c44b7844aef7508c47a",
+              "width": 800,
+              "height": 533,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/vej_e4mIQlYTEZiQLL2Ccg--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/144a36d08c567c44b7844aef7508c47a",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Reuters",
+          "url": "https://www.reuters.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://sg.finance.yahoo.com/news/honda-motor-buys-stake-indias-094210353.html",
+          "site": "finance",
+          "region": "SG",
+          "lang": "en-SG"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/honda-motor-buys-stake-indias-094210353.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "3e78a68d-1739-3fd9-b30e-7942f59620c2",
+      "content": {
+        "id": "3e78a68d-1739-3fd9-b30e-7942f59620c2",
+        "contentType": "STORY",
+        "title": "India's SBI Card misses quarterly profit view on higher operating costs",
+        "description": "",
+        "summary": "(Reuters) -India's SBI Cards and Payment Services reported second-quarter profit below expectations on Friday, hurt by higher operating costs even as its asset quality improved.",
+        "pubDate": "2025-10-24T13:46:39Z",
+        "displayTime": "2025-10-24T13:46:39Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": null,
+        "provider": {
+          "displayName": "Reuters",
+          "url": "https://www.reuters.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://sg.finance.yahoo.com/news/indias-sbi-card-misses-quarterly-134639768.html",
+          "site": "finance",
+          "region": "SG",
+          "lang": "en-SG"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/indias-sbi-card-misses-quarterly-134639768.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "4e9a81d7-4e88-3a42-9f3d-976cdb5be122",
+      "content": {
+        "id": "4e9a81d7-4e88-3a42-9f3d-976cdb5be122",
+        "contentType": "STORY",
+        "title": "India's SBI Life reports lower profit as costs rise, investment income drops",
+        "description": "",
+        "summary": "(Reuters) -India's SBI Life Insurance reported a 7% fall in second-quarter profit on Friday, hurt by higher commissions paid to boost sales and a drop in income from investments.",
+        "pubDate": "2025-10-24T11:11:26Z",
+        "displayTime": "2025-10-24T11:11:26Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/reuters.com/5c912b7111f6770595b6f9db4ee31cd1",
+          "originalWidth": 800,
+          "originalHeight": 567,
+          "caption": "A man walks past a podium set up at the venue of a news conference to announce the launch of Initial Public Offering by SBI Life Insurance Co in Mumbai, India, September 13, 2017. REUTERS/Shailesh Andrade",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/hUDUp8b7ISrYsQjH4IMlTw--~B/aD01Njc7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/5c912b7111f6770595b6f9db4ee31cd1",
+              "width": 800,
+              "height": 567,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/gqt.aKeJiEhIyzYP9Y5HWg--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/5c912b7111f6770595b6f9db4ee31cd1",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Reuters",
+          "url": "https://www.reuters.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://sg.finance.yahoo.com/news/indias-sbi-life-reports-lower-111126735.html",
+          "site": "finance",
+          "region": "SG",
+          "lang": "en-SG"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/indias-sbi-life-reports-lower-111126735.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "85251443-1f4d-3873-b392-5f23465dce7e",
+      "content": {
+        "id": "85251443-1f4d-3873-b392-5f23465dce7e",
+        "contentType": "STORY",
+        "title": "Japan\u2019s SBI Invests in US AI Fund to Fuel Web3 Finance Strategy",
+        "description": "",
+        "summary": "SBI Holdings invested in a US AI fund to expand its Web3 and digital finance strategy, reflecting the growing convergence of AI.",
+        "pubDate": "2025-10-23T13:35:35Z",
+        "displayTime": "2025-10-23T13:35:35Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/beincrypto_us_662/bb0e8e717c0b311f7a359b99a8595250",
+          "originalWidth": 1280,
+          "originalHeight": 720,
+          "caption": "gaia, gaia ai phone. Photo by BeInCrypto",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/smqYJ8ZtNetUylOirDgv_g--~B/aD03MjA7dz0xMjgwO2FwcGlkPXl0YWNoeW9u/https://media.zenfs.com/en/beincrypto_us_662/bb0e8e717c0b311f7a359b99a8595250",
+              "width": 1280,
+              "height": 720,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/Ip0qlP57qMD6q7sKrhUKNQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/beincrypto_us_662/bb0e8e717c0b311f7a359b99a8595250",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "BeInCrypto",
+          "url": "https://beincrypto.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://beincrypto.com/sbi-invests-in-us-ai-fund/",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/japan-sbi-invests-us-ai-133535762.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "93256ff3-f249-3fe4-90d5-6ba7d9722e02",
+      "content": {
+        "id": "93256ff3-f249-3fe4-90d5-6ba7d9722e02",
+        "contentType": "STORY",
+        "title": "Japan\u2019s Soneium Bets Big: Sony, SBI, and Startale\u2019s Bid to Build a Global Layer-2 Powerhouse",
+        "description": "",
+        "summary": "Startale CEO Sota Watanabe outlines how Sony and SBI partnerships drive Soneium, balancing compliance, entertainment, and finance.",
+        "pubDate": "2025-10-23T00:00:00Z",
+        "displayTime": "2025-10-23T00:00:00Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/beincrypto_us_662/7904e27670b4d6978dec8425bdab43d8",
+          "originalWidth": 5120,
+          "originalHeight": 2880,
+          "caption": "Crypto Exchanges Japan. Photo by BeInCrypto",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/64Ze0ATnjpfFjIeNkNKf2w--~B/aD0yODgwO3c9NTEyMDthcHBpZD15dGFjaHlvbg--/https://media.zenfs.com/en/beincrypto_us_662/7904e27670b4d6978dec8425bdab43d8",
+              "width": 5120,
+              "height": 2880,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/0t41mjSjbW45htmFymGk7A--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/beincrypto_us_662/7904e27670b4d6978dec8425bdab43d8",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "BeInCrypto",
+          "url": "https://beincrypto.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://beincrypto.com/startale-sony-sbi-soneium-vision/",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/japan-soneium-bets-big-sony-000000702.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    }
+  ],
+  "metadata": {
+    "symbol": "SBIN.NS",
+    "fetch_timestamp": "2025-11-18T17:01:19.789864",
+    "period": "2y",
+    "data_source": "yfinance",
+    "has_news": true
+  }
+}

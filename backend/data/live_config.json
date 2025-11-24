@@ -2,5 +2,7 @@
     "risk_per_trade": 0.02,
     "max_position_size": 0.1,
     "stop_loss_atr_multiplier": 2.0,
-    "take_profit_atr_multiplier": 4.0
+    "take_profit_atr_multiplier": 4.0,
+    "dhan_client_id": "YOUR_DHAN_CLIENT_ID_HERE",
+    "dhan_access_token": "YOUR_DHAN_ACCESS_TOKEN_HERE"
 }

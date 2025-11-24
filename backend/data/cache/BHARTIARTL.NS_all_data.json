@@ -1,0 +1,29 @@
+{
+  "price_history": {},
+  "price_history_metadata": {
+    "data_source": "none",
+    "rows": 0
+  },
+  "info": {},
+  "key_metrics": {},
+  "financials": {},
+  "quarterly_financials": {},
+  "balance_sheet": {},
+  "quarterly_balance_sheet": {},
+  "cashflow": {},
+  "quarterly_cashflow": {},
+  "recommendations": {},
+  "major_holders": {},
+  "earnings": {},
+  "quarterly_earnings": null,
+  "splits": {},
+  "dividends": {},
+  "news": [],
+  "metadata": {
+    "symbol": "BHARTIARTL.NS",
+    "fetch_timestamp": "2025-11-18T17:04:14.030539",
+    "period": "2y",
+    "data_source": "yfinance",
+    "has_news": false
+  }
+}

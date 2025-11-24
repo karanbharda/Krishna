@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import apiService from '../services/apiService';
+import { apiService } from '../services/apiService';
 
 const ChatContainer = styled.div`
   display: flex;
@@ -43,8 +43,8 @@ const StatusDot = styled.div`
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: ${props => props.status === 'connected' ? '#4CAF50' : 
-                       props.status === 'connecting' ? '#FF9800' : '#F44336'};
+  background: ${props => props.status === 'connected' ? '#4CAF50' :
+    props.status === 'connecting' ? '#FF9800' : '#F44336'};
   animation: ${props => props.status === 'connecting' ? 'pulse 1.5s infinite' : 'none'};
   
   @keyframes pulse {
@@ -77,7 +77,7 @@ const MessageBubble = styled.div`
   max-width: 80%;
   padding: 12px 16px;
   border-radius: 18px;
-  background: ${props => props.isUser 
+  background: ${props => props.isUser
     ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
     : 'rgba(255, 255, 255, 0.95)'};
   color: ${props => props.isUser ? 'white' : '#333'};
@@ -107,8 +107,8 @@ const ConfidenceBar = styled.div`
     display: block;
     height: 100%;
     width: ${props => props.confidence * 100}%;
-    background: ${props => props.confidence > 0.7 ? '#4CAF50' : 
-                          props.confidence > 0.4 ? '#FF9800' : '#F44336'};
+    background: ${props => props.confidence > 0.7 ? '#4CAF50' :
+    props.confidence > 0.4 ? '#FF9800' : '#F44336'};
     transition: width 0.3s ease;
   }
 `;
@@ -234,10 +234,11 @@ const MCPChatAssistant = () => {
 
   const quickActions = [
     "Analyze RELIANCE.NS",
-    "Portfolio risk assessment", 
-    "Market outlook today",
-    "Best stocks to buy",
-    "Trading strategy advice"
+    "What's in my portfolio?",
+    "Should I buy TCS right now?",
+    "How's my risk exposure?",
+    "Best stocks to invest in today",
+    "Explain my current holdings"
   ];
 
   useEffect(() => {
@@ -278,18 +279,83 @@ const MCPChatAssistant = () => {
     setIsLoading(true);
 
     try {
-      // Determine if this is a market analysis request
-      const isMarketQuery = inputValue.toLowerCase().includes('analyze') || 
-                           inputValue.toLowerCase().includes('stock') ||
-                           inputValue.toLowerCase().includes('price');
+      // More comprehensive query categorization
+      const message = inputValue.toLowerCase().trim();
+
+      // Portfolio-related queries
+      const isPortfolioQuery = message.includes('portfolio') ||
+        message.includes('holding') ||
+        message.includes('holdings') ||
+        message.includes('my stocks') ||
+        message.includes('what do i own') ||
+        message.includes('what i own') ||
+        message.includes('stocks i have') ||
+        message.includes('positions') ||
+        message.includes('investments') ||
+        message.includes('assets') ||
+        message.includes('cash') ||
+        (message.includes('what') && message.includes('own')) ||
+        (message.includes('show') && (message.includes('holdings') || message.includes('portfolio')));
+
+      // Buy/sell recommendation queries
+      const isTradeQuery = message.includes('buy') ||
+        message.includes('sell') ||
+        message.includes('trade') ||
+        message.includes('invest') ||
+        message.includes('should i buy') ||
+        message.includes('should i sell') ||
+        message.includes('recommend') ||
+        message.includes('suggestion') ||
+        message.includes('advise') ||
+        (message.includes('what') && (message.includes('stock') || message.includes('stocks')) &&
+          (message.includes('buy') || message.includes('sell')));
+
+      // Market analysis queries
+      const isMarketQuery = message.includes('analyze') ||
+        message.includes('stock') ||
+        message.includes('price') ||
+        message.includes('market') ||
+        message.includes('performance') ||
+        message.includes('trend') ||
+        message.includes('outlook') ||
+        message.includes('technical') ||
+        message.includes('fundamental');
+
+      // Risk assessment queries
+      const isRiskQuery = message.includes('risk') ||
+        message.includes('danger') ||
+        message.includes('safe') ||
+        message.includes('volatility') ||
+        message.includes('drawdown') ||
+        message.includes('protect') ||
+        message.includes('loss') ||
+        message.includes('stop');
 
       let response;
-      if (isMarketQuery && mcpStatus === 'connected') {
-        // Use MCP for market analysis
-        response = await apiService.mcpChat({
-          message: inputValue,
-          context: { type: 'market_analysis' }
-        });
+      if (mcpStatus === 'connected') {
+        // Route to appropriate MCP context based on query type
+        let contextType = 'general_trading';
+
+        if (isPortfolioQuery) {
+          contextType = 'portfolio_optimization';
+        } else if (isTradeQuery) {
+          contextType = 'trade_recommendation';
+        } else if (isMarketQuery) {
+          contextType = 'market_analysis';
+        } else if (isRiskQuery) {
+          contextType = 'risk_assessment';
+        }
+
+        try {
+          response = await apiService.mcpChat({
+            message: inputValue,
+            context: { type: contextType }
+          });
+        } catch (apiError) {
+          // Handle API errors specifically
+          console.error('API Error:', apiError);
+          throw new Error(`Failed to get response from AI assistant: ${apiError.message || 'Unknown error'}`);
+        }
       } else {
         // Use regular chat
         response = await apiService.sendChatMessage(inputValue);
@@ -302,15 +368,25 @@ const MCPChatAssistant = () => {
         timestamp: new Date(),
         confidence: response.confidence || 0.8,
         reasoning: response.reasoning,
-        context: response.context
+        context: response.context,
+        portfolioData: response.portfolio_data // Include portfolio data if available
       };
 
       setMessages(prev => [...prev, aiMessage]);
+
+      // If this was a portfolio query and we have portfolio data, emit an event to update the portfolio
+      if (isPortfolioQuery && response.portfolio_data) {
+        // Dispatch a custom event that the App component can listen to
+        const portfolioUpdateEvent = new CustomEvent('portfolioUpdate', {
+          detail: response.portfolio_data
+        });
+        window.dispatchEvent(portfolioUpdateEvent);
+      }
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage = {
         id: Date.now() + 1,
-        text: "I'm sorry, I encountered an error. Please try again or check if the MCP server is running.",
+        text: `I'm sorry, I encountered an error: ${error.message || 'Unknown error occurred'}. Please try again or check if the MCP server is running.`,
         isUser: false,
         timestamp: new Date(),
         confidence: 0.0,
@@ -390,8 +466,8 @@ const MCPChatAssistant = () => {
       <InputContainer>
         <QuickActions>
           {quickActions.map((action, index) => (
-            <QuickActionButton 
-              key={index} 
+            <QuickActionButton
+              key={index}
               onClick={() => handleQuickAction(action)}
               disabled={isLoading}
             >
@@ -408,8 +484,8 @@ const MCPChatAssistant = () => {
             disabled={isLoading}
             rows={1}
           />
-          <SendButton 
-            onClick={handleSendMessage} 
+          <SendButton
+            onClick={handleSendMessage}
             disabled={!inputValue.trim() || isLoading}
           >
             {isLoading ? '...' : 'Send'}

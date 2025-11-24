@@ -278,7 +278,7 @@ const ChatAssistant = ({ messages, onSendMessage }) => {
           <CommandGroup>
             <h5>General Chat:</h5>
             <p>You can also ask general questions about trading, markets, or your portfolio!</p>
-            <p><small>🦙 Powered by Llama 3.2 via Ollama</small></p>
+            <p><small>🤖 Powered by Groq API</small></p>
           </CommandGroup>
         </CommandsGrid>
       </CommandHelp>

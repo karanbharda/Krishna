@@ -3,11 +3,13 @@
     "holdings": {
         "SUZLON.NS": {
             "qty": 3,
-            "avg_price": 57.86
+            "avg_price": 57.86,
+            "last_price": 57.86
         },
         "RAJOOENG.NS": {
             "qty": 4,
-            "avg_price": 102.9
+            "avg_price": 102.9,
+            "last_price": 102.9
         }
     },
     "starting_balance": 10000,

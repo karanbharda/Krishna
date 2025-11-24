@@ -1,0 +1,621 @@
+{
+  "price_history": {},
+  "price_history_metadata": {
+    "data_source": "none",
+    "rows": 0
+  },
+  "info": {},
+  "key_metrics": {},
+  "financials": {},
+  "quarterly_financials": {},
+  "balance_sheet": {},
+  "quarterly_balance_sheet": {},
+  "cashflow": {},
+  "quarterly_cashflow": {},
+  "recommendations": {},
+  "major_holders": {},
+  "earnings": {},
+  "quarterly_earnings": null,
+  "splits": {},
+  "dividends": {},
+  "news": [
+    {
+      "id": "d689a6cb-71c2-3577-af63-bcb82063618e",
+      "content": {
+        "id": "d689a6cb-71c2-3577-af63-bcb82063618e",
+        "contentType": "STORY",
+        "title": "Grupo Cibest Scheduled to Report Q3 Earnings: What's in Store?",
+        "description": "",
+        "summary": "CIB's Q3 earnings are expected to rise 23.5% year over year, driven by higher net interest income and lower credit costs.",
+        "pubDate": "2025-11-05T18:07:00Z",
+        "displayTime": "2025-11-05T18:07:00Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/zacks.com/95985fbd351cc15ddaeb3ac3a12964dc",
+          "originalWidth": 620,
+          "originalHeight": 413,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/JMCxxMRv.2_xNPQLIEvj4g--~B/aD00MTM7dz02MjA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/95985fbd351cc15ddaeb3ac3a12964dc",
+              "width": 620,
+              "height": 413,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/6S0cZhLpAZyFkOv3DGmHAw--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/95985fbd351cc15ddaeb3ac3a12964dc",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Zacks",
+          "url": "http://www.zacks.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/grupo-cibest-scheduled-report-q3-180700871.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/grupo-cibest-scheduled-report-q3-180700871.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "33b14245-70b9-342d-b75d-13782ef5ece7",
+      "content": {
+        "id": "33b14245-70b9-342d-b75d-13782ef5ece7",
+        "contentType": "STORY",
+        "title": "Deutsche Bank Q3 Earnings Rise Y/Y, Provisions Decline Y/Y",
+        "description": "",
+        "summary": "DB posts a 7% rise in Q3 earnings as revenues grow and credit loss provisions ease, offset partly by higher costs.",
+        "pubDate": "2025-10-29T18:20:00Z",
+        "displayTime": "2025-10-29T18:20:00Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/zacks.com/8c9cc17156ed4cdfb4e9f5791db0c3bb",
+          "originalWidth": 635,
+          "originalHeight": 400,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/laph7y6SzBHnDai8xiBCBA--~B/aD00MDA7dz02MzU7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/8c9cc17156ed4cdfb4e9f5791db0c3bb",
+              "width": 635,
+              "height": 400,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/4P3HQeSOTh0uqyCsLBiI5g--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/8c9cc17156ed4cdfb4e9f5791db0c3bb",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Zacks",
+          "url": "http://www.zacks.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/deutsche-bank-q3-earnings-rise-182000872.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/deutsche-bank-q3-earnings-rise-182000872.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "5cfb0fb6-d178-3f02-9af1-8d6999a06bf1",
+      "content": {
+        "id": "5cfb0fb6-d178-3f02-9af1-8d6999a06bf1",
+        "contentType": "STORY",
+        "title": "UBS Group Q3 Earnings & Revenues Increase Y/Y, Expenses Decline",
+        "description": "",
+        "summary": "UBS posted a strong Q3 profit, driven by wealth, asset and investment banking gains as Credit Suisse integration advances.",
+        "pubDate": "2025-10-29T17:23:00Z",
+        "displayTime": "2025-10-29T17:23:00Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/zacks.com/6f2cab89bf2cbad1966358e04258e202",
+          "originalWidth": 635,
+          "originalHeight": 400,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/ShfhwtDyA2WzDBKdAL7M8Q--~B/aD00MDA7dz02MzU7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/6f2cab89bf2cbad1966358e04258e202",
+              "width": 635,
+              "height": 400,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/WBkF.8AjygV.rmpZ4E0BUQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/6f2cab89bf2cbad1966358e04258e202",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Zacks",
+          "url": "http://www.zacks.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/ubs-group-q3-earnings-revenues-172300101.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/ubs-group-q3-earnings-revenues-172300101.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "663fc206-bc75-3e13-b713-d7cf7b492ead",
+      "content": {
+        "id": "663fc206-bc75-3e13-b713-d7cf7b492ead",
+        "contentType": "STORY",
+        "title": "BNS vs. IBN: Which Stock Should Value Investors Buy Now?",
+        "description": "",
+        "summary": "BNS vs. IBN: Which Stock Is the Better Value Option?",
+        "pubDate": "2025-10-29T15:40:03Z",
+        "displayTime": "2025-10-29T15:40:03Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/zacks.com/3cb5117fc22f5e37890d1860dcd61f9f",
+          "originalWidth": 900,
+          "originalHeight": 675,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/xopQugjeNyS1VO21qlHkcQ--~B/aD02NzU7dz05MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/3cb5117fc22f5e37890d1860dcd61f9f",
+              "width": 900,
+              "height": 675,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/k6uDefeIp9u1zRe.lKA2TQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/3cb5117fc22f5e37890d1860dcd61f9f",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Zacks",
+          "url": "http://www.zacks.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/bns-vs-ibn-stock-value-154003098.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/bns-vs-ibn-stock-value-154003098.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "076195b4-f9a9-3b6e-8eda-53541dabde42",
+      "content": {
+        "id": "076195b4-f9a9-3b6e-8eda-53541dabde42",
+        "contentType": "STORY",
+        "title": "HSBC Q3 Pre-Tax Earnings Decline Y/Y on Higher ECL, Expenses",
+        "description": "",
+        "summary": "HSBC's Q3 profit slides 13.9% as higher credit losses and legal costs offset stronger revenues and fee income.",
+        "pubDate": "2025-10-28T16:58:00Z",
+        "displayTime": "2025-10-28T16:58:00Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/zacks.com/59744b4fcca70e73cbe3b535b1bc283a",
+          "originalWidth": 635,
+          "originalHeight": 400,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/yM2AAyXrqTaXtKtrw4bnvQ--~B/aD00MDA7dz02MzU7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/59744b4fcca70e73cbe3b535b1bc283a",
+              "width": 635,
+              "height": 400,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/DQZNrSy56LhLPHap2sMTjw--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/59744b4fcca70e73cbe3b535b1bc283a",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Zacks",
+          "url": "http://www.zacks.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/hsbc-q3-pre-tax-earnings-165800052.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/hsbc-q3-pre-tax-earnings-165800052.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "54bb82ba-7f1c-3454-9b2f-43d83302609d",
+      "content": {
+        "id": "54bb82ba-7f1c-3454-9b2f-43d83302609d",
+        "contentType": "STORY",
+        "title": "Barclays Q3 Earnings Dip Y/Y as Costs, Credit Impairment Charges Rise",
+        "description": "",
+        "summary": "BCS' Q3 profit slips 6.8% y/y as rising costs and higher credit impairment charges offset solid revenue growth.",
+        "pubDate": "2025-10-22T16:11:00Z",
+        "displayTime": "2025-10-22T16:11:00Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/zacks.com/5bbea15fd152c1fe1e99800e27e2dcfa",
+          "originalWidth": 635,
+          "originalHeight": 400,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/0B3b99UrWg5HeBq_pd7Ejg--~B/aD00MDA7dz02MzU7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/5bbea15fd152c1fe1e99800e27e2dcfa",
+              "width": 635,
+              "height": 400,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/RWpYB0x1pCDcxSg1BdUkYw--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/5bbea15fd152c1fe1e99800e27e2dcfa",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Zacks",
+          "url": "http://www.zacks.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/barclays-q3-earnings-dip-y-161100908.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/barclays-q3-earnings-dip-y-161100908.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "443da0ba-23cd-38f1-845a-abfcd04b43f7",
+      "content": {
+        "id": "443da0ba-23cd-38f1-845a-abfcd04b43f7",
+        "contentType": "STORY",
+        "title": "Asian Equities Traded in the US as American Depositary Receipts Little Changed in Wednesday Trading",
+        "description": "",
+        "summary": "Asian equities traded in the US as American depositary receipts were little changed Wednesday mornin",
+        "pubDate": "2025-10-22T14:32:22Z",
+        "displayTime": "2025-10-22T14:32:22Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": null,
+        "provider": {
+          "displayName": "MT Newswires",
+          "url": "https://www.mtnewswires.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/asian-equities-traded-us-american-143222110.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/asian-equities-traded-us-american-143222110.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": true,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "6b92025c-5f50-3667-90c3-f198073d934d",
+      "content": {
+        "id": "6b92025c-5f50-3667-90c3-f198073d934d",
+        "contentType": "STORY",
+        "title": "ICICI Bank (IBN) Declines as Investors Price In Better-than-Expected Earnings",
+        "description": "",
+        "summary": "We recently published 10 Stocks With Massive Losses; AI Stocks Not Spared. ICICI Bank Ltd. (NYSE:IBN) is one of the worst performers on Monday. ICICI Bank dropped its share prices by 5.89 percent on Monday to close at $31 apiece as investors sold off positions after pricing in better-than-expected earnings performance in the second quarter [\u2026]",
+        "pubDate": "2025-10-21T16:50:34Z",
+        "displayTime": "2025-10-21T16:50:34Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/insidermonkey.com/540c7bfffc9cf078fe323e1d9683599d",
+          "originalWidth": 848,
+          "originalHeight": 565,
+          "caption": "ICICI Bank (IBN) Declines as Investors Price In Better-than-Expected Earnings",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/RzUMb56XuB3N7hvjHpTzbw--~B/aD01NjU7dz04NDg7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/insidermonkey.com/540c7bfffc9cf078fe323e1d9683599d",
+              "width": 848,
+              "height": 565,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/IqzdvZ1ILhYlchH3a_9qaQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/insidermonkey.com/540c7bfffc9cf078fe323e1d9683599d",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Insider Monkey",
+          "url": "http://www.insidermonkey.com"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/icici-bank-ibn-declines-investors-165034421.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/icici-bank-ibn-declines-investors-165034421.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "67be9b35-7278-330c-9f7f-a708017057aa",
+      "content": {
+        "id": "67be9b35-7278-330c-9f7f-a708017057aa",
+        "contentType": "STORY",
+        "title": "IBN Q2 Earnings Rise Y/Y on Higher NII & Fee Incom, Stock Falls 5.9%",
+        "description": "",
+        "summary": "ICICI Bank's Q2 profit rises 5.2% y/y on higher NII and fee income, but rising expenses weighed on sentiment, sending shares down 5.9%.",
+        "pubDate": "2025-10-21T16:31:00Z",
+        "displayTime": "2025-10-21T16:31:00Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/zacks.com/6f2cab89bf2cbad1966358e04258e202",
+          "originalWidth": 635,
+          "originalHeight": 400,
+          "caption": "",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/ShfhwtDyA2WzDBKdAL7M8Q--~B/aD00MDA7dz02MzU7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/6f2cab89bf2cbad1966358e04258e202",
+              "width": 635,
+              "height": 400,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/WBkF.8AjygV.rmpZ4E0BUQ--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/zacks.com/6f2cab89bf2cbad1966358e04258e202",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Zacks",
+          "url": "http://www.zacks.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://finance.yahoo.com/news/ibn-q2-earnings-rise-y-163100571.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/ibn-q2-earnings-rise-y-163100571.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    },
+    {
+      "id": "3fa6e142-474b-3ed1-a7c6-ebacc12818fb",
+      "content": {
+        "id": "3fa6e142-474b-3ed1-a7c6-ebacc12818fb",
+        "contentType": "STORY",
+        "title": "India's ICICI Bank beats quarterly profit estimates on lower provisions for bad loans",
+        "description": "",
+        "summary": "MUMBAI (Reuters) -Indian private lender ICICI Bank reported a higher-than-expected profit for the second quarter on Saturday, as lower provisions against bad loans balanced out a fall in treasury",
+        "pubDate": "2025-10-18T09:53:33Z",
+        "displayTime": "2025-10-18T09:53:33Z",
+        "isHosted": true,
+        "bypassModal": false,
+        "previewUrl": null,
+        "thumbnail": {
+          "originalUrl": "https://media.zenfs.com/en/reuters.com/e22022efe45606a6d56c7bbe634df630",
+          "originalWidth": 800,
+          "originalHeight": 536,
+          "caption": "Traffic moves past the ICICI bank head office in Mumbai, India, April 21, 2023. REUTERS/Francis Mascarenhas",
+          "resolutions": [
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/rnUKB02Msbjpb2NsZmACpg--~B/aD01MzY7dz04MDA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/e22022efe45606a6d56c7bbe634df630",
+              "width": 800,
+              "height": 536,
+              "tag": "original"
+            },
+            {
+              "url": "https://s.yimg.com/uu/api/res/1.2/_k1117gj5OqiOsnq5TOv3w--~B/Zmk9c3RyaW07aD0xMjg7dz0xNzA7YXBwaWQ9eXRhY2h5b24-/https://media.zenfs.com/en/reuters.com/e22022efe45606a6d56c7bbe634df630",
+              "width": 170,
+              "height": 128,
+              "tag": "170x128"
+            }
+          ]
+        },
+        "provider": {
+          "displayName": "Reuters",
+          "url": "https://www.reuters.com/"
+        },
+        "canonicalUrl": {
+          "url": "https://sg.finance.yahoo.com/news/indias-icici-bank-beats-quarterly-095333485.html",
+          "site": "finance",
+          "region": "SG",
+          "lang": "en-SG"
+        },
+        "clickThroughUrl": {
+          "url": "https://finance.yahoo.com/news/indias-icici-bank-beats-quarterly-095333485.html",
+          "site": "finance",
+          "region": "US",
+          "lang": "en-US"
+        },
+        "metadata": {
+          "editorsPick": false
+        },
+        "finance": {
+          "premiumFinance": {
+            "isPremiumNews": false,
+            "isPremiumFreeNews": false
+          }
+        },
+        "storyline": null
+      }
+    }
+  ],
+  "metadata": {
+    "symbol": "ICICIBANK.NS",
+    "fetch_timestamp": "2025-11-18T16:59:27.729220",
+    "period": "2y",
+    "data_source": "yfinance",
+    "has_news": true
+  }
+}
