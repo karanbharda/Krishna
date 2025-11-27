@@ -228,7 +228,7 @@ const MCPChatAssistant = () => {
     }
   ]);
   const [inputValue, setInputValue] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [mcpStatus, setMcpStatus] = useState('connecting');
   const messagesEndRef = useRef(null);
 
@@ -264,8 +264,9 @@ const MCPChatAssistant = () => {
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!inputValue.trim() || isProcessing) return;
 
     const userMessage = {
       id: Date.now(),
@@ -275,61 +276,47 @@ const MCPChatAssistant = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInputValue = inputValue;
     setInputValue('');
-    setIsLoading(true);
+    setIsProcessing(true);
 
     try {
-      // More comprehensive query categorization
-      const message = inputValue.toLowerCase().trim();
+      // Determine if this is a portfolio-related query
+      const lowerCaseInput = currentInputValue.toLowerCase();
+      const isPortfolioQuery =
+        lowerCaseInput.includes('portfolio') ||
+        lowerCaseInput.includes('holdings') ||
+        lowerCaseInput.includes('positions') ||
+        lowerCaseInput.includes('my stocks') ||
+        lowerCaseInput.includes('what i own');
 
-      // Portfolio-related queries
-      const isPortfolioQuery = message.includes('portfolio') ||
-        message.includes('holding') ||
-        message.includes('holdings') ||
-        message.includes('my stocks') ||
-        message.includes('what do i own') ||
-        message.includes('what i own') ||
-        message.includes('stocks i have') ||
-        message.includes('positions') ||
-        message.includes('investments') ||
-        message.includes('assets') ||
-        message.includes('cash') ||
-        (message.includes('what') && message.includes('own')) ||
-        (message.includes('show') && (message.includes('holdings') || message.includes('portfolio')));
+      // Determine if this is a trade/buy/sell query
+      const isTradeQuery =
+        lowerCaseInput.includes('buy') ||
+        lowerCaseInput.includes('sell') ||
+        lowerCaseInput.includes('trade') ||
+        lowerCaseInput.includes('invest') ||
+        lowerCaseInput.includes('should i buy') ||
+        lowerCaseInput.includes('should i sell');
 
-      // Buy/sell recommendation queries
-      const isTradeQuery = message.includes('buy') ||
-        message.includes('sell') ||
-        message.includes('trade') ||
-        message.includes('invest') ||
-        message.includes('should i buy') ||
-        message.includes('should i sell') ||
-        message.includes('recommend') ||
-        message.includes('suggestion') ||
-        message.includes('advise') ||
-        (message.includes('what') && (message.includes('stock') || message.includes('stocks')) &&
-          (message.includes('buy') || message.includes('sell')));
+      // Determine if this is a market analysis query
+      const isMarketQuery =
+        lowerCaseInput.includes('analyze') ||
+        lowerCaseInput.includes('stock') ||
+        lowerCaseInput.includes('price') ||
+        lowerCaseInput.includes('market') ||
+        lowerCaseInput.includes('performance') ||
+        lowerCaseInput.includes('trend') ||
+        lowerCaseInput.includes('outlook');
 
-      // Market analysis queries
-      const isMarketQuery = message.includes('analyze') ||
-        message.includes('stock') ||
-        message.includes('price') ||
-        message.includes('market') ||
-        message.includes('performance') ||
-        message.includes('trend') ||
-        message.includes('outlook') ||
-        message.includes('technical') ||
-        message.includes('fundamental');
-
-      // Risk assessment queries
-      const isRiskQuery = message.includes('risk') ||
-        message.includes('danger') ||
-        message.includes('safe') ||
-        message.includes('volatility') ||
-        message.includes('drawdown') ||
-        message.includes('protect') ||
-        message.includes('loss') ||
-        message.includes('stop');
+      // Determine if this is a risk assessment query
+      const isRiskQuery =
+        lowerCaseInput.includes('risk') ||
+        lowerCaseInput.includes('danger') ||
+        lowerCaseInput.includes('safe') ||
+        lowerCaseInput.includes('volatility') ||
+        lowerCaseInput.includes('drawdown') ||
+        lowerCaseInput.includes('protect');
 
       let response;
       if (mcpStatus === 'connected') {
@@ -348,17 +335,41 @@ const MCPChatAssistant = () => {
 
         try {
           response = await apiService.mcpChat({
-            message: inputValue,
+            message: currentInputValue,
             context: { type: contextType }
           });
         } catch (apiError) {
           // Handle API errors specifically
           console.error('API Error:', apiError);
-          throw new Error(`Failed to get response from AI assistant: ${apiError.message || 'Unknown error'}`);
+
+          // Provide more informative error message
+          let errorMessage = "I'm having trouble connecting to the analysis engine. ";
+
+          if (apiError.response) {
+            switch (apiError.response.status) {
+              case 404:
+                errorMessage += "The requested resource was not found.";
+                break;
+              case 500:
+                errorMessage += "There was a server error. Please try again later.";
+                break;
+              case 503:
+                errorMessage += "The analysis service is temporarily unavailable.";
+                break;
+              default:
+                errorMessage += `Error code: ${apiError.response.status}`;
+            }
+          } else if (apiError.request) {
+            errorMessage += "Please check your network connection.";
+          } else {
+            errorMessage += "Please try rephrasing your question.";
+          }
+
+          throw new Error(errorMessage);
         }
       } else {
         // Use regular chat
-        response = await apiService.sendChatMessage(inputValue);
+        response = await apiService.sendChatMessage(currentInputValue);
       }
 
       const aiMessage = {
@@ -369,32 +380,55 @@ const MCPChatAssistant = () => {
         confidence: response.confidence || 0.8,
         reasoning: response.reasoning,
         context: response.context,
-        portfolioData: response.portfolio_data // Include portfolio data if available
+        portfolioData: response.portfolio_data, // Include portfolio data if available
+        errorDetails: response.error_details // Include error details if available
       };
+
+      // Special handling for diagnostic information
+      if (response.context === "analysis_error" || response.context === "mcp_scan_failed") {
+        aiMessage.text = response.response || "I encountered an issue while analyzing your request. ";
+        if (response.error_details) {
+          aiMessage.text += `\n\nTechnical details: ${response.error_details}`;
+        }
+        aiMessage.text += "\n\nThe system is attempting to automatically fetch and process data for new symbols. Please try again in a few moments.";
+      }
+
+      // Special handling for cases where no predictions were generated
+      if (response.scan_data && response.scan_data.diagnostics) {
+        const diagnostics = response.scan_data.diagnostics;
+
+        // Add diagnostic information to the response
+        if (diagnostics.issue_summary) {
+          aiMessage.text += `\n\nDiagnostic Information:\n${diagnostics.issue_summary}`;
+        }
+
+        if (diagnostics.failed_symbols && diagnostics.failed_symbols.length > 0) {
+          aiMessage.text += `\n\nSymbols that failed to process: ${diagnostics.failed_symbols.slice(0, 5).join(', ')}`;
+          if (diagnostics.failed_symbols.length > 5) {
+            aiMessage.text += ` and ${diagnostics.failed_symbols.length - 5} more`;
+          }
+        }
+
+        if (diagnostics.low_confidence_symbols && diagnostics.low_confidence_symbols.length > 0) {
+          aiMessage.text += `\n\nSymbols with low confidence: ${diagnostics.low_confidence_symbols.slice(0, 3).map(s => `${s.symbol} (${s.action}, ${s.confidence.toFixed(2)})`).join(', ')}`;
+        }
+      }
 
       setMessages(prev => [...prev, aiMessage]);
-
-      // If this was a portfolio query and we have portfolio data, emit an event to update the portfolio
-      if (isPortfolioQuery && response.portfolio_data) {
-        // Dispatch a custom event that the App component can listen to
-        const portfolioUpdateEvent = new CustomEvent('portfolioUpdate', {
-          detail: response.portfolio_data
-        });
-        window.dispatchEvent(portfolioUpdateEvent);
-      }
     } catch (error) {
       console.error('Chat error:', error);
+
       const errorMessage = {
         id: Date.now() + 1,
-        text: `I'm sorry, I encountered an error: ${error.message || 'Unknown error occurred'}. Please try again or check if the MCP server is running.`,
+        text: error.message || "Sorry, I encountered an error processing your request. Please try again.",
         isUser: false,
         timestamp: new Date(),
-        confidence: 0.0,
         isError: true
       };
+
       setMessages(prev => [...prev, errorMessage]);
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -405,7 +439,7 @@ const MCPChatAssistant = () => {
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      handleSubmit();
     }
   };
 
@@ -455,7 +489,7 @@ const MCPChatAssistant = () => {
             )}
           </Message>
         ))}
-        {isLoading && (
+        {isProcessing && (
           <Message isUser={false}>
             <LoadingIndicator>AI is thinking...</LoadingIndicator>
           </Message>
@@ -469,7 +503,7 @@ const MCPChatAssistant = () => {
             <QuickActionButton
               key={index}
               onClick={() => handleQuickAction(action)}
-              disabled={isLoading}
+              disabled={isProcessing}
             >
               {action}
             </QuickActionButton>
@@ -481,14 +515,14 @@ const MCPChatAssistant = () => {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Ask me about stocks, market analysis, or trading strategies..."
-            disabled={isLoading}
+            disabled={isProcessing}
             rows={1}
           />
           <SendButton
-            onClick={handleSendMessage}
-            disabled={!inputValue.trim() || isLoading}
+            onClick={handleSubmit}
+            disabled={!inputValue.trim() || isProcessing}
           >
-            {isLoading ? '...' : 'Send'}
+            {isProcessing ? '...' : 'Send'}
           </SendButton>
         </InputWrapper>
       </InputContainer>

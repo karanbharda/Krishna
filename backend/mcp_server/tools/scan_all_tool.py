@@ -57,7 +57,19 @@ class ScanAllTool:
         self.engineer = FeatureEngineer()
         self.request_counter = 0
 
+        # Tool interconnections
+        self.analyze_tool = None
+        self.predict_tool = None
+
         logger.info(f"Scan All Tool {self.tool_id} initialized")
+
+    def connect_tools(self, tool_registry: Dict[str, Any]):
+        """Connect to other tools for interconnection"""
+        if "analyze" in tool_registry:
+            self.analyze_tool = tool_registry["analyze"]
+        if "predict" in tool_registry:
+            self.predict_tool = tool_registry["predict"]
+        logger.info(f"Scan All Tool {self.tool_id} connected to other tools")
 
     def _log_request(self, tool_name: str, request_data: Dict) -> str:
         """Log incoming request"""
@@ -149,7 +161,18 @@ class ScanAllTool:
                 except Exception as e:
                     logger.error(
                         f"[{request_id}] Failed to fetch data for {symbol}: {e}")
-                    return None
+                    # Try to initialize data dynamically
+                    try:
+                        from utils.ml_components.stock_analysis_complete import _initialize_symbol_data
+                        if _initialize_symbol_data(symbol, verbose=False):
+                            logger.info(
+                                f"[{request_id}] Data initialized for {symbol} via dynamic initialization")
+                        else:
+                            return None
+                    except Exception as init_e:
+                        logger.error(
+                            f"[{request_id}] Failed to initialize data for {symbol}: {init_e}")
+                        return None
 
             # STEP 2: Ensure features are calculated
             features_path = FEATURE_CACHE_DIR / f"{symbol}_features.json"
@@ -183,13 +206,35 @@ class ScanAllTool:
                     if not success:
                         logger.error(
                             f"[{request_id}] Training failed for {symbol}")
-                        return None
+                        # Try to train models dynamically
+                        try:
+                            from utils.ml_components.stock_analysis_complete import _train_symbol_models
+                            if _train_symbol_models(symbol, horizon, verbose=False):
+                                logger.info(
+                                    f"[{request_id}] Models trained for {symbol} via dynamic training")
+                            else:
+                                return None
+                        except Exception as train_e:
+                            logger.error(
+                                f"[{request_id}] Failed to train models for {symbol}: {train_e}")
+                            return None
                     logger.info(
                         f"[{request_id}] Models trained for {symbol} ({horizon})")
                 except Exception as e:
                     logger.error(
                         f"[{request_id}] Training failed for {symbol}: {e}", exc_info=True)
-                    return None
+                    # Try to train models dynamically
+                    try:
+                        from utils.ml_components.stock_analysis_complete import _train_symbol_models
+                        if _train_symbol_models(symbol, horizon, verbose=False):
+                            logger.info(
+                                f"[{request_id}] Models trained for {symbol} via dynamic training")
+                        else:
+                            return None
+                    except Exception as train_e:
+                        logger.error(
+                            f"[{request_id}] Failed to train models for {symbol}: {train_e}")
+                        return None
 
             # STEP 4: Get prediction
             prediction = predict_stock_price(
@@ -254,6 +299,8 @@ class ScanAllTool:
             # Process each symbol
             all_predictions = []
             shortlist = []
+            failed_symbols = []
+            low_confidence_symbols = []
 
             for symbol in symbols:
                 prediction = self._scan_single_symbol(
@@ -263,22 +310,41 @@ class ScanAllTool:
                     # Add to shortlist if meets confidence threshold
                     if prediction.get('confidence', 0) >= min_score:
                         shortlist.append(prediction)
+                    else:
+                        low_confidence_symbols.append({
+                            "symbol": symbol,
+                            "confidence": prediction.get('confidence', 0),
+                            "action": prediction.get('action', 'UNKNOWN')
+                        })
+                else:
+                    failed_symbols.append(symbol)
 
             # Sort shortlist by score (descending)
             shortlist.sort(key=lambda x: x.get('score', 0), reverse=True)
+
+            # Limit results if needed
+            if max_results > 0:
+                shortlist = shortlist[:max_results]
 
             result = {
                 "metadata": {
                     "total_scanned": len(symbols),
                     "predictions_generated": len(all_predictions),
                     "shortlist_count": len(shortlist),
+                    "failed_symbols_count": len(failed_symbols),
+                    "low_confidence_count": len(low_confidence_symbols),
                     "horizon": horizon,
                     "min_confidence": min_score,
                     "timestamp": datetime.now().isoformat(),
                     "request_id": request_id
                 },
                 "shortlist": shortlist,
-                "all_predictions": all_predictions
+                "all_predictions": all_predictions,
+                "diagnostics": {
+                    "failed_symbols": failed_symbols,
+                    # Limit to first 10 for brevity
+                    "low_confidence_symbols": low_confidence_symbols[:10]
+                }
             }
 
             # Calculate average confidence from shortlist
@@ -288,14 +354,62 @@ class ScanAllTool:
                 if valid_predictions:
                     confidence = sum(
                         p["confidence"] for p in valid_predictions) / len(valid_predictions)
+            elif all_predictions:  # If no shortlist but we have some predictions
+                valid_predictions = [
+                    p for p in all_predictions if "confidence" in p]
+                if valid_predictions:
+                    confidence = sum(
+                        p["confidence"] for p in valid_predictions) / len(valid_predictions)
 
             duration_ms = (time.time() - start_time) * 1000
             self._log_response(request_id, result, duration_ms)
 
             execution_time = time.time() - start_time
 
+            # If no predictions were generated, provide diagnostic information
+            if not all_predictions and not shortlist:
+                logger.warning(f"[{request_id}] No predictions generated for any symbols. "
+                               f"Failed symbols: {len(failed_symbols)}, "
+                               f"Total symbols scanned: {len(symbols)}")
+
+                # Return a result with diagnostic information
+                result["diagnostics"]["issue_summary"] = (
+                    "No predictions were generated. This typically happens when: "
+                    "1) Stock data is unavailable or incomplete, "
+                    "2) Models haven't been trained for these symbols, "
+                    "3) Technical indicators cannot be calculated due to insufficient data, "
+                    "4) All predictions fell below the confidence threshold. "
+                    "The system will attempt to automatically fetch and process data for new symbols."
+                )
+
+            # If we have valid predictions, also generate analysis using the analyze tool
+            valid_predictions = shortlist if shortlist else all_predictions
+            if valid_predictions:
+                try:
+                    # Import analyze tool dynamically
+                    from .analyze_tool import AnalyzeTool
+                    analyze_tool = AnalyzeTool({
+                        "tool_id": "analyze_tool_for_scan"
+                    })
+
+                    # Generate analysis for the predictions
+                    analysis_arguments = {
+                        # Limit to first 10 for performance
+                        "predictions": valid_predictions[:10],
+                        "analysis_depth": "comprehensive",
+                        "include_risk_assessment": True
+                    }
+
+                    analysis_result = await analyze_tool.analyze(analysis_arguments, session_id)
+                    if analysis_result.status == "SUCCESS":
+                        result["analysis"] = analysis_result.data
+                except Exception as analyze_error:
+                    logger.warning(
+                        f"Failed to generate analysis for scan results: {analyze_error}")
+
             return MCPToolResult(
-                status="SUCCESS",
+                status="SUCCESS" if (
+                    shortlist or all_predictions) else "WARNING",
                 data=result,
                 confidence=confidence,
                 execution_time=execution_time,

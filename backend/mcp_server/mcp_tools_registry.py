@@ -13,6 +13,9 @@ from .tools.analyze_tool import AnalyzeTool, ANALYZE_TOOL_AVAILABLE
 from .tools.scan_all_tool import ScanAllTool, SCAN_ALL_TOOL_AVAILABLE
 from .tools.confirm_tool import ConfirmTool, CONFIRM_TOOL_AVAILABLE
 from .tools.sentiment_tool import SentimentTool, SENTIMENT_TOOL_AVAILABLE
+from .tools.professional_trading_tool import ProfessionalTradingTool, PROFESSIONAL_TRADING_TOOL_AVAILABLE
+from .tools.risk_management_tool import RiskManagementTool, RISK_MANAGEMENT_TOOL_AVAILABLE
+from .tools.technical_analysis_tool import TechnicalAnalysisTool, TECHNICAL_ANALYSIS_TOOL_AVAILABLE
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +29,7 @@ class MCPToolsRegistry:
     def __init__(self):
         self.tools = {}
         self.tool_schemas = {}
+        self.tool_instances = {}  # Store tool instances for interconnection
         self.initialized = False
 
         # Register standard tools
@@ -61,7 +65,7 @@ class MCPToolsRegistry:
             self.register_tool(
                 name="analyze",
                 tool_class=AnalyzeTool,
-                description="Send prediction output to local LLaMA via LangGraph to get reasoning and insights",
+                description="Send prediction output to Groq API to get reasoning and insights",
                 schema={
                     "type": "object",
                     "properties": {
@@ -159,6 +163,129 @@ class MCPToolsRegistry:
                 }
             )
 
+        # Professional Trading Tool
+        if PROFESSIONAL_TRADING_TOOL_AVAILABLE:
+            self.register_tool(
+                name="professional_trading",
+                tool_class=ProfessionalTradingTool,
+                description="Execute professional-grade trading decisions with institutional buy/sell logic",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "symbol": {"type": "string"},
+                        "action": {"type": "string", "enum": ["buy", "sell", "analyze"]},
+                        "symbols": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "portfolio_context": {"type": "object"},
+                        "risk_profile": {"type": "string"},
+                        "market_outlook": {"type": "string"},
+                        "analysis_depth": {"type": "string"}
+                    },
+                    "required": []
+                }
+            )
+
+            # Trading Recommendations Tool
+            self.register_tool(
+                name="trading_recommendations",
+                tool_class=ProfessionalTradingTool,
+                description="Get professional trading recommendations with risk assessment for multiple symbols",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "symbols": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "portfolio_context": {"type": "object"},
+                        "risk_profile": {"type": "string"},
+                        "market_outlook": {"type": "string"}
+                    },
+                    "required": ["symbols"]
+                }
+            )
+
+        # Risk Management Tool
+        if RISK_MANAGEMENT_TOOL_AVAILABLE:
+            self.register_tool(
+                name="risk_management",
+                tool_class=RiskManagementTool,
+                description="Professional risk management with position sizing and portfolio risk assessment",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "symbol": {"type": "string"},
+                        "position_size": {"type": "number"},
+                        "entry_price": {"type": "number"},
+                        "stop_loss": {"type": "number"},
+                        "portfolio_value": {"type": "number"},
+                        "volatility": {"type": "number"},
+                        "confidence": {"type": "number"},
+                        "positions": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "symbol": {"type": "string"},
+                                    "value": {"type": "number"},
+                                    "weight": {"type": "number"},
+                                    "volatility": {"type": "number"}
+                                }
+                            }
+                        },
+                        "risk_free_rate": {"type": "number"},
+                        "time_horizon": {"type": "number"}
+                    },
+                    "required": []
+                }
+            )
+
+        # Technical Analysis Tool
+        if TECHNICAL_ANALYSIS_TOOL_AVAILABLE:
+            self.register_tool(
+                name="technical_analysis",
+                tool_class=TechnicalAnalysisTool,
+                description="Professional technical analysis with advanced indicators and pattern recognition",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "symbols": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "timeframe": {"type": "string"},
+                        "include_patterns": {"type": "boolean"},
+                        "risk_profile": {"type": "string"}
+                    },
+                    "required": ["symbols"]
+                }
+            )
+
+            # Pattern Scanning Tool
+            self.register_tool(
+                name="pattern_scan",
+                tool_class=TechnicalAnalysisTool,
+                description="Scan for technical patterns across multiple symbols",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "symbols": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "patterns": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "min_confidence": {"type": "number"},
+                        "timeframe": {"type": "string"}
+                    },
+                    "required": ["symbols"]
+                }
+            )
+
     def register_tool(self, name: str, tool_class: type, description: str, schema: Dict[str, Any]):
         """
         Register a new MCP tool
@@ -191,7 +318,19 @@ class MCPToolsRegistry:
             raise ValueError(f"Tool '{name}' not found in registry")
 
         tool_class = self.tools[name]
-        return tool_class(config)
+        tool_instance = tool_class(config)
+
+        # Store instance for interconnection
+        self.tool_instances[name] = tool_instance
+        return tool_instance
+
+    def connect_tools(self):
+        """Connect all tools to each other for full interconnection"""
+        # Connect each tool to all other tools
+        for tool_name, tool_instance in self.tool_instances.items():
+            if hasattr(tool_instance, 'connect_tools'):
+                tool_instance.connect_tools(self.tool_instances)
+        logger.info("All MCP tools interconnected successfully")
 
     def get_tool_schema(self, name: str):
         """

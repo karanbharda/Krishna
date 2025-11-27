@@ -44,8 +44,20 @@ class SentimentTool:
         else:
             self.stock_analyzer = None
 
+        # Tool interconnections
+        self.predict_tool = None
+        self.analyze_tool = None
+
         logger.info(
             f"Sentiment Tool {self.tool_id} initialized with sources: {self.sentiment_sources}")
+
+    def connect_tools(self, tool_registry: Dict[str, Any]):
+        """Connect to other tools for interconnection"""
+        if "predict" in tool_registry:
+            self.predict_tool = tool_registry["predict"]
+        if "analyze" in tool_registry:
+            self.analyze_tool = tool_registry["analyze"]
+        logger.info(f"Sentiment Tool {self.tool_id} connected to other tools")
 
     async def analyze_sentiment(self, arguments: Dict[str, Any], session_id: str) -> MCPToolResult:
         """

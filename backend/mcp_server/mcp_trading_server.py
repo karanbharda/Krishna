@@ -76,6 +76,7 @@ class MCPTradingServer:
         # Tool registry
         self.tools = {}
         self.tool_schemas = {}
+        self.tool_instances = {}  # Store tool instances for interconnection
 
         # Session tracking
         self.active_sessions = {}
@@ -101,6 +102,26 @@ class MCPTradingServer:
 
         logger.info(
             f"MCP Trading Server initialized on {self.host}:{self.port}")
+
+    def register_tool(self, name: str, function: Callable, description: str, schema: Dict, instance=None):
+        """
+        Register a new MCP tool
+
+        Args:
+            name: Tool name
+            function: Async function to execute
+            description: Tool description
+            schema: JSON schema for tool parameters
+            instance: Tool instance for interconnection
+        """
+        self.tools[name] = function
+        self.tool_schemas[name] = {
+            "description": description,
+            "schema": schema
+        }
+        if instance:
+            self.tool_instances[name] = instance
+        logger.info(f"Registered MCP tool: {name}")
 
     def _setup_routes(self):
         """Setup FastAPI routes for MCP endpoints"""
@@ -194,23 +215,6 @@ class MCPTradingServer:
                 "active_sessions": list(self.active_sessions.keys()),
                 "count": len(self.active_sessions)
             }
-
-    def register_tool(self, name: str, function: Callable, description: str, schema: Dict):
-        """
-        Register a new MCP tool
-
-        Args:
-            name: Tool name
-            function: Async function to execute
-            description: Tool description
-            schema: JSON schema for tool parameters
-        """
-        self.tools[name] = function
-        self.tool_schemas[name] = {
-            "description": description,
-            "schema": schema
-        }
-        logger.info(f"Registered MCP tool: {name}")
 
     async def start(self):
         """Start the MCP server"""

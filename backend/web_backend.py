@@ -87,6 +87,9 @@ try:
     from mcp_server.mcp_trading_server import MCPTradingServer, MCP_SERVER_AVAILABLE
     from mcp_server.agents.trading_agent import TradingAgent, TRADING_AGENT_AVAILABLE
     from mcp_server.agents.explanation_agent import ExplanationAgent, EXPLANATION_AGENT_AVAILABLE
+    from mcp_server.agents.portfolio_agent import PortfolioAgent, PORTFOLIO_AGENT_AVAILABLE
+    from mcp_server.agents.market_regime_agent import MarketRegimeAgent, MARKET_REGIME_AGENT_AVAILABLE
+    from mcp_server.agents.sentiment_agent import SentimentAgent, SENTIMENT_AGENT_AVAILABLE
     MCP_AVAILABLE = True
     print("MCP server components loaded successfully")
 except ImportError as e:
@@ -101,6 +104,15 @@ except ImportError as e:
         def __init__(self, *args, **kwargs): pass
 
     class ExplanationAgent:
+        def __init__(self, *args, **kwargs): pass
+
+    class PortfolioAgent:
+        def __init__(self, *args, **kwargs): pass
+
+    class MarketRegimeAgent:
+        def __init__(self, *args, **kwargs): pass
+
+    class SentimentAgent:
         def __init__(self, *args, **kwargs): pass
     MCP_SERVER_AVAILABLE = False
 
@@ -232,6 +244,905 @@ else:
             return {}
 
     performance_monitor = PerformanceMonitor()
+
+
+def _is_valid_symbol(symbol: str) -> bool:
+    """Check if a stock symbol is valid"""
+    # Check for obviously invalid patterns
+    invalid_patterns = ["WHAT", "INVALID", "TEST", "DUMMY"]
+    if any(pattern in symbol.upper() for pattern in invalid_patterns):
+        return False
+
+    # Check if symbol has data (empty data indicates invalid symbol)
+    try:
+        from utils.ml_components.stock_analysis_complete import EnhancedDataIngester
+        ingester = EnhancedDataIngester()
+        data = ingester.load_all_data(symbol)
+        if not data or 'price_history' not in data or data['price_history'].empty:
+            return False
+        return True
+    except Exception:
+        return False
+
+
+def _extract_intent(message: str) -> str:
+    """Extract the user's intent from their message with enhanced NLP understanding"""
+    lower_message = message.lower().strip()
+
+    # Enhanced intent classification with more nuanced patterns
+    if any(word in lower_message for word in ["what", "which", "how", "suggest", "recommend"]):
+        if any(word in lower_message for word in ["buy", "invest", "purchase", "acquire"]):
+            return "seeking_recommendation"
+        elif any(word in lower_message for word in ["portfolio", "holdings", "positions", "stocks i own", "my investments"]):
+            return "portfolio_inquiry"
+        elif any(word in lower_message for word in ["risk", "safe", "danger", "volatile", "secure"]):
+            return "risk_assessment"
+        elif any(word in lower_message for word in ["analyze", "performance", "trend", "outlook", "review"]):
+            return "analysis_request"
+        elif any(word in lower_message for word in ["market", "condition", "situation", "outlook", "trend"]):
+            return "market_overview"
+        else:
+            return "general_inquiry"
+    elif any(word in lower_message for word in ["should", "would", "could", "is it good"]):
+        if any(word in lower_message for word in ["buy", "sell", "invest"]):
+            return "decision_support"
+        else:
+            return "general_inquiry"
+    elif any(word in lower_message for word in ["scan", "find", "best", "top", "screen", "look for"]):
+        return "stock_discovery"
+    elif any(word in lower_message for word in ["explain", "tell me", "describe", "why"]):
+        return "explanation_request"
+    else:
+        return "information_request"
+
+
+def _classify_query(message: str):
+    """Enhanced query classification with dynamic symbol extraction and intent understanding"""
+    import re
+    from typing import Dict, Any, List
+
+    # Extract potential stock symbols using improved patterns
+    symbol_patterns = [
+        r'\b([A-Z]{1,4}\.[A-Z]{1,3})\b',  # e.g., RELIANCE.NS
+        r'\b([A-Z]{3,6})\b',  # e.g., RELIANCE (fallback)
+        r'\b([a-zA-Z]{3,10})\b'  # e.g., rpower (any case, 3-10 chars)
+    ]
+
+    symbols = []
+    for pattern in symbol_patterns:
+        matches = re.findall(pattern, message)
+        symbols.extend(matches)
+
+    # Clean and normalize symbols
+    normalized_symbols = []
+    common_words = ["WHAT", "SHOULD", "BUY", "SELL", "TODAY", "STOCK", "SHARES",
+                    "INVEST", "ANALYZE", "MARKET", "PRICE", "RISK", "DANGER", "SAFE",
+                    "RECOMMEND", "SUGGESTION", "BEST", "TOP", "HOLDINGS", "POSITIONS",
+                    "PORTFOLIO", "HOLDING", "MY", "OWN", "HAVE", "CURRENT", "ASSETS",
+                    "INVESTMENTS", "PERFORMANCE", "TREND", "OUTLOOK", "QUOTE", "HOW IS",
+                    "CURRENT PRICE", "VOLATILITY", "DRAWBACK", "PROTECT", "EXPOSURE",
+                    "IS IT SAFE", "HOW RISKY", "STOCK SCREENING", "FIND STOCKS", "LOOK FOR",
+                    "GOOD STOCKS", "BEST INVESTMENTS", "TOP PICKS", "MARKET UPDATE", "MARKET NEWS",
+                    "TODAY'S MARKET", "MARKET CONDITION", "HOW IS MARKET", "MARKET SITUATION",
+                    "NOW", "BUT"]
+    for symbol in symbols:
+        # Skip common words that are not stock symbols
+        if symbol.upper() in common_words:
+            continue
+        if '.' not in symbol:
+            symbol = symbol.upper()
+            # Check if it's likely an Indian stock
+            if len(symbol) >= 4 and len(symbol) <= 10:
+                symbol = f"{symbol}.NS"
+        else:
+            symbol = symbol.upper()
+        normalized_symbols.append(symbol)
+
+    # Classify query type based on keywords and intent
+    lower_message = message.lower().strip()
+
+    # Portfolio queries - asking about user's own holdings
+    portfolio_keywords = ["portfolio", "holdings", "positions", "my stocks",
+                          "what do i own", "what i own", "stocks i have", "investments", "assets",
+                          "my portfolio", "current holdings", "holding"]
+
+    # Trade queries - asking for buy/sell recommendations
+    trade_keywords = ["buy", "sell", "trade", "invest",
+                      "should i buy", "should i sell", "recommend", "suggestion",
+                      "what should i buy", "what to buy", "good stock to buy", "purchase",
+                      "what should i but", "what stocks should i buy", "what should i invest in"]
+
+    # Market analysis queries - asking for analysis of specific stocks or market conditions
+    market_keywords = ["analyze", "stock", "price",
+                       "market", "performance", "trend", "outlook", "quote",
+                       "how is", "current price", "stock performance", "review"]
+
+    # Risk assessment queries - asking about risk levels
+    risk_keywords = ["risk", "danger", "safe",
+                     "volatility", "drawdown", "protect", "exposure",
+                     "is it safe", "how risky", "dangerous"]
+
+    # Stock scanning queries - asking for best stocks or stock screening
+    scan_keywords = ["scan", "best stocks", "top stocks",
+                     "stock screening", "find stocks", "look for",
+                     "good stocks", "best investments", "top picks", "screen"]
+
+    # General queries - asking for general market information or advice
+    general_keywords = ["market update", "market news", "today's market",
+                        "market condition", "how is market", "market situation", "market overview"]
+
+    # Enhanced handling for informal queries like "how it todays market"
+    informal_market_queries = ["how it", "how is today", "todays market", "market today",
+                               "market status", "market right now", "market now"]
+
+    # Determine primary query type based on intent
+    if any(keyword in lower_message for keyword in portfolio_keywords):
+        query_type = "portfolio"
+    elif any(keyword in lower_message for keyword in trade_keywords):
+        query_type = "trade"
+    elif any(keyword in lower_message for keyword in market_keywords) or any(keyword in lower_message for keyword in informal_market_queries):
+        query_type = "market_analysis"
+    elif any(keyword in lower_message for keyword in risk_keywords):
+        query_type = "risk"
+    elif any(keyword in lower_message for keyword in scan_keywords):
+        query_type = "scan"
+    elif any(keyword in lower_message for keyword in general_keywords):
+        query_type = "general"
+    else:
+        # Default classification based on message structure
+        if normalized_symbols:
+            # If symbols found, default to market analysis
+            query_type = "market_analysis"
+        else:
+            # If no symbols and no clear intent, default to general
+            query_type = "general"
+
+    return {
+        "type": query_type,
+        "symbols": normalized_symbols,
+        "raw_message": message,
+        "intent": _extract_intent(message)
+    }
+
+
+async def _handle_trade_recommendation(request, symbols):
+    """Handle trade recommendation queries with full MCP workflow"""
+    import re
+    import time
+    from datetime import datetime
+
+    # Extract potential stock symbols from the message
+    symbol_patterns = [
+        r'\b([A-Z]{1,4}\.[A-Z]{1,3})\b',  # e.g., RELIANCE.NS
+        r'\b([A-Z]{3,6})\b',  # e.g., RELIANCE (fallback)
+        r'\b([a-zA-Z]{3,10})\b'  # e.g., rpower (any case, 3-10 chars)
+    ]
+
+    symbol = None
+    for pattern in symbol_patterns:
+        match = re.search(pattern, request.message)
+        if match:
+            extracted_symbol = match.group(1)
+            # Skip common words that are not stock symbols
+            common_words = ["WHAT", "SHOULD", "BUY",
+                            "SELL", "TODAY", "STOCK", "SHARES", "INVEST", "NOW", "BUT"]
+            if extracted_symbol.upper() in common_words:
+                continue
+            # Convert to uppercase and add .NS suffix if needed for Indian stocks
+            if '.' not in extracted_symbol:
+                extracted_symbol = extracted_symbol.upper()
+                # Check if it's a known Indian stock pattern or likely an Indian stock
+                # We'll assume any 4-10 character symbol might be an Indian stock
+                if len(extracted_symbol) >= 4 and len(extracted_symbol) <= 10:
+                    symbol = f"{extracted_symbol}.NS"
+                else:
+                    symbol = extracted_symbol
+            else:
+                symbol = extracted_symbol
+            break
+
+    # If no symbol found in message, but symbols were classified, use the first one
+    if not symbol and symbols:
+        symbol = symbols[0]
+
+    if symbol:
+        # Validate symbol before processing
+        if not _is_valid_symbol(symbol):
+            # Handle invalid symbols gracefully
+            invalid_symbol_response = f"I'm sorry, but '{symbol}' doesn't appear to be a valid stock symbol. Please check the symbol and try again with a valid Indian stock symbol (e.g., RELIANCE.NS, TCS.NS)."
+            return {
+                "response": invalid_symbol_response,
+                "context": "invalid_symbol",
+                "timestamp": datetime.now().isoformat()
+            }
+
+        # Use the full MCP workflow for trade recommendations
+        try:
+            # Step 1: Generate predictions using the predict tool
+            from mcp_server.tools.predict_tool import PredictTool
+            predict_tool = PredictTool({
+                "tool_id": "predict_tool_for_chat",
+                "lightgbm_enabled": True,
+                "rl_model_type": "linucb"
+            })
+
+            session_id = str(int(time.time() * 1000000))
+            predict_arguments = {
+                "symbols": [symbol],
+                "horizon": "intraday"
+            }
+
+            prediction_result = await predict_tool.predict(predict_arguments, session_id)
+
+            if prediction_result.status == "SUCCESS" and prediction_result.data:
+                # Get valid predictions
+                predictions = prediction_result.data.get(
+                    "predictions", [])
+                valid_predictions = [
+                    p for p in predictions if "error" not in p]
+
+                if valid_predictions:
+                    # Step 2: Analyze the predictions using the analyze tool
+                    from mcp_server.tools.analyze_tool import AnalyzeTool
+                    analyze_tool = AnalyzeTool({
+                        "tool_id": "analyze_tool_for_chat"
+                    })
+
+                    analyze_arguments = {
+                        "predictions": valid_predictions,
+                        "analysis_depth": "detailed",
+                        "include_risk_assessment": True
+                    }
+
+                    analysis_result = await analyze_tool.analyze(analyze_arguments, session_id)
+
+                    if analysis_result.status == "SUCCESS":
+                        # Step 3: Assess risk using the risk management tool
+                        from mcp_server.tools.risk_management_tool import RiskManagementTool
+                        risk_tool = RiskManagementTool({
+                            "tool_id": "risk_tool_for_chat"
+                        })
+
+                        # Extract risk metrics from predictions
+                        first_prediction = valid_predictions[0]
+                        risk_arguments = {
+                            "symbol": symbol,
+                            "position_size": 0.1,  # Default position size
+                            "entry_price": first_prediction.get("current_price", 0),
+                            "stop_loss": first_prediction.get("stop_loss", 0),
+                            "volatility": first_prediction.get("risk_metrics", {}).get("volatility_20", 0.2)
+                        }
+
+                        risk_result = await risk_tool.assess_position_risk(risk_arguments, session_id)
+
+                        # Step 4: Generate explanation using Groq
+                        if groq_engine:
+                            mcp_data = {
+                                "symbol": symbol,
+                                "predictions": valid_predictions,
+                                "analysis": analysis_result.data,
+                                "risk_assessment": risk_result.data if risk_result.status == "SUCCESS" else None,
+                                "confidence": prediction_result.confidence
+                            }
+
+                            async with groq_engine:
+                                response = await groq_engine.explain_mcp_data(
+                                    user_query=request.message,
+                                    mcp_data=mcp_data,
+                                    explanation_type="trade_recommendation"
+                                )
+
+                            return {
+                                "response": response.content,
+                                "reasoning": response.reasoning,
+                                "confidence": response.confidence,
+                                "context": "trade_recommendation",
+                                "related_analysis": mcp_data,
+                                "timestamp": datetime.now().isoformat()
+                            }
+
+            # Fallback if any step fails
+            return {
+                "response": f"I've analyzed {symbol} but couldn't generate a complete recommendation. The system is attempting to automatically fetch and process data for this symbol. Please try again in a few moments.",
+                "context": "partial_analysis",
+                "timestamp": datetime.now().isoformat()
+            }
+
+        except Exception as workflow_error:
+            logger.error(f"Error in MCP workflow: {workflow_error}")
+            # Fall back to general analysis
+            pass
+
+    # If no symbol found or analysis failed, provide general trading advice
+    # Use the scan_all tool to get relevant stock recommendations
+    try:
+        from mcp_server.tools.scan_all_tool import ScanAllTool
+        scan_tool = ScanAllTool({
+            "tool_id": "scan_tool_for_general_trade"
+        })
+
+        # Generate a session ID for this request
+        session_id = str(int(time.time() * 1000000))
+
+        # Prepare arguments for the scan tool with a broad search
+        arguments = {
+            "min_score": 0.6,  # Minimum confidence score
+            "max_results": 5,  # Top 5 results
+            "symbols": [],  # Scan all available symbols
+            "horizon": "intraday"
+        }
+
+        # Execute the scan tool
+        result = await scan_tool.scan_all(arguments, session_id)
+
+        if result.status == "SUCCESS":
+            # Get data from MCP tools for explanation
+            mcp_data = {
+                "scan_results": result.data,
+                "query_type": "trade_recommendation"
+            }
+
+            # Explain the scan results using the LLM
+            async with groq_engine:
+                response = await groq_engine.explain_mcp_data(
+                    user_query=request.message,
+                    mcp_data=mcp_data,
+                    explanation_type="trade_recommendation"
+                )
+
+            return {
+                "response": response.content,
+                "reasoning": response.reasoning,
+                "confidence": response.confidence,
+                "context": "trade_recommendation",
+                "scan_data": result.data,
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            # Fallback to general advice if scan fails
+            enhanced_prompt = f"""You are an expert trading advisor specializing in Indian stock markets (NSE/BSE).
+
+USER QUERY: {request.message}
+
+TASK:
+Provide expert trading advice that is:
+- Actionable and specific for Indian stock markets
+- Risk-aware and balanced
+- Based on sound trading principles
+- Concise and clear
+
+When recommending stocks, focus specifically on:
+- NSE/BSE listed companies
+- Indian market conditions and regulations
+- Rupee-denominated investments
+- Sector-specific considerations for Indian economy
+
+Structure your response with:
+1. **Direct Answer** - Address the core question first
+2. **Supporting Analysis** - Provide relevant context and reasoning
+3. **Risk Considerations** - Highlight key risks and mitigations
+4. **Next Steps** - Suggest concrete actions
+
+Keep responses focused on trading and investment topics in Indian markets. For non-trading queries, politely redirect to trading-related subjects."""
+
+            async with groq_engine:
+                response = await groq_engine.get_general_trading_advice(enhanced_prompt)
+
+            return {
+                "response": response.content,
+                "reasoning": response.reasoning,
+                "confidence": response.confidence,
+                "context": "general_trading_advice",
+                "timestamp": datetime.now().isoformat()
+            }
+    except Exception as scan_error:
+        logger.error(
+            f"Error in general trade recommendation scan: {scan_error}")
+        # Fallback to general advice if scan fails
+        enhanced_prompt = f"""You are an expert trading advisor specializing in Indian stock markets (NSE/BSE).
+
+USER QUERY: {request.message}
+
+TASK:
+Provide expert trading advice that is:
+- Actionable and specific for Indian stock markets
+- Risk-aware and balanced
+- Based on sound trading principles
+- Concise and clear
+
+When recommending stocks, focus specifically on:
+- NSE/BSE listed companies
+- Indian market conditions and regulations
+- Rupee-denominated investments
+- Sector-specific considerations for Indian economy
+
+Structure your response with:
+1. **Direct Answer** - Address the core question first
+2. **Supporting Analysis** - Provide relevant context and reasoning
+3. **Risk Considerations** - Highlight key risks and mitigations
+4. **Next Steps** - Suggest concrete actions
+
+Keep responses focused on trading and investment topics in Indian markets. For non-trading queries, politely redirect to trading-related subjects."""
+
+        async with groq_engine:
+            response = await groq_engine.get_general_trading_advice(enhanced_prompt)
+
+        return {
+            "response": response.content,
+            "reasoning": response.reasoning,
+            "confidence": response.confidence,
+            "context": "general_trading_advice",
+            "timestamp": datetime.now().isoformat()
+        }
+
+
+async def _handle_market_analysis(request, symbols):
+    """Handle market analysis queries with full MCP workflow"""
+    import time
+    from datetime import datetime
+
+    # Use symbols from classification
+    symbol = symbols[0] if symbols else None
+    if symbol:
+        # Validate symbol before processing
+        if not _is_valid_symbol(symbol):
+            # Handle invalid symbols gracefully
+            logger.warning(f"Invalid symbol detected: {symbol}")
+            return {
+                "response": f"I'm sorry, but '{symbol}' doesn't appear to be a valid stock symbol. Please check the symbol and try again with a valid Indian stock symbol (e.g., RELIANCE.NS, TCS.NS).",
+                "context": "invalid_symbol",
+                "timestamp": datetime.now().isoformat()
+            }
+
+    if symbol:
+        # Validate symbol before processing
+        if not _is_valid_symbol(symbol):
+            # Handle invalid symbols gracefully
+            invalid_symbol_response = f"I'm sorry, but '{symbol}' doesn't appear to be a valid stock symbol. Please check the symbol and try again with a valid Indian stock symbol (e.g., RELIANCE.NS, TCS.NS)."
+            return {
+                "response": invalid_symbol_response,
+                "context": "invalid_symbol",
+                "timestamp": datetime.now().isoformat()
+            }
+
+        # Use the full MCP workflow for market analysis
+        try:
+            # Step 1: Generate predictions using the predict tool
+            from mcp_server.tools.predict_tool import PredictTool
+            predict_tool = PredictTool({
+                "tool_id": "predict_tool_for_market_analysis",
+                "lightgbm_enabled": True,
+                "rl_model_type": "linucb"
+            })
+
+            session_id = str(int(time.time() * 1000000))
+            predict_arguments = {
+                "symbols": [symbol],
+                "horizon": "intraday"
+            }
+
+            prediction_result = await predict_tool.predict(predict_arguments, session_id)
+
+            if prediction_result.status == "SUCCESS" and prediction_result.data:
+                # Get valid predictions
+                predictions = prediction_result.data.get(
+                    "predictions", [])
+                valid_predictions = [
+                    p for p in predictions if "error" not in p]
+
+                if valid_predictions:
+                    # Step 2: Analyze the predictions using the analyze tool
+                    from mcp_server.tools.analyze_tool import AnalyzeTool
+                    analyze_tool = AnalyzeTool({
+                        "tool_id": "analyze_tool_for_market_analysis"
+                    })
+
+                    analyze_arguments = {
+                        "predictions": valid_predictions,
+                        "analysis_depth": "comprehensive",
+                        "include_risk_assessment": True
+                    }
+
+                    analysis_result = await analyze_tool.analyze(analyze_arguments, session_id)
+
+                    if analysis_result.status == "SUCCESS":
+                        # Step 3: Assess risk using the risk management tool
+                        from mcp_server.tools.risk_management_tool import RiskManagementTool
+                        risk_tool = RiskManagementTool({
+                            "tool_id": "risk_tool_for_market_analysis"
+                        })
+
+                        # Extract risk metrics from predictions
+                        first_prediction = valid_predictions[0]
+                        risk_arguments = {
+                            "symbol": symbol,
+                            "position_size": 0.1,  # Default position size
+                            "entry_price": first_prediction.get("current_price", 0),
+                            "stop_loss": first_prediction.get("stop_loss", 0),
+                            "volatility": first_prediction.get("risk_metrics", {}).get("volatility_20", 0.2)
+                        }
+
+                        risk_result = await risk_tool.assess_position_risk(risk_arguments, session_id)
+
+                        # Step 4: Generate explanation using Groq
+                        if groq_engine:
+                            mcp_data = {
+                                "symbol": symbol,
+                                "predictions": valid_predictions,
+                                "analysis": analysis_result.data,
+                                "risk_assessment": risk_result.data if risk_result.status == "SUCCESS" else None,
+                                "confidence": prediction_result.confidence
+                            }
+
+                            async with groq_engine:
+                                response = await groq_engine.explain_mcp_data(
+                                    user_query=request.message,
+                                    mcp_data=mcp_data,
+                                    explanation_type="market_analysis"
+                                )
+
+                            return {
+                                "response": response.content,
+                                "reasoning": response.reasoning,
+                                "confidence": response.confidence,
+                                "context": "market_analysis",
+                                "related_analysis": mcp_data,
+                                "timestamp": datetime.now().isoformat()
+                            }
+
+            # Fallback if any step fails
+            return {
+                "response": f"I've analyzed {symbol} but couldn't generate a complete analysis. The system is attempting to automatically fetch and process data for this symbol. Please try again in a few moments.",
+                "context": "partial_analysis",
+                "timestamp": datetime.now().isoformat()
+            }
+
+        except Exception as workflow_error:
+            logger.error(f"Error in MCP workflow: {workflow_error}")
+            return {
+                "response": f"I'm sorry, but I couldn't analyze {symbol} at the moment. This could be because: 1) The stock symbol might not be recognized, 2) There might be insufficient data for analysis, or 3) There was a technical issue. The system will attempt to automatically fetch and process data for new symbols. Please try again in a few moments.",
+                "context": "analysis_error",
+                "error_details": str(workflow_error),
+                "timestamp": datetime.now().isoformat()
+            }
+    else:
+        return {
+            "response": "Please specify a stock symbol for market analysis.",
+            "context": "general",
+            "timestamp": datetime.now().isoformat()
+        }
+
+
+async def _handle_risk_assessment(request, symbols):
+    """Handle risk assessment queries"""
+    import time
+    from datetime import datetime
+
+    # Use symbols from classification
+    symbol = symbols[0] if symbols else None
+    if symbol:
+        # Validate symbol before processing
+        if not _is_valid_symbol(symbol):
+            # Handle invalid symbols gracefully
+            logger.warning(f"Invalid symbol detected: {symbol}")
+            return {
+                "response": f"I'm sorry, but '{symbol}' doesn't appear to be a valid stock symbol. Please check the symbol and try again with a valid Indian stock symbol (e.g., RELIANCE.NS, TCS.NS).",
+                "context": "invalid_symbol",
+                "timestamp": datetime.now().isoformat()
+            }
+
+    if symbol:
+        # Validate symbol before processing
+        if not _is_valid_symbol(symbol):
+            # Handle invalid symbols gracefully
+            invalid_symbol_response = f"I'm sorry, but '{symbol}' doesn't appear to be a valid stock symbol. Please check the symbol and try again with a valid Indian stock symbol (e.g., RELIANCE.NS, TCS.NS)."
+            return {
+                "response": invalid_symbol_response,
+                "context": "invalid_symbol",
+                "timestamp": datetime.now().isoformat()
+            }
+
+        # Use the risk management tool directly
+        try:
+            from mcp_server.tools.risk_management_tool import RiskManagementTool
+            risk_tool = RiskManagementTool({
+                "tool_id": "risk_tool_for_chat"
+            })
+
+            session_id = str(int(time.time() * 1000000))
+            risk_arguments = {
+                "symbol": symbol,
+                "position_size": 0.1,  # Default position size
+                "entry_price": 0,  # Will be filled by tool if needed
+                "stop_loss": 0,    # Will be filled by tool if needed
+                "volatility": 0.2  # Default volatility
+            }
+
+            risk_result = await risk_tool.assess_position_risk(risk_arguments, session_id)
+
+            if risk_result.status == "SUCCESS":
+                # Generate explanation using Groq
+                if groq_engine:
+                    mcp_data = {
+                        "symbol": symbol,
+                        "risk_assessment": risk_result.data,
+                        "confidence": risk_result.confidence
+                    }
+
+                    async with groq_engine:
+                        response = await groq_engine.explain_mcp_data(
+                            user_query=request.message,
+                            mcp_data=mcp_data,
+                            explanation_type="risk_assessment"
+                        )
+
+                    return {
+                        "response": response.content,
+                        "reasoning": response.reasoning,
+                        "confidence": response.confidence,
+                        "context": "risk_assessment",
+                        "related_analysis": mcp_data,
+                        "timestamp": datetime.now().isoformat()
+                    }
+
+            # Fallback if risk assessment fails
+            return {
+                "response": f"I've assessed risk for {symbol} but couldn't generate a complete analysis. The system is attempting to automatically fetch and process data for this symbol. Please try again in a few moments.",
+                "context": "partial_analysis",
+                "timestamp": datetime.now().isoformat()
+            }
+
+        except Exception as risk_error:
+            logger.error(f"Error in risk assessment: {risk_error}")
+            return {
+                "response": f"I'm sorry, but I couldn't assess risk for {symbol} at the moment. The system will attempt to automatically fetch and process data for new symbols. Please try again in a few moments.",
+                "context": "risk_error",
+                "error_details": str(risk_error),
+                "timestamp": datetime.now().isoformat()
+            }
+    else:
+        # General risk advice
+        enhanced_prompt = f"""You are an expert trading advisor specializing in Indian stock markets (NSE/BSE).
+
+USER QUERY: {request.message}
+
+TASK:
+Provide expert risk management advice that is:
+- Actionable and specific for Indian stock markets
+- Risk-aware and balanced
+- Based on sound trading principles
+- Concise and clear
+
+Structure your response with:
+1. **Direct Answer** - Address the core question first
+2. **Supporting Analysis** - Provide relevant context and reasoning
+3. **Risk Considerations** - Highlight key risks and mitigations
+4. **Next Steps** - Suggest concrete actions
+
+Keep responses focused on risk management topics in Indian markets."""
+
+        async with groq_engine:
+            response = await groq_engine.get_general_trading_advice(enhanced_prompt)
+
+        return {
+            "response": response.content,
+            "reasoning": response.reasoning,
+            "confidence": response.confidence,
+            "context": "general_risk_advice",
+            "timestamp": datetime.now().isoformat()
+        }
+
+
+async def _handle_portfolio_query(request):
+    """Handle portfolio-related queries"""
+    import time
+    from datetime import datetime
+
+    # Portfolio-related query
+    if trading_bot:
+        try:
+            # Get portfolio metrics from the trading bot
+            portfolio_metrics = trading_bot.get_portfolio_metrics()
+
+            # Ensure we have the required data
+            holdings = portfolio_metrics.get("holdings", {})
+            cash = portfolio_metrics.get("cash", 0)
+            total_value = portfolio_metrics.get("total_value", cash)
+            unrealized_pnl = portfolio_metrics.get("unrealized_pnl", 0)
+
+            portfolio_data = {
+                "holdings": holdings,
+                "cash": cash,
+                "risk_profile": trading_bot.config.get("riskLevel", "MEDIUM"),
+                "total_value": total_value,
+                "unrealized_pnl": unrealized_pnl
+            }
+
+            # Log the portfolio data for debugging
+            logger.info(f"Portfolio data for LLM: {portfolio_data}")
+
+            # Get data from MCP tools for explanation
+            mcp_data = {
+                "portfolio_data": portfolio_data
+            }
+
+            async with groq_engine:
+                response = await groq_engine.explain_mcp_data(
+                    user_query=request.message,
+                    mcp_data=mcp_data,
+                    explanation_type="portfolio_optimization"
+                )
+
+            return {
+                "response": response.content,
+                "reasoning": response.reasoning,
+                "confidence": response.confidence,
+                "context": "portfolio_optimization",
+                "portfolio_data": portfolio_data,  # Include portfolio data for frontend updates
+                "timestamp": datetime.now().isoformat()
+            }
+        except Exception as e:
+            logger.error(
+                f"Error processing portfolio query: {e}", exc_info=True)
+            # Check if the error is related to Groq API credits or authentication
+            error_message = str(e)
+            if "credits" in error_message.lower():
+                fallback_response = "I'm unable to provide portfolio optimization recommendations at the moment due to insufficient API credits. Please contact the system administrator to resolve this issue."
+            elif "api key" in error_message.lower() or "permission" in error_message.lower():
+                fallback_response = "I'm unable to access the AI analysis service due to authentication issues. Please check the API configuration."
+            else:
+                fallback_response = f"I'm having trouble accessing your portfolio data right now. Please try again later. Error: {str(e)}"
+
+            # Fallback response
+            return {
+                "response": fallback_response,
+                "context": "error",
+                "timestamp": datetime.now().isoformat()
+            }
+    else:
+        return {
+            "response": "Trading bot is not initialized. Please start the bot to access portfolio information.",
+            "context": "error",
+            "timestamp": datetime.now().isoformat()
+        }
+
+
+async def _handle_stock_scan(request):
+    """Handle stock scanning queries"""
+    import time
+    from datetime import datetime
+
+    # Use MCP scan_all tool to get stock recommendations
+    try:
+        from mcp_server.tools.scan_all_tool import ScanAllTool
+        scan_tool = ScanAllTool({
+            "tool_id": "scan_tool"
+        })
+
+        # Generate a session ID for this request
+        session_id = str(int(time.time() * 1000000))
+
+        # Prepare arguments for the scan tool
+        arguments = {
+            "min_score": 0.7,  # Minimum confidence score
+            "max_results": 10,  # Top 10 results
+            "symbols": [],  # Scan all available symbols
+            "horizon": "intraday"
+        }
+
+        # Execute the scan tool
+        result = await scan_tool.scan_all(arguments, session_id)
+
+        if result.status == "SUCCESS":
+            # Get data from MCP tools for explanation
+            mcp_data = {
+                "scan_results": result.data
+            }
+
+            # Explain the scan results
+            async with groq_engine:
+                response = await groq_engine.explain_mcp_data(
+                    user_query=request.message,
+                    mcp_data=mcp_data,
+                    explanation_type="stock_scan"
+                )
+
+            return {
+                "response": response.content,
+                "reasoning": response.reasoning,
+                "confidence": response.confidence,
+                "context": "stock_scan",
+                "scan_data": result.data,
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            raise Exception(result.error)
+    except Exception as e:
+        logger.error(f"Error scanning stocks: {e}")
+        return {
+            "response": f"Unable to scan stocks at the moment. Error: {str(e)}",
+            "context": "error",
+            "timestamp": datetime.now().isoformat()
+        }
+
+
+async def _handle_general_query(request):
+    """Handle general trading queries"""
+    import time
+    from datetime import datetime
+
+    # For general queries, we'll use the scan_all tool to get relevant stock data
+    try:
+        from mcp_server.tools.scan_all_tool import ScanAllTool
+        scan_tool = ScanAllTool({
+            "tool_id": "scan_tool_for_general"
+        })
+
+        # Generate a session ID for this request
+        session_id = str(int(time.time() * 1000000))
+
+        # Prepare arguments for the scan tool with a broad search
+        arguments = {
+            "min_score": 0.5,  # Lower minimum confidence score to get more results
+            "max_results": 5,  # Top 5 results
+            "symbols": [],  # Scan all available symbols
+            "horizon": "intraday"
+        }
+
+        # Execute the scan tool
+        result = await scan_tool.scan_all(arguments, session_id)
+
+        if result.status == "SUCCESS":
+            # Get data from MCP tools for explanation
+            mcp_data = {
+                "scan_results": result.data,
+                "query_type": "general_trading"
+            }
+
+            # Explain the scan results using the LLM
+            async with groq_engine:
+                response = await groq_engine.explain_mcp_data(
+                    user_query=request.message,
+                    mcp_data=mcp_data,
+                    explanation_type="general_trading_advice"
+                )
+
+            return {
+                "response": response.content,
+                "reasoning": response.reasoning,
+                "confidence": response.confidence,
+                "context": "general_trading",
+                "scan_data": result.data,
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            # Instead of falling back to direct LLM generation, return an error
+            # This ensures the MCP architecture is strictly followed where LLM only explains MCP-generated data
+            logger.warning(
+                f"MCP scan tool failed for general query: {result.error}")
+            return {
+                "response": "I'm currently unable to analyze the market data needed to answer your question. The system is attempting to automatically fetch and process data. Please try again in a few moments.",
+                "context": "mcp_scan_failed",
+                "timestamp": datetime.now().isoformat()
+            }
+    except Exception as e:
+        logger.error(
+            f"Error processing general trading query: {e}", exc_info=True)
+        # Check if the error is related to Groq API credits or authentication
+        error_message = str(e)
+        if "credits" in error_message.lower():
+            fallback_response = "I'm unable to provide trading advice at the moment due to insufficient API credits. Please contact the system administrator to resolve this issue."
+        elif "api key" in error_message.lower() or "permission" in error_message.lower():
+            fallback_response = "I'm unable to access the AI analysis service due to authentication issues. Please check the API configuration."
+        else:
+            fallback_response = "I'm having trouble processing your request right now. Please try again later."
+
+        return {
+            "response": fallback_response,
+            "context": "error",
+            "timestamp": datetime.now().isoformat()
+        }
+
 
 # Import Production Core Components
 try:
@@ -488,6 +1399,9 @@ bot_running = False
 # MCP components
 mcp_server = None
 mcp_trading_agent = None
+mcp_portfolio_agent = None
+mcp_regime_agent = None
+mcp_sentiment_agent = None
 fyers_client = None
 groq_engine = None
 
@@ -507,6 +1421,13 @@ async def get_real_time_market_response(message: str) -> Optional[str]:
 
         # Get dynamic stock list from trading bot's watchlist and popular stocks
         major_stocks = get_dynamic_stock_list()
+
+        # Enhanced handling for informal market queries like "how it todays market"
+        informal_market_indicators = ["how it", "how is today", "todays market", "market today",
+                                      "market status", "market right now", "market now"]
+
+        is_informal_market_query = any(
+            indicator in message_lower for indicator in informal_market_indicators)
 
         if "highest volume" in message_lower or "higest volume" in message_lower:
             # PRIORITY 1: Try Fyers API first (REAL DATA)
@@ -588,7 +1509,7 @@ async def get_real_time_market_response(message: str) -> Optional[str]:
 
                 return response
 
-        elif any(word in message_lower for word in ["market", "overview", "today"]):
+        elif any(word in message_lower for word in ["market", "overview", "today"]) or is_informal_market_query:
             # Get real market overview data
             market_data = get_real_market_data_from_api()
 
@@ -621,60 +1542,22 @@ async def get_real_time_market_response(message: str) -> Optional[str]:
                 response = f"**Live Market Overview** (as of {current_time.strftime('%I:%M %p')})\n\n"
                 response += f"**Market Sentiment:** {'Positive' if avg_change > 0 else 'Negative'} with average change of {avg_change:+.2f}%\n\n"
 
-                for stock in market_data:
+                for i, stock in enumerate(top_stocks, 1):
                     change_emoji = "[+]" if stock["change"] >= 0 else "[-]"
                     response += f"{change_emoji} **{stock['symbol']}**: Rs.{stock['price']:.2f} ({stock['change_pct']:+.2f}%) | Vol: {stock['volume']:,}\n"
 
-                response += f"\n>> **Market Status:** {positive_stocks}/{len(market_data)} stocks are positive today."
+                response += f"\n>> **Live Market Insight:** High volume indicates strong institutional interest and active trading."
 
                 return response
+
+        elif "lowest volume" in message_lower:
+            return "```\n\n```"
 
         return None
 
     except Exception as e:
         logger.error(f"Error generating real-time market response: {e}")
         return None
-
-
-def get_dynamic_stock_list():
-    """Get dynamic list of stocks from multiple sources"""
-    try:
-        # Get stocks from trading bot's watchlist if available
-        if trading_bot and hasattr(trading_bot, 'config'):
-            watchlist_stocks = trading_bot.config.get('tickers', [])
-            if watchlist_stocks:
-                return [f"NSE:{ticker.replace('.NS', '')}-EQ" for ticker in watchlist_stocks]
-
-        # Fallback to diverse Indian stock universe (not just the same 4!)
-        diverse_stocks = [
-            # Large Cap Tech
-            "NSE:TCS-EQ", "NSE:INFY-EQ", "NSE:WIPRO-EQ", "NSE:HCLTECH-EQ", "NSE:TECHM-EQ",
-            # Banking & Finance
-            "NSE:HDFCBANK-EQ", "NSE:ICICIBANK-EQ", "NSE:SBIN-EQ", "NSE:KOTAKBANK-EQ", "NSE:AXISBANK-EQ",
-            # Energy & Oil
-            "NSE:RELIANCE-EQ", "NSE:ONGC-EQ", "NSE:BPCL-EQ", "NSE:IOC-EQ",
-            # FMCG & Consumer
-            "NSE:HINDUNILVR-EQ", "NSE:ITC-EQ", "NSE:NESTLEIND-EQ", "NSE:BRITANNIA-EQ",
-            # Auto & Manufacturing
-            "NSE:MARUTI-EQ", "NSE:TATAMOTORS-EQ", "NSE:M&M-EQ", "NSE:BAJAJ-AUTO-EQ",
-            # Pharma
-            "NSE:SUNPHARMA-EQ", "NSE:DRREDDY-EQ", "NSE:CIPLA-EQ", "NSE:DIVISLAB-EQ",
-            # Infrastructure
-            "NSE:LT-EQ", "NSE:ULTRACEMCO-EQ", "NSE:ADANIPORTS-EQ", "NSE:POWERGRID-EQ",
-            # Telecom & Media
-            "NSE:BHARTIARTL-EQ", "NSE:JSWSTEEL-EQ", "NSE:TATASTEEL-EQ"
-        ]
-
-        # Code Quality: Use constants instead of magic numbers
-        import random
-        selected_count = random.randint(
-            RANDOM_STOCK_MIN_COUNT, RANDOM_STOCK_MAX_COUNT)
-        return random.sample(diverse_stocks, min(selected_count, len(diverse_stocks)))
-
-    except Exception as e:
-        logger.error(f"Error getting dynamic stock list: {e}")
-        # Emergency fallback
-        return ["NSE:TCS-EQ", "NSE:RELIANCE-EQ", "NSE:HDFCBANK-EQ", "NSE:INFY-EQ"]
 
 
 def get_realistic_mock_data():
@@ -3216,7 +4099,7 @@ async def mcp_execute_trade(request: MCPTradeRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"MCP trade execution error: {e}")
+        logger.error(f"MCP chat error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -3234,42 +4117,197 @@ async def mcp_chat(request: MCPChatRequest):
             raise HTTPException(
                 status_code=503, detail="Groq engine not available")
 
-        # Determine chat context based on message content
-        message = request.message.lower().strip()
+        # Enhanced query classification with intent understanding
+        query_classification = _classify_query(request.message)
+        logger.info(f"Query classification: {query_classification}")
 
-        # Buy/sell recommendation queries
-        if any(keyword in message for keyword in ["buy", "sell", "trade", "invest", "should i buy", "should i sell", "recommend", "suggestion"]):
+        # Handle different query types dynamically based on intent
+        query_type = query_classification["type"]
+        intent = query_classification.get("intent", "information_request")
+        symbols = query_classification["symbols"]
+
+        logger.info(
+            f"Processing {query_type} query with intent: {intent}, symbols: {symbols}")
+
+        # Dynamic tool selection based on intent and query type
+        if query_type == "trade" or intent == "seeking_recommendation":
+            # For trade recommendations, use the full MCP workflow
+            return await _handle_trade_recommendation(request, symbols)
             # Extract potential stock symbols from the message
             import re
             # Look for common stock symbol patterns
             symbol_patterns = [
                 r'\b([A-Z]{1,4}\.[A-Z]{1,3})\b',  # e.g., RELIANCE.NS
-                r'\b([A-Z]{3,6})\b'  # e.g., RELIANCE (fallback)
+                r'\b([A-Z]{3,6})\b',  # e.g., RELIANCE (fallback)
+                r'\b([a-zA-Z]{3,10})\b'  # e.g., rpower (any case, 3-10 chars)
             ]
 
             symbol = None
             for pattern in symbol_patterns:
                 match = re.search(pattern, request.message)
                 if match:
-                    symbol = match.group(1)
+                    extracted_symbol = match.group(1)
+                    # Skip common words that are not stock symbols
+                    common_words = ["WHAT", "SHOULD", "BUY",
+                                    "SELL", "TODAY", "STOCK", "SHARES", "INVEST"]
+                    if extracted_symbol.upper() in common_words:
+                        continue
+                    # Convert to uppercase and add .NS suffix if needed for Indian stocks
+                    if '.' not in extracted_symbol:
+                        extracted_symbol = extracted_symbol.upper()
+                        # Check if it's a known Indian stock pattern or likely an Indian stock
+                        # We'll assume any 4-10 character symbol might be an Indian stock
+                        if len(extracted_symbol) >= 4 and len(extracted_symbol) <= 10:
+                            symbol = f"{extracted_symbol}.NS"
+                        else:
+                            symbol = extracted_symbol
+                    else:
+                        symbol = extracted_symbol
                     break
 
-            if symbol and trading_bot:
-                # Get market analysis for the symbol
-                try:
-                    # Use the trading agent to analyze the symbol
-                    signal = await mcp_trading_agent.analyze_and_decide(symbol)
+            if symbol:
+                # Validate symbol before processing
+                if not _is_valid_symbol(symbol):
+                    # Handle invalid symbols gracefully
+                    invalid_symbol_response = f"I'm sorry, but '{symbol}' doesn't appear to be a valid stock symbol. Please check the symbol and try again with a valid Indian stock symbol (e.g., RELIANCE.NS, TCS.NS)."
+                    return {
+                        "response": invalid_symbol_response,
+                        "context": "invalid_symbol",
+                        "timestamp": datetime.now().isoformat()
+                    }
 
-                    # Generate contextual response using the new method
+                # Use the full MCP workflow for trade recommendations
+                try:
+                    # Step 1: Generate predictions using the predict tool
+                    from mcp_server.tools.predict_tool import PredictTool
+                    predict_tool = PredictTool({
+                        "tool_id": "predict_tool_for_chat",
+                        "lightgbm_enabled": True,
+                        "rl_model_type": "linucb"
+                    })
+
+                    session_id = str(int(time.time() * 1000000))
+                    predict_arguments = {
+                        "symbols": [symbol],
+                        "horizon": "intraday"
+                    }
+
+                    prediction_result = await predict_tool.predict(predict_arguments, session_id)
+
+                    if prediction_result.status == "SUCCESS" and prediction_result.data:
+                        # Get valid predictions
+                        predictions = prediction_result.data.get(
+                            "predictions", [])
+                        valid_predictions = [
+                            p for p in predictions if "error" not in p]
+
+                        if valid_predictions:
+                            # Step 2: Analyze the predictions using the analyze tool
+                            from mcp_server.tools.analyze_tool import AnalyzeTool
+                            analyze_tool = AnalyzeTool({
+                                "tool_id": "analyze_tool_for_chat"
+                            })
+
+                            analyze_arguments = {
+                                "predictions": valid_predictions,
+                                "analysis_depth": "detailed",
+                                "include_risk_assessment": True
+                            }
+
+                            analysis_result = await analyze_tool.analyze(analyze_arguments, session_id)
+
+                            if analysis_result.status == "SUCCESS":
+                                # Step 3: Assess risk using the risk management tool
+                                from mcp_server.tools.risk_management_tool import RiskManagementTool
+                                risk_tool = RiskManagementTool({
+                                    "tool_id": "risk_tool_for_chat"
+                                })
+
+                                # Extract risk metrics from predictions
+                                first_prediction = valid_predictions[0]
+                                risk_arguments = {
+                                    "symbol": symbol,
+                                    "position_size": 0.1,  # Default position size
+                                    "entry_price": first_prediction.get("current_price", 0),
+                                    "stop_loss": first_prediction.get("stop_loss", 0),
+                                    "volatility": first_prediction.get("risk_metrics", {}).get("volatility_20", 0.2)
+                                }
+
+                                risk_result = await risk_tool.assess_position_risk(risk_arguments, session_id)
+
+                                # Step 4: Generate explanation using Groq
+                                if groq_engine:
+                                    mcp_data = {
+                                        "symbol": symbol,
+                                        "predictions": valid_predictions,
+                                        "analysis": analysis_result.data,
+                                        "risk_assessment": risk_result.data if risk_result.status == "SUCCESS" else None,
+                                        "confidence": prediction_result.confidence
+                                    }
+
+                                    async with groq_engine:
+                                        response = await groq_engine.explain_mcp_data(
+                                            user_query=request.message,
+                                            mcp_data=mcp_data,
+                                            explanation_type="trade_recommendation"
+                                        )
+
+                                    return {
+                                        "response": response.content,
+                                        "reasoning": response.reasoning,
+                                        "confidence": response.confidence,
+                                        "context": "trade_recommendation",
+                                        "related_analysis": mcp_data,
+                                        "timestamp": datetime.now().isoformat()
+                                    }
+
+                    # Fallback if any step fails
+                    return {
+                        "response": f"I've analyzed {symbol} but couldn't generate a complete recommendation. The system is attempting to automatically fetch and process data for this symbol. Please try again in a few moments.",
+                        "context": "partial_analysis",
+                        "timestamp": datetime.now().isoformat()
+                    }
+
+                except Exception as workflow_error:
+                    logger.error(f"Error in MCP workflow: {workflow_error}")
+                    # Fall back to general analysis
+                    pass
+
+            # If no symbol found or analysis failed, provide general trading advice
+            # Use the scan_all tool to get relevant stock recommendations
+            try:
+                from mcp_server.tools.scan_all_tool import ScanAllTool
+                scan_tool = ScanAllTool({
+                    "tool_id": "scan_tool_for_general_trade"
+                })
+
+                # Generate a session ID for this request
+                session_id = str(int(time.time() * 1000000))
+
+                # Prepare arguments for the scan tool with a broad search
+                arguments = {
+                    "min_score": 0.6,  # Minimum confidence score
+                    "max_results": 5,  # Top 5 results
+                    "symbols": [],  # Scan all available symbols
+                    "horizon": "intraday"
+                }
+
+                # Execute the scan tool
+                result = await scan_tool.scan_all(arguments, session_id)
+
+                if result.status == "SUCCESS":
+                    # Get data from MCP tools for explanation
+                    mcp_data = {
+                        "scan_results": result.data,
+                        "query_type": "trade_recommendation"
+                    }
+
+                    # Explain the scan results using the LLM
                     async with groq_engine:
-                        response = await groq_engine.get_trade_recommendation(
+                        response = await groq_engine.explain_mcp_data(
                             user_query=request.message,
-                            symbol=symbol,
-                            market_context=signal.metadata.get(
-                                "market_data", {}),
-                            technical_signals=signal.metadata.get(
-                                "technical_signals", {}),
-                            fundamental_data={}  # Could be enhanced with fundamental data
+                            mcp_data=mcp_data,
+                            explanation_type="trade_recommendation"
                         )
 
                     return {
@@ -3277,85 +4315,214 @@ async def mcp_chat(request: MCPChatRequest):
                         "reasoning": response.reasoning,
                         "confidence": response.confidence,
                         "context": "trade_recommendation",
-                        "related_analysis": {
-                            "symbol": symbol,
-                            "recommendation": signal.decision.value,
-                            "risk_score": signal.risk_score,
-                            "confidence": signal.confidence
-                        },
+                        "scan_data": result.data,
                         "timestamp": datetime.now().isoformat()
                     }
-                except Exception as e:
-                    logger.error(f"Error analyzing symbol {symbol}: {e}")
-                    # Fall back to general analysis
-                    pass
+                else:
+                    # Fallback to general advice if scan fails
+                    enhanced_prompt = f"""You are an expert trading advisor specializing in Indian stock markets (NSE/BSE).
+                    
+USER QUERY: {request.message}
 
-            # If no symbol found or analysis failed, provide general trading advice
-            general_prompt = f"""
-            You are an expert trading advisor. The user is asking about buying or selling stocks.
-            Question: {request.message}
-            
-            Provide practical, actionable advice based on sound trading principles.
-            If they're asking about a specific stock, explain what factors to consider.
-            If they're asking for general advice, provide market insights and strategies.
-            """
+TASK:
+Provide expert trading advice that is:
+- Actionable and specific for Indian stock markets
+- Risk-aware and balanced
+- Based on sound trading principles
+- Concise and clear
 
-            async with groq_engine:
-                response = await groq_engine.get_general_trading_advice(request.message)
+When recommending stocks, focus specifically on:
+- NSE/BSE listed companies
+- Indian market conditions and regulations
+- Rupee-denominated investments
+- Sector-specific considerations for Indian economy
 
-            return {
-                "response": response.content,
-                "reasoning": response.reasoning,
-                "confidence": response.confidence,
-                "context": "general_trading_advice",
-                "timestamp": datetime.now().isoformat()
-            }
+Structure your response with:
+1. **Direct Answer** - Address the core question first
+2. **Supporting Analysis** - Provide relevant context and reasoning
+3. **Risk Considerations** - Highlight key risks and mitigations
+4. **Next Steps** - Suggest concrete actions
 
-        # Market analysis queries
-        elif any(keyword in message for keyword in ["analyze", "stock", "price", "market", "performance", "trend", "outlook"]):
-            # Market-related query
-            # Extract potential stock symbols from the message
-            import re
-            symbol_patterns = [
-                r'\b([A-Z]{1,4}\.[A-Z]{1,3})\b',  # e.g., RELIANCE.NS
-                r'\b([A-Z]{3,6})\b'  # e.g., RELIANCE (fallback)
-            ]
+Keep responses focused on trading and investment topics in Indian markets. For non-trading queries, politely redirect to trading-related subjects."""
 
-            symbol = None
-            for pattern in symbol_patterns:
-                match = re.search(pattern, request.message)
-                if match:
-                    symbol = match.group(1)
-                    break
+                    async with groq_engine:
+                        response = await groq_engine.get_general_trading_advice(enhanced_prompt)
 
-            if symbol:
-                # Get market analysis
-                signal = await mcp_trading_agent.analyze_and_decide(symbol)
+                    return {
+                        "response": response.content,
+                        "reasoning": response.reasoning,
+                        "confidence": response.confidence,
+                        "context": "general_trading_advice",
+                        "timestamp": datetime.now().isoformat()
+                    }
+            except Exception as scan_error:
+                logger.error(
+                    f"Error in general trade recommendation scan: {scan_error}")
+                # Fallback to general advice if scan fails
+                enhanced_prompt = f"""You are an expert trading advisor specializing in Indian stock markets (NSE/BSE).
+                
+USER QUERY: {request.message}
 
-                # Generate contextual response
+TASK:
+Provide expert trading advice that is:
+- Actionable and specific for Indian stock markets
+- Risk-aware and balanced
+- Based on sound trading principles
+- Concise and clear
+
+When recommending stocks, focus specifically on:
+- NSE/BSE listed companies
+- Indian market conditions and regulations
+- Rupee-denominated investments
+- Sector-specific considerations for Indian economy
+
+Structure your response with:
+1. **Direct Answer** - Address the core question first
+2. **Supporting Analysis** - Provide relevant context and reasoning
+3. **Risk Considerations** - Highlight key risks and mitigations
+4. **Next Steps** - Suggest concrete actions
+
+Keep responses focused on trading and investment topics in Indian markets. For non-trading queries, politely redirect to trading-related subjects."""
+
                 async with groq_engine:
-                    response = await groq_engine.analyze_market_decision(
-                        TradingContext(
-                            symbol=symbol,
-                            current_price=getattr(signal, 'entry_price', 0.0),
-                            technical_signals=signal.metadata.get(
-                                "technical_signals", {}),
-                            market_data=signal.metadata.get("market_data", {})
-                        )
-                    )
+                    response = await groq_engine.get_general_trading_advice(enhanced_prompt)
 
                 return {
                     "response": response.content,
                     "reasoning": response.reasoning,
                     "confidence": response.confidence,
-                    "context": "market_analysis",
-                    "related_analysis": {
-                        "symbol": symbol,
-                        "recommendation": signal.decision.value,
-                        "risk_score": signal.risk_score
-                    },
+                    "context": "general_trading_advice",
                     "timestamp": datetime.now().isoformat()
                 }
+
+        # Market analysis queries
+        elif query_type == "market_analysis" or intent == "analysis_request":
+            # For market analysis, use the full MCP workflow
+            return await _handle_market_analysis(request, symbols)
+            # Use symbols from classification
+            symbol = symbols[0] if symbols else None
+            if symbol:
+                # Validate symbol before processing
+                if not _is_valid_symbol(symbol):
+                    # Handle invalid symbols gracefully
+                    logger.warning(f"Invalid symbol detected: {symbol}")
+                    return {
+                        "response": f"I'm sorry, but '{symbol}' doesn't appear to be a valid stock symbol. Please check the symbol and try again with a valid Indian stock symbol (e.g., RELIANCE.NS, TCS.NS).",
+                        "context": "invalid_symbol",
+                        "timestamp": datetime.now().isoformat()
+                    }
+
+            if symbol:
+                # Validate symbol before processing
+                if not _is_valid_symbol(symbol):
+                    # Handle invalid symbols gracefully
+                    invalid_symbol_response = f"I'm sorry, but '{symbol}' doesn't appear to be a valid stock symbol. Please check the symbol and try again with a valid Indian stock symbol (e.g., RELIANCE.NS, TCS.NS)."
+                    return {
+                        "response": invalid_symbol_response,
+                        "context": "invalid_symbol",
+                        "timestamp": datetime.now().isoformat()
+                    }
+
+                # Use the full MCP workflow for market analysis
+                try:
+                    # Step 1: Generate predictions using the predict tool
+                    from mcp_server.tools.predict_tool import PredictTool
+                    predict_tool = PredictTool({
+                        "tool_id": "predict_tool_for_market_analysis",
+                        "lightgbm_enabled": True,
+                        "rl_model_type": "linucb"
+                    })
+
+                    session_id = str(int(time.time() * 1000000))
+                    predict_arguments = {
+                        "symbols": [symbol],
+                        "horizon": "intraday"
+                    }
+
+                    prediction_result = await predict_tool.predict(predict_arguments, session_id)
+
+                    if prediction_result.status == "SUCCESS" and prediction_result.data:
+                        # Get valid predictions
+                        predictions = prediction_result.data.get(
+                            "predictions", [])
+                        valid_predictions = [
+                            p for p in predictions if "error" not in p]
+
+                        if valid_predictions:
+                            # Step 2: Analyze the predictions using the analyze tool
+                            from mcp_server.tools.analyze_tool import AnalyzeTool
+                            analyze_tool = AnalyzeTool({
+                                "tool_id": "analyze_tool_for_market_analysis"
+                            })
+
+                            analyze_arguments = {
+                                "predictions": valid_predictions,
+                                "analysis_depth": "comprehensive",
+                                "include_risk_assessment": True
+                            }
+
+                            analysis_result = await analyze_tool.analyze(analyze_arguments, session_id)
+
+                            if analysis_result.status == "SUCCESS":
+                                # Step 3: Assess risk using the risk management tool
+                                from mcp_server.tools.risk_management_tool import RiskManagementTool
+                                risk_tool = RiskManagementTool({
+                                    "tool_id": "risk_tool_for_market_analysis"
+                                })
+
+                                # Extract risk metrics from predictions
+                                first_prediction = valid_predictions[0]
+                                risk_arguments = {
+                                    "symbol": symbol,
+                                    "position_size": 0.1,  # Default position size
+                                    "entry_price": first_prediction.get("current_price", 0),
+                                    "stop_loss": first_prediction.get("stop_loss", 0),
+                                    "volatility": first_prediction.get("risk_metrics", {}).get("volatility_20", 0.2)
+                                }
+
+                                risk_result = await risk_tool.assess_position_risk(risk_arguments, session_id)
+
+                                # Step 4: Generate explanation using Groq
+                                if groq_engine:
+                                    mcp_data = {
+                                        "symbol": symbol,
+                                        "predictions": valid_predictions,
+                                        "analysis": analysis_result.data,
+                                        "risk_assessment": risk_result.data if risk_result.status == "SUCCESS" else None,
+                                        "confidence": prediction_result.confidence
+                                    }
+
+                                    async with groq_engine:
+                                        response = await groq_engine.explain_mcp_data(
+                                            user_query=request.message,
+                                            mcp_data=mcp_data,
+                                            explanation_type="market_analysis"
+                                        )
+
+                                    return {
+                                        "response": response.content,
+                                        "reasoning": response.reasoning,
+                                        "confidence": response.confidence,
+                                        "context": "market_analysis",
+                                        "related_analysis": mcp_data,
+                                        "timestamp": datetime.now().isoformat()
+                                    }
+
+                    # Fallback if any step fails
+                    return {
+                        "response": f"I've analyzed {symbol} but couldn't generate a complete analysis. The system is attempting to automatically fetch and process data for this symbol. Please try again in a few moments.",
+                        "context": "partial_analysis",
+                        "timestamp": datetime.now().isoformat()
+                    }
+
+                except Exception as workflow_error:
+                    logger.error(f"Error in MCP workflow: {workflow_error}")
+                    return {
+                        "response": f"I'm sorry, but I couldn't analyze {symbol} at the moment. This could be because: 1) The stock symbol might not be recognized, 2) There might be insufficient data for analysis, or 3) There was a technical issue. The system will attempt to automatically fetch and process data for new symbols. Please try again in a few moments.",
+                        "context": "analysis_error",
+                        "error_details": str(workflow_error),
+                        "timestamp": datetime.now().isoformat()
+                    }
             else:
                 return {
                     "response": "Please specify a stock symbol for market analysis.",
@@ -3364,33 +4531,114 @@ async def mcp_chat(request: MCPChatRequest):
                 }
 
         # Risk assessment queries
-        elif any(keyword in message for keyword in ["risk", "danger", "safe", "volatility", "drawdown", "protect"]):
-            # Risk assessment query
-            if trading_bot:
-                portfolio_data = {
-                    "holdings": trading_bot.get_portfolio_metrics().get("holdings", {}),
-                    "cash": trading_bot.get_portfolio_metrics().get("cash", 0),
-                    "risk_profile": trading_bot.config.get("riskLevel", "MEDIUM"),
-                    "total_value": trading_bot.get_portfolio_metrics().get("total_value", 0),
-                    "unrealized_pnl": trading_bot.get_portfolio_metrics().get("unrealized_pnl", 0)
-                }
+        elif query_type == "risk" or intent == "risk_assessment":
+            # For risk assessment, use the risk management tool
+            return await _handle_risk_assessment(request, symbols)
+            # Use symbols from classification
+            symbol = symbols[0] if symbols else None
+            if symbol:
+                # Validate symbol before processing
+                if not _is_valid_symbol(symbol):
+                    # Handle invalid symbols gracefully
+                    logger.warning(f"Invalid symbol detected: {symbol}")
+                    return {
+                        "response": f"I'm sorry, but '{symbol}' doesn't appear to be a valid stock symbol. Please check the symbol and try again with a valid Indian stock symbol (e.g., RELIANCE.NS, TCS.NS).",
+                        "context": "invalid_symbol",
+                        "timestamp": datetime.now().isoformat()
+                    }
 
-                async with groq_engine:
-                    response = await groq_engine.assess_risk(
-                        trade_details={"type": "portfolio_assessment"},
-                        portfolio_context=portfolio_data
-                    )
+            if symbol:
+                # Validate symbol before processing
+                if not _is_valid_symbol(symbol):
+                    # Handle invalid symbols gracefully
+                    invalid_symbol_response = f"I'm sorry, but '{symbol}' doesn't appear to be a valid stock symbol. Please check the symbol and try again with a valid Indian stock symbol (e.g., RELIANCE.NS, TCS.NS)."
+                    return {
+                        "response": invalid_symbol_response,
+                        "context": "invalid_symbol",
+                        "timestamp": datetime.now().isoformat()
+                    }
 
-                return {
-                    "response": response.content,
-                    "reasoning": response.reasoning,
-                    "confidence": response.confidence,
-                    "context": "risk_assessment",
-                    "timestamp": datetime.now().isoformat()
-                }
+                # Use the risk management tool directly
+                try:
+                    from mcp_server.tools.risk_management_tool import RiskManagementTool
+                    risk_tool = RiskManagementTool({
+                        "tool_id": "risk_tool_for_chat"
+                    })
+
+                    session_id = str(int(time.time() * 1000000))
+                    risk_arguments = {
+                        "symbol": symbol,
+                        "position_size": 0.1,  # Default position size
+                        "entry_price": 0,  # Will be filled by tool if needed
+                        "stop_loss": 0,    # Will be filled by tool if needed
+                        "volatility": 0.2  # Default volatility
+                    }
+
+                    risk_result = await risk_tool.assess_position_risk(risk_arguments, session_id)
+
+                    if risk_result.status == "SUCCESS":
+                        # Generate explanation using Groq
+                        if groq_engine:
+                            mcp_data = {
+                                "symbol": symbol,
+                                "risk_assessment": risk_result.data,
+                                "confidence": risk_result.confidence
+                            }
+
+                            async with groq_engine:
+                                response = await groq_engine.explain_mcp_data(
+                                    user_query=request.message,
+                                    mcp_data=mcp_data,
+                                    explanation_type="risk_assessment"
+                                )
+
+                            return {
+                                "response": response.content,
+                                "reasoning": response.reasoning,
+                                "confidence": response.confidence,
+                                "context": "risk_assessment",
+                                "related_analysis": mcp_data,
+                                "timestamp": datetime.now().isoformat()
+                            }
+
+                    # Fallback if risk assessment fails
+                    return {
+                        "response": f"I've assessed risk for {symbol} but couldn't generate a complete analysis. The system is attempting to automatically fetch and process data for this symbol. Please try again in a few moments.",
+                        "context": "partial_analysis",
+                        "timestamp": datetime.now().isoformat()
+                    }
+
+                except Exception as risk_error:
+                    logger.error(f"Error in risk assessment: {risk_error}")
+                    return {
+                        "response": f"I'm sorry, but I couldn't assess risk for {symbol} at the moment. The system will attempt to automatically fetch and process data for new symbols. Please try again in a few moments.",
+                        "context": "risk_error",
+                        "error_details": str(risk_error),
+                        "timestamp": datetime.now().isoformat()
+                    }
             else:
+                # General risk advice
+                enhanced_prompt = f"""You are an expert trading advisor specializing in Indian stock markets (NSE/BSE).
+                
+USER QUERY: {request.message}
+
+TASK:
+Provide expert risk management advice that is:
+- Actionable and specific for Indian stock markets
+- Risk-aware and balanced
+- Based on sound trading principles
+- Concise and clear
+
+Structure your response with:
+1. **Direct Answer** - Address the core question first
+2. **Supporting Analysis** - Provide relevant context and reasoning
+3. **Risk Considerations** - Highlight key risks and mitigations
+4. **Next Steps** - Suggest concrete actions
+
+Keep responses focused on risk management topics in Indian markets."""
+
                 async with groq_engine:
-                    response = await groq_engine.get_general_trading_advice(request.message)
+                    response = await groq_engine.get_general_trading_advice(enhanced_prompt)
 
                 return {
                     "response": response.content,
@@ -3401,7 +4649,9 @@ async def mcp_chat(request: MCPChatRequest):
                 }
 
         # Portfolio-related queries
-        elif any(keyword in message for keyword in ["portfolio", "holding", "holdings", "my stocks", "what do i own", "what i own", "stocks i have", "positions", "investments", "assets"]):
+        elif query_classification["type"] == "portfolio" or intent == "portfolio_inquiry":
+            # For portfolio queries, use the portfolio analysis workflow
+            return await _handle_portfolio_query(request)
             # Portfolio-related query
             if trading_bot:
                 try:
@@ -3425,28 +4675,16 @@ async def mcp_chat(request: MCPChatRequest):
                     # Log the portfolio data for debugging
                     logger.info(f"Portfolio data for LLM: {portfolio_data}")
 
-                    # Extract required parameters for optimize_portfolio method
-                    current_holdings = [
-                        {
-                            "symbol": symbol,
-                            "quantity": data.get("qty", 0),
-                            "avg_price": data.get("avg_price", 0),
-                            "current_price": data.get("currentPrice", data.get("last_price", 0))
-                        }
-                        for symbol, data in portfolio_data.get("holdings", {}).items()
-                    ]
-                    available_cash = portfolio_data.get("cash", 0)
-                    risk_profile = portfolio_data.get("risk_profile", "MEDIUM")
-                    market_outlook = "Current market conditions"
-                    performance_history = {}
-                    total_value = portfolio_data.get(
-                        "total_value", available_cash)
-                    unrealized_pnl = portfolio_data.get("unrealized_pnl", 0)
+                    # Get data from MCP tools for explanation
+                    mcp_data = {
+                        "portfolio_data": portfolio_data
+                    }
 
                     async with groq_engine:
-                        response = await groq_engine.optimize_portfolio(
-                            current_holdings, available_cash, risk_profile,
-                            market_outlook, performance_history, total_value, unrealized_pnl
+                        response = await groq_engine.explain_mcp_data(
+                            user_query=request.message,
+                            mcp_data=mcp_data,
+                            explanation_type="portfolio_optimization"
                         )
 
                     return {
@@ -3482,41 +4720,74 @@ async def mcp_chat(request: MCPChatRequest):
                     "timestamp": datetime.now().isoformat()
                 }
 
-        else:
-            # General trading query - let the LLM handle any other finance-related questions
+        # Scan all stocks query
+        elif query_classification["type"] == "scan" or intent == "stock_discovery":
+            # For stock scanning, use the scan_all tool
+            return await _handle_stock_scan(request)
+            # Use MCP scan_all tool to get stock recommendations
             try:
-                async with groq_engine:
-                    response = await groq_engine.get_general_trading_advice(request.message)
+                from mcp_server.tools.scan_all_tool import ScanAllTool
+                scan_tool = ScanAllTool({
+                    "tool_id": "scan_tool"
+                })
 
-                return {
-                    "response": response.content,
-                    "reasoning": response.reasoning,
-                    "confidence": response.confidence,
-                    "context": "general_trading",
-                    "timestamp": datetime.now().isoformat()
+                # Generate a session ID for this request
+                session_id = str(int(time.time() * 1000000))
+
+                # Prepare arguments for the scan tool
+                arguments = {
+                    "min_score": 0.7,  # Minimum confidence score
+                    "max_results": 10,  # Top 10 results
+                    "symbols": [],  # Scan all available symbols
+                    "horizon": "intraday"
                 }
-            except Exception as e:
-                logger.error(
-                    f"Error processing general trading query: {e}", exc_info=True)
-                # Check if the error is related to Groq API credits or authentication
-                error_message = str(e)
-                if "credits" in error_message.lower():
-                    fallback_response = "I'm unable to provide trading advice at the moment due to insufficient API credits. Please contact the system administrator to resolve this issue."
-                elif "api key" in error_message.lower() or "permission" in error_message.lower():
-                    fallback_response = "I'm unable to access the AI analysis service due to authentication issues. Please check the API configuration."
-                else:
-                    fallback_response = "I'm having trouble processing your request right now. Please try again later."
 
+                # Execute the scan tool
+                result = await scan_tool.scan_all(arguments, session_id)
+
+                if result.status == "SUCCESS":
+                    # Get data from MCP tools for explanation
+                    mcp_data = {
+                        "scan_results": result.data
+                    }
+
+                    # Explain the scan results
+                    async with groq_engine:
+                        response = await groq_engine.explain_mcp_data(
+                            user_query=request.message,
+                            mcp_data=mcp_data,
+                            explanation_type="stock_scan"
+                        )
+
+                    return {
+                        "response": response.content,
+                        "reasoning": response.reasoning,
+                        "confidence": response.confidence,
+                        "context": "stock_scan",
+                        "scan_data": result.data,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                else:
+                    raise Exception(result.error)
+            except Exception as e:
+                logger.error(f"Error scanning stocks: {e}")
                 return {
-                    "response": fallback_response,
+                    "response": f"Unable to scan stocks at the moment. Error: {str(e)}",
                     "context": "error",
                     "timestamp": datetime.now().isoformat()
                 }
+
+        else:
+            # General trading query - use MCP tools to generate data first, then have LLM explain
+            # For general queries, we'll use the scan_all tool to get relevant stock data
+            return await _handle_general_query(request)
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"MCP chat error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -3801,7 +5072,7 @@ async def get_decision_history(days: int = 7):
 
 async def _ensure_mcp_initialized():
     """Ensure MCP components are initialized"""
-    global mcp_server, mcp_trading_agent, fyers_client, groq_engine
+    global mcp_server, mcp_trading_agent, mcp_portfolio_agent, mcp_regime_agent, mcp_sentiment_agent, fyers_client, groq_engine
 
     # Load environment variables with explicit path
     from dotenv import load_dotenv
@@ -3846,7 +5117,10 @@ async def _ensure_mcp_initialized():
         if not mcp_server:
             mcp_config = {
                 "monitoring_port": 8002,
-                "max_sessions": 100
+                "max_sessions": 100,
+                "groq_api_key": os.getenv("GROQ_API_KEY", ""),
+                "groq_base_url": os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1"),
+                "groq_model": os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
             }
             mcp_server = MCPTradingServer(mcp_config)
 
@@ -3870,13 +5144,63 @@ async def _ensure_mcp_initialized():
             mcp_trading_agent = TradingAgent(agent_config)
             await mcp_trading_agent.initialize()
 
-        # Register MCP tools
+        # Initialize portfolio agent
+        if not mcp_portfolio_agent:
+            portfolio_config = {
+                "agent_id": "production_portfolio_agent",
+                "risk_tolerance": 0.5,
+                "optimization_method": "mean_variance",
+                "max_positions": 10,
+                "groq": {
+                    "groq_api_key": os.getenv("GROQ_API_KEY", ""),
+                    "groq_base_url": "https://api.groq.com/openai/v1",
+                    "groq_model": "llama-3.1-8b-instant"
+                }
+            }
+            mcp_portfolio_agent = PortfolioAgent(portfolio_config)
+            await mcp_portfolio_agent.initialize()
+
+        # Initialize market regime agent
+        if not mcp_regime_agent:
+            regime_config = {
+                "agent_id": "production_regime_agent",
+                "lookback_period": 20,
+                "confidence_threshold": 0.7,
+                "groq": {
+                    "groq_api_key": os.getenv("GROQ_API_KEY", ""),
+                    "groq_base_url": "https://api.groq.com/openai/v1",
+                    "groq_model": "llama-3.1-8b-instant"
+                }
+            }
+            mcp_regime_agent = MarketRegimeAgent(regime_config)
+            await mcp_regime_agent.initialize()
+
+        # Initialize sentiment agent
+        if not mcp_sentiment_agent:
+            sentiment_config = {
+                "agent_id": "production_sentiment_agent",
+                "min_confidence": 0.7,
+                "sources": ["news", "social_media", "analyst_ratings"],
+                "groq": {
+                    "groq_api_key": os.getenv("GROQ_API_KEY", ""),
+                    "groq_base_url": "https://api.groq.com/openai/v1",
+                    "groq_model": "llama-3.1-8b-instant"
+                }
+            }
+            mcp_sentiment_agent = SentimentAgent(sentiment_config)
+            await mcp_sentiment_agent.initialize()
+
+        # Register MCP tools with interconnection
         if mcp_server:
             # Import tools
             from mcp_server.tools.predict_tool import PredictTool
             from mcp_server.tools.analyze_tool import AnalyzeTool
             from mcp_server.tools.scan_all_tool import ScanAllTool
             from mcp_server.tools.confirm_tool import ConfirmTool
+            from mcp_server.tools.sentiment_tool import SentimentTool
+            from mcp_server.tools.professional_trading_tool import ProfessionalTradingTool
+            from mcp_server.tools.risk_management_tool import RiskManagementTool
+            from mcp_server.tools.technical_analysis_tool import TechnicalAnalysisTool
 
             # Initialize tools
             predict_tool = PredictTool({
@@ -3907,7 +5231,42 @@ async def _ensure_mcp_initialized():
                 "risk_tolerance": 0.05
             })
 
-            # Register standard tools
+            sentiment_tool = SentimentTool({
+                "tool_id": "sentiment_tool"
+            })
+
+            professional_trading_tool = ProfessionalTradingTool({
+                "tool_id": "professional_trading_tool"
+            })
+
+            risk_management_tool = RiskManagementTool({
+                "tool_id": "risk_management_tool"
+            })
+
+            technical_analysis_tool = TechnicalAnalysisTool({
+                "tool_id": "technical_analysis_tool"
+            })
+
+            # Connect tools for full interconnection
+            tool_registry = {
+                "predict": predict_tool,
+                "analyze": analyze_tool,
+                "scan_all": scan_all_tool,
+                "confirm": confirm_tool,
+                "sentiment": sentiment_tool,
+                "professional_trading": professional_trading_tool,
+                "trading_recommendations": professional_trading_tool,
+                "risk_management": risk_management_tool,
+                "technical_analysis": technical_analysis_tool,
+                "pattern_scan": technical_analysis_tool
+            }
+
+            # Connect all tools to each other
+            for tool_name, tool_instance in tool_registry.items():
+                if hasattr(tool_instance, 'connect_tools'):
+                    tool_instance.connect_tools(tool_registry)
+
+            # Register tools with instances for interconnection
             mcp_server.register_tool(
                 name="predict",
                 function=predict_tool.predict,
@@ -3924,13 +5283,14 @@ async def _ensure_mcp_initialized():
                         "include_explanations": {"type": "boolean"}
                     },
                     "required": []
-                }
+                },
+                instance=predict_tool
             )
 
             mcp_server.register_tool(
                 name="analyze",
                 function=analyze_tool.analyze,
-                description="Send prediction output to local LLaMA via LangGraph to get reasoning and insights",
+                description="Send prediction output to Groq API to get reasoning and insights",
                 schema={
                     "type": "object",
                     "properties": {
@@ -3951,7 +5311,8 @@ async def _ensure_mcp_initialized():
                         "include_risk_assessment": {"type": "boolean"}
                     },
                     "required": ["predictions"]
-                }
+                },
+                instance=analyze_tool
             )
 
             mcp_server.register_tool(
@@ -3974,7 +5335,8 @@ async def _ensure_mcp_initialized():
                         "sort_by": {"type": "string"}
                     },
                     "required": []
-                }
+                },
+                instance=scan_all_tool
             )
 
             mcp_server.register_tool(
@@ -4000,14 +5362,57 @@ async def _ensure_mcp_initialized():
                         "risk_check": {"type": "boolean"}
                     },
                     "required": ["actions"]
-                }
+                },
+                instance=confirm_tool
             )
 
-            # Register venting layer tools (duplicate naming for compatibility)
             mcp_server.register_tool(
-                name="tools/predict",
-                function=predict_tool.predict,
-                description="Generate predictions using LightGBM + RL (LinUCB/PPO-Lite)",
+                name="sentiment",
+                function=sentiment_tool.analyze_sentiment,
+                description="Analyze news sentiment for stock symbols with Indian market focus",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "symbol": {"type": "string"},
+                        "sources": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "lookback_days": {"type": "number"},
+                        "include_news_items": {"type": "boolean"}
+                    },
+                    "required": ["symbol"]
+                },
+                instance=sentiment_tool
+            )
+
+            mcp_server.register_tool(
+                name="professional_trading",
+                function=professional_trading_tool.execute_trading_decision,
+                description="Execute professional-grade trading decisions with institutional buy/sell logic",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "symbol": {"type": "string"},
+                        "action": {"type": "string", "enum": ["buy", "sell", "analyze"]},
+                        "symbols": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "portfolio_context": {"type": "object"},
+                        "risk_profile": {"type": "string"},
+                        "market_outlook": {"type": "string"},
+                        "analysis_depth": {"type": "string"}
+                    },
+                    "required": []
+                },
+                instance=professional_trading_tool
+            )
+
+            mcp_server.register_tool(
+                name="trading_recommendations",
+                function=professional_trading_tool.get_trading_recommendation,
+                description="Get professional trading recommendations with risk assessment for multiple symbols",
                 schema={
                     "type": "object",
                     "properties": {
@@ -4015,88 +5420,90 @@ async def _ensure_mcp_initialized():
                             "type": "array",
                             "items": {"type": "string"}
                         },
-                        "model_type": {"type": "string"},
-                        "horizon": {"type": "string"},
-                        "include_explanations": {"type": "boolean"}
+                        "portfolio_context": {"type": "object"},
+                        "risk_profile": {"type": "string"},
+                        "market_outlook": {"type": "string"}
                     },
-                    "required": []
-                }
+                    "required": ["symbols"]
+                },
+                instance=professional_trading_tool
             )
 
             mcp_server.register_tool(
-                name="tools/analyze",
-                function=analyze_tool.analyze,
-                description="Send prediction output to local LLaMA via LangGraph to get reasoning and insights",
+                name="risk_management",
+                function=risk_management_tool.assess_position_risk,
+                description="Professional risk management with position sizing and portfolio risk assessment",
                 schema={
                     "type": "object",
                     "properties": {
-                        "predictions": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "symbol": {"type": "string"},
-                                    "prediction_score": {"type": "number"},
-                                    "confidence": {"type": "number"},
-                                    "model_type": {"type": "string"},
-                                    "features": {"type": "object"}
-                                }
-                            }
-                        },
-                        "analysis_depth": {"type": "string"},
-                        "include_risk_assessment": {"type": "boolean"}
-                    },
-                    "required": ["predictions"]
-                }
-            )
-
-            mcp_server.register_tool(
-                name="tools/scan_all",
-                function=scan_all_tool.scan_all,
-                description="Batch scan all cached stocks and rank by RL agent",
-                schema={
-                    "type": "object",
-                    "properties": {
-                        "min_score": {"type": "number"},
-                        "max_results": {"type": "number"},
-                        "sectors": {
-                            "type": "array",
-                            "items": {"type": "string"}
-                        },
-                        "market_caps": {
-                            "type": "array",
-                            "items": {"type": "string"}
-                        },
-                        "sort_by": {"type": "string"}
-                    },
-                    "required": []
-                }
-            )
-
-            mcp_server.register_tool(
-                name="tools/confirm",
-                function=confirm_tool.confirm,
-                description="Validate results with Executor via FastMCP and log confirmations",
-                schema={
-                    "type": "object",
-                    "properties": {
-                        "actions": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "symbol": {"type": "string"},
-                                    "action": {"type": "string"},
-                                    "confidence": {"type": "number"},
-                                    "analysis": {"type": "object"}
-                                }
-                            }
-                        },
+                        "symbol": {"type": "string"},
+                        "position_size": {"type": "number"},
+                        "entry_price": {"type": "number"},
+                        "stop_loss": {"type": "number"},
                         "portfolio_value": {"type": "number"},
-                        "risk_check": {"type": "boolean"}
+                        "volatility": {"type": "number"},
+                        "confidence": {"type": "number"},
+                        "positions": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "symbol": {"type": "string"},
+                                    "value": {"type": "number"},
+                                    "weight": {"type": "number"},
+                                    "volatility": {"type": "number"}
+                                }
+                            }
+                        },
+                        "risk_free_rate": {"type": "number"},
+                        "time_horizon": {"type": "number"}
                     },
-                    "required": ["actions"]
-                }
+                    "required": []
+                },
+                instance=risk_management_tool
+            )
+
+            mcp_server.register_tool(
+                name="technical_analysis",
+                function=technical_analysis_tool.analyze_technical_indicators,
+                description="Professional technical analysis with advanced indicators and pattern recognition",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "symbols": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "timeframe": {"type": "string"},
+                        "include_patterns": {"type": "boolean"},
+                        "risk_profile": {"type": "string"}
+                    },
+                    "required": ["symbols"]
+                },
+                instance=technical_analysis_tool
+            )
+
+            mcp_server.register_tool(
+                name="pattern_scan",
+                function=technical_analysis_tool.scan_for_patterns,
+                description="Scan for technical patterns across multiple symbols",
+                schema={
+                    "type": "object",
+                    "properties": {
+                        "symbols": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "patterns": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "min_confidence": {"type": "number"},
+                        "timeframe": {"type": "string"}
+                    },
+                    "required": ["symbols"]
+                },
+                instance=technical_analysis_tool
             )
 
         logger.info("MCP components initialized successfully")
@@ -5005,6 +6412,50 @@ async def toggle_trading_mode(request: dict):
         raise
     except Exception as e:
         logger.error(f"Error toggling trading mode: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/mcp_chat")
+async def mcp_chat(request: Request):
+    try:
+        user_input = request.get("input", "").strip()
+        if not user_input:
+            raise HTTPException(
+                status_code=400, detail="Input cannot be empty")
+
+        # Get trading pipeline instance
+        from backend.core.trading_pipeline import get_trading_pipeline
+        pipeline = get_trading_pipeline()
+
+        # Get the current mode
+        mode = pipeline.get_mode()
+
+        if mode == "autonomous":
+            raise HTTPException(
+                status_code=400, detail="Cannot chat in Autonomous mode")
+
+        # Process the user input
+        response = pipeline.process_input(user_input)
+
+        if response:
+            return {
+                "response": response,
+                "context": "success",
+                "timestamp": datetime.now().isoformat()
+            }
+        else:
+            fallback_response = "I'm having trouble processing your request right now. Please try again later."
+
+            return {
+                "response": fallback_response,
+                "context": "error",
+                "timestamp": datetime.now().isoformat()
+            }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"MCP chat error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

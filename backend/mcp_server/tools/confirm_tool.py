@@ -51,7 +51,16 @@ class ConfirmTool:
 
         self.request_counter = 0
 
+        # Tool interconnections
+        self.risk_management_tool = None
+
         logger.info(f"Confirm Tool {self.tool_id} initialized")
+
+    def connect_tools(self, tool_registry: Dict[str, Any]):
+        """Connect to other tools for interconnection"""
+        if "risk_management" in tool_registry:
+            self.risk_management_tool = tool_registry["risk_management"]
+        logger.info(f"Confirm Tool {self.tool_id} connected to other tools")
 
     def _log_request(self, tool_name: str, request_data: Dict) -> str:
         """Log incoming request"""

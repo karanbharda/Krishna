@@ -2295,14 +2295,38 @@ def predict_stock_price(symbol: str, horizon: str = "intraday", verbose: bool = 
         feature_path = FEATURE_CACHE_DIR / f"{symbol}_features.json"
         if not feature_path.exists():
             if verbose:
-                print(f"  -> [ERROR] No features found for {symbol}")
-            return None
+                print(
+                    f"  -> [INFO] No features found for {symbol}. Attempting to initialize data...")
+
+            # Dynamically initialize data for the symbol
+            success = _initialize_symbol_data(symbol, verbose)
+            if not success:
+                if verbose:
+                    print(
+                        f"  -> [ERROR] Failed to initialize data for {symbol}")
+                return None
+
+            # Check again if features now exist
+            if not feature_path.exists():
+                if verbose:
+                    print(
+                        f"  -> [ERROR] Data initialization did not create features for {symbol}")
+                return None
 
         with open(feature_path, 'r') as f:
             feature_data = json.load(f)
 
         current_features = feature_data['current_features']
         current_price = feature_data['current_price']
+
+        # Validate that we have meaningful features
+        if not current_features or current_price <= 0:
+            if verbose:
+                print(f"  -> [ERROR] Invalid or empty features for {symbol}")
+                print(f"  -> [DIAGNOSTIC] Current price: {current_price}")
+                print(
+                    f"  -> [DIAGNOSTIC] Features count: {len(current_features) if current_features else 0}")
+            return None
 
         # Get feature columns from one of the models
         model_paths = list(MODEL_DIR.glob(f"{symbol}_{horizon}_*_model.pkl"))
@@ -2312,8 +2336,25 @@ def predict_stock_price(symbol: str, horizon: str = "intraday", verbose: bool = 
             if not dqn_path.exists():
                 if verbose:
                     print(
-                        f"  -> [ERROR] No trained models found for {symbol} ({horizon})")
-                return None
+                        f"  -> [INFO] No trained models found for {symbol} ({horizon}). Attempting to train models...")
+
+                # Dynamically train models for the symbol
+                train_success = _train_symbol_models(symbol, horizon, verbose)
+                if not train_success:
+                    if verbose:
+                        print(
+                            f"  -> [ERROR] Failed to train models for {symbol} ({horizon})")
+                    return None
+
+                # Check again if models now exist
+                model_paths = list(MODEL_DIR.glob(
+                    f"{symbol}_{horizon}_*_model.pkl"))
+                dqn_path = MODEL_DIR / f"{symbol}_{horizon}_dqn_agent.pt"
+                if not model_paths and not dqn_path.exists():
+                    if verbose:
+                        print(
+                            f"  -> [ERROR] Model training did not create models for {symbol} ({horizon})")
+                    return None
             else:
                 # Load DQN model
                 # Will be updated when loading
@@ -2327,9 +2368,23 @@ def predict_stock_price(symbol: str, horizon: str = "intraday", verbose: bool = 
                 feature_columns = [
                     col for col in feature_columns if col not in exclude_columns]
 
+                # Check if we have features to work with
+                if not feature_columns:
+                    if verbose:
+                        print(
+                            f"  -> [ERROR] No valid features found for {symbol}")
+                    return None
+
                 state_values = [current_features.get(
                     col, 0) for col in feature_columns]
                 state = np.array(state_values, dtype=np.float32)
+
+                # Validate state
+                if np.all(state == 0) or len(state) == 0:
+                    if verbose:
+                        print(
+                            f"  -> [ERROR] All features are zero or empty for {symbol}")
+                    return None
 
                 # Get action from DQN
                 action = dqn_agent.get_action(state, training=False)
@@ -2394,6 +2449,13 @@ def predict_stock_price(symbol: str, horizon: str = "intraday", verbose: bool = 
         feature_values = [current_features.get(
             col, 0) for col in feature_columns]
         X = np.array(feature_values).reshape(1, -1)
+
+        # Validate features
+        if np.all(X == 0) or X.shape[1] == 0:
+            if verbose:
+                print(
+                    f"  -> [ERROR] All features are zero or empty for {symbol}")
+            return None
 
         # Scale features
         scaler = model_data['scaler']
@@ -2552,7 +2614,116 @@ def predict_stock_price(symbol: str, horizon: str = "intraday", verbose: bool = 
             f"Error predicting stock price for {symbol}: {e}", exc_info=True)
         if verbose:
             print(f"  -> [ERROR] Failed to generate prediction: {e}")
+            import traceback
+            print(f"  -> [TRACEBACK] {traceback.format_exc()}")
         return None
+
+
+def _initialize_symbol_data(symbol: str, verbose: bool = True) -> bool:
+    """
+    Dynamically initialize data for a symbol that doesn't have cached data
+
+    Args:
+        symbol: Stock symbol to initialize
+        verbose: Whether to print detailed output
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        if verbose:
+            print(f"  -> [INIT] Initializing data for {symbol}...")
+
+        # Initialize components
+        ingester = EnhancedDataIngester()
+        engineer = FeatureEngineer()
+
+        # Fetch data
+        data = ingester.fetch_all_data(symbol, period="2y")
+        if not data:
+            if verbose:
+                print(f"  -> [ERROR] Failed to fetch data for {symbol}")
+            return False
+
+        if verbose:
+            print(f"  -> [OK] Data fetched for {symbol}")
+
+        # Save data
+        ingester.save_all_data(data, symbol)
+        if verbose:
+            print(f"  -> [OK] Data saved for {symbol}")
+
+        # Calculate features if we have price history
+        if data and 'price_history' in data and data['price_history'] is not None:
+            if verbose:
+                print(f"  -> [INFO] Calculating features for {symbol}...")
+            features_df = engineer.calculate_all_features(
+                data['price_history'], symbol)
+            if features_df is not None and not features_df.empty:
+                engineer.save_features(features_df, symbol)
+                if verbose:
+                    print(
+                        f"  -> [OK] Features calculated and saved for {symbol}")
+                    print(
+                        f"  -> [INFO] Feature count: {len(features_df.columns)}")
+                    print(f"  -> [INFO] Data points: {len(features_df)}")
+                return True
+            else:
+                if verbose:
+                    print(
+                        f"  -> [ERROR] Failed to calculate features for {symbol}")
+                return False
+        else:
+            if verbose:
+                print(
+                    f"  -> [ERROR] No price history data available for {symbol}")
+            return False
+
+    except Exception as e:
+        logger.error(
+            f"Error initializing data for {symbol}: {e}", exc_info=True)
+        if verbose:
+            print(
+                f"  -> [ERROR] Exception during data initialization for {symbol}: {e}")
+        return False
+
+
+def _train_symbol_models(symbol: str, horizon: str, verbose: bool = True) -> bool:
+    """
+    Dynamically train models for a symbol that doesn't have trained models
+
+    Args:
+        symbol: Stock symbol to train models for
+        horizon: Time horizon ("intraday", "short", "long")
+        verbose: Whether to print detailed output
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        if verbose:
+            print(f"  -> [TRAIN] Training {horizon} models for {symbol}...")
+
+        # Train models
+        result = train_ml_models(symbol, horizon, verbose=verbose)
+
+        if result:
+            if verbose:
+                print(
+                    f"  -> [OK] {horizon} models trained successfully for {symbol}")
+            return True
+        else:
+            if verbose:
+                print(
+                    f"  -> [ERROR] Failed to train {horizon} models for {symbol}")
+            return False
+
+    except Exception as e:
+        logger.error(f"Error training models for {symbol}: {e}", exc_info=True)
+        if verbose:
+            print(
+                f"  -> [ERROR] Exception during model training for {symbol}: {e}")
+        return False
 
 
 # For testing purposes

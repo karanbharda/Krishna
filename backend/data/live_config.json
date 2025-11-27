@@ -1,8 +1,18 @@
 {
-    "risk_per_trade": 0.02,
+    "mode": "paper",
+    "riskLevel": "MEDIUM",
+    "stop_loss_pct": 0.05,
+    "max_capital_per_trade": 0.25,
+    "max_trade_limit": 150,
+    "drawdown_limit_pct": 0.15,
+    "max_volatility": 0.30,
+    "sentiment_multiplier": 1.0,
     "max_position_size": 0.1,
-    "stop_loss_atr_multiplier": 2.0,
-    "take_profit_atr_multiplier": 4.0,
-    "dhan_client_id": "YOUR_DHAN_CLIENT_ID_HERE",
-    "dhan_access_token": "YOUR_DHAN_ACCESS_TOKEN_HERE"
+    "volatility_filter_enabled": true,
+    "sentiment_conflict_filter_enabled": true,
+    "sentiment_sensitivity_threshold": 0.5,
+    "sentiment_override_threshold": 0.7,
+    "volatility_filter_threshold": 0.30,
+    "high_volatility_threshold": 0.50,
+    "volatility_reduction_factor": 0.5
 }

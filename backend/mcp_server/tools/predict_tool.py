@@ -59,7 +59,19 @@ class PredictTool:
         self.engineer = FeatureEngineer()
         self.request_counter = 0
 
+        # Tool interconnections
+        self.analyze_tool = None
+        self.risk_management_tool = None
+
         logger.info(f"Predict Tool {self.tool_id} initialized")
+
+    def connect_tools(self, tool_registry: Dict[str, Any]):
+        """Connect to other tools for interconnection"""
+        if "analyze" in tool_registry:
+            self.analyze_tool = tool_registry["analyze"]
+        if "risk_management" in tool_registry:
+            self.risk_management_tool = tool_registry["risk_management"]
+        logger.info(f"Predict Tool {self.tool_id} connected to other tools")
 
     def _log_request(self, tool_name: str, request_data: Dict) -> str:
         """Log incoming request"""
@@ -151,11 +163,26 @@ class PredictTool:
                 except Exception as e:
                     logger.error(
                         f"[{request_id}] Failed to fetch data for {symbol}: {e}")
-                    return {
-                        "symbol": symbol,
-                        "horizon": horizon,
-                        "error": f"Data fetch failed: {str(e)}"
-                    }
+                    # Try to initialize data dynamically
+                    try:
+                        from utils.ml_components.stock_analysis_complete import _initialize_symbol_data
+                        if _initialize_symbol_data(symbol, verbose=False):
+                            logger.info(
+                                f"[{request_id}] Data initialized for {symbol} via dynamic initialization")
+                        else:
+                            return {
+                                "symbol": symbol,
+                                "horizon": horizon,
+                                "error": "Data initialization failed"
+                            }
+                    except Exception as init_e:
+                        logger.error(
+                            f"[{request_id}] Failed to initialize data for {symbol}: {init_e}")
+                        return {
+                            "symbol": symbol,
+                            "horizon": horizon,
+                            "error": f"Data fetch failed: {str(e)}"
+                        }
 
             # STEP 2: Ensure features are calculated
             features_path = FEATURE_CACHE_DIR / f"{symbol}_features.json"
@@ -223,21 +250,51 @@ class PredictTool:
                     if not success:
                         logger.error(
                             f"[{request_id}] Training failed for {symbol}")
-                        return {
-                            "symbol": symbol,
-                            "horizon": horizon,
-                            "error": "Model training failed"
-                        }
+                        # Try to train models dynamically
+                        try:
+                            from utils.ml_components.stock_analysis_complete import _train_symbol_models
+                            if _train_symbol_models(symbol, horizon, verbose=False):
+                                logger.info(
+                                    f"[{request_id}] Models trained for {symbol} via dynamic training")
+                            else:
+                                return {
+                                    "symbol": symbol,
+                                    "horizon": horizon,
+                                    "error": "Model training failed"
+                                }
+                        except Exception as train_e:
+                            logger.error(
+                                f"[{request_id}] Failed to train models for {symbol}: {train_e}")
+                            return {
+                                "symbol": symbol,
+                                "horizon": horizon,
+                                "error": f"Training failed: {str(train_e)}"
+                            }
                     logger.info(
                         f"[{request_id}] Models trained for {symbol} ({horizon})")
                 except Exception as e:
                     logger.error(
                         f"[{request_id}] Training failed for {symbol}: {e}", exc_info=True)
-                    return {
-                        "symbol": symbol,
-                        "horizon": horizon,
-                        "error": f"Training failed: {str(e)}"
-                    }
+                    # Try to train models dynamically
+                    try:
+                        from utils.ml_components.stock_analysis_complete import _train_symbol_models
+                        if _train_symbol_models(symbol, horizon, verbose=False):
+                            logger.info(
+                                f"[{request_id}] Models trained for {symbol} via dynamic training")
+                        else:
+                            return {
+                                "symbol": symbol,
+                                "horizon": horizon,
+                                "error": "Model training failed"
+                            }
+                    except Exception as train_e:
+                        logger.error(
+                            f"[{request_id}] Failed to train models for {symbol}: {train_e}")
+                        return {
+                            "symbol": symbol,
+                            "horizon": horizon,
+                            "error": f"Training failed: {str(train_e)}"
+                        }
 
             # STEP 4: Get prediction
             prediction = predict_stock_price(
@@ -283,6 +340,7 @@ class PredictTool:
             symbols = arguments.get("symbols", [])
             horizon = arguments.get("horizon", "intraday")
             risk_profile = arguments.get("risk_profile")
+            model_type = arguments.get("model_type", "ensemble")
 
             if not symbols:
                 return MCPToolResult(
@@ -298,7 +356,8 @@ class PredictTool:
             request_data = {
                 "symbols": symbols,
                 "horizon": horizon,
-                "risk_profile": risk_profile
+                "risk_profile": risk_profile,
+                "model_type": model_type
             }
             request_id = self._log_request("predict", request_data)
 
@@ -323,6 +382,7 @@ class PredictTool:
                     "count": len(predictions),
                     "horizon": horizon,
                     "risk_profile": risk_profile,
+                    "model_type": model_type,
                     "timestamp": datetime.now().isoformat(),
                     "request_id": request_id
                 },
@@ -333,7 +393,7 @@ class PredictTool:
             confidence = 0.0
             if predictions:
                 valid_predictions = [
-                    p for p in predictions if "confidence" in p]
+                    p for p in predictions if "confidence" in p and "error" not in p]
                 if valid_predictions:
                     confidence = sum(
                         p["confidence"] for p in valid_predictions) / len(valid_predictions)
@@ -348,8 +408,31 @@ class PredictTool:
 
             execution_time = time.time() - start_time
 
+            # If we have valid predictions, also generate analysis using the analyze tool
+            if valid_predictions:
+                try:
+                    # Import analyze tool dynamically
+                    from .analyze_tool import AnalyzeTool
+                    analyze_tool = AnalyzeTool({
+                        "tool_id": "analyze_tool_for_predictions"
+                    })
+
+                    # Generate analysis for the predictions
+                    analysis_arguments = {
+                        "predictions": valid_predictions,
+                        "analysis_depth": "detailed",
+                        "include_risk_assessment": True
+                    }
+
+                    analysis_result = await analyze_tool.analyze(analysis_arguments, session_id)
+                    if analysis_result.status == "SUCCESS":
+                        sanitized_result["analysis"] = analysis_result.data
+                except Exception as analyze_error:
+                    logger.warning(
+                        f"Failed to generate analysis for predictions: {analyze_error}")
+
             return MCPToolResult(
-                status="SUCCESS",
+                status="SUCCESS" if valid_predictions else "WARNING",
                 data=sanitized_result,
                 confidence=sanitized_confidence,
                 execution_time=execution_time,
@@ -357,7 +440,9 @@ class PredictTool:
                     "session_id": session_id,
                     "tool_id": self.tool_id,
                     "horizon": horizon,
+                    "model_type": model_type,
                     "symbols_count": len(symbols),
+                    "valid_predictions_count": len(valid_predictions),
                     "timestamp": datetime.now().isoformat()
                 }
             )

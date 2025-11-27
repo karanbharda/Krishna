@@ -3,7 +3,7 @@
 MCP Analyze Tool
 ===============
 
-LLaMA reasoning tool for the Model Context Protocol server
+Groq API reasoning tool for the Model Context Protocol server
 with standardized JSON responses and advanced market analysis.
 """
 
@@ -62,7 +62,19 @@ class AnalyzeTool:
         self.engineer = FeatureEngineer()
         self.request_counter = 0
 
+        # Tool interconnections
+        self.predict_tool = None
+        self.risk_management_tool = None
+
         logger.info(f"Analyze Tool {self.tool_id} initialized")
+
+    def connect_tools(self, tool_registry: Dict[str, Any]):
+        """Connect to other tools for interconnection"""
+        if "predict" in tool_registry:
+            self.predict_tool = tool_registry["predict"]
+        if "risk_management" in tool_registry:
+            self.risk_management_tool = tool_registry["risk_management"]
+        logger.info(f"Analyze Tool {self.tool_id} connected to other tools")
 
     def _log_request(self, tool_name: str, request_data: Dict) -> str:
         """Log incoming request"""
@@ -285,7 +297,7 @@ class AnalyzeTool:
 
     async def analyze(self, arguments: Dict[str, Any], session_id: str) -> MCPToolResult:
         """
-        Analyze stock symbols with deep reasoning
+        Analyze stock predictions and provide detailed insights
 
         Args:
             arguments: Tool arguments containing predictions and analysis parameters
@@ -379,14 +391,54 @@ class AnalyzeTool:
 
             execution_time = time.time() - start_time
 
+            # If risk assessment is requested, also generate it using the risk management tool
+            risk_assessment = None
+            if include_risk_assessment and sanitized_analysis_results:
+                try:
+                    # Import risk management tool dynamically
+                    from .risk_management_tool import RiskManagementTool
+                    risk_tool = RiskManagementTool({
+                        "tool_id": "risk_tool_for_analysis"
+                    })
+
+                    # Generate risk assessment for the analyzed symbols
+                    risk_arguments = {
+                        # Limit to first 5 for performance
+                        "symbols": symbols[:5],
+                        "positions": [
+                            {
+                                "symbol": result.get("symbol", ""),
+                                "value": 10000,  # Default value for risk calculation
+                                "weight": 0.2,   # Default weight
+                                "volatility": result.get("predictions", [{}])[0].get("risk_metrics", {}).get("volatility_20", 0.02)
+                            }
+                            for result in sanitized_analysis_results[:5]
+                            if "error" not in result
+                        ]
+                    }
+
+                    risk_result = await risk_tool.assess_position_risk(risk_arguments, session_id)
+                    if risk_result.status == "SUCCESS":
+                        risk_assessment = risk_result.data
+                except Exception as risk_error:
+                    logger.warning(
+                        f"Failed to generate risk assessment: {risk_error}")
+
+            # Prepare final result
+            final_result = {
+                "analysis_results": sanitized_analysis_results,
+                "symbols_analyzed": len(symbols),
+                "average_confidence": sanitized_confidence,
+                "analysis_depth": analysis_depth
+            }
+
+            # Add risk assessment if available
+            if risk_assessment:
+                final_result["risk_assessment"] = risk_assessment
+
             return MCPToolResult(
                 status="SUCCESS",
-                data={
-                    "analysis_results": sanitized_analysis_results,
-                    "symbols_analyzed": len(symbols),
-                    "average_confidence": sanitized_confidence,
-                    "analysis_depth": analysis_depth
-                },
+                data=final_result,
                 confidence=sanitized_confidence,
                 execution_time=execution_time,
                 metadata={

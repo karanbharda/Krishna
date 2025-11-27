@@ -156,11 +156,18 @@ class DynamicMarketExpert:
                 if symbol not in symbols:
                     symbols.append(symbol)
 
+        # Enhanced handling for informal queries like "how it todays market"
+        informal_market_indicators = ["how it", "how is today", "todays market", "market today",
+                                      "market status", "market right now", "market now"]
+
+        is_informal_market_query = any(
+            indicator in query_lower for indicator in informal_market_indicators)
+
         # If no symbols found but query seems stock-related, use popular ones
         if not symbols:
             stock_keywords = ['stock', 'share', 'price',
-                              'market', 'trading', 'invest', 'buy', 'sell']
-            if any(keyword in query_lower for keyword in stock_keywords):
+                              'market', 'trading', 'invest', 'buy', 'sell'] + informal_market_indicators
+            if any(keyword in query_lower for keyword in stock_keywords) or is_informal_market_query:
                 # Return popular stocks for general market queries
                 symbols = ['RELIANCE', 'TCS', 'HDFCBANK', 'INFY']
 
@@ -468,6 +475,13 @@ class DynamicMarketExpert:
             # Enhanced symbol selection based on query intelligence
             symbols = self.extract_symbols(user_query)
 
+            # Enhanced handling for informal market queries
+            informal_market_indicators = ["how it", "how is today", "todays market", "market today",
+                                          "market status", "market right now", "market now"]
+
+            is_informal_market_query = any(
+                indicator in query_lower for indicator in informal_market_indicators)
+
             # If no specific symbols, intelligently select based on query type
             if not symbols:
                 if any(word in query_lower for word in ['penny', 'cheap', 'low price', 'under 100', 'under 50']):
@@ -485,6 +499,10 @@ class DynamicMarketExpert:
                 elif any(word in query_lower for word in ['pharma', 'healthcare', 'medical']):
                     symbols = ["SUNPHARMA.NS", "DRREDDY.NS",
                                "CIPLA.NS", "DIVISLAB.NS", "BIOCON.NS"]
+                elif is_informal_market_query or any(word in query_lower for word in ['market', 'overview', 'today']):
+                    # For informal market queries, use a diverse set of stocks for overview
+                    symbols = ["RELIANCE.NS", "TCS.NS",
+                               "HDFCBANK.NS", "INFY.NS", "ICICIBANK.NS"]
                 else:
                     # Default diverse portfolio for general queries
                     symbols = ["RELIANCE.NS", "TCS.NS",
@@ -558,12 +576,19 @@ class DynamicMarketExpert:
 
         response += f"**Market Sentiment:** {sentiment} with average change of {sentiment_desc}\n\n"
 
+        # Enhanced handling for informal market queries
+        informal_market_indicators = ["how it", "how is today", "todays market", "market today",
+                                      "market status", "market right now", "market now"]
+
+        is_informal_market_query = any(
+            indicator in query_lower for indicator in informal_market_indicators)
+
         # Specific analysis based on query type
         if any(word in query_lower for word in ['penny', 'cheap', 'low price']):
             response += self.analyze_penny_stocks(market_data)
         elif any(word in query_lower for word in ['top 5', 'best 5', 'buy']):
             response += self.analyze_top_picks(market_data)
-        elif any(word in query_lower for word in ['analysis', 'today', 'market']):
+        elif any(word in query_lower for word in ['analysis', 'today', 'market']) or is_informal_market_query:
             response += self.analyze_market_overview(market_data)
         else:
             response += self.analyze_specific_stocks(market_data)

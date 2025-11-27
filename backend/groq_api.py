@@ -193,7 +193,7 @@ class GroqAPIEngine:
         """Load optimized prompt templates for different use cases"""
         return {
             "market_analysis": """
-You are an expert quantitative analyst and trader with 20+ years of experience in Indian stock markets.
+You are an expert quantitative analyst and trader with 20+ years of experience in Indian stock markets (NSE/BSE).
 
 TRADING CONTEXT:
 Symbol: {symbol}
@@ -211,7 +211,7 @@ TASK:
 Provide a comprehensive market analysis for {symbol} with the following structure:
 
 1. **Immediate Assessment** (2-3 sentences)
-   - Current market positioning
+   - Current market positioning in Indian markets
    - Key technical signal interpretation
    - Portfolio impact analysis
 
@@ -221,8 +221,8 @@ Provide a comprehensive market analysis for {symbol} with the following structur
    - Position sizing suggestion
 
 3. **Supporting Logic** (3-4 bullet points)
-   - Technical analysis insights
-   - Market context factors
+   - Technical analysis insights specific to Indian markets
+   - Market context factors (sector trends, economic indicators)
    - Risk mitigation considerations
    - Portfolio optimization opportunities
 
@@ -231,7 +231,7 @@ Provide a comprehensive market analysis for {symbol} with the following structur
    - Stop-loss and take-profit levels
    - Time horizon recommendation
 
-Format your response in clear sections with markdown-style headers. Be concise but comprehensive.
+Format your response in clear sections with code-style headers. Be concise but comprehensive.
 """,
             "risk_assessment": """
 You are a senior risk management specialist for algorithmic trading systems.
@@ -308,17 +308,23 @@ Provide a comprehensive portfolio optimization strategy with the following struc
 Focus on practical, implementable strategies that align with the {risk_profile} risk profile.
 """,
             "general_trading_advice": """
-You are an expert trading advisor with deep knowledge of financial markets, technical analysis, and risk management.
+You are an expert trading advisor with deep knowledge of Indian financial markets (NSE/BSE), technical analysis, and risk management.
 
 USER QUERY:
 {query}
 
 TASK:
 Provide expert trading advice that is:
-- Actionable and specific
+- Actionable and specific for Indian stock markets
 - Risk-aware and balanced
 - Based on sound trading principles
 - Concise and clear
+
+When recommending stocks, focus specifically on:
+- NSE/BSE listed companies
+- Indian market conditions and regulations
+- Rupee-denominated investments
+- Sector-specific considerations for Indian economy
 
 Structure your response with:
 1. **Direct Answer** - Address the core question first
@@ -326,7 +332,7 @@ Structure your response with:
 3. **Risk Considerations** - Highlight key risks and mitigations
 4. **Next Steps** - Suggest concrete actions
 
-Keep responses focused on trading and investment topics. For non-trading queries, politely redirect to trading-related subjects.
+Keep responses focused on trading and investment topics in Indian markets. For non-trading queries, politely redirect to trading-related subjects.
 """,
             "trade_recommendation": """
 You are an expert trading advisor analyzing a specific trade opportunity.
@@ -360,6 +366,50 @@ Provide a comprehensive trade recommendation with the following structure:
    - Key risk factors to monitor
 
 Be concise but thorough. Focus on actionable insights for the specific trade.
+""",
+            "mcp_explanation": """
+You are an expert trading advisor and communicator acting as an intermediary between the Model Context Protocol (MCP) system and the user.
+Your role is to translate complex MCP-generated data into clear, actionable insights for traders while maintaining the integrity of the underlying data.
+
+USER QUERY: {user_query}
+
+MCP DATA: {mcp_data}
+
+EXPLANATION TYPE: {explanation_type}
+
+TASK:
+Explain the MCP data in a user-friendly way with the following structure:
+
+1. **Direct Response** (1-2 sentences)
+   - Provide a clear, direct answer to the user's query based on the MCP data
+   - State the key findings and overall confidence level
+
+2. **Key Insights** (3-4 bullet points)
+   - Break down the most important insights from the MCP data
+   - Explain what the data means for the user's specific query
+   - Highlight critical factors and their implications for Indian markets
+   - Include relevant numerical values, scores, and confidence levels
+
+3. **Actionable Guidance** (2-3 bullet points)
+   - Provide practical steps the user can take based on the MCP data
+   - Offer specific trading recommendations with clear rationale
+   - Address risk considerations for Indian stock market investments
+   - Suggest time horizons and exit strategies where applicable
+
+4. **Important Context** (1-2 sentences)
+   - Explain any limitations or caveats of the data
+   - Mention key assumptions made in the analysis
+   - Note when additional data or monitoring would be beneficial
+
+When communicating:
+- Focus exclusively on NSE/BSE listed companies and rupee-denominated investments
+- Keep all recommendations specific to Indian market conditions and regulations
+- Reference sector-specific considerations for the Indian economy
+- Present data with clear numerical values, confidence scores, and timeframes
+- Do not generate new analysis beyond explaining the provided MCP data
+- Avoid mentioning US stocks or generic international examples
+
+Remember: You are a communicator, not a data generator. Your job is to faithfully explain what the MCP system has produced.
 """
         }
 
@@ -807,6 +857,94 @@ Be concise but thorough. Focus on actionable insights for the specific trade.
         except Exception as e:
             logger.error(f"Trade recommendation failed: {e}")
             raise Exception(f"Trade recommendation failed: {str(e)}")
+
+    async def explain_mcp_data(self, user_query: str, mcp_data: Dict[str, Any], explanation_type: str) -> GroqResponse:
+        """Explain MCP data in a user-friendly way"""
+        try:
+            # Prepare prompt
+            prompt_template = self.prompt_templates["mcp_explanation"]
+
+            # Sanitize MCP data to remove empty or invalid entries
+            sanitized_mcp_data = self._sanitize_mcp_data(mcp_data)
+
+            prompt = prompt_template.format(
+                user_query=user_query,
+                mcp_data=json.dumps(sanitized_mcp_data, indent=2),
+                explanation_type=explanation_type
+            )
+
+            # Prepare API payload
+            payload = {
+                "model": self.model_name,
+                "messages": [
+                    {"role": "system",
+                        "content": "You are an expert trading advisor and communicator explaining MCP data."},
+                    {"role": "user", "content": prompt}
+                ],
+                "max_tokens": self.max_tokens,
+                "temperature": 0.7
+            }
+
+            # Make API call
+            start_time = time.time()
+            response = await self._make_api_call(payload)
+            execution_time = time.time() - start_time
+
+            # Extract content
+            content = response["choices"][0]["message"]["content"]
+
+            # Count tokens (approximate)
+            # Simple word count approximation
+            input_tokens = len(prompt.split())
+            output_tokens = len(content.split())
+            total_tokens = input_tokens + output_tokens
+            GROQ_TOKEN_COUNT.labels(type="input").inc(input_tokens)
+            GROQ_TOKEN_COUNT.labels(type="output").inc(output_tokens)
+
+            # Extract confidence from content (simple approach)
+            confidence = 0.9  # High confidence for data explanation
+
+            return GroqResponse(
+                content=content,
+                reasoning=f"Explanation of MCP data for {explanation_type}",
+                confidence=confidence,
+                tokens_used=total_tokens,
+                model_used=self.model_name,
+                execution_time=execution_time,
+                metadata={
+                    "explanation_type": explanation_type,
+                    "prompt_length": len(prompt),
+                    "response_length": len(content)
+                }
+            )
+
+        except Exception as e:
+            logger.error(f"MCP data explanation failed: {e}")
+            raise Exception(f"MCP data explanation failed: {str(e)}")
+
+    def _sanitize_mcp_data(self, mcp_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Sanitize MCP data to remove empty or invalid entries"""
+        if not mcp_data:
+            return {}
+
+        sanitized = {}
+        for key, value in mcp_data.items():
+            # Skip empty data
+            if value is None or (isinstance(value, (list, dict)) and len(value) == 0):
+                continue
+            # Skip error entries
+            if isinstance(value, dict) and 'error' in str(value).lower():
+                continue
+            # Skip entries with only error information
+            if isinstance(value, list):
+                filtered_list = [item for item in value if item and not (
+                    isinstance(item, dict) and 'error' in str(item).lower())]
+                if filtered_list:
+                    sanitized[key] = filtered_list
+            else:
+                sanitized[key] = value
+
+        return sanitized
 
     async def cleanup(self):
         """Clean up resources"""
